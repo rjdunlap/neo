@@ -1952,6 +1952,73 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Garden Grow 14–15 (under the soil): lift the lid, name the parts, rain and a leaf's three pictures (14); lift both beds,
+    // grow, one wrong bed with a hint, then the longer roots or taller shoot (15). Upright phone viewport like 12–13.
+    if (!only || only === 'grow')
+      for (const level of [14, 15]) {
+        if (level < fromLevel) continue;
+        await page.setViewportSize({ width: 390, height: 844 });
+        await launch('garden-grow', level, 'Mia', level === 14 ? 'preschool' : 'school');
+        const settle = async () => {
+          await page.waitForTimeout(250);
+          await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+            timeout: 30000,
+          });
+        };
+        const game = 'neo.scene.game';
+        if (level === 14) {
+          await settle();
+          await screenshot('garden-grow-14');
+          await tap(`${game}.beds[0].hitKnob.node`);
+          await page.waitForTimeout(600);
+          await tap(`${game}.beds[0].hitSoil.node`);
+          await tap(`${game}.beds[0].hitShoot.node`);
+          await page.waitForTimeout(400);
+          await screenshot('garden-grow-14-open');
+          await tap(`${game}.token`);
+          await settle();
+          // The leaf round: lift the lid, then three taps on the leaf show every picture.
+          await tap(`${game}.beds[0].hitKnob.node`);
+          await page.waitForTimeout(600);
+          await screenshot('garden-grow-14-leaf');
+          for (let k = 0; k < 2; k++) {
+            await page.waitForTimeout(500);
+            await tap(`${game}.beds[0].hitShoot.node`);
+          }
+        } else
+          for (let n = 0; n < 2; n++) {
+            await settle();
+            await page.waitForTimeout(250);
+            if (n === 0) await screenshot('garden-grow-15');
+            const ask = await page.evaluate(() => neo.scene.game.cur.r15.ask);
+            const taller = await page.evaluate(() => neo.scene.game.cur.r15.taller);
+            // A bed tapped before growing is free; roots need both lids up first.
+            await tap(`${game}.beds[0].hitShoot.node`);
+            await settle();
+            await tap(`${game}.beds[0].hitKnob.node`);
+            await tap(`${game}.beds[1].hitKnob.node`);
+            await page.waitForTimeout(600);
+            await tap(`${game}.token`);
+            await settle();
+            if (n === 0) {
+              await screenshot('garden-grow-15-grown');
+              // Two wrong beds: two misses, the second lights the right one (one hint).
+              await tap(`${game}.beds[${taller === 'a' ? 1 : 0}].hitShoot.node`);
+              await settle();
+              await tap(`${game}.beds[${taller === 'a' ? 1 : 0}].hitShoot.node`);
+              await settle();
+              assert.equal(await page.evaluate(() => neo.scene.game.hintOn), true);
+            }
+            await tap(`${game}.beds[${taller === 'a' ? 0 : 1}].hitShoot.node`);
+            assert.ok(ask === 'roots' || ask === 'shoot');
+          }
+        await finished('garden-grow');
+        assert.deepEqual(await score('garden-grow'), level === 14 ? [0, 0] : [2, 1]);
+        log(
+          `Garden Grow ${level} (${level === 14 ? 'look' : 'under'}): ${level === 14 ? 'the lid, the parts, rain and the leaf' : 'both lids, growing, two wrong beds and the glowing hint, the right bed'}, saved score and sticker passed`,
+        );
+      }
+
     if (!only || only === 'clock')
       for (const level of process.env.CLOCK_LEVELS
         ? process.env.CLOCK_LEVELS.split(',').map(Number)

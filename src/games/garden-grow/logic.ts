@@ -9,7 +9,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * is one big bed where any touch moves the flower on one stage. Pre-K then chooses a packet and plants it by position:
  * rows of colors (9), columns of colors (10) and the same number in every row (11). Levels 12–13 grow two beds from the same
  * packet in a toy garden: she reads which one thing differs and which bed grew taller (12), then sets the second bed so only
- * the asked thing differs (13, a fair test).
+ * the asked thing differs (13, a fair test). Levels 14–15 lift the soil: roots and shoot grow together and a leaf crumbles (14),
+ * then the matched beds are read above and below the ground (15).
  */
 export type GardenMode =
   | 'plant'
@@ -24,7 +25,9 @@ export type GardenMode =
   | 'columns'
   | 'equal'
   | 'compare'
-  | 'fair';
+  | 'fair'
+  | 'look'
+  | 'under';
 
 export interface GardenPlan {
   mode: GardenMode;
@@ -55,14 +58,20 @@ export const PLANS: GardenPlan[] = [
     requests: 2,
     name: 'You change one thing: set the second bed so only the asked thing differs',
   },
+  { mode: 'look', requests: 2, name: 'Lift the soil: see the roots and the shoot, then a leaf crumble' },
+  {
+    mode: 'under',
+    requests: 2,
+    name: 'Above and below: lift both beds and find the longer roots or the taller shoot',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1, 2] },
-  toddler: { min: 2, max: 4 },
-  preschool: { min: 3, max: 5 },
-  prek: { min: 6, max: 12, order: [6, 7, 9, 10, 11, 12] },
-  school: { min: 12, max: 13 },
+  toddler: { min: 2, max: 14, order: [2, 3, 4, 14] },
+  preschool: { min: 3, max: 14, order: [3, 4, 5, 14] },
+  prek: { min: 6, max: 14, order: [6, 7, 9, 10, 11, 12, 14] },
+  school: { min: 12, max: 15, order: [12, 13, 15] },
 };
 
 /** Levels 2–3 beds are a 2×3 grid: beds 0–2 are the top row, 3–5 the bottom, and a column is a bed's index mod 3. */
@@ -137,8 +146,8 @@ export function kindsFor(n: number, rng: Rng): FlowerKind[] {
 
 export function makeRequests(plan: GardenPlan, rng: Rng): Request[] {
   const out: Request[] = [];
-  // The conditions levels (12–13) make their own rounds with `makeCompare` and `makeFair`.
-  if (plan.mode === 'compare' || plan.mode === 'fair') return out;
+  // The conditions levels (12–15) make their own rounds with `makeCompare`, `makeFair` and `makeUnder`.
+  if (['compare', 'fair', 'look', 'under'].includes(plan.mode)) return out;
   const key = requestKey;
   const kinds = kindsFor(plan.requests, rng);
   while (out.length < plan.requests) {
@@ -396,3 +405,37 @@ export function fairHint(a: Setup, b: Setup, ask: Condition): Condition | null {
 
 /** What the result line says changed and which way: "more sun", "more water". */
 export const moreOf = (c: Condition) => (c === 'light' ? 'more sun' : 'more water');
+
+// ---- Levels 14–15: under the soil (a toy garden; see docs/definitions/under-the-soil.md) ----
+
+/** The root ruler below the soil line reads the same steps as the shoot ruler above it: one stylised root system, one table. */
+export const rootDepth = (s: Setup) => growthHeight(s);
+
+/** Three pictured snapshots of one leaf under the soil. There is no time scale and no number. */
+export const LEAF_STEPS = ['whole', 'holey', 'crumbs'] as const;
+export type LeafStep = (typeof LEAF_STEPS)[number];
+/** The next picture, and back to the first after the last. */
+export const nextLeafStep = (i: number) => (i + 1) % LEAF_STEPS.length;
+
+export type UnderAsk = 'roots' | 'shoot';
+export interface UnderRound extends CompareRound {
+  ask: UnderAsk;
+}
+/** What level 15 must not repeat: the pair the last round showed and the part it asked about. */
+export interface UnderAvoid extends CompareAvoid {
+  ask: UnderAsk;
+}
+
+/** Level 15: a matched pair of beds as at level 12, and which part to read; the asked part alternates between rounds. */
+export function makeUnder(rng: Rng, avoid?: UnderAvoid, lastKind?: FlowerKind): UnderRound {
+  const round = makeCompare(rng, avoid && { changed: avoid.changed, taller: avoid.taller }, lastKind);
+  const ask: UnderAsk = avoid
+    ? avoid.ask === 'roots'
+      ? 'shoot'
+      : 'roots'
+    : rng.pick<UnderAsk>(['roots', 'shoot']);
+  return { ...round, ask };
+}
+
+/** The bed with the longer roots, which is also the taller shoot in this toy garden. */
+export const answerUnder = (r: CompareRound): 'a' | 'b' => (rootDepth(r.a) > rootDepth(r.b) ? 'a' : 'b');

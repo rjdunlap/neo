@@ -16,6 +16,7 @@ import {
   growthHeight,
   judgeFair,
   KINDS,
+  LEAF_STEPS,
   LEVELS,
   makeCompare,
   makeFair,
@@ -26,7 +27,11 @@ import {
   SEEDS,
   matches,
   packetsFor,
+  answerUnder,
+  makeUnder,
+  nextLeafStep,
   planFor,
+  rootDepth,
   requestedKind,
   PLANS,
   requestKey,
@@ -45,7 +50,7 @@ describe('a book request (RW11 slice 2)', () => {
 
 describe('Garden Grow', () => {
   it('asks for things that fit the beds, offers the packets needed, and never repeats a request back to back', () => {
-    for (const plan of PLANS.filter((p) => !['big', 'compare', 'fair'].includes(p.mode))) {
+    for (const plan of PLANS.filter((p) => !['big', 'compare', 'fair', 'look', 'under'].includes(p.mode))) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const rs = makeRequests(plan, rng);
@@ -179,7 +184,7 @@ describe('Garden Grow', () => {
   });
 
   it('maps every level of every band to its own plan, level 8 being the big bed', () => {
-    expect(PLANS.map((p) => p.mode)).toHaveLength(13);
+    expect(PLANS.map((p) => p.mode)).toHaveLength(15);
     expect(planFor(8).mode).toBe('big');
     for (const l of [1, 2, 3, 4, 5, 6, 7]) expect(planFor(l).mode).not.toBe('big');
     expect(makeRequests(planFor(8), new Rng(1))).toHaveLength(0);
@@ -388,10 +393,74 @@ describe('Growing Conditions (levels 12–13)', () => {
   });
 
   it('has the ladder windows: pre-K reads a comparison, school plays both', () => {
-    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 6, max: 12, order: [6, 7, 9, 10, 11, 12] });
-    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 12, max: 13 });
+    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 6, max: 14, order: [6, 7, 9, 10, 11, 12, 14] });
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 12, max: 15, order: [12, 13, 15] });
     expect(planFor(12).mode).toBe('compare');
     expect(planFor(13).mode).toBe('fair');
     expect(makeRequests(planFor(12), new Rng(1))).toEqual([]);
+  });
+
+  it('has the under-the-soil windows: observation after the toddler, preschool and pre-K ladders, school ends at 15', () => {
+    expect(rangeFor(LEVELS, 'toddler')).toEqual({ min: 2, max: 14, order: [2, 3, 4, 14] });
+    expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 3, max: 14, order: [3, 4, 5, 14] });
+    expect(planFor(14).mode).toBe('look');
+    expect(planFor(15).mode).toBe('under');
+    expect(makeRequests(planFor(14), new Rng(1))).toEqual([]);
+    expect(makeRequests(planFor(15), new Rng(1))).toEqual([]);
+    // Every earlier level keeps its relative order, and no band lists an unknown level.
+    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as const) {
+      const r = rangeFor(LEVELS, band);
+      for (const l of r.order ?? [r.min, r.max]) expect(PLANS[l - 1]).toBeDefined();
+    }
+  });
+
+  it('keeps one height table: root depth is the shoot height for every setup', () => {
+    const heights: number[] = [];
+    for (const light of ['sun', 'shade'] as const)
+      for (const water of ['more', 'less'] as const) {
+        const s = { light, water };
+        expect(rootDepth(s)).toBe(growthHeight(s));
+        heights.push(rootDepth(s));
+      }
+    expect(heights.sort()).toEqual([2, 3, 4, 5]);
+  });
+
+  it('level 15 has one right answer for either part, and rounds alternate the asked part', () => {
+    const asks: Record<string, number> = { roots: 0, shoot: 0 };
+    for (let seed = 0; seed < 200; seed++) {
+      const rng = new Rng(seed);
+      let last: ReturnType<typeof makeUnder> | undefined;
+      for (let i = 0; i < 2; i++) {
+        const r = makeUnder(
+          rng,
+          last && { changed: last.changed, taller: last.taller, ask: last.ask },
+          last?.kind,
+        );
+        asks[r.ask]++;
+        expect(differing(r.a, r.b)).toEqual([r.changed]);
+        expect(rootDepth(r.a)).not.toBe(rootDepth(r.b));
+        expect(answerUnder(r)).toBe(r.taller);
+        if (last) {
+          expect(r.ask).not.toBe(last.ask);
+          expect(r.changed === last.changed && r.taller === last.taller).toBe(false);
+        }
+        last = r;
+      }
+    }
+    expect(asks.roots).toBeGreaterThan(0);
+    expect(Math.max(asks.roots, asks.shoot) / (asks.roots + asks.shoot)).toBeLessThanOrEqual(0.7);
+  });
+
+  it('shows the leaf in three distinct pictures that wrap, with no time scale', () => {
+    expect(new Set(LEAF_STEPS).size).toBe(3);
+    const seen: number[] = [];
+    let i = 0;
+    for (let k = 0; k < 3; k++) {
+      seen.push(i);
+      i = nextLeafStep(i);
+    }
+    expect(seen).toEqual([0, 1, 2]);
+    expect(i).toBe(0);
+    expect(JSON.stringify(LEAF_STEPS)).not.toMatch(/day|week|\d/);
   });
 });

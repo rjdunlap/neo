@@ -44,4 +44,22 @@ export const VOICE = {
   ],
   'grow.fair.result': ['Only the {cond} was different. The bed with {what} grew taller.'],
   'grow.fair.both': ['{n} things changed, so we cannot tell which one did it.'],
+  // Levels 14–15 (docs/definitions/under-the-soil.md). Every line carries a slot, so it stays on device speech and no clip is rendered.
+  'grow.soil.lift': ['Lift the {what}.'],
+  'grow.soil.parts': ['{what} down here. Shoot up here. Tap them!'],
+  'grow.soil.root': ['{part} are down here.'],
+  'grow.soil.shoot': ['That is the {part}. Roots are down here.'],
+  'grow.soil.rain': ['Tap the {what} to make it rain. The roots and the shoot grow together.'],
+  'grow.leaf.lift': ['Lift the {what} under the leaf.'],
+  'grow.leaf.0': ['The {what} is whole.'],
+  'grow.leaf.1': ['Little bugs and a {what} are eating tiny holes.'],
+  'grow.leaf.2': ['Now it is crumbs, and the soil is {what}.'],
+  'grow.under.ask': ['Which bed has the {what}? Lift the soil, grow both beds, then tap it.'],
+  'grow.under.lift': ['Lift the soil to see the {what}.'],
+  'grow.under.grow': ['Now tap the sun and cloud to grow both {n} beds.'],
+  'grow.under.which': ['Which of the {n} beds has the {what}? Tap it.'],
+  'grow.under.result': [
+    '{what} and a taller shoot. In this toy garden a bigger plant has longer roots too. The bed with {more} grew more.',
+  ],
+  'grow.under.count': ['Count the steps {where} the soil: this one is {a} and that one is {b}.'],
 } satisfies Record<string, string[]>;

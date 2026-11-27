@@ -29,10 +29,10 @@ import {
 } from './logic';
 
 /** Ruler steps are drawn this tall in a bed's own units; a plant of height 5 has the usual 130-unit stem. */
-const STEP = 26;
-const CARD = 110;
-const CARD_GAP = 16;
-const WORD: Record<Condition, string> = { light: 'sun', water: 'water' };
+export const STEP = 26;
+export const CARD = 110;
+export const CARD_GAP = 16;
+export const WORD: Record<Condition, string> = { light: 'sun', water: 'water' };
 
 type Step = 'pick' | 'grow' | 'which' | 'fair' | 'free';
 
@@ -48,7 +48,7 @@ interface Plot {
   setup: Setup;
 }
 
-function drawCard(g: Graphics, cond: Condition, setup: Setup): Graphics {
+export function drawCard(g: Graphics, cond: Condition, setup: Setup): Graphics {
   g.roundRect(-CARD / 2, -CARD / 2, CARD, CARD, 20)
     .fill(0xfff8ec)
     .stroke({ width: 5, color: wood.line });
@@ -95,7 +95,7 @@ function drawCard(g: Graphics, cond: Condition, setup: Setup): Graphics {
 }
 
 /** The seed packet above both beds: one picture, so "same seeds" can be seen. */
-const drawPacket = (kind: FlowerKind, color: ColorName) => {
+export const drawPacket = (kind: FlowerKind, color: ColorName) => {
   const c = new Container();
   const sw = swatch[color];
   c.addChild(
