@@ -40,6 +40,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `couch` | 2026-10-12 · [Bounce Back couch face-off](archive/VERIFICATION-2026-10-07-13.md#2026-10-12--bounce-back-couch-face-off) | Full trip and face-off on a frozen snapshot |
 | `couchbeds` | 2026-10-24 · [Grown-up puzzle misses: Sudoku Garden, Island Bridges, Picture Logic](archive/VERIFICATION-2026-10-24.md#2026-10-24--grown-up-puzzle-misses-sudoku-garden-island-bridges-picture-logic) | Wrong-digit regression |
 | `couchbridges` | 2026-10-24 · [Grown-up puzzle misses: Sudoku Garden, Island Bridges, Picture Logic](archive/VERIFICATION-2026-10-24.md#2026-10-24--grown-up-puzzle-misses-sudoku-garden-island-bridges-picture-logic) | — |
+| `couchcardtables` | 2026-11-27 · [Memory Match par course, The Card Tables (PR #2267)](verification/2026-11-27-memory-match-par-course-the-card-tables.md) | — |
 | `couchcodedoors` | 2026-11-05 · [Secret Code couch course The Code Doors (secret-code batch 6)](archive/VERIFICATION-2026-11-05.md#2026-11-05--secret-code-couch-course-the-code-doors-secret-code-batch-6) | — |
 | `couchconga` | 2026-10-08 · [Pond Conga, a sixth grown-up-only game and the first relaxing arcade game](archive/VERIFICATION-2026-10-07-13.md#pond-conga-a-sixth-grown-up-only-game-and-the-first-relaxing-arcade-game-2026-10-08) | Four-pond bot course |
 | `couchcourse` | 2026-10-15 · [Penguin Slide Frozen Ponds couch course](archive/VERIFICATION-2026-10-15.md#2026-10-15--penguin-slide-frozen-ponds-couch-course) | — |

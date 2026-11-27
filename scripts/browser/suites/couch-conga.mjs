@@ -100,6 +100,7 @@ export function createSuite({ page, errors, log, ready, scene, chooserEnter, scr
       'sunbeams',
       'codedoors',
       'robotpath',
+      'cardtables',
     ]);
     assert.equal(await page.locator('[data-course="conga"] small').innerText(), 'Not finished yet · par 259');
     await page.locator('[data-course="conga"]').click();

@@ -917,7 +917,7 @@ export class CouchScene extends Scene {
     this.focusButtons();
     if (outcome) {
       sfx.tada();
-      void voice.say(outcome.improved ? 'couch.course.best' : info.done);
+      void voice.say(outcome.improved ? 'couch.course.best' : info.done, { count: String(info.best.length) });
     }
   }
 
