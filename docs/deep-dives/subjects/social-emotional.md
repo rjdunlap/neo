@@ -170,6 +170,8 @@ The definition must freeze: all legal placements and whether the optional plant 
 
 ### Dream Cards: turn the existing seed into a definition
 
+**Definition claimed 2026-11-27** (docs only, `docs/definitions/dream-cards.md`).
+
 **School–parent first; pre-K considered separately.** Three original code-drawn dream pictures, three pictured/spoken clue tokens and one reveal are enough for a first round. One person chooses a picture and a clue; the other points to the picture it suggests. Reveal the chosen picture and compare associations, then Finish or swap roles. Any clue-picture combination is allowed; interpretation is not counted as a wrong answer. No score or timer, no speech recognition, typing or private personal response required. A pictured privacy cover needs to keep the giver's choice hidden on one device until the listener's turn; define it explicitly, and allow skipping/revealing without guessing.
 
 Solo uses a pet-authored pictured clue and reveal, with the same unscored comparison. The definition must specify the bounded original picture/clue pool, alternate associations, speech, privacy/input transitions, complete ending, solo assistance and family-seat/placement decisions before building. This belongs beside Animal Charades/Pond Charades; preserve the difference between an ambiguous illustrated association and acting a recognizable animal/action. Do not create a general card-deck framework or claim mind-reading skill.
