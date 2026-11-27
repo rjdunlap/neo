@@ -606,6 +606,7 @@ describe('game registry', () => {
       'day-by-day',
       'domino-pond',
       'domino-run',
+      'dream-cards',
       'drift-cards',
       'drops-journey',
       'duck-pond',

@@ -1,0 +1,1 @@
+**`dream-cards`, define level 2, *Two clues for one picture* (define tier, docs only):** write the buildable definition for the giver's second clue after the first reading, from the [level 1 definition](../../definitions/dream-cards.md#the-level); the second reading never makes the first one wrong.

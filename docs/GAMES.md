@@ -596,6 +596,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school–grown-up* · [Common Ground](games/common-ground.md)
 
+### Dream Cards
+
+*school* · [Dream Cards](games/dream-cards.md)
+
 ## Tinker Lab
 
 ### Log Roll

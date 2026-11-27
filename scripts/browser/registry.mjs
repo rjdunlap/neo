@@ -217,6 +217,7 @@ import { createSuite as createSillyScene } from './suites/silly-scene-play.mjs';
 import { createSuite as createCampsite } from './suites/campsite-play.mjs';
 import { createSuite as create137 } from './suites/sum-crates-play.mjs';
 import { createSuite as createCommonGround } from './suites/common-ground-play.mjs';
+import { createSuite as createDreamCards } from './suites/dream-cards-play.mjs';
 
 export const SUITES = [
   'relaywoods',
@@ -432,6 +433,7 @@ export const SUITES = [
   'adventurewalk',
   'readyadventure',
   'commonground',
+  'dreamcards',
   'fingerdemo',
   'room',
   'lands',
@@ -636,6 +638,7 @@ export const ALL_SUITES = [
   'adventurewalk',
   'readyadventure',
   'commonground',
+  'dreamcards',
   'fingerdemo',
   'room',
   'lands',
@@ -792,6 +795,7 @@ export function createChecks(fixture) {
     'commonGroundPlay',
     'commonGroundChangePlay',
     'commonGroundTwoPlay',
+    'dreamCardsPlay',
     'adventureWalkPlay',
     'sandTablePlay',
     'senseDetectivePlay',
@@ -1041,6 +1045,7 @@ export function createChecks(fixture) {
   install(createGroveCutLines20(shared));
   install(createGroveCutLines22(shared));
   install(createCommonGround(shared));
+  install(createDreamCards(shared));
   return checks;
 }
 
@@ -1187,6 +1192,7 @@ export async function runSuite(suite, fixture) {
     commonGroundPlay,
     commonGroundChangePlay,
     commonGroundTwoPlay,
+    dreamCardsPlay,
     adventureWalkPlay,
     sandTablePlay,
     senseDetectivePlay,
@@ -1555,6 +1561,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'sandtable') await sandTablePlay();
   if (suite === 'all' || suite === 'adventurewalk') await adventureWalkPlay();
   if (suite === 'all' || suite === 'readyadventure') await readyForAdventurePlay();
+  if (suite === 'all' || suite === 'dreamcards') await dreamCardsPlay();
   if (suite === 'all' || suite === 'commonground') {
     await commonGroundPlay();
     await commonGroundChangePlay();
