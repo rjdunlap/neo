@@ -27,11 +27,12 @@ const CHEEK = 'rgba(255,143,163,0.6)';
 
 /** The long body from the tail's root to the chest, with the neck rising into the head box (its cap under the head). */
 const TORSO: Pt[] = [
-  [590, 74],
-  [560, 86],
-  [530, 104],
-  [495, 122],
-  [455, 126],
+  [590, 62],
+  [552, 66],
+  [524, 80],
+  [506, 104],
+  [486, 124],
+  [455, 128],
   [415, 116],
   [370, 100],
   [320, 92],
@@ -58,7 +59,7 @@ const TORSO: Pt[] = [
 
 /** The cream throat, chest and belly, one band from under the chin to the hind legs. */
 const CREAM_BAND: Pt[] = [
-  [596, 104],
+  [580, 104],
   [640, 96],
   [670, 140],
   [670, 205],
@@ -84,13 +85,14 @@ function leg(x: Ctx, top: Pt, paw: Pt, color: number, seed: string) {
   piece(x, ellipsePts(cx, cy, 27, Math.hypot(paw[0] - top[0], paw[1] - top[1]) / 2 + 8, rot), color, seed, {
     amp: 3,
   });
-  piece(x, ellipsePts(paw[0] + 4, paw[1] - 2, 33, 16), PAW, `${seed}-paw`, { amp: 2 });
+  // A small paw, no wider than a boot, so a boot covers it.
+  piece(x, ellipsePts(paw[0] + 2, paw[1] + 2, 27, 13), PAW, `${seed}-paw`, { amp: 2 });
   for (const k of [-1, 0, 1])
     line(
       x,
       [
-        [paw[0] + 4 + k * 11, paw[1] + 6],
-        [paw[0] + 4 + k * 11, paw[1] + 12],
+        [paw[0] + 2 + k * 9, paw[1] + 6],
+        [paw[0] + 2 + k * 9, paw[1] + 11],
       ],
       shade(PAW, 0.45),
       2.5,
@@ -149,8 +151,8 @@ export function drawRiverBody(x: Ctx) {
 export function drawRiverHead(x: Ctx, ex: Expression) {
   // Small round ears behind the head, on the ear slots.
   const ears: Pt[] = [
-    [558, 30],
-    [596, 16],
+    [560, 22],
+    [598, 8],
   ];
   ears.forEach(([ex0, ey], i) => {
     piece(x, ellipsePts(ex0, ey, 17, 15), BODY, `river-ear${i}`, { amp: 1.5, small: true });
@@ -158,7 +160,7 @@ export function drawRiverHead(x: Ctx, ex: Expression) {
   });
   const head = pieceUnion(
     x,
-    [ellipsePts(612, 64, 66, 54, -0.2), ellipsePts(664, 56, 40, 32, -0.4)],
+    [ellipsePts(616, 66, 78, 62, -0.2), ellipsePts(672, 58, 46, 36, -0.4)],
     BODY,
     'river-head',
     3,
@@ -166,7 +168,7 @@ export function drawRiverHead(x: Ctx, ex: Expression) {
   // The cream muzzle and chin.
   x.save();
   x.clip(head);
-  piece(x, ellipsePts(652, 94, 64, 32, -0.35), CREAM, 'river-muzzle', {
+  piece(x, ellipsePts(656, 98, 72, 36, -0.35), CREAM, 'river-muzzle', {
     noShadow: true,
     noOutline: true,
     amp: 2,
@@ -187,7 +189,7 @@ export function drawRiverHead(x: Ctx, ex: Expression) {
     line(x, [a, b], shade(BODY, 0.5), 2);
 
   A.cheeks.forEach((c) => spot(x, c.x, c.y, 15, 9, CHEEK));
-  A.eyes.forEach((e, i) => eye(x, { ...e, rx: 15, ry: 15 }, ex, `river-eye${i}`));
+  A.eyes.forEach((e, i) => eye(x, { ...e, rx: 17, ry: 17 }, ex, `river-eye${i}`));
   spot(x, A.nose.x, A.nose.y + 2, 11, 8, hexCss(NOSE));
   mouth(x, A.mouth, ex, 11);
 }

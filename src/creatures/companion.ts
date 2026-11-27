@@ -33,6 +33,7 @@ import {
   WEARABLES,
   type ItemTextures,
   type WearableId,
+  type WearTable,
   type WearTables,
 } from '../art/creatures/wearables';
 import { sfx } from '../audio/sfx';
@@ -64,7 +65,37 @@ const loaded: {
 } = { sets: {}, pictures: new Map(), items: {} };
 
 /** Where each wearable sits on each species (RW06), from the rigs' own tables. */
-export const WEAR: WearTables = { sprout: SPROUT_WEAR, river: RIVER_WEAR, glider: GLIDER_WEAR };
+/**
+ * Where the paper creatures (docs/ART-STYLE.md) need an item placed differently from the painted ones. The paper
+ * Sprout's face sits low, so its scarf goes lower and its crown higher, leaving the mouth and eyes showing. The paper River has a thicker neck
+ * further forward and a rounder, smaller head: its scarf wraps the front of the neck, its glasses are sized to the head,
+ * and its boots sit low enough to hide the paws.
+ */
+const PAPER_FITS: Partial<Record<SpeciesId, Partial<WearTable>>> = {
+  sprout: {
+    scarf: { fits: [{ at: { x: 262, y: 344 }, width: 140 }] },
+    crown: { fits: [{ at: { x: 245, y: 100 }, width: 150, ride: { x: 245, y: 150 } }] },
+  },
+  river: {
+    scarf: { fits: [{ at: { x: 585, y: 140 }, width: 92, rotation: -0.25 }] },
+    sunglasses: { fits: [{ at: { x: 640, y: 56 }, width: 78 }] },
+    boots: {
+      fits: [
+        { at: { x: 215, y: 312 }, width: 50 },
+        { at: { x: 330, y: 312 }, width: 50 },
+        { at: { x: 555, y: 314 }, width: 50 },
+        { at: { x: 610, y: 312 }, width: 50 },
+      ],
+    },
+  },
+};
+const withPaper = (species: SpeciesId, table: WearTable): WearTable =>
+  PAPER_CREATURES ? { ...table, ...PAPER_FITS[species] } : table;
+export const WEAR: WearTables = {
+  sprout: withPaper('sprout', SPROUT_WEAR),
+  river: withPaper('river', RIVER_WEAR),
+  glider: withPaper('glider', GLIDER_WEAR),
+};
 
 /** The items a species can wear, in the wardrobe's order: its misfits are never offered. */
 export const wearableBy = (species: SpeciesId): WearableId[] =>

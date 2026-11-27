@@ -62,13 +62,6 @@ export function drawSprout(x: Ctx, ex: Expression) {
     spot(x, e.x + (i === 0 ? 4 : -2), e.y + 12, 22, 20, hexCss(INNER));
   });
 
-  // The arms, behind the body's sides.
-  A.arms.forEach((a, i) => {
-    const rot = Math.atan2(a.tip.y - a.root.y, a.tip.x - a.root.x) - Math.PI / 2;
-    piece(x, ellipsePts(a.centre.x, a.centre.y, a.rx * 0.6, a.ry * 0.95, rot), BODY, `sprout-arm${i}`);
-    for (const k of [-1, 1]) spot(x, a.tip.x + k * 9, a.tip.y - 4, 6, 7, hexCss(CREAM));
-  });
-
   // Head and body, cut as one round piece.
   pieceUnion(x, [ellipsePts(258, 258, 158, 128), ellipsePts(262, 350, 190, 112)], BODY, 'sprout-body', 4);
   // The cream tummy and muzzle.
@@ -77,6 +70,15 @@ export function drawSprout(x: Ctx, ex: Expression) {
     noShadow: true,
     amp: 2,
     noOutline: true,
+  });
+
+  // Stubby arms resting on the body's sides, in front of it, so a mitten sits on a paw (the hand slots are the tips).
+  A.arms.forEach((a, i) => {
+    const [mx, my] = [(a.root.x + a.tip.x) / 2, (a.root.y + a.tip.y) / 2];
+    const rot = Math.atan2(a.tip.y - a.root.y, a.tip.x - a.root.x) - Math.PI / 2;
+    const len = Math.hypot(a.tip.x - a.root.x, a.tip.y - a.root.y) / 2 + 22;
+    piece(x, ellipsePts(mx, my, 30, len, rot), BODY, `sprout-arm${i}`, { amp: 2.5 });
+    for (const k of [-1, 1]) spot(x, a.tip.x + k * 9, a.tip.y + 4, 6, 7, hexCss(CREAM));
   });
 
   // Feet with their pads, in front.
