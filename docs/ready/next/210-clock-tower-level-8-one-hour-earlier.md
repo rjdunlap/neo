@@ -1,1 +1,0 @@
-**`clock-tower`, level 8 *One hour earlier*** (new-levels tier): school, placed by `order`; wraparound rules, voice, scoped how-to, bot and a bounded browser filter, per [dive slice 4](../../deep-dives/clock-tower.md#build-slices-in-order) (decided 2026-10-23).

@@ -2022,7 +2022,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     if (!only || only === 'clock')
       for (const level of process.env.CLOCK_LEVELS
         ? process.env.CLOCK_LEVELS.split(',').map(Number)
-        : Array.from({ length: 8 - fromLevel }, (_, i) => i + fromLevel)) {
+        : Array.from({ length: 9 - fromLevel }, (_, i) => i + fromLevel)) {
         await launch('clock-tower', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         // U7 R4: a right answer's line (`clock.yay`, `clock.itis`, level 6's example) never holds the tower. Each is
@@ -2048,7 +2048,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const prev = g.rightLines.at(-1);
             if (key === 'clock.done' && prev && prev.done === undefined)
               prev.done = performance.now() - prev.at;
-            if (key !== 'clock.yay' && key !== 'clock.itis' && key !== 'clock.later.example') return line;
+            if (
+              key !== 'clock.yay' &&
+              key !== 'clock.itis' &&
+              key !== 'clock.later.example' &&
+              key !== 'clock.earlier.example'
+            )
+              return line;
             const index = g.index;
             const rec = { id: key, at: performance.now(), last: index + 1 >= g.tasks.length };
             g.rightLines.push(rec);
@@ -2104,7 +2110,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const before = await counts();
             const shown = await page.evaluate(() => {
               const g = neo.scene.game;
-              return { text: g.requestTime.text, time: g.plan.mode === 'later' ? g.task.from : g.task.time };
+              return { text: g.requestTime.text, time: g.task.from ?? g.task.time };
             });
             assert.equal(
               shown.text,
@@ -2159,7 +2165,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await ring();
             await ring();
             assert.deepEqual(await counts(), [2, 1]);
-            if (level === 6 || level === 7) {
+            if (level === 6 || level === 7 || level === 8) {
               const evidence = await page.evaluate(() => {
                 const g = neo.scene.game;
                 const digital = (t) => `${Math.floor(t / 60) % 12 || 12}:${String(t % 60).padStart(2, '0')}`;
@@ -2172,17 +2178,25 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                   oldAlpha: g.oldClock.alpha,
                   hour: g.example.hour,
                   hourEnd:
-                    (Math.floor((g.task.from ?? 0) / 60) % 12) * 5 + ((g.task.from ?? 0) % 60) / 12 + 5,
+                    (Math.floor((g.task.from ?? 0) / 60) % 12) * 5 +
+                    ((g.task.from ?? 0) % 60) / 12 +
+                    (g.plan.mode === 'earlier' ? -5 : 5),
                   arc: g.example.arc,
                   minute: g.task.time % 60,
                   rim: g.face.children.filter((child) => 'text' in child).map((child) => child.text),
                 };
               });
-              if (level === 6) {
+              if (level === 6 || level === 8) {
                 assert.equal(evidence.comparing, true);
                 assert.equal(evidence.before, evidence.from);
                 assert.equal(evidence.after, evidence.target);
-                assert.equal(evidence.hour, evidence.hourEnd, 'worked example moves forwards one hour');
+                assert.equal(
+                  evidence.hour,
+                  evidence.hourEnd,
+                  level === 6
+                    ? 'worked example moves forwards one hour'
+                    : 'worked example moves backwards one hour',
+                );
                 assert.ok(evidence.oldAlpha < 1, 'old clock is faint');
               } else {
                 assert.equal(evidence.comparing, false);
