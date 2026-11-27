@@ -1,5 +1,6 @@
 import type { Origin, Routes } from './App';
 import type { Band } from '../progress/bands';
+import type { PickScope } from '../content/pick';
 import { MIX_IDS, startMix, step, type DailyStop, type MixEvent, type MixState } from '../content/mix';
 
 export type DiscoveryToken = { owner: object; epoch: number };
@@ -188,3 +189,39 @@ export class MixMemory {
   }
 }
 export const mixMemory = new MixMemory();
+
+/**
+ * Pick for me (D7a), in memory only: the scope she last chose and the game she last opened from a pick, for one save object.
+ * A profile switch, reset, restore or undo replaces `store.data` (and `forget` runs), a reload loses it. Nothing is saved.
+ */
+export class PickMemory {
+  private owner?: object;
+  private chosen?: PickScope;
+  private lastPlayed?: string;
+
+  forget() {
+    this.owner = undefined;
+    this.chosen = undefined;
+    this.lastPlayed = undefined;
+  }
+  private mine(owner: object): boolean {
+    if (this.owner !== owner) {
+      this.forget();
+      this.owner = owner;
+    }
+    return true;
+  }
+  scope(owner: object): PickScope | undefined {
+    return this.owner === owner ? this.chosen : undefined;
+  }
+  last(owner: object): string | undefined {
+    return this.owner === owner ? this.lastPlayed : undefined;
+  }
+  choose(owner: object, scope: PickScope) {
+    if (this.mine(owner)) this.chosen = scope;
+  }
+  played(owner: object, id: string) {
+    if (this.mine(owner)) this.lastPlayed = id;
+  }
+}
+export const pickMemory = new PickMemory();

@@ -1,4 +1,4 @@
-import { discoveryMemory, introMemory, mixMemory } from './discovery';
+import { discoveryMemory, introMemory, mixMemory, pickMemory } from './discovery';
 import { store } from '../progress/store';
 import { forgetArcade } from '../content/arcade';
 import { forgetExplore } from '../content/explore';
@@ -27,6 +27,7 @@ export function playerChanged() {
   discoveryMemory.clear();
   introMemory.clear();
   mixMemory.forget();
+  pickMemory.forget();
   forgetPlaces();
   forgetSubjects();
   forgetLands();
