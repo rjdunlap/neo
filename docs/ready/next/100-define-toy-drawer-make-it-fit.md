@@ -1,1 +1,0 @@
-**Define Toy Drawer: Make it Fit** (docs only): routines and self-care study follow-up (`routines-self-care`), packing differently sized toys into a drawer per [study packet](../../deep-dives/subjects/RECOMMENDATIONS.md#routines-and-self-care-recommendations). _Claimed: `claude/define-toy-drawer`._

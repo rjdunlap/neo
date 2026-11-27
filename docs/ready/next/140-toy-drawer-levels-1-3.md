@@ -1,0 +1,1 @@
+**`toy-drawer`, levels 1–3** (new-game tier): pure packing solver and `take-out` hints in `logic.ts`, 120-unit cells (cap 5 × 4), drag and tap placement, Turn from level 3, `upright: true`, `autotouch`, Cozy Village, per [definition](../../definitions/toy-drawer.md).
