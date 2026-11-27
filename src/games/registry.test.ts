@@ -720,6 +720,7 @@ describe('game registry', () => {
       'timeline-trail',
       'trackway-tales',
       'truth-bridge',
+      'two-tablets',
       'village-vote',
       'water-road',
       'welcome-ways',

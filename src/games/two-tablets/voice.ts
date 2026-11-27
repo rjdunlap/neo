@@ -1,5 +1,5 @@
 export const VOICE = {
-  'game.two-tablets': ['Two Tablets'],
+  'two-tablets.title': ['Two Tablets'],
   'two-tablets.start': ['Two tablets, one message. Match the signs to their sounds, then read the new line.'],
   'two-tablets.again': ['Look at that group again.'],
   'two-tablets.notyet': ['Not on the first tablet yet.'],

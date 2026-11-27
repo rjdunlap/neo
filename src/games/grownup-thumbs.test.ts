@@ -64,6 +64,7 @@ import { BUTTON as sumButton, crateLayout as sumLayout } from './sum-crates/layo
 import { specOf as sumSpec } from './sum-crates/logic';
 import { layout as ballotsLayout } from './count-the-ballots/layout';
 import { marketLayout } from './market-days/layout';
+import { tabletsLayout } from './two-tablets/layout';
 import { outcropLayout } from './outcrop-detective/layout';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
@@ -220,6 +221,13 @@ const MEASURE: Record<string, () => Size[]> = {
       ['banner', l.banner],
       ['button', l.button],
       ['town', l.town],
+    ];
+  },
+  'two-tablets': () => {
+    const l = tabletsLayout(v, 4, 1);
+    return [
+      ['sign', l.cell],
+      ['button', l.button],
     ];
   },
   'number-nook': () =>
@@ -412,6 +420,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'number-nook': { px: 43.7, what: 'tile' },
   'count-the-ballots': { px: 50.8, what: 'button' },
   'market-days': { px: 50.8, what: 'banner' },
+  'two-tablets': { px: 50.8, what: 'sign' },
   'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
   'pond-conga': { px: 44.7, what: 'button' },

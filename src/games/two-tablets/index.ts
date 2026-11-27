@@ -528,7 +528,7 @@ class TwoTablets implements Game {
 export const game: GameModule = {
   id: 'two-tablets',
   name: 'Two Tablets',
-  titleLine: 'game.two-tablets',
+  titleLine: 'two-tablets.title',
   region: 'story-grove',
   challenge: 'logic',
   skills: ['deduction', 'pattern recognition'],
