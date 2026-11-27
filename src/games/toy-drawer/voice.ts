@@ -7,6 +7,9 @@ export const VOICE = {
   'toy-drawer.turn': [
     'Put every toy in the drawer! Some will not fit until you turn them. Tap a toy, then tap the round arrow.',
   ],
+  'toy-drawer.make-room': [
+    'Some toys are in the drawer and one is waiting. Take one out and move it to make room!',
+  ],
   'toy-drawer.ready': ['Every toy fits! Tap the green check to close the drawer.'],
   'toy-drawer.not-yet': ['Not quite yet. Some toys are still waiting outside.'],
   'toy-drawer.full': ['That place is full. Try another spot, or move a toy to make room.'],
