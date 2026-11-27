@@ -16,6 +16,8 @@ import {
   scopePool,
   scopesFor,
   shuffledOrder,
+  shuffleLineup,
+  SHUFFLE_STOPS,
   type PickScope,
   type PickSource,
 } from './pick';
@@ -131,5 +133,26 @@ describe('pick order', () => {
     const copy = JSON.stringify(s.stats) + JSON.stringify(s.favorites);
     scopesFor(s);
     expect(JSON.stringify(s.stats) + JSON.stringify(s.favorites)).toBe(copy);
+  });
+});
+
+describe('pick shuffle (D7b)', () => {
+  const pool = ['a', 'b', 'c', 'd', 'e'];
+  it('is the first three of one order: in the pool, no repeat, a pure function of the seed', () => {
+    for (let seed = 1; seed < 100; seed++) {
+      const out = shuffleLineup(pool, new Rng(seed));
+      expect(out).toHaveLength(SHUFFLE_STOPS);
+      expect(new Set(out).size).toBe(out.length);
+      for (const id of out) expect(pool).toContain(id);
+      expect(out).toEqual(shuffledOrder(pool, new Rng(seed)).slice(0, SHUFFLE_STOPS));
+    }
+  });
+  it('a pool of one or two gives a one- or two-stop lineup, and an empty pool none', () => {
+    expect(shuffleLineup(['a'], new Rng(1))).toEqual(['a']);
+    expect([...shuffleLineup(['a', 'b'], new Rng(1))].sort()).toEqual(['a', 'b']);
+    expect(shuffleLineup([], new Rng(1))).toEqual([]);
+  });
+  it('never opens on the game last played when there are two or more', () => {
+    for (let seed = 1; seed < 100; seed++) expect(shuffleLineup(pool, new Rng(seed), 'a')[0]).not.toBe('a');
   });
 });

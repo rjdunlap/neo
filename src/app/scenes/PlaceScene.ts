@@ -213,6 +213,7 @@ export class PlaceScene extends Scene {
       this.ui,
       () => this.view,
       (go) => this.leave(go),
+      this.mix,
     );
   }
 

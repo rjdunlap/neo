@@ -5,7 +5,7 @@ import type { View } from '../engine/view';
 import type { GameModule } from '../games/types';
 import { RoundButton } from './buttons';
 import { label as pictureLabel, picture } from './discovery';
-import { againIcon, arrowIcon, heartIcon, nextIcon, playIcon } from './icons';
+import { againIcon, arrowIcon, heartIcon, nextIcon, playIcon, shuffleIcon } from './icons';
 import { label } from './text';
 
 /** A scope chip is 120 across: above the 100-unit floor, with room for a short name under its picture. */
@@ -54,6 +54,8 @@ export interface PickChip {
 export interface PickSheetActions {
   choose(key: string): void;
   onePick(): void;
+  /** D7b: fill the mix lineup from the scope (lap and toddler home spots only). */
+  shuffle(): void;
   another(): void;
   again(): void;
   play(): void;
@@ -109,6 +111,8 @@ export class PickSheet extends Container {
   private card: { mod: GameModule | null; title: string; end: boolean; another: boolean } | null = null;
   readonly backButton: RoundButton;
   readonly pickButton: RoundButton;
+  readonly shuffleButton: RoundButton;
+  private canShuffle = false;
   readonly playButton: RoundButton;
   readonly anotherButton: RoundButton;
   readonly againButton: RoundButton;
@@ -121,6 +125,7 @@ export class PickSheet extends Container {
     this.scrim.eventMode = 'static'; // nothing on the home spot can be touched under the sheet
     this.backButton = new RoundButton(arrowIcon(-1), swatch.white, 50, () => actions.back());
     this.pickButton = new RoundButton(playIcon(), swatch.green, 70, () => actions.onePick());
+    this.shuffleButton = new RoundButton(shuffleIcon(), swatch.blue, 70, () => actions.shuffle());
     this.playButton = new RoundButton(playIcon(), swatch.green, 70, () => actions.play());
     this.anotherButton = new RoundButton(nextIcon(ink), swatch.white, 56, () => actions.another());
     this.againButton = new RoundButton(againIcon(0xffffff), swatch.green, 70, () => actions.again());
@@ -134,6 +139,7 @@ export class PickSheet extends Container {
       this.cardLayer,
       this.backButton,
       this.pickButton,
+      this.shuffleButton,
       this.playButton,
       this.anotherButton,
       this.againButton,
@@ -147,8 +153,9 @@ export class PickSheet extends Container {
   }
 
   /** The scope chips, with the held one outlined. */
-  showChooser(specs: readonly PickChip[], selected: string, page: number, view: View) {
+  showChooser(specs: readonly PickChip[], selected: string, page: number, view: View, canShuffle = false) {
     this.card = null;
+    this.canShuffle = canShuffle;
     this.specs = [...specs];
     this.selected = selected;
     this.page = page;
@@ -177,6 +184,7 @@ export class PickSheet extends Container {
     const mid = view.w / 2;
     const choosing = !this.card;
     this.pickButton.visible = choosing;
+    this.shuffleButton.visible = choosing && this.canShuffle;
     this.playButton.visible = !choosing && !this.card!.end;
     this.anotherButton.visible = !choosing && this.card!.another;
     this.againButton.visible = !choosing && this.card!.end;
@@ -191,12 +199,16 @@ export class PickSheet extends Container {
         this.chips.push(chip);
         this.chipLayer.addChild(chip);
       });
-      this.pickButton.position.set(mid, baseY);
+      // With Shuffle beside it, One pick and Shuffle sit side by side and the page arrows step out past them.
+      const side = this.canShuffle ? 90 : 0;
+      this.pickButton.position.set(mid - side, baseY);
+      this.shuffleButton.position.set(mid + side, baseY);
       this.previousButton.visible = this.nextButton.visible = places.pages > 1;
       this.previousButton.alpha = this.page > 0 ? 1 : 0.35;
       this.nextButton.alpha = this.page < places.pages - 1 ? 1 : 0.35;
-      this.previousButton.position.set(mid - 170, baseY);
-      this.nextButton.position.set(mid + 170, baseY);
+      const arrows = this.canShuffle ? 260 : 170;
+      this.previousButton.position.set(mid - arrows, baseY);
+      this.nextButton.position.set(mid + arrows, baseY);
       return;
     }
     this.previousButton.visible = this.nextButton.visible = false;

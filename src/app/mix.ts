@@ -235,6 +235,20 @@ export class MixHost {
     return held;
   }
 
+  /** Of these game IDs, the ones this home spot's table may hold (D7b): its own games she can play by touch. */
+  shufflePool(ids: readonly string[]): string[] {
+    const pool = this.pool();
+    return ids.filter((id) => pool.includes(id));
+  }
+
+  /** D7b: holds a shuffled lineup and opens the table on it, so it is seen, edited or played from there. Nothing starts. */
+  shuffleInto(ids: readonly string[]): boolean {
+    if (!this.mods || this.table || this.live || !ids.length) return false;
+    mixMemory.hold(store.data, this.band, ids);
+    this.openTable();
+    return !!this.table;
+  }
+
   /** Opens the table on the held lineup (repaired), with no session; nothing is saved. */
   openTable() {
     if (!this.mods || this.table || this.live) return;
