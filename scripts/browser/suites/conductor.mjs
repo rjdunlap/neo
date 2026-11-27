@@ -11,13 +11,14 @@ export function createSuite({
   finished,
   conductorSign,
   conductorChange,
+  conductorRevise,
 }) {
   /**
    * Little Conductor levels 1–2, 4 (soft or loud, the level 2 flow on a small and a big drum) and 5 (two dials: pace and strength, two of four ways heard): an early Done, a change inside a beat, the heard gate, the bow and one sticker; level 2 in portrait.
-   * Level 6 (invite a friend): an early Done, the first friend, a second on the beat, the gate, the bow and one sticker. Level 3 (portrait): Check with no pick, a wrong Check, a requested hint, both halves matched. Level 7 (one change): Check with nothing set, a wrong strength, a hint, both halves matched. `CONDUCTOR_LEVELS=3` picks levels.
+   * Level 6 (invite a friend): an early Done, the first friend, a second on the beat, the gate, the bow and one sticker. Level 3 (portrait): Check with no pick, a wrong Check, a requested hint, both halves matched. Level 7 (one change): Check with nothing set, a wrong strength, a hint, both halves matched. Level 8 (revise): both prepared versions, Undo, revision heard, one sticker. `CONDUCTOR_LEVELS=3` picks levels.
    */
   async function conductor() {
-    for (const level of (process.env.CONDUCTOR_LEVELS || '1,2,3,4,5,6,7').split(',').map(Number)) {
+    for (const level of (process.env.CONDUCTOR_LEVELS || '1,2,3,4,5,6,7,8').split(',').map(Number)) {
       if (level >= 2) await page.setViewportSize({ width: 768, height: 1024 });
       if (level === 3) {
         await conductorSign();
@@ -25,6 +26,10 @@ export function createSuite({
       }
       if (level === 7) {
         await conductorChange();
+        continue;
+      }
+      if (level === 8) {
+        await conductorRevise();
         continue;
       }
       await launch('little-conductor', level);

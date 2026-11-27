@@ -120,7 +120,7 @@ Level 3's sign with level 5's four pads. The listener's sign shows a **way to pl
 - **Rule tests:** for every first way there are exactly two second ways that differ in one property; every ask is satisfiable by one pad pair; the Check names only a property that is wrong; two misses glow the first wrong dial's right pad; the helped path finishes; the bot always finishes with `signBot`-style reading of the sign.
 - **Layout:** the dials row of level 5 (130-unit pads, four in a row) with the sign column of level 3; every target at least 100 units, inside the view, clear of the pet's corner and the sign clear of the pads, at the four views and upright.
 
-## Level 8, Revise for a listener (definition, 2026-11-26)
+## Level 8, Revise for a listener (definition and built, 2026-11-26)
 
 Reuses level 7's listener sign and four dial pads (`turtle`, `rabbit`, `gentle`, `strong`), plus two prepared version buttons (`1` and `2`) and an `Undo` button. The round prepares two ways to play (`makeAsks(rng)`, differing in one property) as Version 1 and Version 2.
 
