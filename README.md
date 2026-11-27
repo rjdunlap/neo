@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (14), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (29) and **Lantern Lake** (27, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (15), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (29) and **Lantern Lake** (27, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 199 games; the 170 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 164 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 200 games; the 171 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 164 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -123,6 +123,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Ready for Adventure](docs/games/ready-for-adventure.md) | toddler–school | Barnyard | 4 | get pretend parade props ready (ribbon on the pole, beater with the drum), pack them in the bag and watch the companion pull them in a parade |
 | [Who Am I?](docs/games/who-am-i.md) | pre-K–school | Barnyard | 8 | a clue in words and a picture sign ("I have feathers"); level 1 taps the friend it fits, later levels turn over every friend the clue rules out until one jumps out |
 | [Timeline Trail](docs/games/timeline-trail.md) | preschool–school | Barnyard | 7 | hang pictures of one island place on the pet's clothesline between a long-ago post and a now post, then watch the place grow as a flipbook |
+| [Animal Charades](docs/games/animal-charades.md) | preschool–pre-K | Barnyard | 1 | the pet (or a friend on the same device) acts out an animal with a plain shape that hops, waddles, swishes, flaps, slides or stomps; she watches and taps the animal she thinks it is. A wrong card is a soft boing and "A duck waddles. Watch again!"; after two misses the right card glows. The animal then slides forward and moves its own way. Once, she can act for the pet, which guesses with *Yes!* and *Not yet*. |
 | [Duck Pond](docs/games/duck-pond.md) | lap–school | Counting Cove | 16 | count along as illustrated ducks hop in |
 | [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 13 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
 | [Little Helpers](docs/games/little-helpers.md) | lap–school | Counting Cove | 9 | tap a fruit and a helper carries it home |
@@ -489,6 +490,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `readyadventure` | Ready for Adventure by touch: level 1 packing the requested prop and the parade; level 3 in portrait with an early pack (one miss), a requested hint and its assisted tap, the rest by drags, saved score 1/1 | `FINGER_ONLY=ready-for-adventure FINGER_LEVELS=1,3` for the demonstration |
 | `commonground` | Common Ground by touch, in portrait: a cushion off its wall (free placing), a Visit that is one miss, Help and its glowing move, a plant, the friend sits, saved score 1/1 | `FINGER_ONLY=common-ground FINGER_LEVELS=1` for the demonstration |
 | `dreamcards` | Dream Cards by touch, in portrait on a phone: the pet gives a clue under the cloud, Help glows one picture, she points, the picture turns over, Swap and give a clue, finish, saved score 0 misses / 1 hint | `FINGER_ONLY=dream-cards FINGER_LEVELS=1` for the demonstration |
+| `animalcharades` | Animal Charades by touch, in portrait on a phone: the pet acts, one wrong card (a miss), the right card slides forward, Swap and Not yet then Yes!, finish, saved score 1 miss / 0 hints | `FINGER_ONLY=animal-charades FINGER_LEVELS=1` for the demonstration |
 | `foodweb` | Food Web Workshop levels 1–3: an extra arrow then Show our web (one miss, spoken fault line), Undo, a matching web; level 2 turned by drag in portrait (targets of 100 units or more); level 3 with one requested hint; one sticker per round | Demo: `FINGER_ONLY=food-web-workshop` |
 | `meadow` | Meadow Pens by touch: level 1 empty ring (free), a short pen (one miss), a requested hint counted once and the supported finish; level 2 a wrong card filling the field row by row; level 3 a straight-six wrong fence (one miss), a requested hint and a portrait screenshot; levels 4–5 free counts, wrong answers, automatic/manual capped help, restart, rotation, supported five-question finishes and portrait layouts; largest L6 and one-cell L3 counts | `MEADOW_LEVELS=4,5` for the extension; `FINGER_ONLY=meadow-pens FINGER_LEVELS=4,5` for the demo |
 | `sensedetective` | Sense Detective by touch (`SENSE_LEVEL=5` runs only level 5: both fit, *Can't tell yet*, an eye miss, the ear reveal, the rattle parcel in portrait): level 1 with a not-yet tick, a wrong tick, then found; level 2 in portrait with a look, a not-yet, a listen, a wrong tick and a requested hint, saved score | |

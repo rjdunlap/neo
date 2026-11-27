@@ -1,5 +1,6 @@
 // BEGIN game imports (scripts/content-barrels.mjs)
 import { VOICE as adventureWalkVoice } from '../games/adventure-walk/voice.ts';
+import { VOICE as animalCharadesVoice } from '../games/animal-charades/voice.ts';
 import { VOICE as animalSnackVoice } from '../games/animal-snack/voice.ts';
 import { VOICE as atticFindsVoice } from '../games/attic-finds/voice.ts';
 import { VOICE as beatBuilderVoice } from '../games/beat-builder/voice.ts';
@@ -684,6 +685,7 @@ export const SCRIPT = {
   ...SHARED,
   // BEGIN game entries (scripts/content-barrels.mjs)
   ...adventureWalkVoice,
+  ...animalCharadesVoice,
   ...animalSnackVoice,
   ...atticFindsVoice,
   ...beatBuilderVoice,

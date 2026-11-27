@@ -1,6 +1,7 @@
 import type { GameHowTo, GameModule, LevelCard, LevelLine } from '../games/types';
 // BEGIN game imports (scripts/content-barrels.mjs)
 import { HOW_TO as adventureWalkHowTo } from '../games/adventure-walk/howto.ts';
+import { HOW_TO as animalCharadesHowTo } from '../games/animal-charades/howto.ts';
 import { HOW_TO as animalSnackHowTo } from '../games/animal-snack/howto.ts';
 import { HOW_TO as atticFindsHowTo } from '../games/attic-finds/howto.ts';
 import { HOW_TO as beatBuilderHowTo } from '../games/beat-builder/howto.ts';
@@ -217,6 +218,7 @@ import { HOW_TO as workshopDetectiveHowTo } from '../games/workshop-detective/ho
 export const HOW_TO: Record<string, GameHowTo> = {
   // BEGIN game entries (scripts/content-barrels.mjs)
   'adventure-walk': adventureWalkHowTo,
+  'animal-charades': animalCharadesHowTo,
   'animal-snack': animalSnackHowTo,
   'attic-finds': atticFindsHowTo,
   'beat-builder': beatBuilderHowTo,
