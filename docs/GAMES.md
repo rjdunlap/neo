@@ -732,7 +732,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Wave Ribbon
 
-*school* · [Wave Ribbon](games/wave-ribbon.md)
+*school–grown-up* · [Wave Ribbon](games/wave-ribbon.md)
 
 ## Lantern Lake
 

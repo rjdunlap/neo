@@ -160,7 +160,7 @@ No full release, couch course or offline suite is justified by this research. An
 
 ## What was built
 
-E6 is documentation only: [Wave Ribbon 1–3](../../definitions/wave-ribbon.md) defined 2026-11-27 (PR #2277); E7 (levels 1–2) built 2026-11-27 (PR #2284); E7b (level 3 and the grown-up band) is queued in READY.
+E6 is documentation only: [Wave Ribbon 1–3](../../definitions/wave-ribbon.md) defined 2026-11-27 (PR #2277); E7 (levels 1–2) built 2026-11-27 (PR #2284); E7b (level 3 and the grown-up band) built 2026-11-27 (PR #2290).
 
 E1 is documentation only: [Circuit Garden 1–3](../../definitions/circuit-garden.md) defined in #846; [completed-work note](../../archive/COMPLETED-2026-10-09.md#circuit-garden-13-definition-energy-waves-e1-2026-10-22). No game/model, practical card or older workshop implemented.
 

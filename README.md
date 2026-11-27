@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 203 games; the 174 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 168 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 203 games; the 174 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 168 games, and "grown-up" (13 and up) is played by 41 games: the 29 grown-up puzzles and 12 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -248,7 +248,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Measuring Post](docs/games/measuring-post.md) | school | Tinker Lab | 4 | school |
 | [Memory Desk](docs/games/memory-desk.md) | school | Tinker Lab | 3 | put a pictured token on a toy desk's tray, Keep a copy in the drawer, change the tray, and Show what the drawer kept in the window |
 | [Draw a Ramp](docs/games/draw-a-ramp.md) | preschool–school | Tinker Lab | 3 | draw a rainbow ramp with a finger, tap Go, and a marble rolls down it to pop a star balloon |
-| [Wave Ribbon](docs/games/wave-ribbon.md) | school | Tinker Lab | 2 | tap Send and a smooth pulse runs along a stretched ribbon to a little flag, while a beaded ring on a post rises and settles back in place: the wave travels, the bead only goes up and down. Replay and Step let her look closely, one quarter-second frame at a time, along a frozen time ruler. |
+| [Wave Ribbon](docs/games/wave-ribbon.md) | school–grown-up | Tinker Lab | 3 | tap Send and a smooth pulse runs along a stretched ribbon to a little flag, while a beaded ring on a post rises and settles back in place: the wave travels, the bead only goes up and down. Replay and Step let her look closely, one quarter-second frame at a time, along a frozen time ruler. |
 
 <!-- end generated -->
 

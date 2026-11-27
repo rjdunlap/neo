@@ -19,11 +19,16 @@ export const HOW_TO: GameHowTo = {
       to: 2,
       text: 'Pick the picture of the bead that matches the pulse shown in the purple badge, then press the magnifier to check.',
     },
+    {
+      from: 3,
+      to: 3,
+      text: 'Set the two lanes to different pulse sizes and tap Send. Pick which time-mark picture matches both arrivals, then press the magnifier to check.',
+    },
     'The hand button shows one next step.',
   ],
   finish: [
     { from: 1, to: 1, text: 'Press the tick once she has watched a pulse reach the flag.' },
-    { from: 2, to: 2, text: 'Press the tick after a check that found the matching picture.' },
+    { from: 2, to: 3, text: 'Press the tick after a check that found the matching picture.' },
   ],
   note: [
     {
@@ -35,6 +40,11 @@ export const HOW_TO: GameHowTo = {
       from: 2,
       to: 2,
       text: 'Sending, stepping and trying either height never count; a check of the wrong picture is a miss, replays the pulse, and the right picture glows after two.',
+    },
+    {
+      from: 3,
+      to: 3,
+      text: 'Sending, stepping, switching lanes and testing two equal pulses never count; a check of the wrong picture is a miss, replays both lanes, and the right picture glows after two.',
     },
     {
       text: 'The hand button counts as a hint once for each thing it shows. A toy model: one pulse on a ribbon, with nothing else in the way.',
