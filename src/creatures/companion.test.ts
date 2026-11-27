@@ -1,5 +1,5 @@
 import { Texture, TextureSource } from 'pixi.js';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Critter, CRITTERS } from '../art/critter';
 import { IllustratedCreature, sameArt } from '../art/creatures/illustrated';
 import { ITEM_ART, SLOT, WEARABLES, type ItemTextures, type WearableId } from '../art/creatures/wearables';
@@ -116,6 +116,9 @@ describe('the companion (RW05)', () => {
   });
 
   it('shows a blossom as a form: in the guide’s corner with every other item, taking the head slot (RW11)', () => {
+    // Each creature starts its idle sway at a random moment, which moves the blossom's top by a couple of units; start
+    // them all at the same moment so the leaf-tip comparison measures the art, not the dice.
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     useItems(items);
     const pip = bounds(new Critter(CRITTERS.pip), GUIDE_SCALE);
     const bare = new Companion({ species: 'sprout', look: { color: 'teal' } }, art, GUIDE_LEAVES_OFF);
@@ -138,6 +141,7 @@ describe('the companion (RW05)', () => {
       expect(b.minY, form).toBeGreaterThanOrEqual(tips - 8);
     }
     useItems({});
+    random.mockRestore();
   });
 
   it('puts a blossom on and off live; a hat and a blossom take turns, and her colour does not touch it (RW11)', () => {
