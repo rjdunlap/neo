@@ -1,1 +1,0 @@
-**`letter-trails`, level 15 *Big and little*** (new-levels tier): per [dive slice 9](../../deep-dives/letter-trails.md#build-slices-in-order); slice 2's table is built (PR #1676); school max follows the plan length. Check the dive's level numbering against `logic.ts` first.

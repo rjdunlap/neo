@@ -37,6 +37,11 @@ export const HOW_TO: GameHowTo = {
       to: 14,
       text: 'A little f, q, x or z between four lines. f hooks over and down, then a bar; q ends with a tail that turns right; x is two slides; z zigzags.',
     },
+    {
+      from: 15,
+      to: 15,
+      text: 'Any little letter between four lines, with its capital faintly shown in the corner. The capital is only there to look at; trace the little letter.',
+    },
   ],
   finish: [
     { to: 6, text: 'The round ends when the whole letter has been traced.' },
@@ -57,7 +62,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      to: 14,
+      to: 15,
       text: 'The round ends when the little letter has been traced and its picture appears.',
     },
   ],
@@ -78,7 +83,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
-      to: 14,
+      to: 15,
       text: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The little letters use a narrower trail than the capitals, because they are smaller.',
     },
   ],
