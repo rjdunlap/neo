@@ -1303,7 +1303,7 @@ class DuckPond implements Game {
     void this.tw.to(this.check!.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
     this.refreshCheck();
     await this.ctx.instruct('duck.every', { n: total });
-    if (this.round === 0) await this.ctx.say('duck.everyFind');
+    if (this.round === 0) await this.ctx.say('duck.everyFind', { what: 'ducks' });
     this.busy = false;
   }
 
@@ -1372,7 +1372,7 @@ class DuckPond implements Game {
     if (verdict === 'none') {
       if (!e.saidFirst) {
         e.saidFirst = true;
-        await this.ctx.say('duck.wayFirst');
+        await this.ctx.say('duck.wayFirst', { n: plural(e.total) });
       }
       this.busy = false;
       return;
@@ -1395,8 +1395,8 @@ class DuckPond implements Game {
           }
         }
       }
-      await this.ctx.say('duck.wayAgain');
-      if (e.again >= 2) await this.ctx.say('duck.wayHint');
+      await this.ctx.say('duck.wayAgain', { a: left, b: right });
+      if (e.again >= 2) await this.ctx.say('duck.wayHint', { n: plural(e.total) });
       this.busy = false;
       return;
     }
@@ -1410,7 +1410,7 @@ class DuckPond implements Game {
     await this.ctx.say('duck.way', { a: left, b: right });
     if (verdict === 'swap') {
       this.cardRow.pulse([right, e.total - right]);
-      await this.ctx.say('duck.waySwap');
+      await this.ctx.say('duck.waySwap', { a: left, b: right });
     }
     if (roundDone(e.total, e.found)) {
       await this.ctx.say('duck.wayAll', { n: e.total, ways: e.total - 1 });
