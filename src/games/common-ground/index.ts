@@ -23,6 +23,7 @@ import {
   undoArt,
 } from './art';
 import { cellAt, roomLayout } from './layout';
+import { Round3 } from './round3';
 import {
   LEVELS,
   PIECES,
@@ -395,7 +396,7 @@ export const game: GameModule = {
   region: 'story-grove',
   challenge: 'space',
   skills: ['listening', 'perspective-taking', 'spatial reasoning'],
-  bands: ['school'],
+  bands: ['school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel,
   music: STYLES.quiet,
@@ -404,5 +405,5 @@ export const game: GameModule = {
   offScreen: 'Arrange real cushions and a basket for a toy visitor who asks for two things.',
   hubIcon: () => new WigglyIcon(roomSticker(7)),
   sticker: (seed) => roomSticker(seed),
-  create: (ctx) => new Round(ctx),
+  create: (ctx) => (ctx.level >= 3 ? new Round3(ctx) : new Round(ctx)),
 };

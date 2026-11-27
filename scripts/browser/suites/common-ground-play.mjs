@@ -159,5 +159,80 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
     await page.setViewportSize({ width: 1024, height: 768 });
     log('Common Ground 2: changed request, same-side miss, Help, Undo, revised room, saved score passed');
   }
-  return { commonGroundPlay, commonGroundChangePlay };
+
+  /**
+   * Common Ground level 3, in portrait: the drawing outside the window row (one miss), the two-wish clash (shown, not a miss), Help
+   * (one hint), an accepted plan, Try another, then Keep this plan: one miss and one hint are saved.
+   */
+  async function commonGroundTwoPlay() {
+    const state = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          room: [...g.room],
+          misses: g.t.misses,
+          hints: g.t.hints,
+          hint: g.hint,
+          accepted: g.accepted,
+        };
+      });
+    const dragToCell = (piece, cell) =>
+      page.evaluate(
+        async ([piece, cell]) => {
+          const g = neo.scene.game;
+          const node = g.pieces.find((p) => p.piece === piece).node;
+          const c = g.layout.cells[cell];
+          const p = node.parent.toGlobal({ x: c.x, y: c.y });
+          await kit.dragTo(node, { x: p.x, y: p.y + 40 * neo.view.scale }, 18);
+        },
+        [piece, cell],
+      );
+    const visit = () => page.evaluate(() => kit.tapOn(neo.scene.game.go));
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await launch('common-ground', 3);
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    await screenshot('common-ground-two-portrait');
+    await dragToCell('drawing', 4);
+    await dragToCell('drums', 5);
+    await visit();
+    await page.waitForTimeout(400);
+    let s = await state();
+    assert.equal(s.misses, 1, 'a drawing outside the window row is one miss');
+    await dragToCell('drawing', 0);
+    await dragToCell('drums', 3);
+    await visit();
+    await page.waitForTimeout(400);
+    s = await state();
+    assert.equal(s.misses, 1, 'the two-wish clash is shown, not counted');
+    assert.equal(s.accepted, false);
+    await page.evaluate(() => neo.scene.game.askForHint());
+    s = await state();
+    assert.equal(s.hints, 1, 'Help is one hint');
+    assert.equal(s.hint.piece, 'drums');
+    await dragToCell('drums', s.hint.cell);
+    await visit();
+    await page.waitForTimeout(2500);
+    s = await state();
+    assert.equal(s.accepted, true, 'an accepted plan lets the friends start');
+    await screenshot('common-ground-two-accepted');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.again));
+    await page.waitForTimeout(300);
+    s = await state();
+    assert.equal(s.accepted, false, 'Try another is free');
+    await visit();
+    await page.waitForTimeout(2500);
+    await page.evaluate(() => kit.tapOn(neo.scene.game.keep));
+    await finished('common-ground');
+    const r = await page.evaluate(() => {
+      const h = kit.store.stats('common-ground').history.at(-1);
+      return [h.misses, h.hints];
+    });
+    assert.deepEqual(r, [1, 1], 'one miss and one hint are saved');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Common Ground 3: window miss, wish clash not a miss, Help, accepted plan, Try another, Keep passed');
+  }
+  return { commonGroundPlay, commonGroundChangePlay, commonGroundTwoPlay };
 }

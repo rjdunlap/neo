@@ -2,15 +2,17 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
- * Common Ground, levels 1–2: a friend states two requests and she arranges a 2 × 3 room to keep both
+ * Common Ground, levels 1–3 (level 3 is at the end of this file): a friend states two requests and she arranges a 2 × 3 room to keep both
  * (docs/definitions/common-ground.md). Everything is integers on cells numbered row-major `0 1 2 / 3 4 5`.
  */
-export const LEVELS: BandLevels = { school: { min: 1, max: 2 } };
+export const LEVELS: BandLevels = { school: { min: 1, max: 3 }, grownup: { min: 3, max: 3 } };
 
 export const describeLevel = (level: number) =>
-  level >= 2
-    ? 'A request changed: the friend asks for the basket on a different side, so revise the room'
-    : 'A place for you: arrange two things so a friend’s two requests are kept';
+  level >= 3
+    ? 'Two residents: place a drawing and a drum so both friends’ needs are kept, then choose a plan'
+    : level >= 2
+      ? 'A request changed: the friend asks for the basket on a different side, so revise the room'
+      : 'A place for you: arrange two things so a friend’s two requests are kept';
 
 export const COLS = 3;
 export const ROWS = 2;
@@ -176,4 +178,115 @@ export const pushUndo = (stack: UndoStack, room: Room): UndoStack => [...stack, 
 export function undo(room: Room, stack: UndoStack): { room: Room; stack: UndoStack } {
   if (!stack.length) return { room, stack };
   return { room: stack[stack.length - 1], stack: stack.slice(0, -1) };
+}
+
+// ---- Level 3, two residents (docs/definitions/common-ground-3.md) ----
+
+export type Piece3 = 'drawing' | 'drums';
+export const PIECES3: readonly Piece3[] = ['drawing', 'drums'];
+export type Room3 = readonly (Piece3 | null)[];
+export const emptyRoom3 = (): Room3 => Array.from({ length: CELLS }, () => null);
+/** The fixed room: the window is the top wall, the shelf is cell 0 and the doorway is cell 3. */
+export const SHELF = 0;
+export const DOORWAY = 3;
+
+const at3 = (room: Room3, piece: Piece3) => room.indexOf(piece);
+
+/** Put a level-3 piece on a cell; an occupied cell swaps exactly as in `place`, and a drop is never refused. */
+export function place3(room: Room3, piece: Piece3, cell: number): Room3 {
+  const from = at3(room, piece);
+  const next = [...room];
+  const other = next[cell];
+  if (from >= 0) next[from] = null;
+  next[cell] = piece;
+  if (other && other !== piece && from >= 0) next[from] = other;
+  return next;
+}
+export const lift3 = (room: Room3, piece: Piece3): Room3 => room.map((p) => (p === piece ? null : p));
+
+/**
+ * `unplaced`, then `ok`; otherwise the first unmet need: `window` (the drawing is not in the top row), `beside` (the drums are
+ * orthogonally beside the drawing) or `clash` (drawing on the shelf and drums in the doorway: beside, and exactly the two wishes
+ * together, so it is shown, not scored). Wishes never change whether a plan is accepted.
+ */
+export type Verdict3 = 'unplaced' | 'ok' | 'window' | 'beside' | 'clash';
+
+export function check3(room: Room3): Verdict3 {
+  const a = at3(room, 'drawing'),
+    d = at3(room, 'drums');
+  if (a < 0 || d < 0) return 'unplaced';
+  if (rowOf(a) !== 0) return 'window';
+  if (!beside(a, d)) return 'ok';
+  return a === SHELF && d === DOORWAY ? 'clash' : 'beside';
+}
+
+/** Which wishes an accepted plan serves (neutral information, never a score). */
+export function served(room: Room3): { shelf: boolean; doorway: boolean } {
+  return { shelf: at3(room, 'drawing') === SHELF, doorway: at3(room, 'drums') === DOORWAY };
+}
+
+/** The need each friend states, kept right now. The drums' need is kept once both are placed and not beside. */
+export function needsKept3(room: Room3): { drawing: boolean; drums: boolean } {
+  const a = at3(room, 'drawing'),
+    d = at3(room, 'drums');
+  return { drawing: a >= 0 && rowOf(a) === 0, drums: a >= 0 && d >= 0 && !beside(a, d) };
+}
+
+/** The eight accepted plans as [drawing, drums], reading order. */
+export const ACCEPTED3: readonly (readonly [number, number])[] = (() => {
+  const out: [number, number][] = [];
+  for (let a = 0; a < CELLS; a++)
+    for (let d = 0; d < CELLS; d++) {
+      if (a === d) continue;
+      if (check3(place3(place3(emptyRoom3(), 'drawing', a), 'drums', d)) === 'ok') out.push([a, d]);
+    }
+  return out;
+})();
+
+/** An accepted plan chosen with the seeded rng, for the ghost finger. */
+export const pickDemoPlan = (rng: Rng): readonly [number, number] =>
+  ACCEPTED3[rng.int(0, ACCEPTED3.length - 1)];
+
+export interface Move3 {
+  piece: Piece3;
+  cell: number;
+}
+
+/**
+ * One legal move toward `ok` that never reads the wishes. A drawing outside the top row goes to the first top-row cell (reading
+ * order) that finishes the plan, else the first one; once the drawing is at the window only the drums move, to the first cell
+ * in reading order that is not the drawing's and not beside it. At most two moves from any state. Null once `ok`.
+ */
+export function hintAction3(room: Room3): Move3 | null {
+  const v = check3(room);
+  if (v === 'ok') return null;
+  const a = at3(room, 'drawing');
+  if (a < 0 || rowOf(a) !== 0) {
+    const top = [0, 1, 2];
+    const cell = top.find((c) => check3(place3(room, 'drawing', c)) === 'ok') ?? top[0];
+    return { piece: 'drawing', cell };
+  }
+  const cell = Array.from({ length: CELLS }, (_, i) => i).find((i) => i !== a && !beside(a, i))!;
+  return { piece: 'drums', cell };
+}
+
+/** The seeded look of one visit: who draws, who drums, who speaks first and the colour. Never changes the rules or counts. */
+export interface Visit3 {
+  drawer: Friend;
+  drummer: Friend;
+  drawerFirst: boolean;
+  tint: number;
+}
+
+/** The drawer differs from the previous visit's drawer, so neither animal is always the quiet one. */
+export function pickVisit3(rng: Rng, previousDrawer?: Friend): Visit3 {
+  const drawers = FRIENDS.filter((f) => f !== previousDrawer);
+  const drawer = drawers[rng.int(0, drawers.length - 1)];
+  const others = FRIENDS.filter((f) => f !== drawer);
+  return {
+    drawer,
+    drummer: others[rng.int(0, others.length - 1)],
+    drawerFirst: rng.chance(0.5),
+    tint: rng.int(0, TINTS - 1),
+  };
 }

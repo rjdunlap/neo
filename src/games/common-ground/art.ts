@@ -11,6 +11,7 @@ import {
   type Fixture,
   type Friend,
   type Piece,
+  type Piece3,
   type Room,
   type Side,
 } from './logic';
@@ -342,4 +343,164 @@ export function roomSticker(seed: number): Container {
   );
   root.addChild(friend);
   return root;
+}
+
+// ---- Level 3 art (docs/definitions/common-ground-3.md) ----
+
+/** A drawing easel with a picture on it, `size` wide, centred on (0, 0). */
+export function easelArt(size: number, tint = 0): Container {
+  const c = swatch[TINT_NAMES[tint % TINT_NAMES.length]];
+  const g = new Graphics()
+    .moveTo(-size * 0.3, size * 0.46)
+    .lineTo(-size * 0.08, -size * 0.2)
+    .moveTo(size * 0.3, size * 0.46)
+    .lineTo(size * 0.08, -size * 0.2)
+    .moveTo(0, size * 0.46)
+    .lineTo(0, size * 0.1)
+    .stroke({ width: 5, color: wood.line, cap: 'round' })
+    .roundRect(-size * 0.4, -size * 0.46, size * 0.8, size * 0.6, 8)
+    .fill(0xffffff)
+    .stroke({ width: 5, color: wood.line })
+    .circle(-size * 0.12, -size * 0.22, size * 0.09)
+    .fill(swatch.yellow.fill)
+    .poly([
+      -size * 0.3,
+      size * 0.06,
+      -size * 0.04,
+      -size * 0.1,
+      size * 0.1,
+      size * 0.02,
+      size * 0.3,
+      size * 0.06,
+    ])
+    .fill(c.fill);
+  return new Container().addChild(g);
+}
+
+/** A big drum with sticks, `size` wide, centred on (0, 0). */
+export function drumsArt(size: number): Container {
+  const r = swatch.red;
+  const g = new Graphics()
+    .moveTo(size * 0.1, -size * 0.46)
+    .lineTo(size * 0.34, -size * 0.1)
+    .moveTo(size * 0.34, -size * 0.46)
+    .lineTo(size * 0.12, -size * 0.1)
+    .stroke({ width: 6, color: wood.line, cap: 'round' })
+    .roundRect(-size * 0.42, -size * 0.12, size * 0.84, size * 0.5, size * 0.12)
+    .fill(r.fill)
+    .stroke({ width: 5, color: r.line })
+    .ellipse(0, -size * 0.12, size * 0.42, size * 0.13)
+    .fill(cream)
+    .stroke({ width: 5, color: r.line });
+  for (let i = -1; i <= 1; i++)
+    g.moveTo(i * size * 0.26 - size * 0.06, -size * 0.04)
+      .lineTo(i * size * 0.26 + size * 0.06, size * 0.36)
+      .stroke({ width: 3, color: r.line });
+  return new Container().addChild(g);
+}
+
+export const piece3Art = (piece: Piece3, size: number, tint = 0): Container =>
+  piece === 'drawing' ? easelArt(size, tint) : drumsArt(size);
+
+/** A small wooden shelf with two books, `w` wide: the shelf corner of the room. */
+export function shelfArt(w: number): Container {
+  const g = new Graphics()
+    .roundRect(-w / 2, -w * 0.12, w, w * 0.12, 4)
+    .fill(wood.fill)
+    .stroke({ width: 4, color: wood.line })
+    .roundRect(-w * 0.32, -w * 0.4, w * 0.18, w * 0.28, 3)
+    .fill(swatch.blue.fill)
+    .stroke({ width: 3, color: swatch.blue.line })
+    .roundRect(-w * 0.1, -w * 0.46, w * 0.18, w * 0.34, 3)
+    .fill(swatch.green.fill)
+    .stroke({ width: 3, color: swatch.green.line });
+  return new Container().addChild(g);
+}
+
+/** A star badge, `r` radius, filled when `lit` and a dotted-looking pale outline when not. Drawing only. */
+export function starArt(r: number, lit: boolean): Graphics {
+  const pts: number[] = [];
+  for (let i = 0; i < 10; i++) {
+    const rad = i % 2 ? r * 0.45 : r;
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    pts.push(Math.cos(a) * rad, Math.sin(a) * rad);
+  }
+  const g = new Graphics().poly(pts);
+  if (lit) g.fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+  else g.stroke({ width: 3, color: swatch.teal.line, join: 'round' });
+  g.alpha = lit ? 1 : 0.45;
+  return g;
+}
+
+/** A diagonal "not right beside" bar over a picture of `size`, used in the drummer's need. */
+function notBeside(size: number): Graphics {
+  return new Graphics()
+    .moveTo(-size * 0.5, -size * 0.5)
+    .lineTo(size * 0.5, size * 0.5)
+    .stroke({ width: 7, color: swatch.red.line, cap: 'round' });
+}
+
+/**
+ * One friend's request card, `w` × `h` centred on (0, 0): the friend on the left, then a *need* row (solid) and a *wish* row
+ * (a dotted-star picture). The need ticks and the wish star are returned so the round can switch them on and off.
+ */
+export function residentCardArt(
+  role: 'drawer' | 'drummer',
+  friend: Friend,
+  w: number,
+  h: number,
+  tint: number,
+): { root: Container; needTick: Container; wishStar: Container } {
+  const root = new Container();
+  root.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 30)
+      .fill(cream)
+      .stroke({ width: 5, color: swatch.teal.line }),
+  );
+  const f = friendArt(friend, h * 0.46);
+  f.position.set(-w / 2 + 38, h * 0.2);
+  const rowH = h / 2;
+  const s = rowH * 0.62;
+  const x0 = -w / 2 + 84;
+  const needY = -h / 4 - 2,
+    wishY = h / 4 + 2;
+  const main = role === 'drawer' ? easelArt(s, tint) : drumsArt(s);
+  main.position.set(x0 + 22, needY);
+  const need = new Container();
+  need.addChild(main);
+  if (role === 'drawer') {
+    const win = windowArt(s * 1.1, s * 0.8);
+    win.position.set(x0 + 130, needY);
+    const a = arrow(s * 0.7);
+    a.position.set(x0 + 76, needY);
+    need.addChild(a, win);
+  } else {
+    const other = easelArt(s * 0.8, tint);
+    other.position.set(x0 + 130, needY);
+    const bar = notBeside(s * 0.9);
+    bar.position.set(x0 + 76, needY);
+    need.addChild(other, bar);
+  }
+  // The wish row: a dotted star badge then a small picture of the wished place.
+  const wishPic = new Container();
+  const star = starArt(14, false);
+  star.position.set(x0 + 10, wishY);
+  const place = role === 'drawer' ? shelfArt(s * 1.1) : doorArt(s * 0.55, s * 0.9);
+  place.position.set(x0 + 130, wishY + (role === 'drawer' ? s * 0.25 : 0));
+  const piece = role === 'drawer' ? easelArt(s * 0.7, tint) : drumsArt(s * 0.7);
+  piece.position.set(x0 + 62, wishY);
+  const dots = new Graphics();
+  for (let i = 0; i < 4; i++) dots.circle(x0 + 88 + i * 8 - 8, wishY, 2.5).fill(swatch.teal.line);
+  wishPic.addChild(piece, dots, place);
+  const needTick = tickArt();
+  needTick.scale.set(0.6);
+  needTick.position.set(w / 2 - 28, needY);
+  needTick.visible = false;
+  const wishStar = new Container();
+  wishStar.addChild(starArt(22, true));
+  wishStar.position.set(w / 2 - 28, wishY);
+  wishStar.visible = false;
+  root.addChild(f, need, wishPic, star, needTick, wishStar);
+  return { root, needTick, wishStar };
 }

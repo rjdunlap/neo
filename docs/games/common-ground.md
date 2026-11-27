@@ -2,24 +2,26 @@
 
 <!-- generated: from src/games/common-ground; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `common-ground` · **Land:** Story Grove · **Ages:** school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `common-ground` · **Land:** Story Grove · **Ages:** school–grown-up · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** listening, perspective-taking, spatial reasoning
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–2 |
+| school | 1–3 |
+| grown-up | 3 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | A place for you: arrange two things so a friend’s two requests are kept |
 | 2 | A request changed: the friend asks for the basket on a different side, so revise the room |
+| 3 | Two residents: place a drawing and a drum so both friends’ needs are kept, then choose a plan |
 
 <!-- end generated -->
 
 **Starts as:** a friend comes to visit and states two requests: the cushion by the window (or door) and the book basket right beside it. She drags a cushion, a basket and an optional plant onto a 2 × 3 floor, presses Visit, and the friend sits down to read. The learning purpose is designing for someone else from what they said: many rooms keep the same promise.
 
-**Grows into:** level 2, built: after the first Visit the friend asks for the basket on a different side ([definition](../definitions/common-ground-2.md)); a dashed outline marks the old place, Undo steps back, and misses and hints count across both Visits. The [level ladder](../definitions/common-ground.md#the-level) names the later rung, its own definition: two residents with compatible requests and different preferences.
+**Grows into:** level 2, built: after the first Visit the friend asks for the basket on a different side ([definition](../definitions/common-ground-2.md)); a dashed outline marks the old place, Undo steps back, and misses and hints count across both Visits. Level 3, built (`school` 1–3, `grownup` 3): two residents share the floor ([definition](../definitions/common-ground-3.md)). A drawer needs the window and a drummer needs the drums not right beside the drawing; each also has a wish (the shelf, the doorway) that is never a need. Eight plans keep both needs, and no plan serves both wishes: trying for both is shown, not counted a miss, and *Keep this plan* finishes whichever wish the plan serves.
 
 ## Design notes
 

@@ -11,7 +11,7 @@ export interface Point {
  * cells of `min(160, (w − 80) / 3)` units, never under 100. Upright the tray sits under the room and the Visit button
  * bottom right, leaving the pet's bottom-left corner clear; sideways the tray stands in a column at the right.
  */
-export function roomLayout(v: View) {
+export function roomLayout(v: View, cardH = 120) {
   const upright = v.h > v.w;
   const cell = Math.max(100, Math.min(160, (v.w - 80) / COLS));
   const floorW = cell * COLS,
@@ -25,8 +25,8 @@ export function roomLayout(v: View) {
   });
   const cells = Array.from({ length: CELLS }, (_, i) => cellCenter(i));
   const bw = Math.min(330, (v.w - 60) / 2 - 6),
-    bh = 120,
-    by = upright ? 215 : 180;
+    bh = cardH,
+    by = upright ? 215 : 180 - (cardH - 120) / 2;
   const gap = bw + 14;
   const bubbles = [
     { x: (upright ? v.w / 2 : cx) - gap / 2, y: by, w: bw, h: bh },
