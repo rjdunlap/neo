@@ -1,0 +1,1 @@
+**`pond-merge`, levels 1–3 build** (new-game tier): build the [definition](../../definitions/pond-merge.md): the deterministic circle-pile solver in `logic.ts`, the drop-and-merge scene with free take-back and hint, a first-slice registration, and one filtered scripted play.
