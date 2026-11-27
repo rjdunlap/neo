@@ -54,5 +54,17 @@ export const VOICE = {
   'little-conductor.wrong-strong': ['Look at the drum on the sign, {name}. Big and loud!'],
   'little-conductor.hint-gentle': ['Try the glowing small drum, {name}. Soft!'],
   'little-conductor.hint-strong': ['Try the glowing big drum, {name}. Loud!'],
+  'little-conductor.instruct-revise': [
+    'Hear both prepared versions by tapping one and two, {name}. Then change a pad to revise one, hear it, and tap the green check.',
+  ],
+  'little-conductor.version-1': ['Version one, {name}.'],
+  'little-conductor.version-2': ['Version two, {name}.'],
+  'little-conductor.revise-undone': ['Back to the original, {name}.'],
+  'little-conductor.hear-versions': ['Hear both prepared versions first, {name}. Tap one and two!'],
+  'little-conductor.pick-revision': ['Change one of the pads to revise this version, {name}.'],
+  'little-conductor.hear-revision': ['Listen to your whole revision first, {name}.'],
+  'little-conductor.revise-bow': [
+    'Lovely revision, {name}! Tell someone nearby what you changed and why. The band takes a bow.',
+  ],
   'little-conductor.bow': ['What a band! They take a bow for you.', 'Lovely music! The band takes a bow.'],
 } satisfies Record<string, string[]>;

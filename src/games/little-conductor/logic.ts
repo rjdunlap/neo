@@ -75,7 +75,7 @@ export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(se
 export interface Plan {
   level: number;
   name: string;
-  mode: 'lead' | 'both' | 'sign' | 'strength' | 'dials' | 'friends' | 'change';
+  mode: 'lead' | 'both' | 'sign' | 'strength' | 'dials' | 'friends' | 'change' | 'revise';
 }
 const PLANS: Plan[] = [
   {
@@ -113,6 +113,11 @@ const PLANS: Plan[] = [
     name: 'One change: the sign shows a way to play for each half of the tune, and the second half changes one thing; she sets slow or fast and soft or loud for each half and taps Check',
     mode: 'change',
   },
+  {
+    level: 8,
+    name: 'Revise for a listener: hear two prepared versions, choose what to change on the dials, hear the revision and finish (Undo restores the original)',
+    mode: 'revise',
+  },
 ];
 
 // Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
@@ -120,7 +125,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 1, max: 5 },
   prek: { min: 2, max: 6 },
-  school: { min: 5, max: 7 },
+  school: { min: 5, max: 8 },
 };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
@@ -338,7 +343,7 @@ export function advance(
       gain:
         mode === 'strength'
           ? STRENGTH_GAIN[STRENGTH_OF[pace]]
-          : mode === 'dials' || mode === 'change'
+          : mode === 'dials' || mode === 'change' || mode === 'revise'
             ? STRENGTH_GAIN[s.strength]
             : 1,
     });
@@ -611,6 +616,123 @@ export function changeBot(
   return 'check';
 }
 
+/** Level 8: two prepared versions, the chosen original and current dials, and whether both versions and a revision were heard. */
+export interface ReviseState {
+  versions: [Ask, Ask];
+  active: 0 | 1;
+  heardVersions: [boolean, boolean];
+  current: Ask;
+  heardRevision: boolean;
+  done: boolean;
+}
+
+export const newRevise = (rng: Rng): ReviseState => {
+  const versions = makeAsks(rng);
+  return {
+    versions,
+    active: 0,
+    heardVersions: [false, false],
+    current: { ...versions[0] },
+    heardRevision: false,
+    done: false,
+  };
+};
+
+/** Whether the current dials differ from the active prepared version's original in at least one property. */
+export const isRevised = (r: ReviseState): boolean => {
+  const orig = r.versions[r.active];
+  return r.current.pace !== orig.pace || r.current.strength !== orig.strength;
+};
+
+/** Switch to prepared version 1 or 2, restoring the dials to that version's original. */
+export const selectVersion = (r: ReviseState, index: 0 | 1): ReviseState =>
+  r.done
+    ? r
+    : {
+        ...r,
+        active: index,
+        current: { ...r.versions[index] },
+        heardRevision: false,
+      };
+
+/** Flip one property away from the active version's original, guaranteeing a deliberate change in that property. */
+export const reviseProperty = (r: ReviseState, dial: Dial): ReviseState => {
+  if (r.done) return r;
+  const orig = r.versions[r.active];
+  const next: Ask =
+    dial === 'pace'
+      ? { ...r.current, pace: orig.pace === 'turtle' ? 'rabbit' : 'turtle' }
+      : { ...r.current, strength: orig.strength === 'gentle' ? 'strong' : 'gentle' };
+  return { ...r, current: next, heardRevision: false };
+};
+
+/** Set either dial directly on the active version; changing away from the current setting clears `heardRevision`. */
+export const setReviseDial = (r: ReviseState, dial: Dial, value: PaceId | StrengthId): ReviseState => {
+  if (r.done) return r;
+  const next: Ask =
+    dial === 'pace'
+      ? { ...r.current, pace: value as PaceId }
+      : { ...r.current, strength: value as StrengthId };
+  if (next.pace === r.current.pace && next.strength === r.current.strength) return r;
+  return { ...r, current: next, heardRevision: false };
+};
+
+/** Undo restores the active prepared version's original dials and clears `heardRevision`. */
+export const undoRevision = (r: ReviseState): ReviseState =>
+  r.done
+    ? r
+    : {
+        ...r,
+        current: { ...r.versions[r.active] },
+        heardRevision: false,
+      };
+
+/** Record that a four-beat phrase finished playing for the current dials. */
+export function markReviseHeard(r: ReviseState): ReviseState {
+  if (r.done) return r;
+  const orig = r.versions[r.active];
+  if (r.current.pace === orig.pace && r.current.strength === orig.strength) {
+    const heardVersions: [boolean, boolean] = [r.heardVersions[0], r.heardVersions[1]];
+    heardVersions[r.active] = true;
+    return { ...r, heardVersions };
+  }
+  return { ...r, heardRevision: true };
+}
+
+/** Whether both prepared versions were heard, a change from the original is active, and that revision was heard whole. */
+export const canFinishRevise = (r: ReviseState): boolean =>
+  r.heardVersions[0] && r.heardVersions[1] && isRevised(r) && r.heardRevision;
+
+/** What Done is waiting for at level 8 so the pet can guide without counting a miss. */
+export function earlyReviseDone(r: ReviseState): 'hear-versions' | 'pick-revision' | 'hear-revision' | null {
+  if (!r.heardVersions[0] || !r.heardVersions[1]) return 'hear-versions';
+  if (!isRevised(r)) return 'pick-revision';
+  if (!r.heardRevision) return 'hear-revision';
+  return null;
+}
+
+/** Finish level 8 once the revision gate is open. */
+export const finishRevise = (r: ReviseState): ReviseState => (canFinishRevise(r) ? { ...r, done: true } : r);
+
+export type ReviseMove =
+  | { kind: 'version'; index: 0 | 1 }
+  | { kind: 'dial'; dial: Dial; id: PaceId | StrengthId }
+  | 'listen'
+  | 'done';
+
+/** The ghost finger at level 8: hear version 1, hear version 2, flip the pace of the active version, hear it if needed, then Done. */
+export function reviseBot(r: ReviseState): ReviseMove | null {
+  if (r.done) return null;
+  if (!r.heardVersions[0]) return { kind: 'version', index: 0 };
+  if (!r.heardVersions[1]) return { kind: 'version', index: 1 };
+  if (!isRevised(r)) {
+    const orig = r.versions[r.active];
+    return { kind: 'dial', dial: 'pace', id: orig.pace === 'turtle' ? 'rabbit' : 'turtle' };
+  }
+  if (!r.heardRevision) return 'listen';
+  return 'done';
+}
+
 export interface Rect {
   x: number;
   y: number;
@@ -638,6 +760,9 @@ export interface ConductorLayout {
   /** Level 3: the listener's sign, and where the listener stands under it. */
   sign?: Rect;
   listener?: { x: number; y: number };
+  /** Level 8: the two prepared version buttons and the Undo button, each at least 100 units. */
+  versions?: [Rect, Rect];
+  undo?: Rect;
 }
 
 export const PAD = 180;
@@ -648,6 +773,9 @@ export const SIGN = 200;
 export const SPOT = 160;
 /** Level 3 keeps a column at the right of a landscape screen for the listener and the sign. */
 const SIGN_COLUMN = 250;
+export const REV_W = 130;
+export const REV_H = 100;
+const REV_GAP = 20;
 
 /** Every rectangle on the screen, from the view: the pads stay 180 units and clear of the pet's corner in both orientations. */
 export function conductorLayout(
@@ -657,7 +785,8 @@ export function conductorLayout(
   const portrait = view.h > view.w;
   const mode = planFor(level).mode;
   const changing = mode === 'change';
-  const signed = mode === 'sign' || changing;
+  const revising = mode === 'revise';
+  const signed = mode === 'sign' || changing || revising;
   // Level 3 keeps the sign's column beside the bandstand in landscape and upright (768 wide has no room under it).
   const column = signed && (!portrait || view.upright) ? SIGN_COLUMN : 0;
   const cx = (view.w - column) / 2;
@@ -675,7 +804,7 @@ export function conductorLayout(
     : portrait
       ? Math.max(stand.y + stand.h + 90, view.h * 0.5 - PAD / 2)
       : stand.y + stand.h + 50;
-  const dialed = mode === 'dials' || changing;
+  const dialed = mode === 'dials' || changing || revising;
   const padsCx = portrait ? view.w / 2 : Math.min(view.w / 2, view.w - 2 * BUTTON - 60 - PAD - PAD_GAP / 2);
   const pads = {
     turtle: { x: padsCx - PAD_GAP / 2 - PAD, y: padY, w: PAD, h: PAD },
@@ -683,9 +812,9 @@ export function conductorLayout(
   };
   const bx = view.w - BUTTON - 40;
   if (dialed) {
-    const row = dialsLayout(view, stand, friends, bx, portrait, !changing);
-    if (!changing) return row;
-    // Level 7: the sign and its listener beside the row, as at level 3 (landscape and upright), or under it in portrait.
+    const row = dialsLayout(view, stand, friends, bx, portrait, mode === 'dials');
+    if (mode === 'dials') return row;
+    // Level 7 and 8: the sign and its listener beside the row, as at level 3 (landscape and upright), or under it in portrait.
     const rowBottom = row.pads.turtle.y + DIAL_PAD;
     const sign: Rect =
       portrait && !view.upright
@@ -696,7 +825,24 @@ export function conductorLayout(
       portrait && !view.upright
         ? { x: sign.x + SIGN + 110, y: sign.y + SIGN - 40 }
         : { x: sign.x + SIGN / 2, y: sign.y + SIGN + 130 };
-    return { ...row, sign, listener };
+    if (!revising) return { ...row, sign, listener };
+    // Level 8: two prepared version buttons (1, 2) and Undo below the dials (or beside the listener in portrait).
+    const revW = 3 * REV_W + 2 * REV_GAP;
+    const revY = portrait && !view.upright ? rowBottom + 60 : rowBottom + 24;
+    const revX0 =
+      portrait && !view.upright
+        ? 470
+        : (view.upright
+            ? Math.min(view.w / 2, (30 + bx - BUTTON - 20) / 2)
+            : (row.pads.turtle.x + row.strengths!.strong.x + DIAL_PAD) / 2) -
+          revW / 2;
+    const revAt = (i: number): Rect => ({
+      x: revX0 + i * (REV_W + REV_GAP),
+      y: revY,
+      w: REV_W,
+      h: REV_H,
+    });
+    return { ...row, sign, listener, versions: [revAt(0), revAt(1)], undo: revAt(2) };
   }
   const listen: Disc = portrait
     ? { x: bx, y: view.h - 3 * BUTTON - 90, r: BUTTON }

@@ -1,1 +1,0 @@
-**`little-conductor` level 8, *Revise for a listener*** (new-interaction tier, level 7's sign and four pads are built: hear two prepared versions, choose what to change, hear the revision; revision always differs from the original in the chosen property and undo restores it; needs a definition section first). [Dive](../../deep-dives/little-conductor.md#build-slices-in-order)

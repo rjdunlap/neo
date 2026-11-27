@@ -1,1 +1,0 @@
-**Define `social-emotional` slice 4: *Common Ground*'s older-family case** (docs only; 2×3 board drawing/drums spatial compatibility, preference tradeoffs, exhaustive solutions and `school`/`grownup` placement as `common-ground` level 3; links and `git diff --check`). [Study](../../deep-dives/subjects/social-emotional.md#build-slices-in-order)
