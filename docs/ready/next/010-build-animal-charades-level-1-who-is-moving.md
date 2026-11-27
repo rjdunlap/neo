@@ -1,1 +1,0 @@
-**Build `animal-charades` level 1, *Who is moving?*** (new-game tier: typecheck, the unit tests in the [definition](../../definitions/animal-charades.md), **one** filtered scripted play, one portrait screenshot, `fingerdemo` at level 1, build since lands and registry change). [Study](../../deep-dives/subjects/movement-exercise.md#recommended-follow-ups-requested-2026-10-14)

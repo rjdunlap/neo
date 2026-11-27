@@ -164,6 +164,7 @@ export const LANDS: readonly Land[] = [
       'ready-for-adventure',
       'who-am-i',
       'timeline-trail',
+      'animal-charades',
     ],
   },
   {

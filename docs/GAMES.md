@@ -210,6 +210,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *preschool–school* · [Timeline Trail](games/timeline-trail.md)
 
+### Animal Charades
+
+*preschool–pre-K* · [Animal Charades](games/animal-charades.md)
+
 ## Counting Cove
 
 ### Duck Pond
