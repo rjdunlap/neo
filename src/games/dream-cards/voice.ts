@@ -25,6 +25,32 @@ export const VOICE = {
   'dream-cards.reveal-new-pair': [
     'One of you saw the {a}, one saw the {b}. That is a new way to see {clue}.',
   ],
+  // Level 2: a second clue for the same picture, then a second look.
+  'dream-cards.ask-second': ['Now say one more clue about the same dream, {name}.'],
+  'dream-cards.pet-clue2': ['And it is {clue2} too, {name}.'],
+  'dream-cards.ask-again': ['{clue} and {clue2}. Keep your picture, or look again, {name}?'],
+  'dream-cards.kept': ['You are keeping the {b}, {name}.'],
+  'dream-cards.moved': ['A second clue can change what you see, {name}.'],
+  'dream-cards.hint-clues': ['Look for one that can be {clue} and {clue2}, {name}.'],
+  'dream-cards.hint-any': ['Any clue is fine, {name}. Say what it makes you think of.'],
+  // The pet gave the clues.
+  'dream-cards.reveal2-same': ['I saw the {a}, and you found it, {name}. {clue} and {clue2}!'],
+  'dream-cards.reveal2-both': ['I saw the {a}. You saw the {b}. Both can be {clue} and {clue2}.'],
+  'dream-cards.reveal2-new': ['I saw the {a}. You saw the {b}. That is a new way to see {clue} and {clue2}.'],
+  // She gave the clues and the pet pointed.
+  'dream-cards.reveal2-same-me': ['We both saw the {a}, {name}. {clue} and {clue2}!'],
+  'dream-cards.reveal2-both-me': ['You saw the {a}. I saw the {b}. Both can be {clue} and {clue2}.'],
+  'dream-cards.reveal2-new-me': [
+    'You saw the {a}. I saw the {b}. That is a new way to see {clue} and {clue2}.',
+  ],
+  // Two people on the same device.
+  'dream-cards.reveal2-same-pair': ['You both saw the {a}, {name}. {clue} and {clue2}!'],
+  'dream-cards.reveal2-both-pair': [
+    'One of you saw the {a}, one saw the {b}. Both can be {clue} and {clue2}.',
+  ],
+  'dream-cards.reveal2-new-pair': [
+    'One of you saw the {a}, one saw the {b}. That is a new way to see {clue} and {clue2}.',
+  ],
   'dream-cards.show-me': ['Here it is, {name}. It was the {a}.'],
   'dream-cards.hint-point': ['The {a} can be {clue}. So can another one.'],
   'dream-cards.hint-give': ['The {a} can be {clue}, {name}.'],
