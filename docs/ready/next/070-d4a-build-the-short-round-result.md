@@ -1,0 +1,1 @@
+**D4a build, the short round result** (shell and navigation tier): build the [definition](../../definitions/brief-result.md): `settings.briefResults` (default off, grown-ups page), the pure eligibility function in `src/content/brief-result.ts`, and the short path in `GameScene.celebrate` for Bubble Pop and Jar Sort, with one filtered play of each.
