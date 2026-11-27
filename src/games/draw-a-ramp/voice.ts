@@ -1,6 +1,6 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
-  'game.draw-a-ramp': ['Draw a ramp!'],
+  'game.draw-a-ramp': ['Draw a ramp, {name}!'],
   'draw-a-ramp.intro': ['Draw a ramp for the marble!'],
   'draw-a-ramp.instruct-1': ['Draw a ramp to roll the marble to the star!'],
   'draw-a-ramp.instruct-2': ['Draw a path over the block!'],
