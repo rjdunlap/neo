@@ -357,6 +357,19 @@ export function pour(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>, amount
   s.cup += intoCup;
   s.tray += moved - intoCup;
 }
+/**
+ * Where water leaving the jug lands: `'cup'` while the cup has room, `'tray'` once it is already full (the spill is
+ * seen as it starts), `null` when the jug holds nothing. Whether the jug is tipped is the caller's question.
+ */
+export function pourLanding(s: Pick<PourState, 'jug' | 'cup'>, capacity = 1): 'cup' | 'tray' | null {
+  if (!Number.isFinite(s.jug) || !Number.isFinite(s.cup) || s.jug <= 1e-9) return null;
+  return s.cup >= capacity - 1e-9 ? 'tray' : 'cup';
+}
+/** The stream's drawn thickness: 6 as the jug first tips, widening to 14 at the full tilt (0.85). Never decreasing. */
+export function streamWidth(tilt: number): number {
+  if (!Number.isFinite(tilt)) return 6;
+  return 6 + 8 * Math.min(1, Math.max(0, (tilt - 0.15) / 0.7));
+}
 export function emptyCup(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>) {
   if (s.done) return;
   s.tray += s.cup;
