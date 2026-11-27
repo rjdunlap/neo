@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (15), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (29) and **Lantern Lake** (27, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (15), **Counting Cove** (14), **Cozy Village** (22), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (30) and **Lantern Lake** (27, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 200 games; the 171 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 164 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 201 games; the 172 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 165 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -246,6 +246,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Circuit Garden](docs/games/circuit-garden.md) | pre-K–school | Tinker Lab | 3 | pre-K–school |
 | [Measuring Post](docs/games/measuring-post.md) | school | Tinker Lab | 4 | school |
 | [Memory Desk](docs/games/memory-desk.md) | school | Tinker Lab | 3 | put a pictured token on a toy desk's tray, Keep a copy in the drawer, change the tray, and Show what the drawer kept in the window |
+| [Draw a Ramp](docs/games/draw-a-ramp.md) | preschool–school | Tinker Lab | 3 | draw a rainbow ramp with a finger, tap Go, and a marble rolls down it to pop a star balloon |
 
 <!-- end generated -->
 
@@ -452,6 +453,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
 | `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |
+| `drawaramp` | Draw a Ramp levels 1 and 3: level 1 in landscape draws the reference ramp, one empty Go nudge, and pops both balloons (0/0); level 3 in portrait with one flat ramp that misses (free, dotted trail), Hint (1 hint), both reference ramps, pop twice, saved 0/1 | Ghost finger: `FINGER_ONLY=draw-a-ramp` |
 | `logroll` | Log Roll levels 1, 4, 5, 6 and 7: invalid rolls, Hint, Undo, cradle stand, refused moss stand, lying/standing switch presses, bridge undo/reset, portrait and Tinker Lab launch | `LOG_ROLL_LEVELS=6,7` filters levels; ghost finger: `FINGER_ONLY=log-roll FINGER_LEVELS=6,7` |
 | `snowball` | Snowball Merge levels 1 and 3: inert press, Hint counted once, Undo/Restart, portrait and Lantern Lake return | Ghost finger: `FINGER_ONLY=snowball-merge` |
 | `cuestudio` | Cue Studio levels 1–3: creative Play/Step and edit invalidation, requested and actual traces, free watch, wrong Checks, automatic mismatch clue, local repair/Undo, counted-once help, Check invalidation, 112-unit targets in four views, portrait screenshot, one sticker each | `CUE_LEVELS=3`; ghost finger: `FINGER_ONLY=cue-studio FINGER_LEVELS=3` |
