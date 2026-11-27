@@ -594,7 +594,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Common Ground
 
-*school* · [Common Ground](games/common-ground.md)
+*school–grown-up* · [Common Ground](games/common-ground.md)
 
 ## Tinker Lab
 

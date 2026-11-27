@@ -18,6 +18,18 @@ import {
   sideOf,
   undo,
   describeLevel,
+  ACCEPTED3,
+  DOORWAY,
+  SHELF,
+  check3,
+  emptyRoom3,
+  hintAction3,
+  lift3,
+  pickDemoPlan,
+  pickVisit3,
+  place3,
+  served,
+  type Room3,
   type Side,
   neighbours,
   pickVisit,
@@ -155,10 +167,11 @@ describe('Common Ground rules', () => {
     expect(friends.size).toBe(4);
   });
 
-  it('is a school-only level', () => {
+  it('is a school and grown-up level', () => {
     for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup'] as Band[]) {
       const range = game.levels(band);
-      if (band === 'school') expect(range).toEqual({ min: 1, max: 2 });
+      if (band === 'school') expect(range).toEqual({ min: 1, max: 3 });
+      else if (band === 'grownup') expect(range).toEqual({ min: 3, max: 3 });
       else expect(game.bands).not.toContain(band);
     }
   });
@@ -166,6 +179,7 @@ describe('Common Ground rules', () => {
   it('names both levels', () => {
     expect(describeLevel(1)).toMatch(/place for you/);
     expect(describeLevel(2)).toMatch(/request changed/);
+    expect(describeLevel(3)).toMatch(/Two residents/);
   });
 });
 
@@ -284,5 +298,127 @@ describe('Common Ground level 2: a request changed', () => {
       expect(stack).toHaveLength(0);
       expect(undo(room, stack)).toEqual({ room: start, stack: [] });
     }
+  });
+});
+
+// ---- Level 3 ----
+
+const plans3 = (): { a: number; d: number; room: Room3 }[] => {
+  const out: { a: number; d: number; room: Room3 }[] = [];
+  for (let a = 0; a < CELLS; a++)
+    for (let d = 0; d < CELLS; d++)
+      if (a !== d) out.push({ a, d, room: place3(place3(emptyRoom3(), 'drawing', a), 'drums', d) });
+  return out;
+};
+const orth = (a: number, b: number) =>
+  Math.abs((a % 3) - (b % 3)) + Math.abs(Math.floor(a / 3) - Math.floor(b / 3)) === 1;
+
+describe('Common Ground level 3: two residents', () => {
+  it('judges the 30 placements: 8 ok, 15 window, 6 beside, exactly one clash', () => {
+    const counts: Record<string, number> = {};
+    for (const { a, d, room } of plans3()) {
+      const v = check3(room);
+      counts[v] = (counts[v] ?? 0) + 1;
+      const needs = a <= 2 && !orth(a, d);
+      expect(v === 'ok').toBe(needs);
+      if (a > 2) expect(v).toBe('window');
+      else if (orth(a, d)) expect(v).toBe(a === SHELF && d === DOORWAY ? 'clash' : 'beside');
+    }
+    expect(counts).toEqual({ ok: 8, window: 15, beside: 6, clash: 1 });
+    expect(ACCEPTED3).toEqual([
+      [0, 2],
+      [0, 4],
+      [0, 5],
+      [1, 3],
+      [1, 5],
+      [2, 0],
+      [2, 3],
+      [2, 4],
+    ]);
+  });
+
+  it('serves a wish for 5 plans, never both, and the wishes do not change a verdict', () => {
+    let shelf = 0,
+      door = 0,
+      neither = 0,
+      both = 0;
+    for (const [a, d] of ACCEPTED3) {
+      const s = served(place3(place3(emptyRoom3(), 'drawing', a), 'drums', d));
+      if (s.shelf && s.doorway) both++;
+      else if (s.shelf) shelf++;
+      else if (s.doorway) door++;
+      else neither++;
+    }
+    expect({ shelf, door, neither, both }).toEqual({ shelf: 3, door: 2, neither: 3, both: 0 });
+    const kept = (a: number, d: number) => served(place3(place3(emptyRoom3(), 'drawing', a), 'drums', d));
+    expect(kept(0, 4)).toEqual({ shelf: true, doorway: false });
+    expect(kept(2, 3)).toEqual({ shelf: false, doorway: true });
+  });
+
+  it('places with swaps and never refuses a drop', () => {
+    let room = place3(emptyRoom3(), 'drawing', 1);
+    room = place3(room, 'drums', 1);
+    expect(room[1]).toBe('drums');
+    expect(room.includes('drawing')).toBe(false);
+    room = place3(place3(emptyRoom3(), 'drawing', 0), 'drums', 4);
+    expect(place3(room, 'drawing', 4)[0]).toBe('drums');
+    expect(lift3(room, 'drums').includes('drums')).toBe(false);
+  });
+
+  it('hints reach ok within two moves from every state without reading the wishes', () => {
+    const cellsOrTray = [-1, 0, 1, 2, 3, 4, 5];
+    for (const a of cellsOrTray)
+      for (const d of cellsOrTray) {
+        if (a === d && a >= 0) continue;
+        let room = emptyRoom3();
+        if (a >= 0) room = place3(room, 'drawing', a);
+        if (d >= 0) room = place3(room, 'drums', d);
+        const was = check3(room);
+        let moves = 0;
+        for (let m = hintAction3(room); m; m = hintAction3(room)) {
+          expect(m.cell).toBeGreaterThanOrEqual(0);
+          // never moves a piece that already satisfies its need
+          if (m.piece === 'drawing')
+            expect(room.indexOf('drawing') >= 3 || room.indexOf('drawing') < 0).toBe(true);
+          else expect(room.indexOf('drawing') >= 0 && room.indexOf('drawing') <= 2).toBe(true);
+          room = place3(room, m.piece, m.cell);
+          if (++moves > 2) break;
+        }
+        expect(moves).toBeLessThanOrEqual(2);
+        expect(check3(room)).toBe('ok');
+        if (was === 'ok') expect(moves).toBe(0);
+      }
+    expect(hintAction3(place3(place3(emptyRoom3(), 'drawing', 0), 'drums', DOORWAY))).toMatchObject({
+      piece: 'drums',
+    });
+  });
+
+  it('seeds both drawers and orders, never the same drawer twice in a row', () => {
+    const rng = new Rng(11);
+    const drawers = new Set<string>(),
+      firsts = new Set<boolean>();
+    let prev: ReturnType<typeof pickVisit3> | undefined;
+    for (let i = 0; i < 80; i++) {
+      const v = pickVisit3(rng, prev?.drawer);
+      expect(v.drummer).not.toBe(v.drawer);
+      if (prev) expect(v.drawer).not.toBe(prev.drawer);
+      drawers.add(v.drawer);
+      firsts.add(v.drawerFirst);
+      prev = v;
+    }
+    expect(drawers.size).toBe(4);
+    expect(firsts.size).toBe(2);
+  });
+
+  it('the ghost finger plan is accepted for 50 seeds and covers all three kinds', () => {
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= 50; seed++) {
+      const [a, d] = pickDemoPlan(new Rng(seed));
+      const room = place3(place3(emptyRoom3(), 'drawing', a), 'drums', d);
+      expect(check3(room)).toBe('ok');
+      const s = served(room);
+      kinds.add(s.shelf ? 'shelf' : s.doorway ? 'door' : 'neither');
+    }
+    expect(kinds.size).toBe(3);
   });
 });

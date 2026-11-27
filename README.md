@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 198 games; the 169 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 162 games, and "grown-up" (13 and up) is played by 39 games: the 29 grown-up puzzles and 10 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 198 games; the 169 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 162 games, and "grown-up" (13 and up) is played by 40 games: the 29 grown-up puzzles and 11 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -215,7 +215,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Not Always](docs/games/not-always.md) | pre-K–school | Story Grove | 6 | a friend on a crate claims something about a row of picture cards; tap the card that breaks it |
 | [Thought Bubbles](docs/games/thought-bubbles.md) | pre-K–school | Story Grove | 5 | a short picture story on a cottage stage, then drag one of three picture cards into a friend's empty thought bubble |
 | [Playdate Workshop](docs/games/playdate-workshop.md) | preschool–pre-K | Story Grove | 3 | two critter friends say what they would like; give the one stamp pad to one, stamp, then pass it to the other |
-| [Common Ground](docs/games/common-ground.md) | school | Story Grove | 2 | a friend comes to visit and states two requests: the cushion by the window (or door) and the book basket right beside it. She drags a cushion, a basket and an optional plant onto a 2 × 3 floor, presses Visit, and the friend sits down to read. The learning purpose is designing for someone else from what they said: many rooms keep the same promise. |
+| [Common Ground](docs/games/common-ground.md) | school–grown-up | Story Grove | 3 | a friend comes to visit and states two requests: the cushion by the window (or door) and the book basket right beside it. She drags a cushion, a basket and an optional plant onto a 2 × 3 floor, presses Visit, and the friend sits down to read. The learning purpose is designing for someone else from what they said: many rooms keep the same promise. |
 | [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 15 | one or two steps to a star |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 11 | decorate matching shape outlines |
 | [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 13 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |

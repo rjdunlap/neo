@@ -791,6 +791,7 @@ export function createChecks(fixture) {
     'readyForAdventurePlay',
     'commonGroundPlay',
     'commonGroundChangePlay',
+    'commonGroundTwoPlay',
     'adventureWalkPlay',
     'sandTablePlay',
     'senseDetectivePlay',
@@ -1185,6 +1186,7 @@ export async function runSuite(suite, fixture) {
     readyForAdventurePlay,
     commonGroundPlay,
     commonGroundChangePlay,
+    commonGroundTwoPlay,
     adventureWalkPlay,
     sandTablePlay,
     senseDetectivePlay,
@@ -1556,6 +1558,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'commonground') {
     await commonGroundPlay();
     await commonGroundChangePlay();
+    await commonGroundTwoPlay();
   }
   if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
   if (suite === 'all' || suite === 'room') await roomPlay();
