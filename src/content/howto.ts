@@ -186,6 +186,7 @@ import { HOW_TO as tideLineHowTo } from '../games/tide-line/howto.ts';
 import { HOW_TO as tideTablesHowTo } from '../games/tide-tables/howto.ts';
 import { HOW_TO as tilePairsHowTo } from '../games/tile-pairs/howto.ts';
 import { HOW_TO as timelineTrailHowTo } from '../games/timeline-trail/howto.ts';
+import { HOW_TO as toyDrawerHowTo } from '../games/toy-drawer/howto.ts';
 import { HOW_TO as trackwayTalesHowTo } from '../games/trackway-tales/howto.ts';
 import { HOW_TO as treasureMapHowTo } from '../games/treasure-map/howto.ts';
 import { HOW_TO as truthBridgeHowTo } from '../games/truth-bridge/howto.ts';
@@ -404,6 +405,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'tide-tables': tideTablesHowTo,
   'tile-pairs': tilePairsHowTo,
   'timeline-trail': timelineTrailHowTo,
+  'toy-drawer': toyDrawerHowTo,
   'trackway-tales': trackwayTalesHowTo,
   'treasure-map': treasureMapHowTo,
   'truth-bridge': truthBridgeHowTo,

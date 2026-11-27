@@ -185,6 +185,7 @@ import { VOICE as tideLineVoice } from '../games/tide-line/voice.ts';
 import { VOICE as tideTablesVoice } from '../games/tide-tables/voice.ts';
 import { VOICE as tilePairsVoice } from '../games/tile-pairs/voice.ts';
 import { VOICE as timelineTrailVoice } from '../games/timeline-trail/voice.ts';
+import { VOICE as toyDrawerVoice } from '../games/toy-drawer/voice.ts';
 import { VOICE as trackwayTalesVoice } from '../games/trackway-tales/voice.ts';
 import { VOICE as treasureMapVoice } from '../games/treasure-map/voice.ts';
 import { VOICE as truthBridgeVoice } from '../games/truth-bridge/voice.ts';
@@ -874,6 +875,7 @@ export const SCRIPT = {
   ...tideTablesVoice,
   ...tilePairsVoice,
   ...timelineTrailVoice,
+  ...toyDrawerVoice,
   ...trackwayTalesVoice,
   ...treasureMapVoice,
   ...truthBridgeVoice,
