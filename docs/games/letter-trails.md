@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–6 |
 | pre-K | 3–10 |
-| school | 7–14 |
+| school | 7–15 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 12 | Lines and hooks: u, i, e, l, k, y and j in the four-line frame |
 | 13 | Down, up and over: p, r, n, m, h and b in the four-line frame |
 | 14 | The last four: f, q, x and z in the four-line frame |
+| 15 | Big and little: trace any little letter, with its capital shown beside it |
 
 <!-- end generated -->
 
@@ -46,3 +47,5 @@ Level 12, Lines and hooks (school 7–12; pre-K stays 3–10): u i e l k y j in 
 Level 13, Down, up and over (school 7–13; pre-K stays 3–10): p r n m h b in the same frame and corridor. Each is one stroke that goes down its stem, back up it and over: a hump for n, m, h and r (r stops short, with no leg) or a round bowl for p and b. h and b start at the top line, p's stem reaches the bottom line. The forms are simple shapes of our own, not yet checked against the Handwriting Without Tears chart.
 
 Level 14, The last four (school 7–14; pre-K stays 3–10): f q x z in the same frame and corridor, completing the little alphabet. f hooks over the top into its stem and has a bar; q is the magic c with a stem whose tail turns right (g's turns left); x is two crossing slides; z is one zigzag. The forms are simple shapes of our own, not yet checked against the Handwriting Without Tears chart.
+
+Level 15, Big and little (school 7–15; pre-K stays 3–10): any of the 26 little letters in the same frame and corridor, with its capital drawn faint in the top-left corner and shown in the heading. The capital is only to look at: it is never traced or judged. The spoken line (`trails.big`) names the big letter and asks for the little one.

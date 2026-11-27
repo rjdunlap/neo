@@ -65,7 +65,7 @@ Refilled 2026-11-27 from the dives' slice lists, each checked against the game's
 - **`clock-tower`, level 10 *How long?*** (new-interaction tier): hours/half-hours picker, interval arithmetic, worked help, bot; after level 9. [Dive slice 6](deep-dives/clock-tower.md#build-slices-in-order).
 - **`clock-tower`, level 11 *Fit a visit*** (new-interaction tier): availability and duration data, choose/set stages, bot; after level 10. [Dive slice 7](deep-dives/clock-tower.md#build-slices-in-order).
 - **`song-maker`, *Change one thing* (next free ID, currently 14)** (new-interaction tier): after *Bring it home*. [Dive slice 9](deep-dives/song-maker.md#build-slices-in-order).
-- **`letter-trails`, level 16 *Little words*, then 17 *My name*** (new-levels tier, one per session): after level 15. [Dive slices 9–10](deep-dives/letter-trails.md#build-slices-in-order).
+- **`letter-trails`, level 16 *Little words*, then 17 *My name*** (new-levels tier, one per session): level 15 is built. [Dive slices 9–10](deep-dives/letter-trails.md#build-slices-in-order).
 
 
 

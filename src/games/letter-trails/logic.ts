@@ -23,11 +23,15 @@ export const PLANS = [
   { letters: 'uielkyj', name: 'Lines and hooks: u, i, e, l, k, y and j in the four-line frame' },
   { letters: 'prnmhb', name: 'Down, up and over: p, r, n, m, h and b in the four-line frame' },
   { letters: 'fqxz', name: 'The last four: f, q, x and z in the four-line frame' },
+  {
+    letters: 'abcdefghijklmnopqrstuvwxyz',
+    name: 'Big and little: trace any little letter, with its capital shown beside it',
+  },
 ];
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 6 },
   prek: { min: 3, max: 10 },
-  school: { min: 7, max: 14 },
+  school: { min: 7, max: 15 },
 };
 
 /** The levels that trace several letters (a word, a name): their misses and hints count once per letter. */
@@ -50,10 +54,20 @@ export const OVER_LEVEL = 13;
 /** Level 14 traces one of f q x z: a hooked stem and bar, a stem with a tail turning right, a cross, a zigzag. */
 export const LAST_LEVEL = 14;
 
+/** Level 15 traces any of the 26 little letters; its capital is ghosted beside the frame (shown, never judged). */
+export const BIG_LEVEL = 15;
+
 /** Whether the round's letters are little letters, traced in the frame. */
 export const inFrame = (level: number): boolean => {
   const l = trailLevel(level);
-  return l === LITTLE_LEVEL || l === MAGIC_LEVEL || l === HOOKS_LEVEL || l === OVER_LEVEL || l === LAST_LEVEL;
+  return (
+    l === LITTLE_LEVEL ||
+    l === MAGIC_LEVEL ||
+    l === HOOKS_LEVEL ||
+    l === OVER_LEVEL ||
+    l === LAST_LEVEL ||
+    l === BIG_LEVEL
+  );
 };
 
 /** A word or a name: several letters, each a short flourish, counted at most once per letter. Level 9 is one letter. */

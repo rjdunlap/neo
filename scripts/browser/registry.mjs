@@ -1458,6 +1458,8 @@ export async function runSuite(suite, fixture) {
     await traceRound(13, '', true, 'b');
     await traceRound(14, '', false, 'q');
     await traceRound(14, '', true, 'z');
+    await traceRound(15, '', false, 'k');
+    await traceRound(15, '', true, 'y');
   }
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'wardrobe7') await wardrobe7();
