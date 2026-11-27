@@ -66,6 +66,9 @@ export function gateIcon(g: Gate, size = 1): Container {
   return c;
 }
 
+/** The gate sign's card. */
+const SIGN_CARD = 0xeedcbd;
+
 const cardWidth = (g: Gate) => (g.kind === 'and' || g.kind === 'or' ? 200 : 150);
 
 function bulbIcon(): Graphics {
@@ -338,9 +341,11 @@ class CritterCrossing implements Game {
     const card = new Container();
     const w = this.hidden ? 130 : cardWidth(this.round.gate) - 20;
     card.addChild(
+      // A soft tan card, not white: the rule pictures' pale heads (pointy ears, floppy ears, whiskers) and a white
+      // critter's blob would vanish into a white card.
       new Graphics()
         .roundRect(-w / 2, -64, w, 128, 24)
-        .fill(0xffffff)
+        .fill(SIGN_CARD)
         .stroke({ width: 7, color: wood.line }),
     );
     card.addChild(this.hidden ? label('?', 76, ink) : gateIcon(this.round.gate));

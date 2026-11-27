@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
+import { keepFlat } from '../../art/paperize';
 import { CORE_R, haloAlpha, haloRadius, SIDE_GLOW_R, sideGlow, sideRays, type Rect } from './logic';
 
 const NIGHT = 0x27305a;
@@ -117,6 +118,8 @@ export class WindowLight extends Container {
     this.ring = touchRing(coreR + 10);
     this.ring.alpha = 0;
     this.addChild(this.halo, this.core, this.ring);
+    // Light stays flat: a paper outline round the glow reads as a dirty ring.
+    keepFlat(this);
     this.touchR = touchR;
     // The big light keeps a soft glow around its core even far away; the bloom near the window grows from it.
     this.minHalo = coreR > CORE_R ? coreR * 1.4 : 0;
@@ -163,6 +166,8 @@ export function iconArt(size: number, nearLook = 1, farLook = 1 / 9): Container 
     .stroke({ width: 5, color: wood.line });
   g.circle(0, 0, 96 * k).fill(NIGHT_LOW);
   g.rect(-96 * k, 20 * k, 192 * k, 1).fill({ color: WATER, alpha: 0 });
+  // Light stays flat: a paper outline round a glow reads as a dirty ring.
+  const lights = keepFlat(new Graphics());
   const near = { x: -34 * k, y: 10 * k };
   const far = { x: 46 * k, y: -20 * k };
   for (const [p, l] of [
@@ -170,10 +175,10 @@ export function iconArt(size: number, nearLook = 1, farLook = 1 / 9): Container 
     [far, farLook],
   ] as const) {
     const r = haloRadius(l) * 0.55 * k;
-    g.circle(p.x, p.y, r).fill({ color: GLOW, alpha: haloAlpha(l) * 0.6 });
-    g.circle(p.x, p.y, CORE_R * 0.8 * k * 2).fill(CORE);
+    lights.circle(p.x, p.y, r).fill({ color: GLOW, alpha: haloAlpha(l) * 0.6 });
+    lights.circle(p.x, p.y, CORE_R * 0.8 * k * 2).fill(CORE);
   }
-  c.addChild(g);
+  c.addChild(g, lights);
   return c;
 }
 

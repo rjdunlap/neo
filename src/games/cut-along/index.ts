@@ -1,5 +1,6 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
+import { paperRect } from '../../art/paper';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -700,12 +701,8 @@ class CutAlong implements Game {
     const s = this.s,
       sheet = this.sheetG.clear(),
       lines = this.lineG.clear();
-    const color = swatch[this.paperColor];
     if (this.plan.mode === 'snip') {
-      sheet
-        .rect(STRIP.x * s, STRIP.y * s, STRIP.w * s, STRIP.h * s)
-        .fill(color.fill)
-        .stroke({ width: 4, color: color.line });
+      this.sheetPiece(STRIP.x * s, STRIP.y * s, STRIP.w * s, STRIP.h * s);
       this.marks.forEach((m, i) => {
         if (this.snipped.has(i)) return;
         lines
@@ -715,10 +712,7 @@ class CutAlong implements Game {
       });
     } else if (this.choosing) {
       // Level 11 offers three shapes, drawn small with a soft tile behind each; she taps the one she wants.
-      sheet
-        .rect(0, 0, PAPER_W * s, s)
-        .fill(color.fill)
-        .stroke({ width: 4, color: color.line });
+      this.sheetPiece(0, 0, PAPER_W * s, s);
       this.choices[this.index].forEach((k, i) => {
         const cx = OWN_XS[i] * s,
           cy = OWN_Y * s;
@@ -733,10 +727,7 @@ class CutAlong implements Game {
       });
     } else {
       const sh = this.tracks[0].cut.sheet;
-      sheet
-        .rect(sh.x * s, sh.y * s, sh.w * s, sh.h * s)
-        .fill(color.fill)
-        .stroke({ width: 4, color: color.line });
+      this.sheetPiece(sh.x * s, sh.y * s, sh.w * s, sh.h * s);
       const thick = this.level <= 2 ? 12 : 7;
       // At level 10 each line has a cut from either end; its dashes are drawn once.
       this.tracks.forEach((t, i) => {
@@ -752,6 +743,14 @@ class CutAlong implements Game {
       }
     }
     this.drawSlit();
+  }
+
+  /**
+   * The sheet as a paper piece, drawn on purpose: a plain rectangle this wide counts as a backdrop to the paper pass and
+   * would stay flat. A gentle wobble keeps the edges the cuts start from tidy.
+   */
+  private sheetPiece(x: number, y: number, w: number, h: number) {
+    paperRect(this.sheetG, x, y, w, h, 6, swatch[this.paperColor], { amp: 2.4, seed: 'cut-sheet' });
   }
 
   /** A dashed line along the points, about 18 units on and 12 off. */

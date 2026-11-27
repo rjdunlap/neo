@@ -1,5 +1,6 @@
 import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
 import { cream, ink, shadow, swatch, toward, wood } from '../../art/palette';
+import { keepFlat } from '../../art/paperize';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineId } from '../../content/voice-script';
@@ -196,7 +197,7 @@ class Round implements Game {
     this.arr = this.boards[0].start;
     this.lit = level === 1;
     this.backdrop.eventMode = this.screen.eventMode = this.table.eventMode = 'none';
-    this.root.addChild(this.backdrop, this.screen, this.table);
+    this.root.addChild(this.backdrop, keepFlat(this.screen), this.table);
     this.rows = [0, 1, 2].map((rail) => {
       const row = new Container();
       onTap(row, (e) => {
@@ -482,9 +483,8 @@ class Round implements Game {
     const y0 = screen.y + screen.h / 2;
     const px = (x: number) => x0 + x * sq;
     const py = (h: number) => y0 - h * sq;
-    g.roundRect(x0 - 8, py(GRID_H) - 8, screen.w + 16, screen.h + 16, 10)
-      .fill(CLOTH)
-      .stroke({ color: wood.line, width: 4 });
+    // The cloth's paper card is drawn on the backdrop; this layer stays flat so shadows match the dashed outline exactly.
+    g.rect(x0, py(GRID_H), screen.w, screen.h).fill(CLOTH);
     if (this.hint) {
       const want = part(this.board.solution[this.hint.rail]);
       g.rect(px(SPOTS[this.hint.rail] - want.w / 2), py(want.h), want.w * sq, want.h * sq).fill({
@@ -571,7 +571,20 @@ class Round implements Game {
   private render() {
     this.layout = shadowLayout(this.view);
     const { layout } = this;
-    this.backdrop.clear().rect(0, 0, this.view.w, this.view.h).fill(swatch.lavender.light);
+    const { screen, sq } = layout;
+    this.backdrop
+      .clear()
+      .rect(0, 0, this.view.w, this.view.h)
+      .fill(swatch.lavender.light)
+      .roundRect(
+        screen.x - screen.w / 2 - 8,
+        screen.y + screen.h / 2 - GRID_H * sq - 8,
+        screen.w + 16,
+        screen.h + 16,
+        10,
+      )
+      .fill(CLOTH)
+      .stroke({ color: wood.line, width: 4 });
     this.drawScreen();
     const g = this.table.clear();
     const u = layout.upright ? 22 : 18;

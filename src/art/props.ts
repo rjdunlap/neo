@@ -265,10 +265,10 @@ export function scarfArt(): Graphics {
 
 export function hatArt(): Graphics {
   return new Graphics()
-    .ellipse(0, -232, 74, 16)
+    .ellipse(0, -254, 74, 16)
     .fill(ink)
-    .roundRect(-44, -320, 88, 90, 10)
+    .roundRect(-44, -342, 88, 90, 10)
     .fill(ink)
-    .rect(-44, -258, 88, 16)
+    .rect(-44, -280, 88, 16)
     .fill(swatch.red.fill);
 }

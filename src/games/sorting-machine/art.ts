@@ -2,6 +2,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood, type ColorName } from '../../art/palette';
+import { keepFlat } from '../../art/paperize';
 import { starPoints } from '../../art/shapes';
 import { label } from '../../ui/text';
 import type { Fixture, Op, Prop, Value } from './logic';
@@ -216,8 +217,15 @@ export class Door extends Container {
       .closePath()
       .fill(wood.light)
       .stroke(line(wood.line, 6));
-    this.frame.moveTo(-r, h).lineTo(-r, r).arc(0, r, r, Math.PI, 0).lineTo(r, h).closePath().fill(0x4a3b5c);
-    this.addChild(this.frame, this.leaf);
+    // The opening and the swinging leaf stay crisp and exact, so they line up as one cut-out inside the paper frame.
+    const opening = new Graphics()
+      .moveTo(-r, h)
+      .lineTo(-r, r)
+      .arc(0, r, r, Math.PI, 0)
+      .lineTo(r, h)
+      .closePath()
+      .fill(0x4a3b5c);
+    this.addChild(this.frame, keepFlat(opening), keepFlat(this.leaf));
     this.setOpen(0);
   }
 
@@ -227,7 +235,13 @@ export class Door extends Container {
     const g = this.leaf.clear();
     // The leaf narrows as it swings away on its left hinge.
     const k = 1 - Math.min(1, Math.max(0, t)) * 0.92;
-    g.moveTo(-r, h).lineTo(-r, r).arc(0, r, r, Math.PI, 0).lineTo(r, h).closePath();
+    // Inset a little, so a dark gap rims the leaf like a door in its frame.
+    const i = 4;
+    g.moveTo(-r + i, h)
+      .lineTo(-r + i, r)
+      .arc(0, r, r - i, Math.PI, 0)
+      .lineTo(r - i, h)
+      .closePath();
     g.fill(wood.fill).stroke(line(wood.line, 5));
     g.scale.set(k, 1);
     g.x = -r + r * k;

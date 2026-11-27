@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
+import { paperCircle } from '../../art/paper';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -243,13 +244,11 @@ class ClockTower implements Game {
   }
 
   private drawFace() {
-    const g = new Graphics()
-      .circle(0, 0, R + 18)
-      .fill(wood.line)
-      .circle(0, 0, R + 8)
-      .fill(wood.fill)
-      .circle(0, 0, R)
-      .fill(cream);
+    // Paper rings with a barely-there wobble, so the rim stays round around the ticks and numbers.
+    const g = new Graphics();
+    paperCircle(g, 0, 0, R + 18, wood.line, { amp: 0.6, seed: 1 });
+    paperCircle(g, 0, 0, R + 8, wood.fill, { amp: 0.5, seed: 2, noShadow: true });
+    paperCircle(g, 0, 0, R, cream, { amp: 0.4, seed: 3, noShadow: true });
     for (let m = 0; m < 60; m++) {
       const a = (m / 60) * Math.PI * 2;
       const inner = m % 5 ? R - 12 : R - 24;

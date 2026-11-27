@@ -1,10 +1,47 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
+import { lighten, paperRect, U } from '../../art/paper';
 import { prop } from '../../art/props';
 import { starPoints } from '../../art/shapes';
 import type { ClayColor, ClayShape, SmallArt, Thing } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+
+/** The tank's pale paper, its soft blue crayon edge, and the water: one flat sheet so things under it still read. */
+const TANK_PAPER = 0xf0f6f7;
+const TANK_EDGE = 0x8fb0c0;
+export const TANK_WATER = lighten(swatch.blue.fill, 0.55);
+
+/**
+ * A paper water tank (not glossy glass, so it sits with the paper scenery): the pale body with its crayon edge, the
+ * water laid flat inside and a flat pale strip for the shine go in `back`; the wavy surface line (and, with `wash`, a
+ * light wash over what sits under water) go in `front`.
+ */
+export function drawTank(
+  back: Graphics,
+  front: Graphics,
+  t: { l: number; r: number; top: number; surface: number; bottom: number },
+  wash = false,
+) {
+  const w = t.r - t.l;
+  paperRect(back, t.l, t.top, w, t.bottom - t.top, 24, TANK_PAPER, {
+    line: TANK_EDGE,
+    amp: 0.8 * U,
+    seed: t.l,
+  });
+  paperRect(back, t.l + 8, t.surface, w - 16, t.bottom - t.surface - 8, 18, TANK_WATER, { flat: true });
+  paperRect(back, t.l + 18, t.top + 20, 12, Math.min(120, (t.bottom - t.top) * 0.5), 6, 0xffffff, {
+    flat: true,
+    alpha: 0.75,
+  });
+  if (wash)
+    front
+      .rect(t.l + 8, t.surface, w - 16, t.bottom - t.surface - 8)
+      .fill({ color: swatch.blue.fill, alpha: 0.18 });
+  front.moveTo(t.l + 8, t.surface);
+  for (let x = t.l + 8; x <= t.r - 8; x += 20) front.lineTo(x, t.surface + Math.sin(x / 30) * 4);
+  front.stroke({ width: 4, color: swatch.blue.fill, alpha: 0.8 });
+}
 
 /** One thing to drop in the water, about 90 units across, centered on (0, 0). */
 export function thingArt(thing: Thing): Container {
