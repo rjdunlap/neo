@@ -1,7 +1,7 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   // Wave Ribbon: a pulse runs along a ribbon; the bead rises and settles in place while the wave reaches the flag.
-  'game.wave-ribbon': ['Wave Ribbon!'],
+  'game.wave-ribbon': ['Wave Ribbon, {name}!'],
   'wave-ribbon.instruct.1': ['Tap Send. Watch the bead and the flag.'],
   'wave-ribbon.instruct.2': ['Send a small pulse and a tall pulse. Then pick the matching picture.'],
   'wave-ribbon.observe-first': ['Tap Send and watch the pulse reach the flag.'],

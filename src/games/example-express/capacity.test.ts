@@ -14,12 +14,12 @@ import {
   petCorner,
   landButtons,
 } from '../../content/lands';
-it('fits the actual 30-entry Tinker Lab, every band, side, page and safe view without shrinking', () => {
+it('fits the actual 31-entry Tinker Lab, every band, side, page and safe view without shrinking', () => {
   const land = LANDS.find((l) => l.id === 'tinker-lab')!;
   const games = GAMES;
   expect(GAMES.find((g) => g.id === 'example-express')?.bands).toEqual(['school']);
   expect(land.games.filter((id) => id === 'example-express')).toHaveLength(1);
-  expect(land.games).toHaveLength(30);
+  expect(land.games).toHaveLength(31);
   for (const view of [
     computeView(1024, 768),
     computeView(768, 1024),
