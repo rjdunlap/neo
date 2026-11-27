@@ -163,7 +163,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 12 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
 | [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 12 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
 | [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 9 | fit two big shapes into a house, tree or boat |
-| [Garden Grow](docs/games/garden-grow.md) | lap–school | Rainbow Meadow | 13 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
+| [Garden Grow](docs/games/garden-grow.md) | lap–school | Rainbow Meadow | 15 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
 | [Treasure Map](docs/games/treasure-map.md) | preschool–school | Rainbow Meadow | 11 | dig anywhere in the named row or column (preschool), then where the apple row meets the red column |
 | [Habitat Helpers](docs/games/habitat-helpers.md) | preschool–school | Rainbow Meadow | 9 | place Bunny's food, water and shelter, then open the garden gate |
 | [Jar Sort](docs/games/jar-sort.md) | preschool–school | Rainbow Meadow | 12 | tap a jar to lift its top fruit, tap another to drop it; two kinds in three jars, lit jars show where it fits |

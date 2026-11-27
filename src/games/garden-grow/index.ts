@@ -13,6 +13,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bloom } from './bloom';
 import { ConditionsGarden } from './conditions';
+import { UnderGarden } from './cutaway';
 import { drawKind } from './kinds';
 import {
   LEVELS,
@@ -826,7 +827,7 @@ export const gardenGrow: GameModule = {
   challenge: 'noticing',
   skills: ['cause-and-effect', 'colors', 'counting', 'living-things'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  uprightLevels: [12, 13],
+  uprightLevels: [12, 13, 14, 15],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
@@ -845,6 +846,9 @@ export const gardenGrow: GameModule = {
   hubIcon: () => new GardenIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) =>
-    ['compare', 'fair'].includes(planFor(ctx.level).mode) ? new ConditionsGarden(ctx) : new GardenGrow(ctx),
+  create: (ctx) => {
+    const mode = planFor(ctx.level).mode;
+    if (mode === 'look' || mode === 'under') return new UnderGarden(ctx);
+    return mode === 'compare' || mode === 'fair' ? new ConditionsGarden(ctx) : new GardenGrow(ctx);
+  },
 };
