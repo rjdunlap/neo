@@ -1,5 +1,7 @@
 # The short result: an optional brief round acknowledgment (definition D4a)
 
+**Built:** pilot of Bubble Pop and Jar Sort (PR #2272); to widen it, read “Pilot scope”.
+
 *Defined 2026-11-27 · docs only · chunk 19, [discovery action D4a](../ROADMAP.md#discovery-actions) · decided 2026-10-23 ([record](../archive/DECISIONS-2026-10-23.md#decisions), [round boundary](../DISCOVERY.md#a-round-boundary-that-keeps-the-groove)).* This packet says what a D4a build session does. The direction is settled: **a brief result is an option; the full celebration stays; the sticker is awarded every round; Heart and Keep stay one tap away; new evidence or a first discovery still gets the full result.** This packet only fixes the details, for one toy and one puzzle. It is independent of introduction shortcuts ([D4b](../ROADMAP.md#discovery-actions)) and of automatic handoff (D6).
 
 ## Why, and what the full result costs today
