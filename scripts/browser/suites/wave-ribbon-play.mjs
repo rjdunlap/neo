@@ -77,6 +77,46 @@ export function createSuite({ page, launch, finished, screenshot }) {
     await tap('g.doneButton');
     await finished('wave-ribbon');
     assert.deepEqual(await score(), [1, 1], 'level 2 saved 1 miss, 1 hint');
+
+    // Level 3 on grownup band in portrait: same-size run and early Check are free; toggling Lane B and running
+    // unlocks the hypothesis cards; wrong Check replays and counts once; Help once is one hint; Same mark passes.
+    await launch('wave-ribbon', 3, 'Alex', 'grownup');
+    await tap('g.sendButton');
+    await page.waitForFunction(() => !neo.scene.game.playing && neo.scene.game.t >= 2.5, null, {
+      timeout: 9000,
+    });
+    await tap('g.checkButton');
+    await settle();
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.misses),
+      0,
+      'same-size run and early Check are free',
+    );
+    await tap('g.laneBButton');
+    await tap('g.sendButton');
+    await watched('contrast');
+    const [sameIdx, soonerIdx] = await page.evaluate(() => {
+      const c = neo.scene.game.round.claims;
+      return [c.indexOf('same-time'), c.indexOf('tall-sooner')];
+    });
+    await tap(`g.claimNodes[${soonerIdx}]`);
+    await tap('g.checkButton');
+    await settle();
+    await tap('g.checkButton');
+    await settle();
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'same wrong claim counts once');
+    assert.equal(await page.evaluate(() => neo.scene.game.playing), true, 'wrong Check replays both lanes');
+    await tap('g.helpButton');
+    await settle();
+    assert.equal(await page.evaluate(() => neo.scene.game.tally.count), 1, 'Help once is one hint');
+    await tap(`g.claimNodes[${sameIdx}]`);
+    await tap('g.checkButton');
+    await settle();
+    assert.equal(await page.evaluate(() => neo.scene.game.checked), true, 'Same mark passes');
+    await screenshot('wave-ribbon-level3-portrait');
+    await tap('g.doneButton');
+    await finished('wave-ribbon');
+    assert.deepEqual(await score(), [1, 1], 'level 3 saved 1 miss, 1 hint');
   }
   return { waveRibbonPlay };
 }

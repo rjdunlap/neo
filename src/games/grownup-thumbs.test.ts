@@ -57,6 +57,7 @@ import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { benchLayout as workshopDetectiveLayout } from './workshop-detective/layout';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
+import { waveLayout } from './wave-ribbon/layout';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
 import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
 import { sizeOf as bunnySize } from './bunny-patches/logic';
@@ -376,6 +377,14 @@ const MEASURE: Record<string, () => Size[]> = {
       ['button', side(l.check)],
     ];
   },
+  'wave-ribbon': () => {
+    const l = waveLayout(v, true, true);
+    return [
+      ['button', 100],
+      ['lane toggle', side(l.laneSize)],
+      ['hypothesis card', side(l.card)],
+    ];
+  },
   'tile-pairs': () =>
     grown(tileLevels.grownup!).flatMap((level) => {
       tilePairsLayout(v, makeBoard(level, new Rng(1)));
@@ -448,6 +457,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'truth-bridge': { px: 52.8, what: 'plank' },
+  'wave-ribbon': { px: 50.8, what: 'button' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
   'workshop-detective': { px: 45.7, what: 'mark toggle' },
