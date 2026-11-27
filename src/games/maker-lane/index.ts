@@ -420,17 +420,26 @@ class MakerLane implements Game {
       void this.ctx.say('makerlane.hint');
   }
 
-  /** The product goes to the pet, who loves it; nothing is kept. */
+  /**
+   * The product is for her: with the corner guide shown it flies to the guide, who loves it; without one (game scenes no
+   * longer show it) it comes forward to the middle of the board, held up big for her. Nothing is kept.
+   */
   private async toPet() {
-    const pet = this.ctx.stage.toLocal(this.ctx.pet.getGlobalPosition());
     sfx.whoosh();
-    await this.ctx.tw.to(this.bundle, { x: pet.x + 40, y: pet.y - 60 }, { duration: 0.5 });
+    if (this.ctx.pet.visible) {
+      const pet = this.ctx.stage.toLocal(this.ctx.pet.getGlobalPosition());
+      await this.ctx.tw.to(this.bundle, { x: pet.x + 40, y: pet.y - 60 }, { duration: 0.5 });
+    } else {
+      void this.ctx.tw.to(this.bundle.scale, { x: 1.5, y: 1.5 }, { duration: 0.5 });
+      await this.ctx.tw.to(this.bundle, { x: this.view.w / 2, y: this.view.h * 0.45 }, { duration: 0.5 });
+    }
     if (!this.alive) return;
     this.ctx.pet.cheer();
     sfx.pop(9);
     await this.ctx.say('makerlane.forpet');
     if (!this.alive) return;
     this.setBundle(null);
+    this.bundle.scale.set(1);
   }
 
   // Levels 4 and 5: a path can branch -----------------------------------------------------------------------------
