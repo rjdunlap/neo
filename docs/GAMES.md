@@ -598,7 +598,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Playdate Workshop
 
-*preschool–pre-K* · [Playdate Workshop](games/playdate-workshop.md)
+*preschool–school* · [Playdate Workshop](games/playdate-workshop.md)
 
 ### Common Ground
 

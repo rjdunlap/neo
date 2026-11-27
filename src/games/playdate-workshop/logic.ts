@@ -26,8 +26,24 @@ export interface Mark {
 }
 
 export type PlanId =
-  'stampPass' | 'turns' | 'roll' | 'side' | 'bannerThenPage' | 'pageThenBanner' | 'justBanner';
-export type RequestId = 'page' | 'banner' | 'bannerOr' | 'own';
+  | 'stampPass'
+  | 'turns'
+  | 'roll'
+  | 'side'
+  | 'bannerThenPage'
+  | 'pageThenBanner'
+  | 'justBanner'
+  // Level 4, the smudged banner.
+  | 'stampOver'
+  | 'rollOver'
+  | 'fresh'
+  // Level 5, a new idea: the first two stars, then the revised plans.
+  | 'turnsTwo'
+  | 'flowersStamp'
+  | 'flowersRoll'
+  | 'keepGoing';
+export type RequestId =
+  'page' | 'banner' | 'bannerOr' | 'own' | 'start' | 'spill' | 'keepMade' | 'flowers' | 'keepOurs';
 export type Why = 'full' | 'notInPlan' | 'waiting' | 'turns' | 'myStep' | 'chooseFirst' | 'later';
 
 export const FRIENDS: readonly Friend[] = ['A', 'B'];
@@ -59,6 +75,8 @@ export interface Plan {
   takesTurns: boolean;
   /** Every trace that carries the plan out, from a blank table. */
   traces: readonly Trace[];
+  /** A draft: it leaves the friend's new or kept-stars request out (Try it shows which; Make it only previews). */
+  leavesOut?: boolean;
 }
 
 export interface LevelSpec {
@@ -67,8 +85,14 @@ export interface LevelSpec {
   describe: string;
   /** Banner cells (0 when the level has no banner). */
   cells: number;
+  /** Banner marks allowed (level 4's banner needs only the repair; it differs from `cells`, the cells drawn). */
+  capacity: number;
   /** The cards in the Plan phase (level 1 has one plan and no Plan phase). */
   plans: readonly PlanId[];
+  /** Level 5: the cards of the second Plan phase, after the friends' request changes. */
+  plans2?: readonly PlanId[];
+  /** Level 5: each friend's request once it has changed. */
+  changed?: Record<Friend, RequestId>;
   /** Which request each friend makes. */
   requests: Record<Friend, RequestId>;
 }
@@ -77,8 +101,12 @@ export interface Variation {
   cast: [CritterName, CritterName];
   picture: StampPicture;
   theme: BannerTheme;
-  /** Level 3: the friend who asks to keep their own page. */
+  /** Level 3: the friend who asks to keep their own page. Level 5: the friend with the new idea. */
   own: Friend;
+  /** Level 4: the smudged banner cell (index 1–3). */
+  smudge?: number;
+  /** Level 5: the picture the new idea asks for. */
+  renewed?: StampPicture;
 }
 
 export type StampPicture = 'star' | 'flower' | 'fish';
@@ -104,6 +132,16 @@ export const VARIATIONS: Record<number, readonly Variation[]> = {
     { cast: ['bunny', 'pig'], picture: 'flower', theme: 'leaf', own: 'A' },
     { cast: ['duck', 'dog'], picture: 'fish', theme: 'sea', own: 'B' },
   ],
+  4: [
+    { cast: ['bunny', 'cat'], picture: 'star', theme: 'sun', own: 'B', smudge: 2 },
+    { cast: ['bear', 'duck'], picture: 'flower', theme: 'leaf', own: 'B', smudge: 1 },
+    { cast: ['dog', 'pig'], picture: 'fish', theme: 'sea', own: 'B', smudge: 3 },
+  ],
+  5: [
+    { cast: ['bear', 'bunny'], picture: 'star', theme: 'sun', own: 'B', renewed: 'flower' },
+    { cast: ['cat', 'dog'], picture: 'flower', theme: 'leaf', own: 'A', renewed: 'fish' },
+    { cast: ['pig', 'duck'], picture: 'fish', theme: 'sea', own: 'B', renewed: 'star' },
+  ],
 };
 
 const PLANS: readonly Omit<LevelSpec, 'requests'>[] = [
@@ -112,6 +150,7 @@ const PLANS: readonly Omit<LevelSpec, 'requests'>[] = [
     name: 'Stamp and pass',
     describe: "Stamp and pass: one stamp pad, a star on each friend's page",
     cells: 0,
+    capacity: 0,
     plans: ['stampPass'],
   },
   {
@@ -119,6 +158,7 @@ const PLANS: readonly Omit<LevelSpec, 'requests'>[] = [
     name: 'Two ways to make',
     describe: 'Two ways to make: take turns or roll together for one banner',
     cells: 4,
+    capacity: 4,
     plans: ['turns', 'roll'],
   },
   {
@@ -126,13 +166,32 @@ const PLANS: readonly Omit<LevelSpec, 'requests'>[] = [
     name: 'My page, our plan',
     describe: "My page, our plan: a plan that works for both friends' requests",
     cells: 2,
+    capacity: 2,
     plans: ['side', 'bannerThenPage', 'pageThenBanner', 'justBanner'],
+  },
+  {
+    level: 4,
+    name: 'The smudged banner',
+    describe: "The smudged banner: fix the spill so both friends' requests are met",
+    cells: 4,
+    capacity: 1,
+    plans: ['stampOver', 'rollOver', 'fresh'],
+  },
+  {
+    level: 5,
+    name: 'A new idea',
+    describe: 'A new idea: change the plan when a friend has a new request',
+    cells: 4,
+    capacity: 4,
+    plans: ['turnsTwo'],
+    plans2: ['flowersStamp', 'flowersRoll', 'keepGoing'],
   },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
+  school: { min: 3, max: 5 },
 };
 
 export const LEVEL_COUNT = PLANS.length;
@@ -147,7 +206,13 @@ export function specFor(level: number, own: Friend = 'B'): LevelSpec {
         : own === 'B'
           ? { A: 'bannerOr', B: 'own' }
           : { A: 'own', B: 'bannerOr' };
-  return { ...s, requests };
+  const spec: LevelSpec = { ...s, requests };
+  if (s.level === 4) spec.requests = { A: 'spill', B: 'keepMade' };
+  if (s.level === 5) {
+    spec.requests = { A: 'start', B: 'start' };
+    spec.changed = own === 'A' ? { A: 'flowers', B: 'keepOurs' } : { A: 'keepOurs', B: 'flowers' };
+  }
+  return spec;
 }
 
 /** Every interleaving of two ordered lists. */
@@ -171,7 +236,7 @@ function bannerTurns(cells: number): Action[] {
 }
 
 /** The plan card's every allowed trace at this level (`own` is level 3's page-asking friend). */
-export function planFor(id: PlanId, cells: number, own: Friend = 'B'): Plan {
+export function planFor(id: PlanId, cells: number, own: Friend = 'B', prefix: Trace = []): Plan {
   const mate = other(own);
   switch (id) {
     case 'stampPass':
@@ -242,6 +307,58 @@ export function planFor(id: PlanId, cells: number, own: Friend = 'B'): Plan {
         tools: ['pad'],
         takesTurns: true,
         traces: [mate, own].map((x) => [give('pad', x), ...bannerTurns(cells)]),
+      };
+    case 'stampOver':
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['pad'],
+        takesTurns: true,
+        traces: FRIENDS.map((x) => [give('pad', x), stamp('banner')]),
+      };
+    case 'rollOver':
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['roller'],
+        takesTurns: false,
+        traces: [[give('roller', 'both'), roll('banner')]],
+      };
+    case 'fresh':
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['pad'],
+        takesTurns: true,
+        leavesOut: true,
+        traces: [[give('pad', 'A'), stamp('banner')]],
+      };
+    case 'turnsTwo':
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['pad'],
+        takesTurns: true,
+        traces: FRIENDS.map((x) => [give('pad', x), stamp('banner'), pass(), stamp('banner')]),
+      };
+    case 'flowersStamp':
+    case 'keepGoing':
+      // The two stars are on the banner (the prefix); the pad passes on for the last two.
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['pad'],
+        takesTurns: true,
+        leavesOut: id === 'keepGoing',
+        traces: [[...prefix, pass(), stamp('banner'), pass(), stamp('banner')]],
+      };
+    case 'flowersRoll':
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['roller'],
+        takesTurns: false,
+        traces: [[...prefix, give('roller', 'both'), roll('banner'), roll('banner')]],
       };
   }
 }
@@ -344,7 +461,7 @@ const bannerTogether = (t: Table, cells: number) =>
   cells > 0 && t.marks.banner.length >= cells && FRIENDS.every((f) => madeBy(t.marks.banner, f));
 
 /** Is the friend's request met by these surfaces? */
-export function check(t: Table, request: RequestId, f: Friend, cells: number): boolean {
+export function check(t: Table, request: RequestId, f: Friend, cells: number, leavesOut = false): boolean {
   switch (request) {
     case 'page':
     case 'own':
@@ -353,6 +470,16 @@ export function check(t: Table, request: RequestId, f: Friend, cells: number): b
       return bannerTogether(t, cells);
     case 'bannerOr':
       return bannerTogether(t, cells) || (ownPage(t, 'A') && ownPage(t, 'B'));
+    case 'start':
+      return bannerTogether(t, 2);
+    case 'spill':
+      return t.marks.banner.length >= 1;
+    case 'keepMade':
+      return !leavesOut && t.marks.banner.length >= 1;
+    case 'flowers':
+      return !leavesOut && t.marks.banner.length >= cells;
+    case 'keepOurs':
+      return t.marks.banner.length >= 2;
   }
 }
 
@@ -363,18 +490,21 @@ export interface Preview {
 }
 
 /** The plan's first allowed trace run on a blank table, and each request's result. */
-export function previewOf(plan: Plan, spec: LevelSpec): Preview {
+export function previewOf(plan: Plan, spec: LevelSpec, requests = spec.requests): Preview {
   const table = replay(plan.traces[0]);
   const met = {
-    A: check(table, spec.requests.A, 'A', spec.cells),
-    B: check(table, spec.requests.B, 'B', spec.cells),
+    A: check(table, requests.A, 'A', spec.cells, plan.leavesOut),
+    B: check(table, requests.B, 'B', spec.cells, plan.leavesOut),
   };
   return { table, met, ok: met.A && met.B };
 }
 
 /** The cards whose preview meets both requests. */
-export const acceptedPlans = (spec: LevelSpec, own: Friend) =>
-  spec.plans.filter((p) => previewOf(planFor(p, spec.cells, own), spec).ok);
+export const acceptedPlans = (spec: LevelSpec, own: Friend, stage: 1 | 2 = 1, prefix: Trace = []) =>
+  (stage === 2 ? (spec.plans2 ?? []) : spec.plans).filter(
+    (p) =>
+      previewOf(planFor(p, spec.cells, own, prefix), spec, stage === 2 ? spec.changed : spec.requests).ok,
+  );
 
 /** The next action of the shortest allowed completion (null when finished). */
 export function nextStep(plan: Plan, trace: Trace): Action | null {
@@ -394,9 +524,11 @@ export function hintFor(
   selected: PlanId | null,
   plan: Plan | null,
   trace: Trace,
+  stage: 1 | 2 = 1,
+  prefix: Trace = [],
 ): Hint {
   if (phase === 'plan') {
-    const ok = acceptedPlans(spec, own);
+    const ok = acceptedPlans(spec, own, stage, prefix);
     return { card: selected && ok.includes(selected) ? selected : ok[0] };
   }
   const a = plan ? nextStep(plan, trace) : null;
@@ -405,7 +537,7 @@ export function hintFor(
 
 // ——— Help accounting ———
 
-export type Decision = 'plan' | 'make';
+export type Decision = 'plan' | 'revise' | 'make';
 
 /**
  * Misses are always 0: trying plans, refused taps, Undo and Watch again are free. Each decision counts at most one hint;
@@ -437,8 +569,8 @@ export class Tally {
 }
 
 /** The decision a hint would count for now. */
-export function decisionNow(level: number, phase: 'plan' | 'make', trace: Trace): Decision {
-  if (phase === 'plan') return 'plan';
+export function decisionNow(level: number, phase: 'plan' | 'make', trace: Trace, stage: 1 | 2 = 1): Decision {
+  if (phase === 'plan') return stage === 2 ? 'revise' : 'plan';
   return level === 1 && trace.length === 0 ? 'plan' : 'make';
 }
 
@@ -518,6 +650,8 @@ export interface WorkshopLayout {
   /** Make phase, once done: Finish over the cleared tray, and Watch again at the start of the button row. */
   finish: Rect | null;
   again: Rect | null;
+  /** Level 4, once done: Try the other way, beside Watch again. */
+  other: Rect | null;
 }
 
 export interface LayoutAsk {
@@ -568,10 +702,11 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
       buttons,
       finish: null,
       again: null,
+      other: null,
     };
   }
   const surfaces = ask.surfaces ?? [];
-  const cells = ask.level === 2 ? 4 : ask.level === 3 ? 2 : 0;
+  const cells = ask.level === 2 || ask.level >= 4 ? 4 : ask.level === 3 ? 2 : 0;
   const banner = surfaces.includes('banner') ? row(cells, CELL, CELL, 270) : [];
   const pages = { A: r(200, 420, PAGE, PAGE), B: r(BOX.w - 200 - PAGE, 420, PAGE, PAGE) };
   const tools = ask.tools ?? 1;
@@ -580,7 +715,13 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
   const chosen = ask.level === 1 ? null : r((BOX.w - SMALL_CARD.w) / 2, 20, SMALL_CARD.w, SMALL_CARD.h);
   const strip = r(190, 190, BOX.w - 380, CHIP);
   // Watch again takes the row's first slot once done; Finish takes the cleared tray, so the made banner and pages stay in view.
-  const [again, ...buttons] = row(4, BUTTON.w, BUTTON.h, 650, 180, BOX.w);
+  const slots =
+    ask.level === 4
+      ? row(5, BUTTON.w, BUTTON.h, 650, 180, BOX.w)
+      : row(4, BUTTON.w, BUTTON.h, 650, 180, BOX.w);
+  const [again, ...rest] = slots;
+  const other = ask.level === 4 ? rest.shift()! : null;
+  const buttons = rest;
   return {
     bubbles,
     friends,
@@ -594,6 +735,7 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
     buttons,
     finish: r((BOX.w - 200) / 2, 445, 200, 150),
     again,
+    other,
   };
 }
 
@@ -601,7 +743,7 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
 export function targets(l: WorkshopLayout, done = false): Rect[] {
   const base = [l.bubbles.A, l.bubbles.B, ...l.buttons, ...(l.chosen ? [l.chosen] : [])];
   if (!l.pages) return [...base, ...l.cards];
-  if (done) return [...base, l.finish!, l.again!];
+  if (done) return [...base, l.finish!, l.again!, ...(l.other ? [l.other] : [])];
   // Watch again's slot is empty until done, but it stays clear of everything live.
   return [
     ...base,

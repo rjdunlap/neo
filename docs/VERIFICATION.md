@@ -157,7 +157,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `picnic` | 2026-10-21 · [RW07 slice 1: Welcome a New Friend (record, page, Continue, pretty and yummy)](archive/VERIFICATION-2026-10-21.md#2026-10-21--rw07-slice-1-welcome-a-new-friend-record-page-continue-pretty-and-yummy) | — |
 | `picturetouch` | 2026-11-25 · [Shared sliding-board helper](verification/2026-11-25-shared-sliding-board-helper.md) | `PICTURE_LEVELS=6` |
 | `pilematch` | 2026-11-09 · [Pile Match slice 4, level 10 Look closely](archive/VERIFICATION-2026-11-09.md#2026-11-09--pile-match-slice-4-level-10-look-closely-pr-1444) | Level 10 upright |
-| `playdateworkshop` | 2026-11-06 · [Playdate Workshop levels 1–3 (new game, social-emotional slice 2)](archive/VERIFICATION-2026-11-06.md#2026-11-06--playdate-workshop-levels-13-new-game-social-emotional-slice-2) | — |
+| `playdateworkshop` | 2026-11-27 · [Playdate Workshop levels 4-5 (PR #2281)](verification/2026-11-27-playdate-workshop-levels-4-5.md) | — |
 | `profiles` | 2026-11-21 · [The first-visit screen and the guest's round](verification/2026-11-21-the-first-visit-screen-and-the-guest-s-round.md) | — |
 | `puddlegobble` | 2026-11-20 · [Puddle Gobble level 13 Splash, lap entry](verification/2026-11-20-puddle-gobble-level-13-splash-lap-entry.md) | `PUDDLE_ONLY=13` |
 | `puppetstage` | 2026-11-12 · [U7d fix batch 5: sound-garden and puppet-stage never hold a tap on a right answer's or a free tap's line](archive/VERIFICATION-2026-11-12.md#2026-11-12--u7d-fix-batch-5-sound-garden-and-puppet-stage-never-hold-a-tap-on-a-right-answers-or-a-free-taps-line-pr-1545) | — |
