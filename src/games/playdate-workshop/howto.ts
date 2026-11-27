@@ -9,10 +9,10 @@ export const HOW_TO: GameHowTo = {
       to: 1,
       text: 'Tap a friend to give them the stamp pad; tap their page to stamp, and tap the pad to pass it.',
     },
-    { from: 2, to: 5, text: 'Pick a way to make it on a card; Try it shows what happens, Make it starts.' },
+    { from: 2, to: 6, text: 'Pick a way to make it on a card; Try it shows what happens, Make it starts.' },
     {
       from: 2,
-      to: 5,
+      to: 6,
       text: "Make the plan: give the tools, stamp or roll, and pass the pad when it's the other friend's turn.",
     },
     {
@@ -21,6 +21,7 @@ export const HOW_TO: GameHowTo = {
       text: 'The paint spilled: pick a way to fix it, and make it. A plan that starts over leaves a friend out.',
     },
     { from: 5, to: 5, text: 'Listen for a new idea: you can change the plan and keep what you made.' },
+    { from: 6, to: 6, text: 'Tap Ask to hear what a friend wants before you pick a plan.' },
     { from: 3, to: 3, text: 'Both friends tell you what they want; a plan that leaves one out shows which.' },
   ],
   finish: [
@@ -33,6 +34,7 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 5, to: 5, text: "When the banner has the friend's new idea, tap Finish." },
     { from: 3, to: 3, text: 'When the plan is made and both friends have what they asked for, tap Finish.' },
+    { from: 6, to: 6, text: 'When the plan is made and both friends have what they asked for, tap Finish.' },
   ],
   note: "Nothing here counts as a miss: trying plans, out-of-turn taps and Undo are free. The lightbulb and the pet's help count as help. These are pretend friends' requests, not advice about real friendships.",
 };
