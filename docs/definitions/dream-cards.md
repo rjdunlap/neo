@@ -37,7 +37,7 @@ All integers and fixed tables; nothing is random except which deal is dealt.
 | --- | --- | --- |
 | 1 | *Dream clues: give one clue and read another's* | Three pictures, three clues; the pet or a second person gives a clue, she points, the picture turns over |
 
-`school` only (about 6–8, with a grown-up as the second person): `bands: ['school']`, level 1 only. The study's "pre-K considered separately" is **not built**: it waits until a phone has shown that the privacy blanket and the six clues read for a younger child (decision 4). Later levels, each its own definition: **2, two clues for one picture** (defined 2026-11-27: [definition](dream-cards-two-clues.md); the giver gives a second clue after the first reading), **3, make your own dream picture** (colour a stamp from three parts) and a grown-up couch mode. None is built or reserved beyond the next free stable IDs.
+`school` only (about 6–8, with a grown-up as the second person): `bands: ['school']`, level 1 only. The study's "pre-K considered separately" is **not built**: it waits until a phone has shown that the privacy blanket and the six clues read for a younger child (decision 4). Later levels, each its own definition: **2, two clues for one picture** (defined 2026-11-27: [definition](dream-cards-two-clues.md); the giver gives a second clue after the first reading), **3, make your own dream picture** (defined 2026-11-27: [definition](dream-cards-own-picture.md); build a stamp from three parts) and a grown-up couch mode. None is built or reserved beyond the next free stable IDs.
 
 ### First round
 
