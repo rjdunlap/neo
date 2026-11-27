@@ -1,6 +1,6 @@
 # Visual identity V1–V2: a Barnyard sheet and an Animal Snack pilot
 
-**Definition, 2026-10-15; slices 1–2 built 2026-10-16.** Roadmap [chunk 21](../ROADMAP.md#chunks), source pilots [V1 and V2](../FAMILY-EXPERIENCE.md#visual-character-and-game-feel). This turns two of the review's pilots into build slices: an art and feedback sheet for one land (the Barnyard) and a touch-acknowledgment pilot in one game (Animal Snack). V3–V6 are not defined here. V4's Animal Snack example ("the fed friend chews its own way") already shipped as food eaten its own way ([PR #366](https://github.com/rjdunlap/neo/pull/366)), so a V4 slice would need a different game.
+**Definition, 2026-10-15; slices 1–2 built 2026-10-16.** Roadmap [chunk 21](../ROADMAP.md#chunks), source pilots [V1 and V2](../FAMILY-EXPERIENCE.md#visual-character-and-game-feel). This turns two of the review's pilots into build slices: an art and feedback sheet for one land (the Barnyard) and a touch-acknowledgment pilot in one game (Animal Snack). V3 (Fill and Dump level 5) is defined below; V4–V6 are not defined here. V4's Animal Snack example ("the fed friend chews its own way") already shipped as food eaten its own way ([PR #366](https://github.com/rjdunlap/neo/pull/366)), so a V4 slice would need a different game.
 
 Nothing here changes levels, bands, saves, stickers, misses, hints or the bot. Each build slice below is one game or one scene, uses existing helpers, and adds no shared helper until a second implemented use needs it (the review's rule).
 
@@ -70,6 +70,47 @@ Boundaries: an acknowledged touch does not queue a feeding, does not count a mis
 
 **Rules to test (`logic.ts`).** Put the decision in a pure helper, for example `busyTouch(mode, busy, finished, target)` returning `'poke' | 'wiggle' | null`, and test that it returns `null` when not busy (the normal handler runs), `null` after finishing, `null` for an eaten snack, and never changes a passed-in counts object. The existing rule tests and `snackTouch` tests stay as they are.
 
+## V3 · Fill and Dump: the pour answers in water
+
+*Defined 2026-11-27 · docs only.* One pilot, in one scene: level 5 (*tip the jug to fill three cups to their lines*, `PourGame` in `src/games/fill-dump/pour.ts`). Level 9's bowls (`cups.ts`) and levels 7–8 (`compare.ts`) draw the same flat stream; they follow only after a person has played the pilot (the review's rule), and a shared helper is extracted only when a second scene needs it.
+
+### The flat spots today
+
+Read from `origin/main` on 2026-11-27. The jug rotates with the drag (`tilt`, set directly from the pointer, so it snaps), and a fixed 12-unit blue curve is drawn from the spout to the cup's current water level while the pointer is down, the jug is tilted past 0.15 and it still holds water. The water in the cup is a flat rectangle. Nothing else answers the pour:
+
+- The stream has one thickness and does not move, so a slow pull and a fast pull look the same, and it looks like a rope.
+- Nothing happens where it lands: no ripple, no droplets.
+- The stream always ends at the cup's surface, **even when the cup is already full and the extra water is going into the tray**. The cause of the spill, the point of the capacity idea, is only visible afterwards.
+- Lifting the finger cuts the stream and rights the jug in one frame.
+- The only sounds are the touch-down tick and the check's tick or boing; there is no sound of water.
+
+### The pilot
+
+All of it hangs on one event, **water leaving the jug** (`pour()` moving a positive amount in `move`, the same call that already changes `state.jug`, `cup` and `tray`). Nothing is computed from time alone, so the picture, the sound and the numbers cannot disagree.
+
+- **Tilt eases.** The jug's drawn rotation follows its target (from `tilt`) with a short ease, about 0.12 s while tipping and 0.25 s while righting. Only the drawing eases; `tilt` and the pour amount are unchanged.
+- **The stream flows.** Thickness grows with the tilt, from about 6 to 14 units. Short light dashes travel along the same curve toward where it lands (clock-driven in `update(dt)`), so a held pose still reads as flowing. Where the water goes decides the end point: the cup's surface while it has room, **the tray's rim once the cup is full**, so a spill is seen as it starts.
+- **Where it lands, it answers.** One ripple ring (an ellipse growing about 0.45 s and fading) at the landing point, restarted at most every 0.25 s, and two or three droplets that hop off the surface (`ctx.particles.burst`, small, blue, short life; no new particle system).
+- **The level rises, with a surface.** The cup's water keeps its current height rule (`200 * state.cup`) and gains a lighter strip along its top edge that bobs by about 3 units after a landing. The tray's water gets the same.
+- **Sound.** One new `sfx.trickle(level)` in `src/audio/sfx.ts`: a short band-passed noise burst, its centre frequency rising with the receiving level (0 to 1), like a glass filling. It is unpitched, so it is exempt from the pentatonic rule, and Web Audio only. It plays while water moves, at most once per 0.14 s, and not at all when the jug is empty. The existing `sfx.splash()` is **not** used: its sweep is too loud for a continuous pour.
+- **Releasing settles.** On lift, the stream thins over about 0.2 s, two droplets fall from the spout, the ripple finishes, and the jug rights slowly. If the jug is emptied the stream ends as it runs dry.
+
+**Legible with sound off and without colour:** thickness, motion, ripple, droplets and the rising level carry every cause; none depends on hue, and the sound only repeats them. **Not added on purpose:** any "you reached the line" cue (it would answer the question the green check asks), any change to the target line, markers or halo, and any extra words.
+
+**Idle → touch → action → consequence → settle (one pour to a line).** Idle: the jug rests upright; the existing arrow points right. Touch: on touch-down the jug leans a little and ticks (as now). Action: she pulls right; over 0.12 s the jug tips and the stream starts thin, widening as she pulls farther. Consequence: dashes run down the stream, a ripple and droplets rise where it lands, the cup's level climbs with a soft rising trickle every 0.14 s; if the cup is full the stream bends to the tray and fills it instead. Settle: she lifts; the stream thins out in 0.2 s, two droplets fall, the jug rights in 0.25 s, the surface bobs and stills.
+
+### Boundaries
+
+No new drag delay, hit area, hidden interception or change to `pourAmount`, `POUR_DISTANCE`, `POUR_TOLERANCE`, targets, capacity, tray recovery, misses, hints, difficulty, saves or the bot's plan (`autotouch()` still pulls the jug the same distance, and its ghost finger shows the same action). Pointer cancel, leaving the screen, blur and `destroy()` still end the pour: the new drawing is owned by the scene (`update(dt)` and `ctx.particles`), keeps no unmanaged timers, and every droplet or ripple still alive at `destroy()` is simply dropped. A touch during the settle works as it does now.
+
+### Rules to test (`logic.ts`)
+
+Put the decision in a pure helper, for example `pourLanding(state, capacity)` returning `'cup' | 'tray' | null` (null when nothing flows: empty jug or no motion), and `streamWidth(tilt)`. Test: `'tray'` exactly when the cup is already at capacity and the jug holds water; `null` for an empty jug; `streamWidth` is within 6–14, never decreasing in tilt, and finite for non-finite input; and that neither helper mutates its argument. Existing `pour` and `pourAmount` tests stay as they are.
+
+### Build slice
+
+1. **V3 · Fill and Dump level 5 pour feedback.** Tier: existing game, unchanged interaction: `npm run typecheck`, `npx vitest run src/games/fill-dump`, one filtered regression play of level 5 (`BROWSER_SUITE` for Fill and Dump) that pours, overfills once and recovers, checking misses, hints and the finished round are unchanged, and one portrait screenshot mid-pour. `fingerdemo` is not needed (the bot's action is unchanged). Whether the water reads as water, and whether the spill is understood earlier, stay a person's check on a phone.
+
 ## Build slices, in order
 
 1. **V2 · Animal Snack busy-touch acknowledgment** (built 2026-10-16, [#446](https://github.com/rjdunlap/neo/pull/446)). The pilot above. Tier: existing game, unchanged interaction: `npm run typecheck`, Animal Snack's rule tests, one filtered regression play (`WOODS_ONLY=snack`) with a rapid second tap at level 2 and at level 3 that checks misses, hints and fed count are unchanged. `fingerdemo` is not needed (the bot's action is unchanged). Whether the old window felt laggy and whether the wiggle reads as "wait" stay the dive's person check (decision 7).
@@ -81,4 +122,4 @@ Boundaries: an acknowledged touch does not queue a feeding, does not count a mis
 
 - A shared "acknowledge" helper, a universal particle pass, imported art or audio, and changes to `onTap` cooldowns.
 - Landmarks for other lands; each would be its own sheet after the Barnyard has been seen.
-- V3 (Fill and Dump materials), V4, V5 (comfort settings, which touch saves) and V6 (a grown-up board).
+- Levels 7–9 of Fill and Dump and the construction-game half of V3 (contact and compression), V4, V5 (comfort settings, which touch saves) and V6 (a grown-up board).

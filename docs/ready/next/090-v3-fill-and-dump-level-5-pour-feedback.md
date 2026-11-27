@@ -1,0 +1,1 @@
+**V3 build, Fill and Dump level 5 pour feedback** (existing-game tier): build the [definition](../../definitions/visual-identity.md#v3--fill-and-dump-the-pour-answers-in-water): eased tilt, flowing stream that bends to the tray when the cup is full, ripple and droplets, `sfx.trickle`, pure `pourLanding` and `streamWidth` helpers with tests, one filtered level-5 play.
