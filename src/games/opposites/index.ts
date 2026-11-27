@@ -15,6 +15,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   BIG_LEVEL,
+  ONE_PAIR_LEVEL,
   CONCEPTS,
   LEVELS,
   STICKER_CONCEPTS,
@@ -1498,7 +1499,7 @@ export const oppositesGame: GameModule = {
   skills: ['words', 'concepts', 'opposites', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [BIG_LEVEL],
+  entryLevels: [BIG_LEVEL, ONE_PAIR_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Act them out together: stretch up big, curl up small, a happy face, a sad face.',

@@ -46,11 +46,14 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [River Tablets 7–8](definitions/river-tablets-7-8.md) | Ancient river civilizations AR4, River Tablets levels 7–8: Say it with pictures (rebus sound-signs) and Which one do I mean? (mute determinatives); school |
 | [Laundry Day](definitions/laundry-day.md) | Daily life long ago H7, Story Steps' eleventh story: scrub, hang and dry a picnic blanket in order; a fictional chore, no real history |
 | [Market Days](definitions/market-days.md) | Medieval life ML4, a map-colouring puzzle for Lantern Lake: give eight towns market days so towns a day apart differ, with the fewest days; grown-up, school levels 1–2 |
+| [Two Tablets](definitions/two-tablets.md) | River civilizations AR5, a decipherment puzzle for Lantern Lake: line up a message written as pictures and as island signs, learn which sign makes which sound, and read a new line; grown-up, two levels |
+| [Count the Ballots](definitions/count-the-ballots.md) | Community-civics CC3, a ranked-ballot puzzle for Lantern Lake: sort nine ballots by first choice, drop the smallest pile and move its ballots on, and see when that differs from most first choices; grown-up, school levels 1–2 |
 | [How Many Pieces Fit?](definitions/how-many-pieces-fit.md) | Fractions R7, Ribbon Workshop level 8: measure a ¾ ribbon with ½-spool pieces (snipping one in half) and answer 1½ pieces; school and grownup |
 | [Ready for Adventure 4](definitions/ready-for-adventure-4.md) | Routines RA4, Ready for Adventure level 4: the parade request changes, so repair the bag and Check again; school |
 | [Window Mosaic](definitions/window-mosaic.md) | Fractions R6, Pixel Pictures level 13: color a second window the same amount in a different shape, then pick the matching window; school |
 | [Common Ground, level 1: A Place for You](definitions/common-ground.md) | Social-emotional slice 4: place a cushion by a window and a basket beside it for a visiting friend, then press Visit; a new school-only game |
 | [Common Ground, level 2: A request changed](definitions/common-ground-2.md) | Level 2 of `common-ground`: after the preview the friend asks for the basket on a different side, so the room is revised with undo; school only |
+| [Two Viewpoints](definitions/two-viewpoints.md) | Social-emotional slice 3, Story Steps level 14: Bunny and Bear hear unexpected picnic music, state differing wishes, and she enacts a Story Theater ending that keeps both; school only |
 | [Word Code](definitions/word-code.md) | Puzzle-pages PP9, levels 1–3: guess the hidden word by letter marks, picture words at school and five letters at grown-up |
 | [Domino Pond](definitions/domino-pond.md) | Puzzle-pages PP2, levels 1–3, from dot matching to exact totals and comparisons |
 | [Tide Tables](definitions/tide-tables.md) | Assign three jobs to a fictional harbor day using tide heights and job order, with multiple working schedules; grown-up, Lantern Lake |

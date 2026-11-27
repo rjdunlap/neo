@@ -23,6 +23,7 @@ import { VOICE as clapSyllablesVoice } from '../games/clap-syllables/voice.ts';
 import { VOICE as clockTowerVoice } from '../games/clock-tower/voice.ts';
 import { VOICE as colorGardenVoice } from '../games/color-garden/voice.ts';
 import { VOICE as commonGroundVoice } from '../games/common-ground/voice.ts';
+import { VOICE as countTheBallotsVoice } from '../games/count-the-ballots/voice.ts';
 import { VOICE as critterCrossingVoice } from '../games/critter-crossing/voice.ts';
 import { VOICE as critterSortVoice } from '../games/critter-sort/voice.ts';
 import { VOICE as crosswordVoice } from '../games/crossword/voice.ts';
@@ -86,6 +87,7 @@ import { VOICE as lostLayersVoice } from '../games/lost-layers/voice.ts';
 import { VOICE as mailCarrierVoice } from '../games/mail-carrier/voice.ts';
 import { VOICE as makerLaneVoice } from '../games/maker-lane/voice.ts';
 import { VOICE as marbleJumpVoice } from '../games/marble-jump/voice.ts';
+import { VOICE as marketDaysVoice } from '../games/market-days/voice.ts';
 import { VOICE as marketStallVoice } from '../games/market-stall/voice.ts';
 import { VOICE as meadowPensVoice } from '../games/meadow-pens/voice.ts';
 import { VOICE as measuringPostVoice } from '../games/measuring-post/voice.ts';
@@ -183,6 +185,7 @@ import { VOICE as timelineTrailVoice } from '../games/timeline-trail/voice.ts';
 import { VOICE as trackwayTalesVoice } from '../games/trackway-tales/voice.ts';
 import { VOICE as treasureMapVoice } from '../games/treasure-map/voice.ts';
 import { VOICE as truthBridgeVoice } from '../games/truth-bridge/voice.ts';
+import { VOICE as twoTabletsVoice } from '../games/two-tablets/voice.ts';
 import { VOICE as villageVoteVoice } from '../games/village-vote/voice.ts';
 import { VOICE as vineSnipVoice } from '../games/vine-snip/voice.ts';
 import { VOICE as waterRoadVoice } from '../games/water-road/voice.ts';
@@ -703,6 +706,7 @@ export const SCRIPT = {
   ...clockTowerVoice,
   ...colorGardenVoice,
   ...commonGroundVoice,
+  ...countTheBallotsVoice,
   ...critterCrossingVoice,
   ...critterSortVoice,
   ...crosswordVoice,
@@ -766,6 +770,7 @@ export const SCRIPT = {
   ...mailCarrierVoice,
   ...makerLaneVoice,
   ...marbleJumpVoice,
+  ...marketDaysVoice,
   ...marketStallVoice,
   ...meadowPensVoice,
   ...measuringPostVoice,
@@ -863,6 +868,7 @@ export const SCRIPT = {
   ...trackwayTalesVoice,
   ...treasureMapVoice,
   ...truthBridgeVoice,
+  ...twoTabletsVoice,
   ...villageVoteVoice,
   ...vineSnipVoice,
   ...waterRoadVoice,

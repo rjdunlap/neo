@@ -48,6 +48,7 @@ import { createSuite as createFenceTheField } from './suites/fence-the-field-pla
 import { createSuite as createHarborOrders } from './suites/harbor-orders-play.mjs';
 import { createSuite as createKeyItOut } from './suites/key-it-out-play.mjs';
 import { createSuite as createJarClues } from './suites/jar-clues-play.mjs';
+import { createSuite as createCountTheBallots } from './suites/count-the-ballots-play.mjs';
 import { createSuite as createTideLine } from './suites/tide-line-play.mjs';
 import { createSuite as createDriftCards } from './suites/drift-cards-play.mjs';
 import { createSuite as createBlockTopple } from './suites/block-topple-play.mjs';
@@ -208,6 +209,8 @@ import { createSuite as create132 } from './suites/discovery-mix.mjs';
 import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
 import { createSuite as createDailyMix } from './suites/discovery-daily-mix.mjs';
 import { createSuite as create134 } from './suites/word-code-play.mjs';
+import { createSuite as createMarketDays } from './suites/market-days-play.mjs';
+import { createSuite as createTwoTablets } from './suites/two-tablets-play.mjs';
 import { createSuite as create135 } from './suites/down-we-go-play.mjs';
 import { createSuite as create136 } from './suites/bunny-patches-play.mjs';
 import { createSuite as createSillyScene } from './suites/silly-scene-play.mjs';
@@ -243,6 +246,8 @@ export const SUITES = [
   'numbernook',
   'pantry',
   'wordcode',
+  'marketdays',
+  'twotablets',
   'downwego',
   'bunnypatches',
   'campsite',
@@ -393,6 +398,7 @@ export const SUITES = [
   'fencethefield',
   'keyitout',
   'jarclues',
+  'countballots',
   'harbororders',
   'driftcards',
   'blocktopple',
@@ -459,6 +465,8 @@ export const ALL_SUITES = [
   'numbernook',
   'pantry',
   'wordcode',
+  'marketdays',
+  'twotablets',
   'downwego',
   'bunnypatches',
   'campsite',
@@ -594,6 +602,7 @@ export const ALL_SUITES = [
   'fencethefield',
   'keyitout',
   'jarclues',
+  'countballots',
   'harbororders',
   'driftcards',
   'blocktopple',
@@ -669,6 +678,8 @@ export function createChecks(fixture) {
     'numberNookPlay',
     'picnicPantryPlay',
     'wordCodePlay',
+    'marketDaysPlay',
+    'twoTabletsPlay',
     'downWeGoPlay',
     'bunnyPatchesPlay',
     'campsitePlay',
@@ -952,6 +963,8 @@ export function createChecks(fixture) {
   install(create133(shared));
   install(createDailyMix(shared));
   install(create134(shared));
+  install(createMarketDays(shared));
+  install(createTwoTablets(shared));
   install(create135(shared));
   install(create136(shared));
   install(createCampsite(shared));
@@ -991,6 +1004,7 @@ export function createChecks(fixture) {
   install(createFenceTheField(shared));
   install(createKeyItOut(shared));
   install(createJarClues(shared));
+  install(createCountTheBallots(shared));
   install(createHarborOrders(shared));
   install(createDriftCards(shared));
   install(createBlockTopple(shared));
@@ -1056,6 +1070,8 @@ export async function runSuite(suite, fixture) {
     numberNookPlay,
     picnicPantryPlay,
     wordCodePlay,
+    marketDaysPlay,
+    twoTabletsPlay,
     downWeGoPlay,
     bunnyPatchesPlay,
     campsitePlay,
@@ -1260,6 +1276,7 @@ export async function runSuite(suite, fixture) {
     fenceTheFieldPlay,
     keyItOutPlay,
     jarCluesPlay,
+    countTheBallotsPlay,
     harborOrdersPlay,
     driftCardsPlay,
     gardenRowsPlay,
@@ -1320,6 +1337,8 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'numbernook') await numberNookPlay();
   if (suite === 'all' || suite === 'pantry') await picnicPantryPlay();
   if (suite === 'all' || suite === 'wordcode') await wordCodePlay();
+  if (suite === 'all' || suite === 'marketdays') await marketDaysPlay();
+  if (suite === 'all' || suite === 'twotablets') await twoTabletsPlay();
   if (suite === 'all' || suite === 'downwego') await downWeGoPlay();
   if (suite === 'all' || suite === 'bunnypatches') await bunnyPatchesPlay();
   if (suite === 'all' || suite === 'campsite') await campsitePlay();
@@ -1491,6 +1510,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'fencethefield') await fenceTheFieldPlay();
   if (suite === 'all' || suite === 'keyitout') await keyItOutPlay();
   if (suite === 'all' || suite === 'jarclues') await jarCluesPlay();
+  if (suite === 'all' || suite === 'countballots') await countTheBallotsPlay();
   if (suite === 'all' || suite === 'harbororders') await harborOrdersPlay();
   if (suite === 'all' || suite === 'driftcards') await driftCardsPlay();
   if (suite === 'all' || suite === 'blocktopple') await blockTopplePlay();

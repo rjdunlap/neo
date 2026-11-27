@@ -57,10 +57,13 @@ function bottomRow(v: V): number {
   return narrow(v) ? v.h - 290 - Math.max(0, v.h - 1206) * 0.15 : v.h - 130;
 }
 
+/** Loose monster spots to reserve: ladder keeps a 4th spot open for a lifted standing monster. */
+const spotChoices = (plan: Plan) => (plan.mode === 'ladder' ? 4 : plan.choices);
+
 /** The anchor the picture, the boxes and the read button hang from. */
 export function topSpot(v: V, plan: Plan): Spot {
   if (!narrow(v)) return { x: v.w / 2, y: v.h * 0.3 };
-  const rows = rowSizes(v, plan.choices).length;
+  const rows = rowSizes(v, spotChoices(plan)).length;
   return { x: v.w / 2, y: bottomRow(v) - (rows - 1) * ROW_GAP - 380 };
 }
 
@@ -75,17 +78,18 @@ export function slotSpot(v: V, plan: Plan, i: number, count: number): Spot {
 
 /**
  * Where `n` loose monsters stand (all of them at the start of a question; fewer when the screen turns mid-word). `count`
- * is the word's boxes, which level 12 keeps its row near.
+ * is the word's boxes, which levels 12 and 18 keep their row near.
  */
 export function looseSpots(v: V, plan: Plan, n: number, count = 3): Spot[] {
-  const sizes = rowSizes(v, plan.choices);
-  const five = plan.choices === 5;
+  const choices = spotChoices(plan);
+  const sizes = rowSizes(v, choices);
+  const five = choices === 5;
   const base =
-    plan.mode === 'repair' && !narrow(v)
+    (plan.mode === 'repair' || plan.mode === 'ladder') && !narrow(v)
       ? Math.min(v.h - 130, slotSpot(v, plan, 0, count).y + 375)
       : bottomRow(v);
   const out: Spot[] = [];
-  let left = n;
+  let left = plan.mode === 'ladder' ? choices : n;
   sizes.forEach((size, j) => {
     const m = Math.min(left, size);
     left -= m;
@@ -97,7 +101,7 @@ export function looseSpots(v: V, plan: Plan, n: number, count = 3): Spot[] {
     for (let i = 0; i < m; i++)
       out.push({ x: xs[i], y: base - (sizes.length - 1 - j) * ROW_GAP + JITTER[i % 2] });
   });
-  return out;
+  return out.slice(0, n);
 }
 
 /** Level 9: where the big monster stands. */

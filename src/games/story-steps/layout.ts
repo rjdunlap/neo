@@ -179,3 +179,32 @@ export function theaterLayout(v: View) {
     compare: [-200, 200],
   };
 }
+
+/** Two Viewpoints: the stage, two friend cards, four ending cards and four buttons. */
+export function viewpointsLayout(v: View) {
+  if (!v.upright) {
+    const extra = Math.max(0, v.h - 768);
+    const cx = v.w / 2;
+    return {
+      title: { x: cx, y: 56 },
+      stage: { x: cx, y: 205 + extra * 0.1 },
+      stageScale: 0.8,
+      caption: { x: cx, y: 332 + extra * 0.12 },
+      friends: [-110, 110].map((dx) => ({ x: cx + dx, y: 412 + extra * 0.15, w: 164, h: 100 })),
+      endings: [-264, -88, 88, 264].map((dx) => ({ x: cx + dx, y: 532 + extra * 0.3, w: 156, h: 100 })),
+      buttons: [-270, -90, 90, 270].map((dx) => ({ x: cx + dx, y: v.h - 80 - extra * 0.2, w: 148, h: 100 })),
+    };
+  }
+  // Upright: everything stands in one column; taller screens spread what is left between the groups.
+  const spare = Math.max(0, v.h - 1206);
+  const cx = v.w / 2;
+  return {
+    title: { x: cx, y: 140 + spare * 0.05 },
+    stage: { x: cx, y: 278 + spare * 0.1 },
+    stageScale: 0.85,
+    caption: { x: cx, y: 404 + spare * 0.15 },
+    friends: [-110, 110].map((dx) => ({ x: cx + dx, y: 524 + spare * 0.25, w: 180, h: 106 })),
+    endings: grid(4, 2, cx, 682 + spare * 0.4, 220, 122).map((p) => ({ ...p, w: 148, h: 106 })),
+    buttons: grid(4, 2, cx + 40, 956 + spare * 0.6, 180, 118).map((p) => ({ ...p, w: 148, h: 106 })),
+  };
+}

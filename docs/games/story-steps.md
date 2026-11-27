@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–5 |
 | pre-K | 4–8 |
-| school | 6–13 |
+| school | 6–14 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 11 | Use a visible clue to choose what will happen next |
 | 12 | Story Theater: choose a cast, weather and prop, then watch your picnic |
 | 13 | Story Theater: change one event and compare two picnic endings |
+| 14 | Story Theater: Two Viewpoints, hear two friends and choose an ending |
 
 <!-- end generated -->
 
@@ -35,7 +36,7 @@
 
 **Starts as:** finish a two-picture story
 
-**Grows into:** order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; repair a mixed-up story with swaps and undo; untangle two stories into separate rows; predict endings from eight authored clue stories; make narrated picnic shows and revise one event in Story Theater (school 12–13); eleven sequencing stories
+**Grows into:** order four pictures, fill missing middles, leave out unrelated pictures; choose a cause from eight pairs; repair a mixed-up story with swaps and undo; untangle two stories into separate rows; predict endings from eight authored clue stories; make narrated picnic shows and revise one event in Story Theater (school 12–13); hear two friends' viewpoints and choose an ending that keeps both wishes (school 14); eleven sequencing stories
 
 ## Design notes
 
@@ -50,3 +51,5 @@ Level 10 (school), **Untangle two stories**: six pictures (stages 0, 1, 3 from e
 Level 11 (school), **What will happen?**: a seeded draw from eight authored clue stories shows three pictures and two possible endings. The clues are dark clouds, a hand pushing blocks, a full bucket tipping beside a sand tower, top bread coming down, opening petals, an apple growing on a branch, emerging wings, and bedding ready beside pajamas. Endings are alternatives within the story rather than unrelated cards. Drag an ending to the final space: an unsupported prediction is shown and narrated before returning to the tray, with spoken attention to the named clue. The first unsupported choice is free exploration; every repeated unsupported choice counts a miss, and the second unsupported choice glows the clue and records one hint for the round. Tapping a shown picture speaks its sentence; replay narrates all three shown pictures without giving the ending away. The supported ending is narrated with an evidence explanation before one sticker. School reached 6–11 here; younger ranges, saved levels/pins and save format are preserved. The ghost finger makes the same supported drag.
 
 Levels 12–13 (school), **Story Theater**: choose Bunny or Bear, Sun or Rain, and Blanket or Umbrella, then Watch a narrated four-scene picnic. All eight combinations are valid; rain with a blanket ends in a friendly indoor picnic. Level 12 ends only when she taps **Take a bow** after watching. At level 13, the first show stays visible and the cast stays fixed: change exactly one of weather or prop, watch the revision and compare its consequences, then take a bow. Switching the revised field restores the other field to the first show’s choice. Watch replays the current draft; Undo restores one edit; the lightbulb speaks and glows a useful next action, counting one hint per request. Creative choices and incomplete presses cost no misses, and there are no automatic hints or round timers. One shell sticker follows the explicit bow, including with help. No stories are saved. School is 6–13; younger ranges and existing levels 1–11 are unchanged. The how-to card and ghost finger follow these same taps. Broader theater, younger placement and kept books remain proposals.
+
+Level 14 (school), **Two Viewpoints** ([definition](../definitions/two-viewpoints.md)): a picnic horn starts lively music. She taps both friends to hear their own words, one who loves the music and wants to dance and one who finds it too loud and wants a quiet spot (Bunny and Bear swap roles by seed), then picks one of four pictured endings and taps Watch. *Stay by the horn* and *Turn it off* each leave one friend's wish unmet; *Two spots* and *Shady hill* keep both. Hearing either account again, trying a one-sided ending once, Undo and watching before both accounts are heard cost nothing; watching the same one-sided ending a second time counts a miss with a gentle boing, the second miss glows *Two spots* and counts one hint, and each lightbulb request counts one hint. Take a bow needs a watched working ending and gives one shell sticker, including with help. No story is saved. School is now 6–14; levels 1–13 and younger ranges are unchanged. The optional comparison thumbnails in the definition (open decision 2) were left out to keep the upright stage clean; the rules do not depend on them.

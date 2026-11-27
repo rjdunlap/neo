@@ -34,7 +34,14 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       await launch('word-monsters', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-      if (mode === 'last' || mode === 'slow' || mode === 'repair' || mode === 'team') {
+      if (
+        mode === 'last' ||
+        mode === 'slow' ||
+        mode === 'repair' ||
+        mode === 'team' ||
+        mode === 'magic' ||
+        mode === 'ladder'
+      ) {
         // Played on a phone held upright, the focus of current playtests.
         const was = page.viewportSize();
         await page.setViewportSize({ width: 390, height: 844 });
@@ -172,6 +179,119 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         for (const size of restore.splice(0)) await page.setViewportSize(size);
         log(
           'Word Monsters 16: monsters say the sounds, free replay, two wrong cards and the glow, saved score passed',
+        );
+        continue;
+      }
+      if (mode === 'magic') {
+        // Level 17, The magic e, on a phone held upright: a word stands in three boxes, the fourth waits. Two spare letters
+        // (each says it spells another word; two misses glow the e, one hint) and the quiet e, which changes the picture.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const aim = () => {
+            const slot = g.slotAt(g.filled);
+            return g.top.parent.toGlobal({ x: slot.x, y: slot.y + 40 });
+          };
+          for (let i = 0; i < g.questions.length; i++) {
+            await kit.until(() => g.index === i && !g.busy, 15000);
+            const q = g.question;
+            if (g.filled !== 3 || g.monsters.filter((m) => m.placed && m.slot < 3).length !== 3)
+              throw new Error('Three letters should stand built in the first three boxes');
+            const right = g.monsters.find((m) => !m.placed && m.letter === 'e');
+            if (i === 0) {
+              const spares = g.monsters.filter((m) => !m.placed && m !== right);
+              await kit.dragTo(spares[0], aim(), 10);
+              await kit.sleep(450);
+              await kit.dragTo(spares[1], aim(), 10);
+              await kit.sleep(450);
+              if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible)
+                throw new Error(`Two spares: ${g.misses} ${g.hints} glow ${right.glow.visible}`);
+            }
+            await kit.dragTo(right, aim(), 10);
+            if (!right.placed) throw new Error(`The e did not fit ${q.answer}`);
+            await kit.sleep(400);
+          }
+        });
+        await screenshot(`word-monsters-${level}`);
+        await finished('word-monsters');
+        const magicScore = await page.evaluate(() => {
+          const r = kit.store.stats('word-monsters').history.at(-1);
+          return [r.misses, r.hints];
+        });
+        assert.deepEqual(magicScore, [2, 1]);
+        for (const size of restore.splice(0)) await page.setViewportSize(size);
+        log(
+          'Word Monsters 17: three built letters, two wrong spares and the glow, the e fits, saved score passed',
+        );
+        continue;
+      }
+      if (mode === 'ladder') {
+        // Level 18, Change one sound, on a phone held upright: tap a wrong box and put its letter back free (0 misses),
+        // two wrong drops glow the changing box, tapping that box out enables the candidates, two more misses glow the
+        // right new letter, and four rungs finish the ladder.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          for (let i = 0; i < g.questions.length; i++) {
+            await kit.until(() => g.index === i && !g.busy, 15000);
+            const { answer, ladder } = g.question;
+            const changing = g.monsters.find((m) => m.placed && m.slot === ladder.slot);
+            const other = g.monsters.find((m) => m.placed && m !== changing);
+            const right = g.monsters.find((m) => !m.placed && m.letter === answer[ladder.slot]);
+            const spares = g.monsters.filter((m) => !m.placed && m !== right);
+            const aim = (slotIndex) => {
+              const s = g.slotAt(slotIndex);
+              return g.top.parent.toGlobal({ x: s.x, y: s.y + 40 });
+            };
+            if (i === 0) {
+              const wrongSlot = other.slot;
+              kit.tapOn(other);
+              await kit.sleep(300);
+              if (other.placed) throw new Error('Tapping a box should lift its letter out');
+              await kit.dragTo(other, aim(wrongSlot), 10);
+              await kit.sleep(300);
+              if (!other.placed || other.slot !== wrongSlot || g.misses !== 0 || g.hints !== 0)
+                throw new Error(`Putting the same letter back should be free: ${g.misses} ${g.hints}`);
+              kit.tapOn(other);
+              await kit.sleep(300);
+              await kit.dragTo(spares[0], aim(wrongSlot), 10);
+              await kit.sleep(350);
+              await kit.dragTo(spares[1], aim(wrongSlot), 10);
+              await kit.sleep(350);
+              if (g.misses !== 2 || g.hints !== 1 || !changing.glow.visible)
+                throw new Error(
+                  `Two wrong drops should glow the box: ${g.misses} ${g.hints} ${changing.glow.visible}`,
+                );
+            }
+            kit.tapOn(changing);
+            await kit.sleep(300);
+            if (changing.placed || g.monsters.some((m) => m.placed && m.slot === ladder.slot))
+              throw new Error('The changing letter did not leave its box');
+            if (i === 0) {
+              if (neo.scene.instruction?.id !== 'monster.ladder.replace')
+                throw new Error(`Expected monster.ladder.replace, got ${neo.scene.instruction?.id}`);
+              await kit.dragTo(spares[0], aim(ladder.slot), 10);
+              await kit.sleep(350);
+              await kit.dragTo(spares[1], aim(ladder.slot), 10);
+              await kit.sleep(350);
+              if (g.misses !== 4 || g.hints !== 2 || !right.glow.visible)
+                throw new Error(
+                  `Two wrong drops on right box should glow the monster: ${g.misses} ${g.hints} ${right.glow.visible}`,
+                );
+            }
+            await kit.dragTo(right, aim(ladder.slot), 10);
+            if (!right.placed || right.slot !== ladder.slot) throw new Error('The new letter did not fit');
+            await kit.sleep(350);
+          }
+        });
+        await screenshot(`word-monsters-${level}`);
+        await finished('word-monsters');
+        const ladderScore = await page.evaluate(() => {
+          const r = kit.store.stats('word-monsters').history.at(-1);
+          return [r.misses, r.hints];
+        });
+        assert.deepEqual(ladderScore, [4, 2]);
+        for (const size of restore.splice(0)) await page.setViewportSize(size);
+        log(
+          'Word Monsters 18: free box put-back, two-miss box glow, two-miss monster glow, four-rung ladder and saved score passed',
         );
         continue;
       }

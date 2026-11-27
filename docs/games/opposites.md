@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 6, 1 |
+| lap | 12, 6, 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3, 4, 5, 7, 8 |
@@ -27,6 +27,7 @@
 | 9 | Only the word: the pet says a word (its picture hidden behind a speaker); find its opposite among three |
 | 10 | Un- words: two pictures, like zipped and unzipped; hear (and see) the un- word and tap it |
 | 11 | Two answers: some words have two opposites (light: heavy and dark); find both |
+| 12 | One pair, again and again: four flips of big and small (or hot and cold), the same friend each time |
 
 <!-- end generated -->
 

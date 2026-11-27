@@ -1,1 +1,0 @@
-**`word-monsters` The magic e** (school, after level 16; new interaction on an existing game: ladder rules in `logic.ts`, unit tests, one filtered play with one wrong drop and one hint, one portrait screenshot, `npm run game-docs`; takes the next free stable level ID). [Dive](../../deep-dives/word-monsters.md#build-slices-in-order)

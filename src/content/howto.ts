@@ -24,6 +24,7 @@ import { HOW_TO as clapSyllablesHowTo } from '../games/clap-syllables/howto.ts';
 import { HOW_TO as clockTowerHowTo } from '../games/clock-tower/howto.ts';
 import { HOW_TO as colorGardenHowTo } from '../games/color-garden/howto.ts';
 import { HOW_TO as commonGroundHowTo } from '../games/common-ground/howto.ts';
+import { HOW_TO as countTheBallotsHowTo } from '../games/count-the-ballots/howto.ts';
 import { HOW_TO as critterCrossingHowTo } from '../games/critter-crossing/howto.ts';
 import { HOW_TO as critterSortHowTo } from '../games/critter-sort/howto.ts';
 import { HOW_TO as crosswordHowTo } from '../games/crossword/howto.ts';
@@ -87,6 +88,7 @@ import { HOW_TO as lostLayersHowTo } from '../games/lost-layers/howto.ts';
 import { HOW_TO as mailCarrierHowTo } from '../games/mail-carrier/howto.ts';
 import { HOW_TO as makerLaneHowTo } from '../games/maker-lane/howto.ts';
 import { HOW_TO as marbleJumpHowTo } from '../games/marble-jump/howto.ts';
+import { HOW_TO as marketDaysHowTo } from '../games/market-days/howto.ts';
 import { HOW_TO as marketStallHowTo } from '../games/market-stall/howto.ts';
 import { HOW_TO as meadowPensHowTo } from '../games/meadow-pens/howto.ts';
 import { HOW_TO as measuringPostHowTo } from '../games/measuring-post/howto.ts';
@@ -184,6 +186,7 @@ import { HOW_TO as timelineTrailHowTo } from '../games/timeline-trail/howto.ts';
 import { HOW_TO as trackwayTalesHowTo } from '../games/trackway-tales/howto.ts';
 import { HOW_TO as treasureMapHowTo } from '../games/treasure-map/howto.ts';
 import { HOW_TO as truthBridgeHowTo } from '../games/truth-bridge/howto.ts';
+import { HOW_TO as twoTabletsHowTo } from '../games/two-tablets/howto.ts';
 import { HOW_TO as villageVoteHowTo } from '../games/village-vote/howto.ts';
 import { HOW_TO as vineSnipHowTo } from '../games/vine-snip/howto.ts';
 import { HOW_TO as waterRoadHowTo } from '../games/water-road/howto.ts';
@@ -236,6 +239,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'clock-tower': clockTowerHowTo,
   'color-garden': colorGardenHowTo,
   'common-ground': commonGroundHowTo,
+  'count-the-ballots': countTheBallotsHowTo,
   'critter-crossing': critterCrossingHowTo,
   'critter-sort': critterSortHowTo,
   'crossword': crosswordHowTo,
@@ -299,6 +303,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'mail-carrier': mailCarrierHowTo,
   'maker-lane': makerLaneHowTo,
   'marble-jump': marbleJumpHowTo,
+  'market-days': marketDaysHowTo,
   'market-stall': marketStallHowTo,
   'meadow-pens': meadowPensHowTo,
   'measuring-post': measuringPostHowTo,
@@ -396,6 +401,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'trackway-tales': trackwayTalesHowTo,
   'treasure-map': treasureMapHowTo,
   'truth-bridge': truthBridgeHowTo,
+  'two-tablets': twoTabletsHowTo,
   'village-vote': villageVoteHowTo,
   'vine-snip': vineSnipHowTo,
   'water-road': waterRoadHowTo,

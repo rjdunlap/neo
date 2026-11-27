@@ -42,10 +42,10 @@ const views = { ...UPRIGHT_VIEWS, short: computeView(375, 601, NO_INSETS, true) 
 const levels = [
   ...new Set((Object.keys(LEVELS) as Band[]).flatMap((band) => levelsInOrder(rangeFor(LEVELS, band)))),
 ].sort((a, b) => a - b);
-const building = ['build', 'spell', 'slow', 'team', 'repair', 'family', 'end'];
+const building = ['build', 'spell', 'slow', 'team', 'repair', 'ladder', 'family', 'end'];
 
-it('covers levels 1 to 16', () => {
-  expect(levels).toEqual(Array.from({ length: 16 }, (_, i) => i + 1));
+it('covers levels 1 to 18', () => {
+  expect(levels).toEqual(Array.from({ length: 18 }, (_, i) => i + 1));
 });
 
 describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
@@ -72,8 +72,9 @@ describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           const count = unitsOf(q).length;
           const top = topSpot(v, plan);
-          const spots = looseSpots(v, plan, q.monsters.length, count);
-          expect(spots).toHaveLength(q.monsters.length);
+          const looseCount = plan.mode === 'ladder' ? 4 : q.monsters.length;
+          const spots = looseSpots(v, plan, looseCount, count);
+          expect(spots).toHaveLength(looseCount);
           const where = `level ${level}, ${q.answer}`;
           if (plan.mode === 'blend') {
             // Three picture cards stand where loose monsters do; the word's own monsters stand in the boxes' row above
@@ -95,12 +96,15 @@ describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
             }
             continue;
           }
-          const targets: Target[] = q.monsters.map((letter, i) => ({
-            what: `monster ${letter}`,
-            ...spots[i],
-            w: letter.length > 1 ? 2 * TEAM_HIT_RX : 2 * HIT_R,
-            h: 2 * HIT_R,
-          }));
+          const targets: Target[] = spots.map((spot, i) => {
+            const letter = q.monsters[i] ?? 'e';
+            return {
+              what: `monster ${letter}`,
+              ...spot,
+              w: letter.length > 1 ? 2 * TEAM_HIT_RX : 2 * HIT_R,
+              h: 2 * HIT_R,
+            };
+          });
           if (building.includes(plan.mode)) {
             const slots = Array.from({ length: count }, (_, i) => slotSpot(v, plan, i, count));
             expect(slots[0].y).toBeCloseTo(top.y + SLOT_DY);
@@ -117,13 +121,14 @@ describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
                 w: slotX(count - 1, count) - slotX(0, count) + 2 * SLOT_ROW_HIT.pad,
                 h: SLOT_ROW_HIT.h,
               });
-            } else if (q.repair) {
+            } else if (q.repair || q.ladder) {
               slots.forEach((s, i) =>
                 targets.push({ what: `standing monster ${i + 1}`, ...s, ...FIXED_HIT }),
               );
-              targets.push(
-                square('read the word', { x: top.x + READ_AT.x, y: top.y + READ_AT.y }, 2 * READ_R),
-              );
+              if (q.repair)
+                targets.push(
+                  square('read the word', { x: top.x + READ_AT.x, y: top.y + READ_AT.y }, 2 * READ_R),
+                );
             } else {
               slots.forEach((s, i) => targets.push(square(`box ${i + 1}`, s, SLOT_SIZE)));
             }
@@ -131,7 +136,7 @@ describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
           const picture =
             plan.mode === 'last'
               ? LAST_PICTURE
-              : plan.mode === 'slow' || plan.mode === 'team' || q.repair
+              : plan.mode === 'slow' || plan.mode === 'team' || q.repair || q.ladder
                 ? BUILD_PICTURE
                 : null;
           if (picture)
@@ -153,7 +158,8 @@ describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
     for (const level of levels) {
       const plan = planFor(level);
       if (plan.big) continue;
-      for (let n = 1; n <= plan.choices; n++) {
+      const max = plan.mode === 'ladder' ? 4 : plan.choices;
+      for (let n = 1; n <= max; n++) {
         const spots = looseSpots(v, plan, n).map((s, i) => square(`monster ${i + 1}`, s, 2 * HIT_R));
         expect(spots).toHaveLength(n);
         expect(uprightProblems(v, spots), `level ${level}, ${n} loose`).toEqual([]);

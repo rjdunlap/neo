@@ -37,7 +37,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
   async function meadowPlay() {
     if (process.env.MEADOW_LEVELS) {
       const levels = process.env.MEADOW_LEVELS.split(',').map(Number);
-      assert.ok(levels.length && levels.every((n) => n === 4 || n === 5), 'MEADOW_LEVELS supports 4,5');
+      assert.ok(levels.length && levels.every((n) => n >= 4 && n <= 7), 'MEADOW_LEVELS supports 4,5,6,7');
+      if (levels.every((n) => n >= 6)) return factorPlay(levels);
       return fixedPlay(levels);
     }
     const score = () =>
@@ -162,6 +163,74 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     log(
       'Meadow Pens 1-3: empty ring free, short pen miss, requested glow and supported finish, wrong card fill, wrong fence miss, portrait, saved scores passed',
     );
+  }
+
+  /** Levels 6 and 7: free touches, one wrong card, a two-miss glow, restart, a portrait screenshot, a requested hint and the finish. */
+  async function factorPlay(levels) {
+    const settle = async () => {
+      await page.waitForTimeout(180);
+      await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 45000 });
+      await page.waitForTimeout(170);
+    };
+    const tally = () => page.evaluate(() => [neo.scene.game.tally.misses, neo.scene.game.tally.hints]);
+    const choose = async (wrong = false) => {
+      await page.evaluate(async (wrong) => {
+        const { correctCard } = await import('/src/games/meadow-pens/factor-logic.ts');
+        const g = neo.scene.game,
+          right = correctCard(g.task);
+        kit.tapOn(g.cards.find((c) => (c.value === right) !== wrong));
+      }, wrong);
+      await settle();
+    };
+    for (const level of levels) {
+      await launch('meadow-pens', level);
+      await settle();
+      assert.equal(await page.evaluate(() => neo.scene.game.task.id), level === 6 ? 'M3' : 'V1');
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.cards.map((c) => c.value)),
+        level === 6 ? [4, 9, 3] : [18, 6, 9],
+      );
+      // Free touches: the blanket (6) or the tray and a layer mark (7) count nothing.
+      for (let i = 0; i < (level === 6 ? 1 : 2); i++) {
+        await page.evaluate(async (i) => {
+          const { centre, cellRect } = await import('/src/games/meadow-pens/logic.ts');
+          const g = neo.scene.game,
+            target = g.targetsOf[i];
+          const at = target.toGlobal(centre(cellRect(g.lay, target.cells()[0])));
+          kit.tap(at.x, at.y);
+        }, i);
+        await settle();
+      }
+      assert.deepEqual(await tally(), [0, 0]);
+      await choose(true);
+      assert.deepEqual(await tally(), [1, 0]);
+      await choose(true);
+      assert.deepEqual(await tally(), [2, 1]);
+      await page.evaluate(() => neo.scene.game.restart());
+      await settle();
+      assert.deepEqual(await tally(), [2, 1]);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(500);
+      await screenshot(`meadow-pens-${level}-portrait`);
+      await choose(true);
+      assert.equal(await page.evaluate(() => neo.scene.game.index), 1, 'supported wrong card completes');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await settle();
+      assert.deepEqual(await tally(), [2, 2]);
+      await choose(true);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(300);
+      for (let q = 2; q < 5; q++) await choose();
+      await finished('meadow-pens');
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const r = kit.store.stats('meadow-pens').history.at(-1);
+          return [r.misses, r.hints, r.level];
+        }),
+        [2, 2, level],
+      );
+      log(`Meadow Pens ${level}: free touches, two misses, restart, hint and finish`);
+    }
   }
 
   async function fixedPlay(levels) {
