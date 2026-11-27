@@ -385,5 +385,5 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 4, max: 8 },
-  school: { min: 6, max: 13 },
+  school: { min: 6, max: 14 },
 };

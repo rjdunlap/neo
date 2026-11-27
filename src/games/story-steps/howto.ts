@@ -19,6 +19,16 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'The curved arrow undoes one edit. Watch replays your current story; the lightbulb speaks help and glows a useful control.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'Tap both friends to hear what each one says, then choose an ending and tap the stage to watch.',
+    },
+    {
+      from: 14,
+      to: 14,
+      text: 'The curved arrow undoes your last choice; the lightbulb speaks help and glows a useful control.',
+    },
     { to: 2, text: 'Drag the picture that comes next into the glowing space.' },
     { from: 3, to: 5, text: 'Drag the pictures into the spaces in the order the story happens.' },
     {
@@ -69,6 +79,11 @@ export const HOW_TO: GameHowTo = {
       from: 13,
       to: 13,
       text: 'After watching the first show and a version with one changed event, tap the green check to take a bow. Creative choices cost no misses; each lightbulb request counts one hint.',
+    },
+    {
+      from: 14,
+      to: 14,
+      text: 'Watch an ending that works for both friends, then tap the green check to take a bow. Trying a one-sided ending once is free; repeating it counts a miss, and Help highlights a working next step.',
     },
     { to: 7, text: 'The round ends when the story pictures are in a sensible order.' },
     {

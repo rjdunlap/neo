@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { predictLayout, repairLayout, stripLayout, theaterLayout, untangleLayout } from './layout';
+import {
+  predictLayout,
+  repairLayout,
+  stripLayout,
+  theaterLayout,
+  untangleLayout,
+  viewpointsLayout,
+} from './layout';
 import type { Point } from './layout';
 import { LEVEL_PLANS, storyPuzzle } from './logic';
 
@@ -63,6 +70,23 @@ describe.each(Object.entries(UPRIGHT_VIEWS))('Story Steps upright on %s', (_, v)
     for (const x of L.compare) expect(Math.abs(x) + 75).toBeLessThan(v.w / 2);
     // Each label sits above its pair.
     L.labels.forEach((p, g) => expect(p.y + 14).toBeLessThan(L.choices[g * 2].y - 53));
+    expect(L.title.y).toBeGreaterThan(60);
+  });
+});
+
+describe.each(Object.entries(UPRIGHT_VIEWS))('Two Viewpoints upright on %s', (_, v) => {
+  it('level 14: every card and button fits, with the stage and caption whole and apart', () => {
+    const L = viewpointsLayout(v);
+    const t: Target[] = [...L.friends, ...L.endings, ...L.buttons].map((p, i) => ({
+      what: `target ${i}`,
+      ...p,
+    }));
+    expect(uprightProblems(v, t)).toEqual([]);
+    const stageHalf = 310 * L.stageScale;
+    expect(L.stage.x - stageHalf).toBeGreaterThanOrEqual(0);
+    expect(L.stage.x + stageHalf).toBeLessThanOrEqual(v.w);
+    expect(L.stage.y + 120 * L.stageScale).toBeLessThan(L.caption.y - 14);
+    expect(L.caption.y + 16).toBeLessThan(Math.min(...L.friends.map((p) => p.y - p.h / 2)) - 14);
     expect(L.title.y).toBeGreaterThan(60);
   });
 });
