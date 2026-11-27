@@ -43,7 +43,7 @@ export type PlanId =
   | 'flowersRoll'
   | 'keepGoing';
 export type RequestId =
-  'page' | 'banner' | 'bannerOr' | 'own' | 'start' | 'spill' | 'keepMade' | 'flowers' | 'keepOurs';
+  'page' | 'banner' | 'bannerOr' | 'own' | 'start' | 'spill' | 'keepMade' | 'flowers' | 'keepOurs' | 'help';
 export type Why = 'full' | 'notInPlan' | 'waiting' | 'turns' | 'myStep' | 'chooseFirst' | 'later';
 
 export const FRIENDS: readonly Friend[] = ['A', 'B'];
@@ -95,6 +95,8 @@ export interface LevelSpec {
   changed?: Record<Friend, RequestId>;
   /** Which request each friend makes. */
   requests: Record<Friend, RequestId>;
+  /** Level 6: the friend whose request is not spoken until she asks. */
+  unspoken?: Friend;
 }
 
 export interface Variation {
@@ -107,6 +109,8 @@ export interface Variation {
   smudge?: number;
   /** Level 5: the picture the new idea asks for. */
   renewed?: StampPicture;
+  /** Level 6: what the unspoken friend says when asked: to keep their own page, or to help with the banner too. */
+  answer?: 'own' | 'help';
 }
 
 export type StampPicture = 'star' | 'flower' | 'fish';
@@ -141,6 +145,11 @@ export const VARIATIONS: Record<number, readonly Variation[]> = {
     { cast: ['bear', 'bunny'], picture: 'star', theme: 'sun', own: 'B', renewed: 'flower' },
     { cast: ['cat', 'dog'], picture: 'flower', theme: 'leaf', own: 'A', renewed: 'fish' },
     { cast: ['pig', 'duck'], picture: 'fish', theme: 'sea', own: 'B', renewed: 'star' },
+  ],
+  6: [
+    { cast: ['cat', 'bear'], picture: 'star', theme: 'sun', own: 'B', answer: 'own' },
+    { cast: ['bunny', 'pig'], picture: 'flower', theme: 'leaf', own: 'A', answer: 'help' },
+    { cast: ['duck', 'dog'], picture: 'fish', theme: 'sea', own: 'B', answer: 'help' },
   ],
 };
 
@@ -186,17 +195,25 @@ const PLANS: readonly Omit<LevelSpec, 'requests'>[] = [
     plans: ['turnsTwo'],
     plans2: ['flowersStamp', 'flowersRoll', 'keepGoing'],
   },
+  {
+    level: 6,
+    name: 'Ask first',
+    describe: 'Ask first: tap Ask to hear what a friend wants, then pick a plan that works for both',
+    cells: 2,
+    capacity: 2,
+    plans: ['side', 'bannerThenPage', 'pageThenBanner', 'justBanner'],
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 6 },
 };
 
 export const LEVEL_COUNT = PLANS.length;
 
-export function specFor(level: number, own: Friend = 'B'): LevelSpec {
+export function specFor(level: number, own: Friend = 'B', answer: 'own' | 'help' = 'own'): LevelSpec {
   const s = PLANS[Math.max(1, Math.min(LEVEL_COUNT, level)) - 1];
   const requests: Record<Friend, RequestId> =
     s.level === 1
@@ -207,6 +224,10 @@ export function specFor(level: number, own: Friend = 'B'): LevelSpec {
           ? { A: 'bannerOr', B: 'own' }
           : { A: 'own', B: 'bannerOr' };
   const spec: LevelSpec = { ...s, requests };
+  if (s.level === 6) {
+    spec.unspoken = own;
+    if (answer === 'help') spec.requests = { ...requests, [own]: 'help' };
+  }
   if (s.level === 4) spec.requests = { A: 'spill', B: 'keepMade' };
   if (s.level === 5) {
     spec.requests = { A: 'start', B: 'start' };
@@ -472,6 +493,8 @@ export function check(t: Table, request: RequestId, f: Friend, cells: number, le
       return bannerTogether(t, cells) || (ownPage(t, 'A') && ownPage(t, 'B'));
     case 'start':
       return bannerTogether(t, 2);
+    case 'help':
+      return bannerTogether(t, cells);
     case 'spill':
       return t.marks.banner.length >= 1;
     case 'keepMade':
@@ -514,7 +537,7 @@ export function nextStep(plan: Plan, trace: Trace): Action | null {
   return best[trace.length];
 }
 
-export type Hint = { card: PlanId } | { action: Action } | null;
+export type Hint = { ask: Friend } | { card: PlanId } | { action: Action } | null;
 
 /** One next useful thing: in the Plan phase an accepted card (the selected one if it is accepted), in the Make phase the next step. */
 export function hintFor(
@@ -526,8 +549,10 @@ export function hintFor(
   trace: Trace,
   stage: 1 | 2 = 1,
   prefix: Trace = [],
+  asked = true,
 ): Hint {
   if (phase === 'plan') {
+    if (spec.unspoken && !asked) return { ask: spec.unspoken };
     const ok = acceptedPlans(spec, own, stage, prefix);
     return { card: selected && ok.includes(selected) ? selected : ok[0] };
   }
@@ -537,7 +562,7 @@ export function hintFor(
 
 // ——— Help accounting ———
 
-export type Decision = 'plan' | 'revise' | 'make';
+export type Decision = 'ask' | 'plan' | 'revise' | 'make';
 
 /**
  * Misses are always 0: trying plans, refused taps, Undo and Watch again are free. Each decision counts at most one hint;
@@ -569,8 +594,14 @@ export class Tally {
 }
 
 /** The decision a hint would count for now. */
-export function decisionNow(level: number, phase: 'plan' | 'make', trace: Trace, stage: 1 | 2 = 1): Decision {
-  if (phase === 'plan') return stage === 2 ? 'revise' : 'plan';
+export function decisionNow(
+  level: number,
+  phase: 'plan' | 'make',
+  trace: Trace,
+  stage: 1 | 2 = 1,
+  asked = true,
+): Decision {
+  if (phase === 'plan') return !asked ? 'ask' : stage === 2 ? 'revise' : 'plan';
   return level === 1 && trace.length === 0 ? 'plan' : 'make';
 }
 
@@ -652,6 +683,8 @@ export interface WorkshopLayout {
   again: Rect | null;
   /** Level 4, once done: Try the other way, beside Watch again. */
   other: Rect | null;
+  /** Level 6, Plan phase: the Ask button beside the unspoken friend's bubble. */
+  ask: Rect | null;
 }
 
 export interface LayoutAsk {
@@ -659,6 +692,8 @@ export interface LayoutAsk {
   phase: 'plan' | 'make';
   /** Plan phase: how many cards. */
   cards?: number;
+  /** Level 6, Plan phase: the friend whose request has to be asked for. */
+  unspoken?: Friend;
   /** Make phase: the plan's surfaces and tools. */
   surfaces?: readonly Surface[];
   tools?: number;
@@ -703,10 +738,15 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
       finish: null,
       again: null,
       other: null,
+      ask: ask.unspoken
+        ? ask.unspoken === 'B'
+          ? r(bubbles.B.x - ox - GAP - BUTTON.w, 40, BUTTON.w, BUTTON.h)
+          : r(bubbles.A.x - ox + BUBBLE.w + GAP, 40, BUTTON.w, BUTTON.h)
+        : null,
     };
   }
   const surfaces = ask.surfaces ?? [];
-  const cells = ask.level === 2 || ask.level >= 4 ? 4 : ask.level === 3 ? 2 : 0;
+  const cells = ask.level === 3 || ask.level === 6 ? 2 : ask.level >= 2 ? 4 : 0;
   const banner = surfaces.includes('banner') ? row(cells, CELL, CELL, 270) : [];
   const pages = { A: r(200, 420, PAGE, PAGE), B: r(BOX.w - 200 - PAGE, 420, PAGE, PAGE) };
   const tools = ask.tools ?? 1;
@@ -736,12 +776,19 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
     finish: r((BOX.w - 200) / 2, 445, 200, 150),
     again,
     other,
+    ask: null,
   };
 }
 
 /** The tap targets that are live together (Finish and Watch again replace the middle once done). */
 export function targets(l: WorkshopLayout, done = false): Rect[] {
-  const base = [l.bubbles.A, l.bubbles.B, ...l.buttons, ...(l.chosen ? [l.chosen] : [])];
+  const base = [
+    l.bubbles.A,
+    l.bubbles.B,
+    ...l.buttons,
+    ...(l.chosen ? [l.chosen] : []),
+    ...(l.ask ? [l.ask] : []),
+  ];
   if (!l.pages) return [...base, ...l.cards];
   if (done) return [...base, l.finish!, l.again!, ...(l.other ? [l.other] : [])];
   // Watch again's slot is empty until done, but it stays clear of everything live.

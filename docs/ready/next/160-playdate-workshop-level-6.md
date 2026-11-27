@@ -1,1 +1,0 @@
-**`playdate-workshop`, level 6** (new levels on an existing interaction): Ask first, per [definition](../../definitions/playdate-workshop-4-6.md); after levels 4–5. *Claimed: branch `claude/playdate-workshop-6`; expected files: `src/games/playdate-workshop/` (logic, index, voice, howto, tests), `docs/games/playdate-workshop.md`, the definition.*

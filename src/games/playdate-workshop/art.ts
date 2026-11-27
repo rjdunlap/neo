@@ -247,6 +247,12 @@ export function requestPicture(req: RequestId, f: Friend, p: Pictured, w: number
     const face = faceArt(p.cast[f === 'A' ? 0 : 1], 15);
     face.y = 34;
     c.addChild(b, face);
+  } else if (req === 'help') {
+    const b = miniBanner(p, 2, w * 0.45);
+    b.y = -14;
+    const face = faceArt(p.cast[f === 'A' ? 0 : 1], 15);
+    face.y = 34;
+    c.addChild(b, face);
   } else if (req === 'banner' || req === 'start') {
     const b = miniBanner(p, 4, w - 50);
     b.y = -14;
@@ -490,6 +496,30 @@ export function makeIcon(): Graphics {
   g.roundRect(-8, -30, 16, 40, 6).fill(0xffffff);
   g.roundRect(-26, 8, 52, 20, 8).fill(0xffffff);
   return g;
+}
+
+/** A big question mark: the request nobody has spoken yet. */
+export function questionArt(size: number): Graphics {
+  const g = new Graphics();
+  const r = size * 0.28;
+  g.arc(0, -size * 0.2, r, Math.PI * 1.05, Math.PI * 2.55).stroke(line(ink, Math.max(6, size * 0.1)));
+  g.moveTo(Math.cos(Math.PI * 0.55) * r, -size * 0.2 + Math.sin(Math.PI * 0.55) * r).lineTo(0, size * 0.12);
+  g.stroke(line(ink, Math.max(6, size * 0.1)));
+  g.circle(0, size * 0.3, Math.max(5, size * 0.07)).fill(ink);
+  return g;
+}
+
+/** The Ask button's picture: a speech bubble holding a question mark. */
+export function askIcon(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-30, -26, 60, 44, 14).fill(0xffffff);
+  g.poly([-14, 16, -4, 16, -18, 32]).fill(0xffffff);
+  c.addChild(g);
+  const q = questionArt(34);
+  q.position.set(0, -3);
+  c.addChild(q);
+  return c;
 }
 
 export function bulbIcon(): Graphics {
