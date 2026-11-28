@@ -40,10 +40,16 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Two clocks show when something starts and when it ends. Choose how long it took: tap plus or minus for whole hours, and tap the half-hour button if there is half an hour more. The words below the buttons say what you chose. Then ring the bell.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'The sign says when a friend is free and how long a visit takes. Tap the one start time where the whole visit fits inside the free time (starting right as they are free, or finishing right as it ends, both fit). Then turn the hands to that start and ring the bell.',
+    },
     { to: 4, text: 'Tap the time sign to hear the request again for free.' },
     { from: 6, to: 10, text: 'Tap the time sign to hear the request again for free.' },
+    { from: 11, to: 11, text: 'Tap the free-time sign to hear it again for free.' },
   ],
-  finish: [{ to: 10, text: 'Four correct answers complete the round.' }],
+  finish: [{ to: 11, text: 'Four correct answers complete the round.' }],
   note: [
     {
       to: 4,
@@ -78,6 +84,11 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'After two misses on a time, the hours are counted from the start clock on a strip, then the half hour, and the controls still to set glow. You can change your choice any time before ringing the bell; it is never timed.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'Each choice draws the visit on the time strip above the green free time. A wrong start says whether it is too early or finishes too late. After two misses on a visit (choosing and setting together), the fitting time glows, or yellow hands show the start to copy; that counts one hint. Never timed.',
     },
   ],
 };

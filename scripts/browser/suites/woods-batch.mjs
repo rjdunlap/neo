@@ -2022,7 +2022,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     if (!only || only === 'clock')
       for (const level of process.env.CLOCK_LEVELS
         ? process.env.CLOCK_LEVELS.split(',').map(Number)
-        : Array.from({ length: 11 - fromLevel }, (_, i) => i + fromLevel)) {
+        : Array.from({ length: 12 - fromLevel }, (_, i) => i + fromLevel)) {
         await launch('clock-tower', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         // U7 R4: a right answer's line (`clock.yay`, `clock.itis`, level 6's example) never holds the tower. Each is
@@ -2166,6 +2166,96 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await tap('neo.scene.game.bell');
           await settle();
         };
+        if (mode === 'visit') {
+          // Level 11: choose the start that fits on a card, then set the hands to it. One early pick, one late pick (the
+          // hint), a free replay of the sign, a wrong setting, then the right start set by finger; the rest by finger too.
+          const sees = () =>
+            page.evaluate(() => {
+              const g = neo.scene.game;
+              return {
+                sign: g.visitTimes.text,
+                length: g.visitLength.text,
+                cards: g.starts.map((c) => c.start),
+                visit: g.task.visit,
+                chosen: g.chosen,
+                hinted: g.hinted,
+                face: g.face.alpha,
+              };
+            });
+          const pickCard = async (start) => {
+            await tap(`neo.scene.game.starts.find((c) => c.start === ${start}).card`);
+            await settle();
+          };
+          const fits = (v, x) => x >= v.open && x + v.length <= v.close;
+          // A held-upright look: a touch phone (CLOCK_UPRIGHT=1) lays out on the upright area; a desktop window only narrows.
+          const look = async (name) => {
+            const upright = process.env.CLOCK_UPRIGHT === '1';
+            await page.setViewportSize(upright ? { width: 390, height: 844 } : { width: 768, height: 1024 });
+            await page.waitForTimeout(400);
+            await screenshot(`${name}-${upright ? 'upright' : 'portrait'}`);
+            await page.setViewportSize({ width: 1024, height: 768 });
+            await page.waitForTimeout(400);
+          };
+          for (let n = 0; n < 4; n++) {
+            await page.waitForTimeout(300);
+            const at = await sees();
+            assert.equal(at.chosen, null, 'each visit starts with no start chosen');
+            assert.equal(at.cards.length, 3);
+            assert.equal(at.cards.filter((x) => fits(at.visit, x)).length, 1, 'exactly one start fits');
+            assert.ok(at.face < 1, 'the hands wait until a start is chosen');
+            const right = at.cards.find((x) => fits(at.visit, x));
+            if (n === 0) {
+              assert.deepEqual([at.sign, at.length], ['2:00 to 3:30', 'A visit takes 30 minutes']);
+              assert.deepEqual(at.cards, [825, 870, 915]);
+              const before = await counts();
+              await tap('neo.scene.game.visitSign');
+              await settle();
+              await tap('neo.scene.game.bell');
+              await settle();
+              assert.deepEqual(
+                await counts(),
+                before,
+                'replaying the sign, or the bell before choosing, is free',
+              );
+              await pickCard(825);
+              assert.deepEqual(await counts(), [1, 0], 'a start before the friend is free is a gentle miss');
+              await pickCard(915);
+              assert.deepEqual(
+                await counts(),
+                [2, 1],
+                'finishing after the free time is the second miss and the hint',
+              );
+              assert.equal((await sees()).hinted, true);
+              await look('clock-tower-11-hint');
+              await screenshot('clock-tower-11-hint');
+            }
+            await pickCard(right);
+            assert.equal((await sees()).chosen, right, 'the fitting start is chosen');
+            if (n === 0) {
+              await setTo(right + 60);
+              await ring();
+              assert.deepEqual(
+                await counts(),
+                [3, 1],
+                'a wrong setting is a miss; the task keeps its single hint',
+              );
+              await look('clock-tower-11-set');
+            }
+            await setTo(right % 720);
+            assert.equal(
+              await page.evaluate(() => neo.scene.game.shown),
+              right % 720,
+              'the hands show the start',
+            );
+            await ring();
+          }
+          await finished('clock-tower');
+          assert.deepEqual(await score('clock-tower'), [3, 1]);
+          log(
+            'Clock Tower 11 (visit): free-time sign and strip, early and late picks, the glowing hint, a wrong setting, starts set by finger, saved score and sticker passed',
+          );
+          continue;
+        }
         for (let n = 0; n < 4; n++) {
           await idle(n);
           const time = await page.evaluate(() => neo.scene.game.task.time);
