@@ -72,5 +72,8 @@ export const VOICE = {
   'hop.est.ticks.wrong': ['That mark is {n}. Count the marks from zero, by tens.'],
   'hop.est.ticks.hint': ['Count the marks from zero: ten, twenty, thirty… until {n}.'],
   'hop.est.ticks.yay': ['Yes! {n} is here.'],
+  'hop.along': ['Tap the pond, and the frog hops! Up to {n}.'],
+  'hop.along.home': ['Home! Ribbit, {n}!'],
+  'hop.along.done': ['{n} big hops! Splash!'],
   'hop.done': ['The frog hopped all the way home. Ribbit!'],
 } satisfies Record<string, string[]>;
