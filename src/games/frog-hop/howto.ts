@@ -78,6 +78,7 @@ export const HOW_TO: GameHowTo = {
     { to: 14, text: 'Answer the questions to bring the frog home.' },
     { from: 15, to: 15, text: 'Three guesses, then one number placed on the marked line.' },
     { from: 16, to: 16, text: 'Six taps, then a big splash.' },
+    { from: 17, to: 17, text: 'Five dot signs, then the frog is home.' },
   ],
   note: [
     {

@@ -16,19 +16,21 @@ import {
   alongNote,
   alongRoute,
   dotsMissLine,
+  dotsPadBox,
   dotsPadsFor,
+  dotsPanel,
+  PAD_DOT_SCALE,
+  PAD_DOT_Y,
   dotsQuestions,
   dotsSign,
+  padDots,
   hintCharge,
   planFor,
   SIGN_DOT_R,
   signDots,
   type HopQuestion,
 } from './logic';
-import { DOTS_Y, drawBank, drawDots, Pad } from './pad-art';
-
-/** Each pad's own tap box, on screen: a little under the 150 pitch, so neighbours never overlap. */
-export const DOTS_HIT = 140;
+import { drawBank, drawDots, Pad } from './pad-art';
 
 /**
  * Hop to the dots (level 17, toddler): level 1 with dots. The sign shows only dots; she taps the pad with that many (each
@@ -69,12 +71,13 @@ export class DotsPond implements Game {
     this.view = ctx.view;
     this.questions = dotsQuestions(planFor(ctx.level), ctx.rng);
     this.backdrop = new Backdrop(POND_SKY, ctx.view);
-    const local = DOTS_HIT / PAD_SCALE;
     for (let k = 1; k <= ALONG_PADS; k++) {
       const pad = new Pad();
       pad.set(k);
       pad.scale.set(PAD_SCALE);
-      pad.hitArea = new Rectangle(-local / 2, -local / 2, local, local);
+      // The pad's box covers its numeral and its dots, the thing she is looking at (`dotsPadBox`, in the pad's own units).
+      const box = dotsPadBox({ x: 0, y: 0 });
+      pad.hitArea = new Rectangle(box.x / PAD_SCALE, box.y / PAD_SCALE, box.w / PAD_SCALE, box.h / PAD_SCALE);
       onTap(pad, () => this.tap(k));
       this.pads.push(pad);
     }
@@ -156,6 +159,7 @@ export class DotsPond implements Game {
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
     }
+    await this.leapHome();
     this.qi++;
     await this.ask();
   }
@@ -224,11 +228,11 @@ export class DotsPond implements Game {
   /** Places the pads on show for this question, hides the rest, and draws the sign's dots. */
   private layout() {
     const L = this.L;
-    const { pond } = L;
     this.pond.hitArea = new Rectangle(0, 0, this.view.w, this.view.h);
+    const panel = dotsPanel(L);
     this.water
       .clear()
-      .roundRect(pond.x + 20, pond.y + 20, pond.w - 40, pond.h - 40, 60)
+      .roundRect(panel.x, panel.y, panel.w, panel.h, 60)
       .fill({ color: swatch.blue.light, alpha: 0.55 });
     drawBank(this.bankArt.clear(), L.spots[0]);
     const g = this.padDots.clear();
@@ -239,7 +243,14 @@ export class DotsPond implements Game {
       if (!on) return;
       const s = L.spots[i + 1];
       pad.position.set(s.x, s.y);
-      drawDots(g, i + 1, s.x, s.y + DOTS_Y * PAD_SCALE);
+      // A white backing under the blue dots, so they read on the water as the sign's dots do on wood.
+      const xs = padDots(i + 1, s).map((d) => d.x);
+      const x0 = Math.min(...xs) - 18;
+      g.roundRect(x0, s.y + PAD_DOT_Y - 18, Math.max(...xs) + 18 - x0, 36, 18).fill({
+        color: swatch.white.fill,
+        alpha: 0.9,
+      });
+      drawDots(g, i + 1, s.x, s.y + PAD_DOT_Y, PAD_DOT_SCALE);
     });
     const box = dotsSign(this.view);
     const cx = box.x + box.w / 2;

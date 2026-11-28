@@ -913,6 +913,35 @@ export function dotsSign(view: { w: number; h: number }) {
   return { x: view.w / 2 - w / 2, y: y - h / 2, w, h };
 }
 
+/** The pads' own dots on the dot level: bigger than the main line's (radius about 10), on a row this far below a pad's centre. */
+export const PAD_DOT_SCALE = 1.6;
+export const PAD_DOT_Y = 100;
+/** Each pad's tap box: 140 wide, from 70 above its centre to 120 below, so it covers the pad, its numeral and its dots. */
+export const DOTS_HIT_W = 140;
+export const DOTS_HIT_UP = 70;
+export const DOTS_HIT_DOWN = 120;
+/** The water panel reaches this far below the lowest pad's centre, so the dot row sits inside it. */
+export const DOTS_PANEL_DOWN = 140;
+
+/** A pad's tap box on screen. */
+export const dotsPadBox = (s: { x: number; y: number }): Box => ({
+  x: s.x - DOTS_HIT_W / 2,
+  y: s.y - DOTS_HIT_UP,
+  w: DOTS_HIT_W,
+  h: DOTS_HIT_UP + DOTS_HIT_DOWN,
+});
+
+/** Where a pad's dots sit on screen: `dotLayout` scaled by `PAD_DOT_SCALE`, centred under the pad. */
+export const padDots = (n: number, s: { x: number; y: number }) =>
+  dotLayout(n).map((d) => ({ x: s.x + d.x * PAD_DOT_SCALE, y: s.y + PAD_DOT_Y + d.y * PAD_DOT_SCALE }));
+
+/** The water panel for the dot level: the pond's, reaching deeper under the lowest row. */
+export function dotsPanel(L: AlongLayout): Box {
+  const top = L.pond.y + 20;
+  const bottom = Math.max(...L.spots.map((s) => s.y)) + DOTS_PANEL_DOWN;
+  return { x: L.pond.x + 20, y: top, w: L.pond.w - 40, h: bottom - top };
+}
+
 /** A wrong pad on the dot level: the target is further along (forward) or back this way. */
 export const dotsMissLine = (target: number, tapped: number) =>
   target > tapped ? 'hop.wrong.dots-forward' : 'hop.wrong.dots-back';

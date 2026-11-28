@@ -9,7 +9,10 @@ import { frogHop } from './index';
 import {
   alongLayout,
   dotsMissLine,
+  dotsPadBox,
   dotsPadsFor,
+  dotsPanel,
+  padDots,
   dotsQuestions,
   dotsSign,
   DOTS_LEVEL,
@@ -19,7 +22,7 @@ import {
   SIGN_DOT_R,
   signDots,
 } from './logic';
-import { DOTS_HIT, type DotsPond } from './dots-scene';
+import type { DotsPond } from './dots-scene';
 
 const { press } = vi.hoisted(() => ({ press: new Map<object, (e: FederatedPointerEvent) => void>() }));
 vi.mock('../../engine/input', async (importOriginal) => ({
@@ -106,7 +109,7 @@ describe('Hop to the dots: the questions', () => {
     expect(dotsMissLine(2, 5)).toBe('hop.wrong.dots-back');
   });
 
-  it('keeps the sign on screen and clear of every pad, and every pad on screen, at three and five pads', () => {
+  it("keeps the sign and every pad box on screen and apart, with each pad's dots inside its box and the water, at three and five pads", () => {
     for (const v of VIEWS)
       for (const count of [3, 5]) {
         const L = alongLayout(v, GUIDE_CORNER.w, count);
@@ -114,23 +117,37 @@ describe('Hop to the dots: the questions', () => {
         expect(sign.x).toBeGreaterThanOrEqual(0);
         expect(sign.x + sign.w).toBeLessThanOrEqual(v.w);
         expect(sign.y).toBeGreaterThanOrEqual(0);
+        const panel = dotsPanel(L);
+        const inside = (
+          p: { x: number; y: number },
+          b: { x: number; y: number; w: number; h: number },
+          m = 0,
+        ) => p.x >= b.x + m && p.x <= b.x + b.w - m && p.y >= b.y + m && p.y <= b.y + b.h - m;
+        const boxes = L.spots.slice(1).map((p) => dotsPadBox(p));
         L.spots.slice(1).forEach((p, i) => {
-          const half = DOTS_HIT / 2;
-          expect(p.x - half, `${v.w}×${v.h} ${count} pad ${i + 1}`).toBeGreaterThanOrEqual(0);
-          expect(p.x + half).toBeLessThanOrEqual(v.w);
-          expect(p.y + half).toBeLessThanOrEqual(v.h);
-          expect(p.y - half).toBeGreaterThan(sign.y + sign.h);
-          expect(p.x - half < GUIDE_CORNER.w && p.y + half > v.h - GUIDE_CORNER.h).toBe(false);
-        });
-        // Neighbouring pads' boxes never overlap, so every pad owns at least the 120 floor.
-        const spots = L.spots.slice(1);
-        for (let a = 0; a < spots.length; a++)
-          for (let b = a + 1; b < spots.length; b++) {
-            const apart =
-              Math.abs(spots[a].x - spots[b].x) >= DOTS_HIT || Math.abs(spots[a].y - spots[b].y) >= DOTS_HIT;
-            expect(apart).toBe(true);
+          const box = boxes[i];
+          const where = `${v.w}×${v.h} ${count} pad ${i + 1}`;
+          expect(box.w, where).toBeGreaterThanOrEqual(120);
+          expect(box.h, where).toBeGreaterThanOrEqual(120);
+          expect(box.x, where).toBeGreaterThanOrEqual(0);
+          expect(box.x + box.w, where).toBeLessThanOrEqual(v.w);
+          expect(box.y + box.h, where).toBeLessThanOrEqual(v.h);
+          expect(box.y, where).toBeGreaterThan(sign.y + sign.h);
+          expect(box.x < GUIDE_CORNER.w && box.y + box.h > v.h - GUIDE_CORNER.h, where).toBe(false);
+          // The pad's own dots, the cue she matches, sit inside the water panel and inside the pad's tap box.
+          for (const d of padDots(i + 1, p)) {
+            expect(inside(d, panel, 10), `${where} dot in panel`).toBe(true);
+            expect(inside(d, box, 10), `${where} dot in box`).toBe(true);
           }
-        expect(DOTS_HIT).toBeGreaterThanOrEqual(120);
+        });
+        // Neighbouring pads' boxes never overlap.
+        for (let a = 0; a < boxes.length; a++)
+          for (let b = a + 1; b < boxes.length; b++) {
+            const A = boxes[a];
+            const B = boxes[b];
+            const overlap = A.x < B.x + B.w && B.x < A.x + A.w && A.y < B.y + B.h && B.y < A.y + A.h;
+            expect(overlap, `${v.w}×${v.h} ${count} pads ${a + 1} and ${b + 1}`).toBe(false);
+          }
       }
   });
 });

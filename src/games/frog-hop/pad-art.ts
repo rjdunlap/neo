@@ -8,9 +8,10 @@ import { DOT_R, dotLayout, PAD_HIT, type HopScene } from './logic';
 /** The first row of dots under a pad's numeral, clear of the numeral (y 44) and inside the pad's step. */
 export const DOTS_Y = 82;
 
-/** Dots for a numeral, fives grouped (`dotLayout`), centred on (x, y). */
-export function drawDots(g: Graphics, n: number, x: number, y: number) {
-  for (const d of dotLayout(n)) g.circle(x + d.x, y + d.y, DOT_R).fill(swatch.blue.fill);
+/** Dots for a numeral, fives grouped (`dotLayout`), centred on (x, y), `scale` times the main line's size. */
+export function drawDots(g: Graphics, n: number, x: number, y: number, scale = 1) {
+  for (const d of dotLayout(n))
+    g.circle(x + d.x * scale, y + d.y * scale, DOT_R * scale).fill(swatch.blue.fill);
 }
 
 /** The frog's home bank on the entry ponds (levels 16 and 17): earth with a grassy top and tufts, so it reads as land, not a pad. */
