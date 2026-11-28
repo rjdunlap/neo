@@ -202,6 +202,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `spinnerfair9` | 2026-11-16 · [Spinner Fair level 9, Rig it](verification/2026-11-16-spinner-fair-level-9-rig-it.md) | — |
 | `sproutshuffle` | 2026-11-12 · [U7d fix batch 17: swing-pals and sprout-shuffle never hold a tap on a cut line](verification/2026-11-12-u7d-fix-batch-17-swing-pals-and-sprout-shuffle-never-hold-a.md) | `SPROUT_LEVELS=1,2,3` |
 | `stickers` | 2026-10-05 · [Deeper ladders for Rainbow Fingers and Splish Splash (same day, later)](archive/VERIFICATION-2026-10-05-06.md#deeper-ladders-for-rainbow-fingers-and-splish-splash-same-day-later) | Sticker book regression |
+| `stirsee` | 2026-11-28 · [Stir and See levels 1–5 (PR #2312)](verification/2026-11-28-stir-and-see-levels-1-5.md) | — |
 | `storytheater` | 2026-11-26 · [Story Steps level 14 Two Viewpoints](verification/2026-11-26-story-steps-level-14-two-viewpoints.md) | School levels 12–14 |
 | `storyweaver` | 2026-11-17 · [The school games' questions on ctx.instruct, first session](verification/2026-11-17-the-school-games-questions-on-ctx-instruct-first-session.md) | Filtered story play, repeat instruction |
 | `sudokutouch` | 2026-11-24 · [Sudoku Garden lens above the thumb (PR #2134)](verification/2026-11-24-sudoku-garden-lens-above-the-thumb.md) | — |

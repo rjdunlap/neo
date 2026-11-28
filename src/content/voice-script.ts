@@ -172,6 +172,7 @@ import { VOICE as spinnerFairVoice } from '../games/spinner-fair/voice.ts';
 import { VOICE as splishSplashVoice } from '../games/splish-splash/voice.ts';
 import { VOICE as sproutShuffleVoice } from '../games/sprout-shuffle/voice.ts';
 import { VOICE as stampStudioVoice } from '../games/stamp-studio/voice.ts';
+import { VOICE as stirSeeVoice } from '../games/stir-see/voice.ts';
 import { VOICE as stopAndGoVoice } from '../games/stop-and-go/voice.ts';
 import { VOICE as storyStepsVoice } from '../games/story-steps/voice.ts';
 import { VOICE as storyWeaverVoice } from '../games/story-weaver/voice.ts';
@@ -869,6 +870,7 @@ export const SCRIPT = {
   ...splishSplashVoice,
   ...sproutShuffleVoice,
   ...stampStudioVoice,
+  ...stirSeeVoice,
   ...stopAndGoVoice,
   ...storyStepsVoice,
   ...storyWeaverVoice,
