@@ -321,7 +321,7 @@ export class ChooserScene extends Scene {
     sfx.giggle();
     await this.tw.wait(LEAVE_BEAT);
     if (this.closed) return;
-    const pick = firstDemoPick(todaysSix(dayKey(new Date()), this.app.uprightPhone(), this.app.phoneOnly));
+    const pick = firstDemoPick(todaysSix(dayKey(new Date()), this.app.uprightPhone(), this.app.onPhone));
     if (pick) this.app.go.game(pick.mod.id, pick.band, undefined, false, { daily: true }, pick.level);
     else this.app.go.daily();
   }

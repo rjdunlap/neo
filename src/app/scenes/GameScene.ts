@@ -791,9 +791,8 @@ export class GameScene extends Scene {
     const home = new RoundButton(icon, swatch.blue, 66, () =>
       this.leaveSaying(this.backLine(), () => this.goHome()),
     );
-    // On a phone Home is Today's six, where Back from a daily round already goes: one way out, no house.
     const house =
-      from && !(this.app.phoneOnly && this.origin && 'daily' in this.origin)
+      from
         ? new RoundButton(houseIcon(), swatch.white, 50, () =>
             this.leaveSaying(
               () => voice.say('nav.home'),
@@ -1267,7 +1266,7 @@ export class GameScene extends Scene {
     if (!this.dailyRound || this.mixRound || !this.resultLayer) return null;
     const day = dayKey(new Date());
     const played = (id: string) => playedOn(store.data.games[id]?.history, day);
-    const picks = todaysSix(day, this.app.uprightPhone(), this.app.phoneOnly);
+    const picks = todaysSix(day, this.app.uprightPhone(), this.app.onPhone);
     const live = () => this.liveResult() && !this.navigating && this.resultReady && !this.dailySheet;
     const next = nextOfSix(picks, this.mod.id, played);
     if (next) {

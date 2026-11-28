@@ -335,7 +335,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       });
       await at('ChooserScene');
       await p.locator('.chooser__play').first().tap();
-      // On a phone the root is Today's six alone (2026-11-09): "Who's playing?" opens the six, never Home.
+      // On a phone "Who's playing?" opens the six first; since 2026-11-28 their Back is Home, as on any device.
       await at('DailyScene');
       await p.waitForTimeout(400);
       assert.deepEqual(
@@ -379,13 +379,13 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       );
       assert.deepEqual(
         await p.evaluate(() => ({
-          phone: neo.phoneOnly,
+          phone: neo.onPhone,
           all: neo.scene.all.visible,
           playAll: neo.scene.playAll.visible,
           notes: !!neo.scene.notes,
         })),
-        { phone: true, all: false, playAll: true, notes: true },
-        'the phone six: no All games, Play all and a grown-up notes pencil',
+        { phone: true, all: true, playAll: true, notes: true },
+        'the phone six: All games, Play all and a grown-up notes pencil',
       );
       const cardPx = await p.evaluate(
         () => neo.scene.cards[0].node.getChildByLabel('frame').getBounds().width,
@@ -423,8 +423,8 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
           note: !!neo.scene.dailyNote,
           house: !!neo.scene.after.house,
         })),
-        { next: true, note: true, house: false },
-        'a phone result: the next game, the note pencil, and one way out (Home would be the same six)',
+        { next: true, note: true, house: true },
+        'a phone result: the next game, the note pencil, Back to the six and Home',
       );
       // Upright, the next game sits in the thumb's row, between Again and Back.
       const row = await p.evaluate(() => {

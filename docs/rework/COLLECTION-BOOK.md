@@ -26,7 +26,7 @@ Defined 2026-11-22 for [RW10](WORK-ITEMS.md#rw10-collection-book-and-chosen-unlo
 | A launched level | `go.game(id, band, story, again, origin, level)`; `GameScene` records with adapt off only for a `{ daily: true }` origin with a start level | Slice 2 extends that rule to the book's origin |
 | The library | `LibraryScene`: journal, Windy Picnic, Woodland (school); Back to creature play, Home to Home | The fourth card |
 
-**On a phone** the root is Today's six alone (`App.phoneOnly` in `src/rework.ts`), so Home, creature play, the library and the welcome project are not there, and neither is the book. That is the existing phone decision ([todays-six](../definitions/todays-six.md#on-a-phone-and-playing-all-six-built-2026-11-09)); this packet adds no phone entry. The book is played on a tablet or a computer.
+**On a phone** the root was Today's six alone until 2026-11-28 (a phone now reaches Home too), so at the time Home, creature play, the library and the welcome project are not there, and neither is the book. That is the existing phone decision ([todays-six](../definitions/todays-six.md#on-a-phone-and-playing-all-six-built-2026-11-09)); this packet adds no phone entry. The book is played on a tablet or a computer.
 
 ## The book
 

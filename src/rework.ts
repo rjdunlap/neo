@@ -93,9 +93,14 @@ async function boot() {
       hub: () => {
         const six = daily;
         daily = false;
-        // On a phone the six are the whole root (`App.phoneOnly`): Home and what it leads to stay on tablets and computers.
-        // A guest (play-first slice 2) sees the six and their rounds on every device, nothing else, until Add me.
-        void app.show(six || app.phoneOnly || store.entry.guest ? new DailyScene(app) : new HomeScene(app));
+        // Every device, phone included, has Home (2026-11-28). A guest (play-first slice 2) sees the six and their
+        // rounds on every device, nothing else, until Add me.
+        void app.show(six || store.entry.guest ? new DailyScene(app) : new HomeScene(app));
+      },
+      // On a phone, "Who's playing?" still opens the six first (what the grown-ups play daily); their Back is Home.
+      start: (add) => {
+        if (app.onPhone) daily = true;
+        island.start(add);
       },
       // Any way into the six takes a pending `?daily` too (D8's starting view opens them straight from "Who's playing?"),
       // so the six's Back is Home rather than the six again.
