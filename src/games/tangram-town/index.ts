@@ -305,6 +305,11 @@ class TangramTown implements Game {
     if (this.done) for (const c of this.pieces) c.node.y = c.drag.home.y + Math.sin(this.clock * 5) * 5;
   }
   /** The ghost finger on the how-to card: turn the piece in hand until it fits its place (the turn button, never the help hand), then carry it there. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     const hint = this.plan.covers ? coverHint(this.plan, this.filled) : -1;

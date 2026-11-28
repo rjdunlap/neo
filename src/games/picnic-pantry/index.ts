@@ -627,6 +627,11 @@ class PicnicPantry implements Game {
     else this.build();
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.fx.children.length) return null;
     if (this.phase === 'laid') return { tap: { on: this.nextButton }, pause: 1.6 };

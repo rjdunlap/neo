@@ -499,6 +499,11 @@ class RibbonWorkshop implements Game {
   }
 
   /** The ghost finger: follow the hint path, pressing the scissors before a snip, and the bow when the ribbon is right. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.done) return null;
     const h = hintAction(this.state, this.target, this.plan.snip);

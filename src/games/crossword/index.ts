@@ -662,6 +662,11 @@ class Crossword implements Game {
    * The ghost finger: with the active word solved, it taps the next open word's picture; otherwise it carries the right tile to
    * the word's first empty square.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     const p = this.puzzle;
     if (!p || this.busy || this.finished) return null;

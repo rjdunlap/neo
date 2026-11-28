@@ -380,6 +380,11 @@ class SecondChanceShed implements Game {
   }
 
   /** The ghost finger: carry the thing on the cart to its own place. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.item || this.item.drag.dragging) return null;
     const next = nextDrop(this.round, this.index);

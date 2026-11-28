@@ -448,6 +448,11 @@ class MemoryMatch implements Game {
   }
 
   /** The ghost finger on the how-to card: the same player who remembers, tapping the card itself. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.locked || this.remaining === 0) return null;
     const target = nextCard(this.cards, this.seen, (k) => this.views[k].matched, this.first);

@@ -40,6 +40,8 @@ Scored from each game's how-to card: two points for each hidden gesture (three f
 
 **Batch 2:** Word Search, Stamp Studio, Shape Buddies, Pet Says, Letter Trails, Rainbow Fingers, Workshop Detective, Beat Builder, Toy Drawer, Circuit Garden, Cue Studio, Bubble Pop, Dream Cards, Swap Meet, Jar Clues, Animal Charades (its own `showMove`: the bot guesses wrong first on purpose), Shadow Play, Lost Layers, Day by Day, Number Trails, Quick Tricks, Hat Band, Trackway Tales, Sand Table, Draw a Ramp, Number Nook. Attic Finds waits for its own `showMove` (its bot also tries the wrong card first).
 
+**Batch 3:** Fossil Dig, Domino Pond, Chain Reaction, Penguin Slide, Memory Match (the bot only pairs cards the player has seen), Common Ground (its own `showMove`: the bot's optional plant is a random draw), Campsite, Village Planner, Bond Beads, Tangram Town, Cut Along, Memory Desk, Picnic Pantry, Word Code, Block Tower, Second-Chance Shed, Movie Night, Wave Ribbon, Pyramid Solitaire, Sum Crates, Playdate Workshop, Crossword, Ribbon Workshop, Draw the Pattern. Pond Conga (its moves land on a beat) and Logic Grid (its bot reveals squares as it goes) wait for their own `showMove`.
+
 | Rank | Game | Band read | Why it needs the card | Opt-in |
 | --- | --- | --- | --- | --- |
 | 1 | Word Search (`word-search`) | grownup | 4 rules on the card; a button to finish or check; a drag; a slide; two-step taps | bot reads only |
