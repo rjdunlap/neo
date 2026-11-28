@@ -35,6 +35,8 @@
 
 ## Design notes
 
+**Defined next (2026-11-28, [definition](../definitions/animal-snack-diet-sort.md)).** Level 11, *Plants, meat or both?*, at the top of the school window after 10: one animal at a time walks up and she taps its mat (plants, both or meat, the middle mat drawn as where the two groups overlap); every placement comes from a cited diet table, and since only the cat eats meat alone, about half the rounds leave the meat mat empty.
+
 **One word in European Portuguese (WL2, 2026-11-22).** With the setting on, the pet adds the animal's word in the munch (level 1) and *who* (level 3) modes and the food's word in the float (level 2) and match (level 4) modes; the later modes and the four later animals with their foods add none. The word table is `src/content/words/pt-PT.ts`; the setting is *A word in another language* on the grown-ups' page, per profile, off by default, and only a local pt-PT voice speaks it. See [the definition](../definitions/additional-languages.md#as-built-2026-11-22).
 
 **A right answer never holds the next ask (U7 fix batch 1, 2026-11-10).** In *who* rounds `snack.yum` starts after the eating and the next ask follows at once (its instruction cuts the yum); on a right count the bell rings, a 0.4 s beat passes and the next ask follows, with `snack.full` no longer awaited. On the round's last ask the line is still heard out, since the closing `snack.done` would cut it. Hints (`snack.toomany`, `snack.more`) and `snack.done` stay held.

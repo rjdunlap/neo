@@ -1,1 +1,0 @@
-**Define Animal Snack's diet sort** (docs only): plant eaters, meat eaters and both, from a curated table of true diets checked against cited sources (as the `EATS` table was, decided 2026-10-23), the omnivores (dog, pig, duck, bear) in *both*; level ID, band, hoops or baskets, accounting and rule tests. [Dive sketches](../../deep-dives/animal-snack.md#build-slices-in-order).
