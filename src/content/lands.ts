@@ -441,6 +441,7 @@ export const LANDS: readonly Land[] = [
       'market-days',
       'count-the-ballots',
       'two-tablets',
+      'village-planner',
     ],
   },
 ];

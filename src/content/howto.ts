@@ -192,6 +192,7 @@ import { HOW_TO as trackwayTalesHowTo } from '../games/trackway-tales/howto.ts';
 import { HOW_TO as treasureMapHowTo } from '../games/treasure-map/howto.ts';
 import { HOW_TO as truthBridgeHowTo } from '../games/truth-bridge/howto.ts';
 import { HOW_TO as twoTabletsHowTo } from '../games/two-tablets/howto.ts';
+import { HOW_TO as villagePlannerHowTo } from '../games/village-planner/howto.ts';
 import { HOW_TO as villageVoteHowTo } from '../games/village-vote/howto.ts';
 import { HOW_TO as vineSnipHowTo } from '../games/vine-snip/howto.ts';
 import { HOW_TO as waterRoadHowTo } from '../games/water-road/howto.ts';
@@ -413,6 +414,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'treasure-map': treasureMapHowTo,
   'truth-bridge': truthBridgeHowTo,
   'two-tablets': twoTabletsHowTo,
+  'village-planner': villagePlannerHowTo,
   'village-vote': villageVoteHowTo,
   'vine-snip': vineSnipHowTo,
   'water-road': waterRoadHowTo,

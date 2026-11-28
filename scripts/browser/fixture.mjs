@@ -45,6 +45,7 @@ export async function createFixture(browser, suite) {
         ['two', 'tell'].includes(process.env.THOUGHT_BUBBLES_ONLY))) ||
     (suite === 'wordglue' &&
       ['kind', 'reversed', 'name', 'doer', 'ending'].includes(process.env.WORDGLUE_ONLY)) ||
+    (suite === 'villageplanner' && process.env.VILLAGE_PLANNER_PHONE === '1') ||
     (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY))
       ? { hasTouch: true, isMobile: true }
       : {}),
