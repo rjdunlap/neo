@@ -3,6 +3,9 @@ import { Rng } from '../../engine/random';
 import {
   arrive,
   canJoin,
+  cardSlots,
+  LEVELS,
+  nextInPattern,
   dressingAt,
   DRESSING_COLORS,
   DUCK_COLORS,
@@ -91,6 +94,94 @@ describe('Duckling Parade', () => {
       expect(readyForPond(plan, round, 5)).toBe(false);
       expect(readyForPond(plan, round, 6)).toBe(true);
     }
+  });
+
+  describe('level 12, Keep it going', () => {
+    const plan = PLANS[11];
+    const rounds = Array.from({ length: 300 }, (_, i) => makeRound(plan, new Rng(i + 1)));
+    const unitOf = (ref: string[]) => ref.slice(0, ref.length / 2);
+
+    it('is the only level with a reference', () => {
+      expect(plan.continuation).toBe(4);
+      for (const r of rounds) expect(r.reference).toBeDefined();
+      PLANS.slice(0, 11).forEach((p, i) => {
+        for (let seed = 1; seed <= 50; seed++)
+          expect(makeRound(p, new Rng(seed + i * 1000)).reference).toBeUndefined();
+      });
+    });
+
+    it('shows two full units of AB, AAB or ABB, and the continuation carries the same unit on', () => {
+      const kinds = new Set<string>();
+      for (const r of rounds) {
+        const ref = r.reference!;
+        expect([4, 6]).toContain(ref.length);
+        const unit = unitOf(ref);
+        expect(ref).toEqual([...unit, ...unit]);
+        expect(new Set(unit).size).toBe(2);
+        const [a] = unit;
+        kinds.add(unit.map((c) => (c === a ? 'a' : 'b')).join(''));
+        expect(r.pattern).toHaveLength(4);
+        const all = [...ref, ...r.pattern!];
+        for (let i = unit.length; i < all.length; i++) expect(all[i]).toBe(all[i - unit.length]);
+      }
+      expect([...kinds].sort()).toEqual(['aab', 'ab', 'abb']);
+    });
+
+    it('puts the continuation plus one spare of each color in the meadow, both colors waiting at every step', () => {
+      for (const r of rounds) {
+        const [a, b] = unitOf(r.reference!).filter((c, i, u) => u.indexOf(c) === i);
+        expect(r.ducklings).toHaveLength(6);
+        expect([...r.ducklings].sort()).toEqual([...r.pattern!, a, b].sort());
+        for (let k = 0; k < 4; k++) {
+          const left = [...r.ducklings];
+          for (const c of r.pattern!.slice(0, k)) left.splice(left.indexOf(c), 1);
+          expect(left).toContain(a);
+          expect(left).toContain(b);
+        }
+      }
+    });
+
+    it('accepts only the next continuation color, hints that same color, and goes home at four', () => {
+      for (const r of rounds) {
+        const p = r.pattern!;
+        for (let i = 0; i < 4; i++) {
+          for (const c of new Set(r.ducklings))
+            expect(canJoin(plan, r, p.slice(0, i), c)).toBe(c === p[i] ? 'join' : 'wrong-next');
+          expect(nextInPattern(r, i)).toBe(p[i]);
+          expect(readyForPond(plan, r, i)).toBe(false);
+        }
+        expect(readyForPond(plan, r, 4)).toBe(true);
+        expect(needed(plan, r)).toBe(4);
+      }
+    });
+
+    it('never shows a continuation color before it is filled, except the next one while a hint reveals it', () => {
+      for (const r of rounds) {
+        const ref = r.reference!;
+        for (let line = 0; line <= 4; line++) {
+          for (const revealed of [false, true]) {
+            const slots = cardSlots(r, line, revealed);
+            expect(slots).toHaveLength(ref.length + 4);
+            slots.slice(0, ref.length).forEach((s, i) => {
+              expect(s).toMatchObject({ color: ref[i], reference: true, next: false });
+            });
+            slots.slice(ref.length).forEach((s, i) => {
+              const shown = i < line || (revealed && i === line);
+              expect(s.color).toBe(shown ? r.pattern![i] : null);
+              expect(s.next).toBe(i === line);
+            });
+          }
+        }
+      }
+      // Levels 7–11 still show the whole pattern, faint until filled.
+      const r7 = makeRound(PLANS[6], new Rng(3));
+      expect(cardSlots(r7, 0, false).map((s) => s.color)).toEqual(r7.pattern);
+    });
+
+    it('tops the school ladder', () => {
+      expect(LEVELS.school).toEqual({ min: 9, max: 12 });
+      expect(plan.name).toMatch(/keep the pattern going/i);
+    });
   });
 
   it('turns away other colors, and sends extras back out of the pond', () => {

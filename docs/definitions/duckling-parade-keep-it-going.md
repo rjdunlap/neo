@@ -1,6 +1,6 @@
 # Duckling Parade level 12: Keep it going (definition)
 
-**Built:** not yet; its build is queued in [READY](../READY.md).
+**Built:** 2026-11-28 in [PR #2381](https://github.com/rjdunlap/neo/pull/2381); see the [game page](../games/duckling-parade.md). One addition beyond this definition: a complete pattern line no longer counts a spare it reaches as a miss, and an idle complete line's hint names no color.
 
 Defined 2026-11-28 on `claude/define-duckling-parade-12` ([PR #2374](https://github.com/rjdunlap/neo/pull/2374)) as slice 5 of the [Duckling Parade deep dive](../deep-dives/duckling-parade.md#build-slices-in-order), from its [level 12 row](../deep-dives/duckling-parade.md#new-levels-on-top). The developer's delegation of 2026-10-23 approved "continuation 12 with a permanently visible reference and a one-step reveal counted as help" ([decisions](../deep-dives/duckling-parade.md#decisions-for-the-developer)). Every [open decision](#open-decisions) below has a default the build uses, so none waits on the developer.
 

@@ -28,6 +28,7 @@ import {
   type Meadow,
   type ParadePlan,
   type Round,
+  cardSlots,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -39,6 +40,8 @@ const REACH = 90;
 const GAP = 58;
 const WATER = 0x7cc4f2;
 const WATER_EDGE = 0x5aa9e0;
+/** The card's border, also the empty slots and arrow of a Keep it going card. */
+const CARD_EDGE = 0xb9c6d1;
 
 interface Duckling {
   color: ColorName;
@@ -223,6 +226,10 @@ class DucklingParade implements Game {
         void this.ctx.instruct('parade.colorcount', { n: target!, color: want! });
         break;
       case 'pattern':
+        if (this.round.reference) {
+          void this.ctx.instruct('parade.keepgoing', { pattern: this.round.reference.join(', ') });
+          break;
+        }
         void this.ctx.instruct(this.plan.oddDuckling ? 'parade.spare' : 'parade.pattern', {
           pattern: pattern!.join(', '),
         });
@@ -535,6 +542,8 @@ class DucklingParade implements Game {
     this.line.push(d);
     this.sinceProgress = 0;
     this.hinting = false;
+    // Two misses toward a hint are two on the same slot, not one each on two.
+    this.wrongs = 0;
     if (this.lap && this.ducklings.some((x) => x.state === 'waiting')) this.showAt = this.clock + 0.6;
     d.critter.hop(0.7);
     sfx.animal('quack');
@@ -563,7 +572,10 @@ class DucklingParade implements Game {
     // A tap between two ducklings counts for whichever one is nearer the finger.
     const near = (x: Duckling) => Math.hypot(this.target.x - x.critter.x, this.target.y - x.critter.y);
     const line = this.line.map((x) => x.color);
+    // A finished pattern line has no next color to get wrong: a spare she reaches now just stays in the meadow.
+    const lineDone = this.plan.mode === 'pattern' && this.line.length === this.round.pattern!.length;
     const aimed =
+      !lineDone &&
       this.aimedAt > this.joinedAt &&
       near(d) < REACH * 1.2 &&
       !this.ducklings.some(
@@ -584,9 +596,17 @@ class DucklingParade implements Game {
     this.lastMiss = this.clock;
     this.misses++;
     this.wrongs++;
-    const want = why === 'wrong-next' ? nextInPattern(this.round, this.line.length)! : this.round.want!;
-    void this.ctx.say(why === 'wrong-next' ? 'parade.next' : 'parade.notme', { color: d.color, want });
-    if (this.wrongs >= 2 && !this.hinting) this.showHint();
+    const hint = this.wrongs >= 2 && !this.hinting;
+    const { reference, pattern } = this.round;
+    if (reference) {
+      // Keep it going: send her back to the card without naming the answer; the hint, when it comes, names it instead.
+      const last = this.line.length ? pattern![this.line.length - 1] : reference[reference.length - 1];
+      if (!hint) void this.ctx.say('parade.keepnext', { color: d.color, last });
+    } else {
+      const want = why === 'wrong-next' ? nextInPattern(this.round, this.line.length)! : this.round.want!;
+      void this.ctx.say(why === 'wrong-next' ? 'parade.next' : 'parade.notme', { color: d.color, want });
+    }
+    if (hint) this.showHint();
   }
 
   private showHint() {
@@ -594,6 +614,11 @@ class DucklingParade implements Game {
     if (!this.lap) this.hints++;
     this.wrongs = 0;
     this.hinting = true;
+    if (this.round.reference && this.line.length < this.round.pattern!.length) {
+      // Keep it going: the hint shows the next slot's color (only that one) and names it. A full line's hint is the pond glow.
+      this.drawCard();
+      void this.ctx.say('parade.next', { want: nextInPattern(this.round, this.line.length)! });
+    }
   }
 
   /** Daisies and clover, or reeds and cattails, along the back of the meadow and round the far side of the pond. */
@@ -640,15 +665,10 @@ class DucklingParade implements Game {
   /** The card up top: the color asked for, the pattern so far, or how many to bring. */
   private drawCard() {
     const g = this.cardSlots.clear();
-    const { want, target, pattern } = this.round;
-    let dots: { color: number; filled: boolean; next?: boolean }[] = [];
-    if (pattern)
-      dots = pattern.map((c, i) => ({
-        color: swatch[c].fill,
-        filled: i < this.line.length,
-        next: i === this.line.length,
-      }));
-    else if (target !== undefined)
+    const { want, target, pattern, reference } = this.round;
+    if (pattern) return this.drawPatternCard(g, reference);
+    let dots: { color: number; filled: boolean }[] = [];
+    if (target !== undefined)
       dots = Array.from({ length: target }, (_, i) => ({
         color: swatch[want ?? 'yellow'].fill,
         filled: i < this.homeCount,
@@ -659,14 +679,55 @@ class DucklingParade implements Game {
     const w = dots.length * 54 + 26;
     g.roundRect(-w / 2, -34, w, 68, 26)
       .fill({ color: 0xffffff, alpha: 0.92 })
-      .stroke({ width: 4, color: 0xb9c6d1 });
+      .stroke({ width: 4, color: CARD_EDGE });
     dots.forEach((d, i) => {
       const x = -w / 2 + 40 + i * 54;
-      // Pattern dots show their color; filled ones are done, the next one is ringed.
-      if (pattern) g.circle(x, 0, 18).fill({ color: d.color, alpha: d.filled ? 1 : 0.3 });
-      else if (d.filled) g.circle(x, 0, 18).fill(d.color);
+      if (d.filled) g.circle(x, 0, 18).fill(d.color);
       else g.circle(x, 0, 18).stroke({ width: 5, color: d.color });
-      if (d.next) g.circle(x, 0, 24).stroke({ width: 4, color: 0x5a4a3c });
+    });
+  }
+
+  /**
+   * A pattern card. Levels 7–11: every slot shows its color, faint until filled, the next one ringed. Keep it going: the
+   * two reference units at full color (a small gap between them), an arrow, then colorless rings that fill as she brings
+   * ducklings; a hint shows only the next ring's color.
+   */
+  private drawPatternCard(g: Graphics, reference?: ColorName[]) {
+    const slots = cardSlots(this.round, this.line.length, this.hinting);
+    const half = reference ? reference.length / 2 : 0;
+    const UNIT_GAP = 14;
+    const ARROW_GAP = 40;
+    const xs: number[] = [];
+    let x = 0;
+    slots.forEach((_, i) => {
+      if (reference && i === half) x += UNIT_GAP;
+      if (reference && i === reference.length) x += ARROW_GAP;
+      xs.push(x);
+      x += 54;
+    });
+    const w = x + 26;
+    this.card.visible = true;
+    g.roundRect(-w / 2, -34, w, 68, 26)
+      .fill({ color: 0xffffff, alpha: 0.92 })
+      .stroke({ width: 4, color: CARD_EDGE });
+    const left = -w / 2 + 40;
+    if (reference) {
+      const ax = left + xs[reference.length] - 27 - ARROW_GAP / 2;
+      g.moveTo(ax - 12, 0)
+        .lineTo(ax + 8, 0)
+        .stroke({ width: 5, color: CARD_EDGE, cap: 'round' })
+        .poly([ax + 6, -9, ax + 18, 0, ax + 6, 9])
+        .fill(CARD_EDGE);
+    }
+    slots.forEach((s, i) => {
+      const cx = left + xs[i];
+      if (s.color === null) g.circle(cx, 0, 16).stroke({ width: 5, color: CARD_EDGE });
+      else
+        g.circle(cx, 0, 18).fill({
+          color: swatch[s.color].fill,
+          alpha: s.reference || s.filled ? 1 : 0.3,
+        });
+      if (s.next) g.circle(cx, 0, 24).stroke({ width: 4, color: 0x5a4a3c });
     });
   }
 
@@ -750,6 +811,9 @@ class DucklingParade implements Game {
       gravity: 0,
       life: [0.8, 1.3],
     });
+    const { reference, pattern } = this.round;
+    if (reference)
+      await this.ctx.say('parade.kept', { pattern: reference.join(', '), more: pattern!.join(', ') });
     await this.ctx.say('parade.done');
     await this.ctx.tw.wait(1);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
