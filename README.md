@@ -179,7 +179,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Sprout Shuffle](docs/games/sprout-shuffle.md) | school | Rainbow Meadow | 8 | tap or drag one copy tile from each parent plant into a possible sprout, then open every bud |
 | [Seed Travelers](docs/games/seed-travelers.md) | toddler–pre-K | Rainbow Meadow | 3 | toddler–pre-K |
 | [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 20 | AB patterns |
-| [Memory Match](docs/games/memory-match.md) | toddler–school | Puzzle Peaks | 13 | four named picture cards, shape/friend/fruit decks and free replay |
+| [Memory Match](docs/games/memory-match.md) | toddler–school | Puzzle Peaks | 14 | four named picture cards, shape/friend/fruit decks and free replay |
 | [Size Parade](docs/games/size-parade.md) | lap–school | Puzzle Peaks | 17 | tap the bigger or smaller friend; tap one friend to make it grow and shrink; drag friends into a line |
 | [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 12 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |
 | [Quick Tricks](docs/games/quick-tricks.md) | toddler–school | Puzzle Peaks | 9 | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle |

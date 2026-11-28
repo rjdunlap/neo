@@ -17,6 +17,12 @@ export const VOICE = {
   'memory.total-hint': [
     '{groups}. Count them all: {count}. {total}! You have seen its friend. Look at the glowing card.',
   ],
+  'memory.share': ['Find {count} pairs of pictures that shade the same share.'],
+  'memory.share-pair': ['{first} and {second} shade the same share. A pair!'],
+  'memory.share-mix': ['{first} and {second}. {bigger} shades more.'],
+  'memory.share-hint': [
+    'You have seen {card}. Look at the glowing card. Cut each piece of {coarse} in two, and it shows {fine}.',
+  ],
   'memory.fraction': ['Find the fraction picture and the words that name it!'],
   'memory.fraction-card': ['{amount}.'],
   'memory.card': ['{card}.'],
