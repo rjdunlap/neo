@@ -1,1 +1,0 @@
-**`market-stall`, *Which costs more?*** (new-levels tier): after *Which coin?*, at the next free ID; pre-K between 2 and 3; two tagged fruits with numerals and dots, a wrong tap shows the dots side by side. [Dive slice 9](../../deep-dives/market-stall.md#build-slices-in-order).
