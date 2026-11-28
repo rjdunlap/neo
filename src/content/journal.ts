@@ -4,6 +4,12 @@ import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, thingWord, type Thing } from '../games/sink-float/logic';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import { CHANGERS, EARLY, SUBSTANCES } from '../games/melt-freeze/logic';
+import {
+  DISCOVERIES as STIR_DISCOVERIES,
+  materialsOf,
+  wordOf as stirWord,
+  type Discovery as StirDiscovery,
+} from '../games/stir-see/logic';
 import { KITCHEN_DISCOVERIES, type KitchenDiscovery } from '../games/pet-kitchen/logic';
 import { RECIPES } from '../games/paint-mixer/logic';
 import type { LineId } from './voice-script';
@@ -32,7 +38,8 @@ export type JournalGame =
   | 'chain-reaction'
   | 'spinner-fair'
   | 'swing-pals'
-  | 'jelly-drums';
+  | 'jelly-drums'
+  | 'stir-see';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -55,6 +62,34 @@ export interface JournalEntry {
 export const entryId = (game: JournalGame, key: string) => `${game}:${key}`;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const STIR_THINGS = (o: 'vanish' | 'settle' | 'float') => materialsOf(o).map(stirWord).join(' and ');
+
+const STIR_NAMES: Record<StirDiscovery, string> = {
+  vanishes: 'Things that vanish',
+  settles: 'Things that sink and stay',
+  floats: 'Things that float',
+  'still-there': 'Still in there',
+};
+
+const STIR_SOURCES: Record<StirDiscovery, JournalEntry['source']> = {
+  vanishes: {
+    find: `stir ${STIR_THINGS('vanish')} into a cup of water`,
+    found: `the ${STIR_THINGS('vanish')} vanished into the water`,
+  },
+  settles: {
+    find: `stir ${STIR_THINGS('settle')} into a cup of water`,
+    found: `the ${STIR_THINGS('settle')} sank to the bottom and stayed`,
+  },
+  floats: {
+    find: `stir a leaf or a drop of oil into a cup of water`,
+    found: 'the leaf and the oil floated on top',
+  },
+  'still-there': {
+    find: 'tap a cup where something vanished',
+    found: 'the shimmer showed it was still in the water',
+  },
+};
 
 const KITCHEN_NAMES: Record<KitchenDiscovery, string> = {
   half: 'Two halves make a whole',
@@ -416,6 +451,15 @@ export const JOURNAL: readonly JournalEntry[] = [
       found: 'three jellies in a row sang a scale and the rainbow sparkled',
     },
   },
+  // Stir and See: each outcome she saw in the cup, and the shimmer of a vanished thing that is still in there.
+  ...STIR_DISCOVERIES.map((k): JournalEntry => ({
+    id: entryId('stir-see', k),
+    game: 'stir-see',
+    key: k,
+    name: STIR_NAMES[k],
+    line: `stirsee.journal.${k}` as LineId,
+    source: STIR_SOURCES[k],
+  })),
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);

@@ -540,6 +540,7 @@ export const game: GameModule = {
     'Share the first tablet: one reads a sign aloud while the other finds the picture it belongs to.',
   offScreen:
     'Write three short words on one page and invented symbols for their syllables on another, swap with a friend, and read each other’s new line from the first page.',
+  ownKeys: true,
   hubIcon: () => new WigglyIcon(tabletsPicture()),
   touchDemo: true,
   upright: true,

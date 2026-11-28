@@ -25,7 +25,8 @@ export type HopMode =
   | 'count-up'
   | 'your-way'
   | 'tens'
-  | 'hops';
+  | 'hops'
+  | 'estimate';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -33,6 +34,9 @@ export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-m
 /** The two levels that split a trip at ten: a card for the hops to ten, then a pad for where the rest land. */
 /** The levels whose whole answer is a number card for the hops between two pads. */
 export const countsHops = (mode: HopMode) => mode === 'gap' || mode === 'count-up';
+
+/** The levels drawn by a scene of their own, with no lily pads: Big hops and little hops, and Where does it go?. */
+export const ownScene = (mode: HopMode) => mode === 'hops' || mode === 'estimate';
 
 export const splitsAtTen = (mode: HopMode) => mode === 'make-ten' || mode === 'back-ten';
 
@@ -122,6 +126,12 @@ export const PLANS: HopPlan[] = [
     questions: 4,
     name: 'Big hops and little hops: tens and ones from one number to another, on a line with no pads',
   },
+  {
+    mode: 'estimate',
+    top: 100,
+    questions: 4,
+    name: 'Where does it go?: guess where a number sits on a line from 0 to 100, then place one on a line marked in tens',
+  },
 ];
 
 /** The number a pad shows and the frog says: its place on the line times the plan's stride. */
@@ -162,6 +172,8 @@ export interface HopQuestion {
   /** Big hops and little hops: the fewest-hops route, `bigs` hops of ten and `smalls` of one (`hops = 10 bigs + smalls`). */
   bigs?: number;
   smalls?: number;
+  /** Where does it go?: an unscored guess on a bare line, or the counted placement on a line marked in tens. */
+  place?: 'guess' | 'ticks';
 }
 
 /** The answer a child gives: a pad, for 'gap' the number of hops, for Fraction Match the hops of the second size. */
@@ -282,6 +294,7 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   if (plan.mode === 'your-way') return yourWayQuestions(plan, rng);
   if (plan.mode === 'tens') return tensQuestions(plan, rng);
   if (plan.mode === 'hops') return hopsQuestions(plan, rng);
+  if (plan.mode === 'estimate') return estimateQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -607,7 +620,7 @@ export function dotLayout(n: number): { x: number; y: number }[] {
  * Never on 0, the dot levels or the fraction line, where a pad is a quarter tick.
  */
 export const flowerOn = (mode: HopMode, n: number) =>
-  !showsDots(mode) && !isFrac(mode) && mode !== 'hops' && n > 0 && n % 5 === 0;
+  !showsDots(mode) && !isFrac(mode) && !ownScene(mode) && n > 0 && n % 5 === 0;
 
 /**
  * Scenes (dive slice 6): each round draws one place for the line. The lily pond, stepping stones in a brook, a flower path
@@ -690,4 +703,61 @@ export function hopLayout(
   const mid = (left + right) / 2;
   const cards = Array.from({ length: n }, (_, i) => ({ x: mid + (i - (n - 1) / 2) * step, y: view.h - 90 }));
   return { pads, sign, cards };
+}
+
+// Where does it go? (level 15, dive slice 11) -------------------------------------------------------
+
+/** The first guess every session asks for, as in the dive's first round. */
+export const ESTIMATE_FIRST = 37;
+/** Guesses at least this far apart, so three in a row each ask about a different part of the line. */
+export const ESTIMATE_SPREAD = 15;
+
+/**
+ * Three unscored guesses on a bare 0–100 line (never 0, 100 or 50, and never a multiple of ten, which the ticks would
+ * give away afterwards anyway), then one counted placement of a multiple of ten on the line marked in tens.
+ */
+function estimateQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  const guess = (target: number): HopQuestion => ({ start: 0, target, hops: target, lo: 0, place: 'guess' });
+  const out = [guess(ESTIMATE_FIRST)];
+  while (out.length < plan.questions - 1) {
+    const n = rng.int(3, 97);
+    if (n % 10 === 0 || out.some((q) => Math.abs(q.target - n) < ESTIMATE_SPREAD)) continue;
+    out.push(guess(n));
+  }
+  const tens = rng.pick([20, 30, 40, 60, 70, 80]);
+  out.push({ start: 0, target: tens, hops: tens, lo: 0, place: 'ticks' });
+  return out;
+}
+
+/** The number at a place on the line, from its two ends: linear, rounded, clamped to 0–100. */
+export function valueAt(x: number, x0: number, x1: number): number {
+  return Math.max(0, Math.min(100, Math.round(((x - x0) / (x1 - x0)) * 100)));
+}
+
+/** The place on the line of a number. */
+export const placeOf = (n: number, x0: number, x1: number) => x0 + ((x1 - x0) * n) / 100;
+
+/** The nearest tick (a multiple of ten) to a number, for the marked line. */
+export const nearestTen = (n: number) => Math.max(0, Math.min(100, Math.round(n / 10) * 10));
+
+export type Closeness = 'spot' | 'close' | 'near' | 'far';
+
+/** How close a guess was, in the words the frog says. Symmetric, and defined for every guess on the line. */
+export function closeness(guess: number, target: number): Closeness {
+  const d = Math.abs(guess - target);
+  return d <= 3 ? 'spot' : d <= 8 ? 'close' : d <= 18 ? 'near' : 'far';
+}
+
+/** Where the line and the band she touches sit: across the middle, clear of the guide's corner and the sign. */
+export function estimateLayout(view: { w: number; h: number; upright?: true }) {
+  const upright = view.h > view.w * 1.1;
+  const x0 = 70;
+  const x1 = view.w - 70;
+  const y = view.h * (upright ? 0.5 : 0.52);
+  return {
+    line: { x0, x1, y },
+    /** Touches anywhere in this band count as a place on the line. */
+    band: { x: x0 - 40, y: y - 110, w: x1 - x0 + 80, h: 190 },
+    sign: { x: view.w / 2, y: upright ? 150 : 110 },
+  };
 }

@@ -709,6 +709,7 @@ describe('game registry', () => {
       'spinner-fair',
       'sprout-shuffle',
       'stamp-studio',
+      'stir-see',
       'story-steps',
       'story-weaver',
       'sudoku-garden',

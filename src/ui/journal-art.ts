@@ -25,6 +25,8 @@ import type { ShelfColour } from '../games/paint-mixer/logic';
 import type { KitchenDiscovery } from '../games/pet-kitchen/logic';
 import { thingArt } from '../games/sink-float/art';
 import type { Thing } from '../games/sink-float/logic';
+import { stirJournalPicture } from '../games/stir-see/art';
+import type { Discovery as StirDiscovery } from '../games/stir-see/logic';
 import { magnifierIcon } from './icons';
 
 /** The picture for a journal entry, drawn from the game that shows it, centered on (0, 0)-ish; fit it with `fit`. */
@@ -64,6 +66,8 @@ export function entryPicture(entry: JournalEntry): Container {
       return swingJournalPicture();
     case 'jelly-drums':
       return jellyJournalPicture(entry.key);
+    case 'stir-see':
+      return stirJournalPicture(entry.key as StirDiscovery);
   }
 }
 
