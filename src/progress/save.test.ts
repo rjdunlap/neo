@@ -31,7 +31,6 @@ describe('migrate', () => {
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
     // A save from when the app had a play timer: the limit is retired, and always saved as 0 (no limit).
     expect(save.settings).toEqual({
-      placeLayout: 'path',
       startView: 'explore',
       volume: 1,
       music: false,
@@ -51,10 +50,9 @@ describe('migrate', () => {
     expect(save.stickers).toEqual([{ game: 'bubble-pop', seed: 5, at: 1 }]);
   });
 
-  it('defaults old saves to the path and preserves a subject-layout backup with progress', () => {
-    expect(migrate({ settings: { placeLayout: 'invalid' } }).settings.placeLayout).toBe('path');
+  it('drops the retired home spot layout and preserves a backup with progress', () => {
+    expect(migrate({ settings: { placeLayout: 'subjects' } }).settings).not.toHaveProperty('placeLayout');
     const save = defaults();
-    save.settings.placeLayout = 'subjects';
     save.games['bubble-pop'] = { plays: 4, level: 3, pinned: 2, history: [] };
     save.stickers.push({ game: 'bubble-pop', seed: 4, at: 1 });
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);

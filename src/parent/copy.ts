@@ -60,16 +60,6 @@ export function playingCopy(app: PanelApp): { before: string[]; after: string[] 
   };
 }
 
-/** The Finding games section's home spot layout row, on classic only (the section's Opens with row is in both apps). */
-export function findingCopy(app: PanelApp): { label: string; note: string } | null {
-  return app === 'root'
-    ? null
-    : {
-        label: 'Home spot layout',
-        note: 'The home spot on the map holds every game for their age in one place. Subject cards show four large choices at a time; the swiping path shows them all along one path.',
-      };
-}
-
 /**
  * The Opens with row (D8, docs/definitions/starting-view.md), in the Finding games section of both apps: what Explore is
  * called there, and the one note. The root never names the map; only the root has a phone's six-only start.

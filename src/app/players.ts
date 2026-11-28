@@ -4,8 +4,6 @@ import { forgetArcade } from '../content/arcade';
 import { forgetExplore } from '../content/explore';
 import { forgetJournalPage } from './scenes/JournalScene';
 import { forgetLands } from './scenes/LandScene';
-import { forgetPlaces } from './scenes/PlaceScene';
-import { forgetSubjects } from './scenes/SubjectPlaceScene';
 import { applySettings } from './settings';
 
 /**
@@ -28,8 +26,6 @@ export function playerChanged() {
   introMemory.clear();
   mixMemory.forget();
   pickMemory.forget();
-  forgetPlaces();
-  forgetSubjects();
   forgetLands();
   forgetExplore();
   forgetArcade();

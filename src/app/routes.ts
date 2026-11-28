@@ -3,14 +3,13 @@ import { gameById, playsByTouch } from '../games/registry';
 import { playBand } from '../progress/bands';
 import { store } from '../progress/store';
 import type { App, Routes } from './App';
+import { placeAtRoot } from './origin';
 import { GameScene } from './scenes/GameScene';
 import { HatchScene } from './scenes/HatchScene';
 import { MapScene } from './scenes/MapScene';
 import { PicnicScene } from './scenes/PicnicScene';
 import { WoodlandScene } from './scenes/WoodlandScene';
 import { MelodyScene } from './scenes/MelodyScene';
-import { SubjectPlaceScene } from './scenes/SubjectPlaceScene';
-import { PlaceScene } from './scenes/PlaceScene';
 import { ChooserScene } from './scenes/ChooserScene';
 import { JournalScene } from './scenes/JournalScene';
 import { LandScene } from './scenes/LandScene';
@@ -31,12 +30,8 @@ export function createRoutes(app: App): Routes {
     hub: () => void app.show(new MapScene(app)),
     // Explore is the root's (src/rework.ts); the island never makes an Explore origin, so it falls back to the map.
     explore: () => void app.show(new MapScene(app)),
-    place: (band) =>
-      void app.show(
-        store.data.settings.placeLayout === 'subjects'
-          ? new SubjectPlaceScene(app, band)
-          : new PlaceScene(app, band),
-      ),
+    // The age places retired with classic/ (2026-11-28): a way to one lands on Explore's entries, as at the root.
+    place: () => placeAtRoot(app.go),
     hatch: (quick) => void app.show(new HatchScene(app, quick)),
     land: (id, page) => void app.show(new LandScene(app, id, { page })),
     game: (id, band = store.data.profile.band, story, again = false, origin, level) => {

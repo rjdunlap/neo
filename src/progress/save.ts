@@ -123,7 +123,6 @@ export interface SaveData {
    * old default of a few minutes, and never starts a goodnight scene.
    */
   settings: {
-    placeLayout: 'path' | 'subjects';
     /** Where tapping this player's card on "Who's playing?" opens (D8): Explore is Home at the root and the map at classic/. */
     startView: StartView;
     volume: number;
@@ -192,7 +191,6 @@ export function defaults(): SaveData {
     creatures: { owned: [], companion: null, forms: [] },
     world: { band: null },
     settings: {
-      placeLayout: 'path',
       startView: 'explore',
       volume: 0.8,
       music: true,
@@ -411,7 +409,6 @@ export function migrate(raw: unknown): SaveData {
       band: BAND_IDS.find((b) => b === world.band) ?? null,
     },
     settings: {
-      placeLayout: settings.placeLayout === 'subjects' ? 'subjects' : 'path',
       // Version 3 still: a save without it, or with an unknown target, opens as it always did.
       startView: settings.startView === 'six' ? 'six' : 'explore',
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
