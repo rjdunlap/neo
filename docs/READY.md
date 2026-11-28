@@ -59,7 +59,7 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-(Refilled into Next ten 2026-11-26; `frog-hop` level 18, Define Duck Pond and the `market-stall` bakery stall moved there 2026-11-28.)
+(Refilled into Next ten 2026-11-26; `frog-hop` level 18, Define Duck Pond and the `market-stall` bakery stall moved there 2026-11-28; `stamp-studio` *The pet tells it back* moved there the same day.)
 
 Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs (`day-by-day` level 8 moved to Next ten 2026-11-27; `clock-tower` level 11 and `letter-trails` level 16 moved there the same day):
 
@@ -70,7 +70,6 @@ Refilled 2026-11-28 from the dives' slice lists, each checked against the game's
 - **`frog-hop`, level 20 G1 *Hops of a hundred*** (new-levels tier plus the `grownup` band audit): after level 19 merges; build its section of the [definition](definitions/frog-hop-entries-and-g1.md#20-g1-hops-of-a-hundred-grown-up) (grown-up 13, 14, 15, 20; `padValue` gains the question's offset). [Dive slice 11](deep-dives/frog-hop.md#build-slices-in-order).
 - **`market-stall`, G1 *Odd coins*** (new-levels tier plus the `grownup` band audit): after *Which costs more?*; coins 1, 3 and 4 with a true-minimum (dynamic programming) `fewest` (gap 8); rounds include prices where greedy is not minimal. [Dive slice 11](deep-dives/market-stall.md#build-slices-in-order).
 - **`market-stall`, *Is it enough?* (the sell stall)** (new-interaction tier): build the [definition](definitions/market-stall-sell-and-bakery.md#level-is-it-enough-a-round-step-by-step) at the next free ID: a customer pays, she sells or taps *More, please* and the customer counts on; school, after level 8 in `order`. [Dive slice 12](deep-dives/market-stall.md#build-slices-in-order).
-- **`stamp-studio`, *The pet tells it back*** (existing-game tier: rule tests that every sentence is true of its picture, one scripted play; decision 6 settled 2026-10-23). [Dive slice 9](deep-dives/stamp-studio.md#build-slices-in-order).
 - **`story-steps`, level 0b *Press the picture to watch*** (new-levels tier): after 0a, at the next free ID, lap; three cards that play in order when tapped, a story told, not asked. [Dive slice 7](deep-dives/story-steps.md#build-slices-in-order).
 - **`clock-tower`, preschool 1–1** (younger-band opening tier): after level 11's pull request merges; copy a visible model with one hand (decided 2026-10-23), band and inventory counts, a scoped card, registry and lands rules. [Dive slice 8](deep-dives/clock-tower.md#build-slices-in-order).
 
