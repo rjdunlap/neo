@@ -12,6 +12,10 @@ import {
   CAUSE_IDS,
   causePuzzle,
   LEVEL_PLANS,
+  GROW_LEVEL,
+  GROW_PLAN,
+  LEVELS,
+  stripPlan,
   isCause,
   pictureText,
   nextPicture,
@@ -263,5 +267,35 @@ describe('Story Steps untangle', () => {
       expect(botPlaced.map((s) => s.size)).toEqual([3, 3]);
     }
     expect(seen.size).toBe(11);
+  });
+});
+
+describe('One picture grows (level 15)', () => {
+  it('is the lap level and the toddler entry, played first without renumbering', () => {
+    expect(LEVELS.lap).toEqual({ min: GROW_LEVEL, max: GROW_LEVEL });
+    expect(LEVELS.toddler!.order).toEqual([GROW_LEVEL, 1, 2]);
+    expect(LEVELS.school!.max).toBeLessThan(GROW_LEVEL);
+    expect(stripPlan(GROW_LEVEL)).toBe(GROW_PLAN);
+    expect(stripPlan(1)).toBe(LEVEL_PLANS[0]);
+  });
+
+  it('shows the first picture and offers only the one that grows from it: no choice but the right card', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const p = storyPuzzle(GROW_PLAN, new Rng(seed));
+      expect(['tower', 'flower']).toContain(p.story);
+      expect(p.sequence.map((c) => c.stage)).toEqual([0, 1]);
+      expect(p.fixed).toEqual([0]);
+      expect(p.choices).toHaveLength(1);
+      expect(sameCard(p.choices[0], p.sequence[1])).toBe(true);
+      // The space to fill is the second one, and the bot (and ghost finger) carries the only card there.
+      const placed = new Set(p.fixed);
+      const next = nextPicture(p.sequence, placed, [{ card: p.choices[0], placed: false }]);
+      expect(next?.slot).toBe(1);
+    }
+  });
+
+  it('tells a tiny growing story: a block lands, a sprout comes up', () => {
+    expect(pictureText({ story: 'tower', stage: 1 })).toContain('second block');
+    expect(pictureText({ story: 'flower', stage: 1 })).toContain('sprout');
   });
 });

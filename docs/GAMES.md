@@ -530,7 +530,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Story Steps
 
-*toddler–school* · [Story Steps](games/story-steps.md)
+*lap–school* · [Story Steps](games/story-steps.md)
 
 ### Word Monsters
 

@@ -30,6 +30,11 @@ export const HOW_TO: GameHowTo = {
       text: 'The curved arrow undoes your last choice; the lightbulb speaks help and glows a useful control.',
     },
     { to: 2, text: 'Drag the picture that comes next into the glowing space.' },
+    {
+      from: 15,
+      to: 15,
+      text: 'Slide or tap the one picture on the tray: it jumps into the space and grows (a block lands, a sprout comes up).',
+    },
     { from: 3, to: 5, text: 'Drag the pictures into the spaces in the order the story happens.' },
     {
       from: 6,
@@ -87,6 +92,11 @@ export const HOW_TO: GameHowTo = {
     },
     { to: 7, text: 'The round ends when the story pictures are in a sensible order.' },
     {
+      from: 15,
+      to: 15,
+      text: 'The round ends once the picture has grown and the two pictures are read aloud.',
+    },
+    {
       from: 8,
       to: 8,
       text: 'The round ends when the cause is before its effect, and the pet explains what happened.',
@@ -105,6 +115,13 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'The round ends when all four pictures tell the story in order. Swaps are experiments; after eight swaps, a glow helps with an out-of-place picture.',
+    },
+  ],
+  note: [
+    {
+      from: 15,
+      to: 15,
+      text: 'There is only one picture to place and no wrong answer: a drop anywhere, or a tap, puts it in.',
     },
   ],
 };

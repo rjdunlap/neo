@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, ready, scene, tap, screenshot, launch, finished, next }) {
   async function expansion() {
     const only = process.env.EXPANSION_ONLY;
-    if (only !== undefined) selectValue(only, ['size', 'bug', 'story'], 'EXPANSION_ONLY');
+    if (only !== undefined) selectValue(only, ['size', 'bug', 'story', 'storygrow'], 'EXPANSION_ONLY');
     // Both the smallest supported band and the upper ladder are exercised through real pointer events.
     const sizeLevels = (process.env.SIZE_LEVELS || '1,2,3,4,5,6,7,8,10,11,17').split(',').map(Number);
     for (const level of sizeLevels.filter(() => !only || only === 'size')) {
@@ -535,6 +535,37 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       );
       await page.setViewportSize({ width: 1024, height: 768 });
       log(`Bug Builder ${level}: drag, copy/symmetry, mistakes, hint, saved round and sticker passed`);
+    }
+    // Story Steps 15, One picture grows, on a touch phone: a lap still tap places the only card, then a toddler drop far from the space.
+    if (only === 'storygrow') {
+      await page.setViewportSize({ width: 390, height: 844 });
+      for (const [band, how] of [
+        ['lap', 'tap'],
+        ['toddler', 'far drop'],
+      ]) {
+        await launch('story-steps', 15, 'Mia', band);
+        await page.evaluate(async (how) => {
+          const g = neo.scene.game;
+          if (g.choices.length !== 1 || g.slots.length !== 2)
+            throw new Error('One picture grows is not two cards with one choice');
+          const card = g.choices[0].node;
+          if (how === 'tap') kit.tapOn(card);
+          else {
+            const p = card.getGlobalPosition();
+            await kit.drag(kit.line([p.x, p.y], [p.x + 30, p.y - 120]));
+          }
+          if (!(await kit.until(() => g.done, 3000))) throw new Error(`A ${how} did not place the picture`);
+        }, how);
+        if (band === 'lap') {
+          await page.waitForTimeout(350);
+          await screenshot('story-steps-15-grow');
+        }
+        await finished('story-steps');
+        const r = await page.evaluate(() => kit.store.stats('story-steps').history.at(-1));
+        assert.deepEqual([r.level, r.misses, r.hints], [15, 0, 0]);
+        log(`Story Steps 15 (${band}): a ${how} places the only picture, it grows, no miss, sticker`);
+      }
+      await page.setViewportSize({ width: 1024, height: 768 });
     }
     for (
       let level = Number(process.env.FROM_LEVEL || 1);

@@ -78,7 +78,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `dropsjourney` | 2026-10-31 · [Drop's Journey levels 1–3 (weather-water slice 8)](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | — |
 | `early` | 2026-11-24 · [Splish Splash level 11, What do we hear with?](verification/2026-11-24-splish-splash-level-11-what-do-we-hear-with.md) | `EARLY_ONLY=bath BATH_FROM=11 BATH_TO=11` |
 | `exampleexpress` | 2026-11-18 · [Example Express level 3, Choose the lesson](verification/2026-11-18-example-express-level-3-choose-the-lesson.md) | Level 3 (`EXAMPLE_ONLY=lesson`) |
-| `expansion` | 2026-11-14 · [Bug Builder level 11 Mend the wing](verification/2026-11-14-bug-builder-level-11-mend-the-wing.md) | `EXPANSION_ONLY=bug BUG_LEVELS=11` |
+| `expansion` | 2026-11-28 · [Story Steps level 15 One picture grows](verification/2026-11-28-story-steps-level-15-one-picture-grows.md) | `EXPANSION_ONLY=storygrow` (lap tap and toddler far drop, 390×844 touch); earlier: `EXPANSION_ONLY=bug BUG_LEVELS=11` |
 | `farlights` | 2026-11-13 · [Far Lights level 9, One big light at lap](verification/2026-11-13-far-lights-level-9-one-big-light-at-lap.md) | `FAR_LEVELS=9` |
 | `feelings8` | 2026-10-10 · [Feelings Faces level 8: How can we help?](archive/VERIFICATION-2026-10-07-13.md#2026-10-10--feelings-faces-level-8-how-can-we-help) | Level 8 portrait |
 | `feelingsask` | 2026-10-21 · [Feelings Faces Ask first (slice 6)](archive/VERIFICATION-2026-10-21.md#2026-10-21--feelings-faces-ask-first-slice-6) | Level 12 |

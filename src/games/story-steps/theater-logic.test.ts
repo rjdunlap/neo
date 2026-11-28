@@ -208,7 +208,7 @@ describe('Story Theater level 14: Two Viewpoints', () => {
   });
   it('adds level 14 to school only, with its own how-to card and every spoken line', () => {
     expect(storySteps.levels('school')).toEqual({ min: 6, max: 14 });
-    expect(storySteps.levels('toddler')).toEqual({ min: 1, max: 2 });
+    expect(storySteps.levels('toddler')).toEqual({ min: 1, max: 15, order: [15, 1, 2] });
     expect(storySteps.levels('preschool')).toEqual({ min: 2, max: 5 });
     expect(storySteps.levels('prek')).toEqual({ min: 4, max: 8 });
     expect(storySteps.describeLevel(14)).toContain('Two Viewpoints');
