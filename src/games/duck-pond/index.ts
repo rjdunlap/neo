@@ -77,6 +77,16 @@ import {
   POND_RY,
   SPLIT_BRIDGE_HALF,
   type Seating,
+  peekCounts,
+  peekPond,
+  peekMove,
+  ringDuck,
+  unringed,
+  PEEK_HIT_R,
+  PEEK_POND_RY,
+  type PeekCover,
+  type PeekGuess,
+  type PeekPond,
 } from './logic';
 import { CardRow } from './every';
 import { rangeFor } from '../../progress/difficulty';
@@ -114,6 +124,8 @@ class Duck extends Container {
   home = 0;
   private readonly glowRing = new Graphics();
   private glowing = false;
+  /** Level 17: the ring that marks a duck already counted, drawn around its head over the reeds. */
+  private readonly ringMark = new Graphics();
   private readonly ripple = new Graphics()
     .ellipse(0, -6, 66, 26)
     .fill(WATER)
@@ -134,7 +146,8 @@ class Duck extends Container {
     super();
     this.critter.scale.set(0.36);
     this.ripple.visible = false;
-    this.addChild(this.glowRing, this.critter, this.ripple);
+    this.ringMark.visible = false;
+    this.addChild(this.glowRing, this.critter, this.ripple, this.ringMark);
     this.hitArea = new Circle(0, -46, 72);
     if (kind === 'frog') {
       this.critter.visible = false;
@@ -171,6 +184,18 @@ class Duck extends Container {
   glow(on: boolean) {
     this.glowing = on;
     if (!on) this.glowRing.clear();
+  }
+
+  /** Level 17: ring this duck as counted (a crayon ring around its head), or take the ring off. */
+  markCounted(on: boolean) {
+    this.ringMark.visible = on;
+    if (on)
+      this.ringMark
+        .clear()
+        .ellipse(0, -74, 50, 44)
+        .stroke({ width: 8, color: swatch.orange.fill })
+        .ellipse(0, -74, 50, 44)
+        .stroke({ width: 3, color: swatch.orange.line });
   }
 
   hopTo(x: number, y: number, duration = 0.65, height = 130): Promise<void> {
@@ -327,6 +352,16 @@ class DuckPond implements Game {
     hinted: boolean;
     saidFirst: boolean;
   } | null = null;
+  /** Level 17: the counts still to come, and this round's pond: hiding places, peekers, rings and the guess. */
+  private peekQueue: number[] = [];
+  private peek: {
+    pond: PeekPond;
+    covers: { g: Graphics; at: [number, number] }[];
+    guessed: boolean;
+    guesses: { button: RoundButton; guess: PeekGuess }[];
+    /** Indexes into `swimmers` (counting order), in the order she ringed them. */
+    rung: number[];
+  } | null = null;
   private readonly cardRow: CardRow;
   private busy = true;
   private finished = false;
@@ -481,6 +516,13 @@ class DuckPond implements Game {
       const slot = d.pondOffset ?? SLOTS[i];
       d.position.set(x + slot[0], y + slot[1]);
     });
+    if (this.peek) {
+      for (const c of this.peek.covers) c.g.position.set(x + c.at[0], y + c.at[1]);
+      this.peek.guesses.forEach(({ button }, i) => {
+        const at = padSpot(v, i, 2);
+        button.position.set(at.x, at.y);
+      });
+    }
   }
 
   update(dt: number) {
@@ -513,6 +555,7 @@ class DuckPond implements Game {
       this.answer,
     );
     if (this.plan.mode === 'every') return this.everyIntent();
+    if (this.plan.mode === 'peek') return this.peekIntent();
     if (move === null) return null;
     if (move === 'check') return this.check ? { tap: { on: this.check } } : null;
     // Level 13: the finger touches the water or the grass well away from the big duck, to show that anywhere will do.
@@ -841,6 +884,10 @@ class DuckPond implements Game {
     }
     if (p.mode === 'every') {
       await this.startEvery();
+      return;
+    }
+    if (p.mode === 'peek') {
+      await this.startPeek();
       return;
     }
     if (p.mode === 'teen') {
@@ -1203,6 +1250,10 @@ class DuckPond implements Game {
         this.clearPads();
         await this.roundWon(0, false);
         return;
+      } else if (this.plan.mode === 'peek') {
+        // She counted them herself: every duck waves, and the rings go.
+        for (const d of this.swimmers) d.markCounted(false);
+        this.clearPeek();
       } else {
         await this.countAloud();
         if (this.plan.mode === 'add' && this.pondStory) {
@@ -1257,6 +1308,8 @@ class DuckPond implements Game {
         sfx.bell(5 + (i % 5), 0.15);
         await this.ctx.say('count', { n: i + 1 });
       }
+    } else if (this.plan.mode === 'peek' && this.peek) {
+      await this.peekMiss();
     } else if (this.swimmers.length === 0) {
       await this.ctx.say('duck.noneHere');
     } else {
@@ -1266,8 +1319,220 @@ class DuckPond implements Game {
     }
     // The right pad glows from the second miss on a question, and that question counts one hint, however many more misses.
     if (this.wrongThisRound === HINT_AFTER) this.hints++;
-    if (this.wrongThisRound >= HINT_AFTER) this.pads.find((p) => p.value === this.answer)?.glow(true);
+    if (this.wrongThisRound >= HINT_AFTER) this.peekHint();
     this.busy = false;
+  }
+
+  // ----- level 17: count the peekers -----
+
+  /** A reed clump or a standing lily leaf, drawn from its foot: it hides the lower half of a duck peeking from behind it. */
+  private peekCover(cover: PeekCover): Graphics {
+    const g = new Graphics();
+    if (cover === 'reeds') {
+      // Thin blades with gaps between them, low enough that the duck's eyes and beak show over and between them.
+      for (const [dx, h, lean] of [
+        [-42, 52, -10],
+        [-18, 62, -4],
+        [18, 64, 6],
+        [42, 50, 12],
+      ])
+        g.poly([dx - 7, 12, dx + lean, 12 - h, dx + 7, 12])
+          .fill(LILY.fill)
+          .stroke({ width: 3, color: LILY.line });
+      for (const dx of [-30, 32]) g.roundRect(dx - 6, -74, 12, 28, 6).fill(0x8f6142);
+      g.moveTo(-30, -46).lineTo(-30, 12).stroke({ width: 4, color: LILY.line });
+      g.moveTo(32, -46).lineTo(32, 12).stroke({ width: 4, color: LILY.line });
+    } else {
+      // Two lily leaves standing at the waterline, below the duck's face, and a flower.
+      g.ellipse(-30, -8, 32, 24).fill(LILY.fill).stroke({ width: 4, color: LILY.line });
+      g.ellipse(28, -4, 32, 22).fill(0x8fd16f).stroke({ width: 4, color: LILY.line });
+      g.ellipse(0, 10, 62, 14).fill(LILY.fill).stroke({ width: 4, color: LILY.line });
+      g.circle(40, -26, 10).fill(swatch.pink.fill).stroke({ width: 3, color: swatch.pink.line });
+    }
+    g.eventMode = 'none';
+    return g;
+  }
+
+  /** A round of level 17: the hiding places stand up, ducks peek out from some, then "a few, or lots?" (any answer is welcome). */
+  private async startPeek() {
+    const rng = this.ctx.rng;
+    if (!this.peekQueue.length) this.peekQueue = peekCounts(rng, this.plan);
+    const n = this.peekQueue.shift()!;
+    this.answer = n;
+    const pond = peekPond(rng, n);
+    if (this.sizePond({ pondRx: POND_RX, pondRy: PEEK_POND_RY })) this.resize(this.view);
+    const { x, y } = this.pondCenter();
+    const covers = pond.spots.map(({ at, cover }) => {
+      const g = this.peekCover(cover);
+      g.position.set(x + at[0], y + at[1]);
+      // In front of a duck at the same place, behind any nearer the front.
+      g.zIndex = g.y + 0.5;
+      g.scale.set(0);
+      this.ducks.addChild(g);
+      return { g, at };
+    });
+    this.peek = { pond, covers, guessed: false, guesses: [], rung: [] };
+    await Promise.all(
+      covers.map(({ g }, i) =>
+        this.tw.to(g.scale, { x: 1, y: 1 }, { duration: 0.3, delay: i * 0.03, ease: ease.outBack }),
+      ),
+    );
+    // The ducks pop up from behind their hiding places, back row first.
+    await Promise.all(
+      pond.ducks.map((slot, i) => {
+        const d = new Duck();
+        d.pondOffset = slot;
+        d.position.set(x + slot[0], y + slot[1]);
+        d.setSwimming(true);
+        d.zIndex = d.y;
+        d.hitArea = new Circle(0, -60, PEEK_HIT_R);
+        d.scale.set(0);
+        this.ducks.addChild(d);
+        this.swimmers.push(d);
+        onTap(d, () => void this.tapPeeker(d), { cooldown: 300 });
+        return this.tw.wait(0.25 + i * 0.07).then(() => {
+          if (!d.destroyed) sfx.pop();
+          return this.tw.to(d.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+        });
+      }),
+    );
+    if (this.finished || !this.peek) return;
+    this.showGuesses();
+    await this.ctx.instruct('duckpeek.guess');
+    this.busy = false;
+  }
+
+  /** The two guess buttons, where the pads will be: two dots for a few, a crowd of dots for lots. */
+  private showGuesses() {
+    const peek = this.peek!;
+    const icon = (dots: [number, number][]) => {
+      const g = new Graphics();
+      for (const [dx, dy] of dots)
+        g.circle(dx, dy, 9).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+      return g;
+    };
+    const few = icon([
+      [-13, 0],
+      [13, 0],
+    ]);
+    const lots = icon([
+      [-24, -18],
+      [0, -20],
+      [24, -16],
+      [-30, 4],
+      [-6, 2],
+      [18, 4],
+      [-18, 24],
+      [8, 24],
+      [30, 22],
+    ]);
+    peek.guesses = (
+      [
+        [few, 'few'],
+        [lots, 'lots'],
+      ] as const
+    ).map(([art, guess]) => {
+      const button = new RoundButton(art, swatch.blue, PAD_R, () => void this.pickGuess(guess));
+      button.scale.set(0);
+      this.ctx.stage.addChild(button);
+      void this.tw.to(button.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+      return { button, guess };
+    });
+    this.resize(this.view);
+  }
+
+  /** Either guess is welcome; it is never a miss. Then the counting starts, with the dotted pads ready below. */
+  private async pickGuess(guess: PeekGuess) {
+    const peek = this.peek;
+    if (this.busy || this.finished || !peek || peek.guessed) return;
+    this.busy = true;
+    peek.guessed = true;
+    sfx.bell(guess === 'few' ? 5 : 8, 0.2);
+    for (const { button } of peek.guesses) button.destroy({ children: true });
+    peek.guesses = [];
+    await this.ctx.say(guess === 'few' ? 'duckpeek.few' : 'duckpeek.lots');
+    this.showPads(this.answer);
+    await this.ctx.instruct('duckpeek.ask');
+    this.busy = false;
+  }
+
+  /** A tap rings a duck and counts it; a ringed duck just quacks, so none is counted twice. Never a miss. */
+  private tapPeeker(d: Duck) {
+    const peek = this.peek;
+    if (!peek || this.finished || !peek.guessed) return;
+    const i = this.swimmers.indexOf(d);
+    if (i < 0) return;
+    const { rung, say } = ringDuck(peek.rung, i);
+    peek.rung = rung;
+    d.cheer();
+    if (say === null) {
+      sfx.animal('quack');
+      return;
+    }
+    d.markCounted(true);
+    d.glow(false);
+    sfx.bell(5 + ((say - 1) % 5), 0.15);
+    void this.ctx.say('count', { n: say });
+  }
+
+  /** A wrong pad: count the rings aloud, then say whether some ducks are still peeking uncounted. */
+  private async peekMiss() {
+    const peek = this.peek!;
+    const rung = peek.rung.map((i) => this.swimmers[i]);
+    if (rung.length) {
+      await this.ctx.say('duckpeek.rings', { n: rung.length });
+      for (let i = 0; i < rung.length; i++) {
+        rung[i].bob();
+        sfx.bell(5 + (i % 5), 0.15);
+        await this.ctx.say('count', { n: i + 1 });
+      }
+    }
+    const left = unringed(this.swimmers.length, peek.rung).length;
+    if (!rung.length) await this.ctx.say('duckpeek.tapEach');
+    else if (left) await this.ctx.say('duckpeek.more', { n: rung.length });
+    else await this.ctx.say('duckpeek.allRung', { n: rung.length });
+  }
+
+  /** After two misses: the ducks not yet counted glow, or, once every duck is ringed, the pad with the answer. */
+  private peekHint() {
+    const peek = this.peek;
+    if (!peek) {
+      this.pads.find((p) => p.value === this.answer)?.glow(true);
+      return;
+    }
+    const left = unringed(this.swimmers.length, peek.rung);
+    for (const i of left) this.swimmers[i].glow(true);
+    if (!left.length) this.pads.find((p) => p.value === this.answer)?.glow(true);
+  }
+
+  /** The ghost finger at level 17: a guess, then each duck not yet ringed, then the pad. */
+  private peekIntent(): TouchIntent | null {
+    const peek = this.peek;
+    if (!peek) return null;
+    const move = peekMove(
+      this.swimmers.length,
+      peek.guessed,
+      peek.rung,
+      this.pads.map((p) => p.value),
+      this.answer,
+    );
+    if (!move) return null;
+    if ('guess' in move) {
+      const b = peek.guesses.find((g) => g.guess === move.guess)?.button;
+      return b ? { tap: { on: b } } : null;
+    }
+    if ('duck' in move) return { tap: { on: this.swimmers[move.duck], y: -60 }, pause: 0.3 };
+    return { tap: { on: this.pads[move.pad] } };
+  }
+
+  /** The hiding places fold away before the ducks swim off. */
+  private clearPeek() {
+    const peek = this.peek;
+    if (!peek) return;
+    this.peek = null;
+    for (const { button } of peek.guesses) button.destroy({ children: true });
+    for (const { g } of peek.covers)
+      void this.tw.to(g.scale, { x: 0, y: 0 }, { duration: 0.25 }).then(() => g.destroy());
   }
 
   // ----- level 16: every way -----
@@ -1549,6 +1814,8 @@ export const duckPond: GameModule = {
       return `Doubles: ${p.min} + ${p.min} to ${p.max} + ${p.max} across the bridge, then one more on a side; how many in all?`;
     if (p.mode === 'teen')
       return 'Ten and some more: a full pond of ten and 1 to 9 more; how many in all (11 to 19), or how many past ten?';
+    if (p.mode === 'peek')
+      return `Count the peekers: ${p.min} to ${p.max} ducks peek from reeds and leaves; tap each one to ring and count it, then pick the dotted pad. "A few, or lots?" first, never wrong`;
     if (p.mode === 'every')
       return `Every way: send ducks across the bridge and find every way to share ${p.min} to ${p.max} ducks`;
     if (p.mode === 'add')
@@ -1563,7 +1830,8 @@ export const duckPond: GameModule = {
   coplayHintLap: 'Count out loud as {name} touches each duck: "one, two, three!"',
   offScreen: 'Line up toy ducks or spoons and count them together, touching each one.',
   hubIcon: () => new PondIcon(),
-  entryLevels: [12, 13],
+  // 17 (Count the peekers) is played between 6 and 7 by preschool and pre-K; a school save of it starts at school's first level.
+  entryLevels: [12, 13, 17],
   touchDemo: true,
   upright: true,
   sticker,

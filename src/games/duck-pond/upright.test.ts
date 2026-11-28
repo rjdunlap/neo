@@ -31,13 +31,17 @@ import {
   pondDrawRx,
   everySeats,
   everyTotals,
+  PEEK_HIT_R,
+  PEEK_POND_RY,
+  PEEK_SPOTS,
+  PEEK_JITTER,
   signSpot,
   splitSeats,
   type Seating,
 } from './logic';
 
 /**
- * Duck Pond held upright (chunk 31, docs/definitions/phone-portrait.md): all sixteen levels at the upright phone views.
+ * Duck Pond held upright (chunk 31, docs/definitions/phone-portrait.md): every level at the upright phone views.
  * The tap targets are the waiting ducks (levels 1–5), the check and the ducks sent back from the pond (levels 4–5), the five
  * ducks that wave bye-bye (level 12) and the answer pads; level 13 takes a touch anywhere. Every other duck on the pond is
  * counted, never tapped, but must stay on the water and on screen.
@@ -167,6 +171,45 @@ describe.each(Object.entries(views))('Duck Pond upright on %s', (_, v) => {
       );
     }
 
+    if (plan.mode === 'peek') {
+      it('seats the peekers on the taller pond, each tap area its own and above the pads, and the two guesses apart', () => {
+        const j = PEEK_JITTER;
+        const corners = PEEK_SPOTS.flatMap(([x, y]): [number, number][] => [
+          [x - j, y - j],
+          [x + j, y + j],
+          [x - j, y + j],
+          [x + j, y - j],
+        ]);
+        ripple({ slots: corners, scale: 1, pondRy: PEEK_POND_RY }, 'peek');
+        const taps: Target[] = PEEK_SPOTS.map(([x, y], i) => ({
+          what: `peeker ${i + 1}`,
+          x: c.x + x,
+          y: c.y + y - 60,
+          w: 2 * PEEK_HIT_R,
+          h: 2 * PEEK_HIT_R,
+        }));
+        // Tap areas are circles: each is on screen and clear of the pet, and no two circles meet (their boxes may, diagonally).
+        for (const t of taps) expect(uprightProblems(v, [t])).toEqual([]);
+        for (const [i, t] of taps.entries())
+          for (const u of taps.slice(i + 1))
+            expect(
+              Math.hypot(t.x - u.x, t.y - u.y) - 2 * Math.SQRT2 * j,
+              `${t.what} and ${u.what}`,
+            ).toBeGreaterThanOrEqual(2 * PEEK_HIT_R);
+        for (const t of taps) expect(t.y + PEEK_HIT_R + j).toBeLessThan(padRowY(v) - PAD_HIT_R);
+        const guesses: Target[] = [0, 1].map((i) => ({
+          what: `guess ${i + 1}`,
+          x: padSpot(v, i, 2).x,
+          y: padSpot(v, i, 2).y,
+          w: 2 * PAD_HIT_R,
+          h: 2 * PAD_HIT_R,
+        }));
+        expect(uprightProblems(v, guesses)).toEqual([]);
+        // The pond's lower rim stays above the pads.
+        expect(c.y + PEEK_POND_RY).toBeLessThan(padRowY(v) - PAD_R);
+      });
+    }
+
     if (plan.mode === 'every') {
       it.each(everyTotals(plan))(
         'seats %s ducks either side of the bridge, each tap area its own',
@@ -247,7 +290,8 @@ describe.each(Object.entries(views))('Duck Pond upright on %s', (_, v) => {
       plan.mode === 'ten' ||
       plan.mode === 'hide' ||
       plan.mode === 'double' ||
-      plan.mode === 'teen'
+      plan.mode === 'teen' ||
+      plan.mode === 'peek'
     ) {
       it('keeps the three pads apart, clear of the pet and inside the view', () => {
         const targets: Target[] = [0, 1, 2].map((i) => ({

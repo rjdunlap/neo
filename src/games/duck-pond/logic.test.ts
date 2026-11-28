@@ -3,6 +3,16 @@ import { Rng } from '../../engine/random';
 import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import { duckPond } from './index';
 import {
+  PEEK_HIT_R,
+  PEEK_JITTER,
+  PEEK_POND_RY,
+  PEEK_SPOTS,
+  peekCounts,
+  peekGuessFor,
+  peekMove,
+  peekPond,
+  ringDuck,
+  unringed,
   BIG_DUCK_SPOT,
   inScatterArea,
   FRIEND_SLOTS,
@@ -842,7 +852,7 @@ describe('Duck Pond level 16, Every way (slice 9)', () => {
   const totals = everyTotals(plan);
 
   it('is appended as level 16 with totals 3 to 6, and tops the school window', () => {
-    expect(PLANS).toHaveLength(16);
+    expect(PLANS.length).toBeGreaterThanOrEqual(16);
     expect(plan).toMatchObject({ mode: 'every', rounds: 4, min: 3, max: 6, split: true });
     expect(totals).toEqual([3, 4, 5, 6]);
     expect(LEVELS.school!.max).toBe(16);
@@ -968,5 +978,140 @@ describe('Duck Pond level 16, Every way (slice 9)', () => {
       'duck.wayAll',
     ])
       expect(Object.keys(VOICE)).toContain(id);
+  });
+});
+
+describe('Count the peekers (level 17)', () => {
+  const plan = PLANS[16];
+  const seeds = Array.from({ length: 300 }, (_, i) => i);
+
+  it('is a peek plan on the preschool and pre-K ladders only, between 6 and 7', () => {
+    expect(plan.mode).toBe('peek');
+    expect(LEVELS.preschool?.order).toEqual([3, 4, 5, 6, 17, 7]);
+    expect(LEVELS.prek?.order).toEqual([5, 6, 17, 7, 8, 9]);
+    for (const band of ['preschool', 'prek'] as const) {
+      const o = LEVELS[band]!.order!;
+      expect(o.indexOf(17)).toBe(o.indexOf(6) + 1);
+      expect(o.indexOf(7)).toBe(o.indexOf(17) + 1);
+    }
+    for (const band of ['school', 'lap', 'toddler'] as const) {
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(17);
+    }
+  });
+
+  it('counts are 4-10, never repeat twice running, and the first is at most 6', () => {
+    for (const seed of seeds) {
+      const c = peekCounts(new Rng(seed), plan);
+      expect(c).toHaveLength(plan.rounds);
+      expect(c[0]).toBeLessThanOrEqual(6);
+      c.forEach((n, i) => {
+        expect(n).toBeGreaterThanOrEqual(4);
+        expect(n).toBeLessThanOrEqual(10);
+        if (i) expect(n).not.toBe(c[i - 1]);
+      });
+    }
+  });
+
+  it('is deterministic per seed', () => {
+    expect(peekPond(new Rng(5), 8)).toEqual(peekPond(new Rng(5), 8));
+    expect(peekCounts(new Rng(5), plan)).toEqual(peekCounts(new Rng(5), plan));
+  });
+
+  it('seats exactly n ducks, at least DUCK_GAP apart, with non-overlapping tap circles of 100+', () => {
+    expect(2 * PEEK_HIT_R).toBeGreaterThanOrEqual(100);
+    for (const seed of seeds) {
+      for (let n = 4; n <= 10; n++) {
+        const { ducks, spots } = peekPond(new Rng(seed), n);
+        expect(ducks).toHaveLength(n);
+        expect(spots).toHaveLength(PEEK_SPOTS.length);
+        for (let a = 0; a < n; a++)
+          for (let b = a + 1; b < n; b++) {
+            const d = Math.hypot(ducks[a][0] - ducks[b][0], ducks[a][1] - ducks[b][1]);
+            expect(d).toBeGreaterThanOrEqual(DUCK_GAP);
+            expect(d).toBeGreaterThanOrEqual(2 * PEEK_HIT_R);
+          }
+      }
+    }
+  });
+
+  it('keeps every hiding place at least DUCK_GAP apart even with the worst jitter', () => {
+    const j = 2 * PEEK_JITTER;
+    for (let a = 0; a < PEEK_SPOTS.length; a++)
+      for (let b = a + 1; b < PEEK_SPOTS.length; b++) {
+        const dx = Math.max(0, Math.abs(PEEK_SPOTS[a][0] - PEEK_SPOTS[b][0]) - j);
+        const dy = Math.max(0, Math.abs(PEEK_SPOTS[a][1] - PEEK_SPOTS[b][1]) - j);
+        expect(Math.hypot(dx, dy)).toBeGreaterThanOrEqual(DUCK_GAP);
+      }
+  });
+
+  it('keeps every seat, feet included, inside the pond ellipse with a margin', () => {
+    for (const seed of seeds) {
+      const { spots, ducks } = peekPond(new Rng(seed), 10);
+      for (const [x, y] of [...spots.map((s) => s.at), ...ducks]) {
+        expect((x / 370) ** 2 + (y / PEEK_POND_RY) ** 2).toBeLessThanOrEqual(0.85);
+      }
+    }
+  });
+
+  it('ringDuck counts each duck once and says the ring count', () => {
+    for (let n = 4; n <= 10; n++) {
+      let rung: number[] = [];
+      for (let i = 0; i < n; i++) {
+        const r = ringDuck(rung, i);
+        expect(r.say).toBe(i + 1);
+        expect(r.rung).toHaveLength(i + 1);
+        rung = r.rung;
+        for (const again of rung) {
+          const t = ringDuck(rung, again);
+          expect(t.say).toBeNull();
+          expect(t.rung).toEqual(rung);
+        }
+      }
+      expect(unringed(n, rung)).toEqual([]);
+    }
+    expect(unringed(5, [3, 0])).toEqual([1, 2, 4]);
+  });
+
+  it('the few-or-lots guess has no wrong answer: a bot following peekMove guesses, rings each duck once, then picks the answer pad', () => {
+    for (const seed of seeds) {
+      const rng = new Rng(seed);
+      for (const n of peekCounts(rng, plan)) {
+        const pads = padValues(rng, n);
+        expect(pads).toContain(n);
+        expect(peekGuessFor(n)).toBe(n <= 5 ? 'few' : 'lots');
+        let guessed = false;
+        let rung: number[] = [];
+        const said: (number | null)[] = [];
+        let end: { pad: number } | null = null;
+        for (let step = 0; step < 40 && !end; step++) {
+          const m = peekMove(n, guessed, rung, pads, n);
+          expect(m).not.toBeNull();
+          if (step === 0) expect(m).toEqual({ guess: peekGuessFor(n) });
+          if (!m) break;
+          if ('guess' in m) guessed = true;
+          else if ('duck' in m) {
+            const r = ringDuck(rung, m.duck);
+            said.push(r.say);
+            rung = r.rung;
+          } else end = m;
+        }
+        expect(said).toEqual(Array.from({ length: n }, (_, i) => i + 1));
+        expect(end && pads[end.pad]).toBe(n);
+      }
+    }
+  });
+
+  it('padValues for answers 4-10 include the answer within 1..10', () => {
+    for (const seed of seeds)
+      for (let a = 4; a <= 10; a++) {
+        const pads = padValues(new Rng(seed), a);
+        expect(pads).toHaveLength(3);
+        expect(new Set(pads).size).toBe(3);
+        expect(pads).toContain(a);
+        for (const v of pads) {
+          expect(v).toBeGreaterThanOrEqual(1);
+          expect(v).toBeLessThanOrEqual(10);
+        }
+      }
   });
 });

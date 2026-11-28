@@ -10,8 +10,8 @@
 | --- | --- |
 | lap | 13, 12, 1, 2 |
 | toddler | 12, 1, 2, 3, 4, 5 |
-| preschool | 3–7 |
-| pre-K | 5–9 |
+| preschool | 3, 4, 5, 6, 17, 7 |
+| pre-K | 5, 6, 17, 7, 8, 9 |
 | school | 8, 9, 10, 11, 14, 15, 16 |
 
 | Level | Plays like |
@@ -32,6 +32,7 @@
 | 14 | Doubles: 1 + 1 to 5 + 5 across the bridge, then one more on a side; how many in all? |
 | 15 | Ten and some more: a full pond of ten and 1 to 9 more; how many in all (11 to 19), or how many past ten? |
 | 16 | Every way: send ducks across the bridge and find every way to share 3 to 6 ducks |
+| 17 | Count the peekers: 4 to 10 ducks peek from reeds and leaves; tap each one to ring and count it, then pick the dotted pad. "A few, or lots?" first, never wrong |
 
 <!-- end generated -->
 
