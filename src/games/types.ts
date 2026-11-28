@@ -308,6 +308,15 @@ export interface Game {
    */
   autotouch?(dt: number): TouchIntent | null;
   /**
+   * A move to show a player on the real board (guided first play, `src/app/round-guide.ts`): on her first round of the game,
+   * and when nothing has been touched for a while. The shell points at it with a drawn hand that touches nothing, so this
+   * must have no side effects; it may be called at any time. Aim at a right answer where there is one, and show the action
+   * the round asks for (the first card to flip, not the hidden pair). Return null while there is nothing to do yet, or for
+   * a move that only makes sense at a moment. `autotouch` is often the same rule, but a bot may plan, err on purpose or
+   * keep timers, so a game opts in here explicitly.
+   */
+  showMove?(): TouchIntent | null;
+  /**
    * The couch pause menu's "start this again", and the island pause sheet's (`GameScene.pauseActions`, labelled the
    * couch's way, or plainly for a game made only for grown-ups): put the board in the round's current part back to its first
    * position. Tries already made keep counting, so a restart is never a way to improve a score. May be

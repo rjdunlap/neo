@@ -363,6 +363,11 @@ class MarbleJump implements Game {
     this.hinted = this.firstRoute()?.[0] ?? null;
     this.draw();
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch(0);
+  }
+
   autotouch(_dt: number): TouchIntent | null {
     if (this.finished || this.flight) return null;
     const next = this.firstRoute()?.[0];

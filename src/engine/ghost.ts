@@ -363,7 +363,7 @@ export function drawHand(): Container {
 }
 
 /** A cartoon mouse pointer, its tip at (0, 0), big enough to read in a small window. */
-function drawCursor(): Container {
+export function drawCursor(): Container {
   const arrow = new Graphics()
     .poly([0, 0, 0, 74, 18, 57, 32, 90, 47, 83, 33, 51, 58, 49])
     .fill(0xffffff)
