@@ -11,7 +11,7 @@
 | toddler | 1 |
 | preschool | 1–5 |
 | pre-K | 3–9 |
-| school | 8, 12, 9, 10, 11 |
+| school | 8, 12, 13, 9, 10, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,6 +27,7 @@
 | 10 | Match number words one–ten to numerals |
 | 11 | Match fraction pictures to names |
 | 12 | Same time: match hour and half-hour clocks |
+| 13 | Same total: two groups of dots and the number they make |
 
 <!-- end generated -->
 

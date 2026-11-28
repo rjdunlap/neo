@@ -10,11 +10,15 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clockFace, fractionFace, pictureFace } from './art';
+import { clockFace, fractionFace, pictureFace, totalFace } from './art';
 import {
   selectFractionSquares,
   type FractionSquare,
   selectTimes,
+  selectSums,
+  countAcross,
+  groupsLabel,
+  type TotalSum,
   DOT_RADIUS,
   selectDotLayouts,
   selectPictures,
@@ -48,6 +52,7 @@ class MemoryMatch implements Game {
   readonly dots: readonly DotSpot[][];
   readonly squares: readonly FractionSquare[];
   readonly times: readonly number[];
+  readonly sums: readonly TotalSum[];
   // A couch challenge course: fixed tables played in a row, scored by cards turned over (docs/DESIGN.md "Adding a challenge course").
   private readonly course: { tables: Table[]; par: number[]; minimum: number } | null = null;
   private index = 0;
@@ -110,6 +115,7 @@ class MemoryMatch implements Game {
     }
     this.dots = this.plan.mode === 'numbers' ? selectDotLayouts(this.plan.pairs, ctx.rng) : [];
     this.squares = this.plan.mode === 'fractions' ? selectFractionSquares(ctx.rng) : [];
+    this.sums = this.plan.mode === 'totals' ? selectSums(ctx.rng) : [];
     this.remaining = this.plan.pairs;
     ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
     this.ring.eventMode = 'none';
@@ -138,6 +144,7 @@ class MemoryMatch implements Game {
 
   private face(card: MemoryCard): Container {
     if (this.plan.mode === 'clocks') return clockFace(this.times[card.pair], card.side);
+    if (this.plan.mode === 'totals') return totalFace(this.sums[card.pair], card.side);
     if (this.plan.mode === 'pictures') return pictureFace(this.pictures[card.pair]);
     if (this.plan.mode === 'fractions') {
       const amount = fraction(card.pair)!;
@@ -171,6 +178,39 @@ class MemoryMatch implements Game {
     return shapePath(new Graphics(), shape, 43)
       .fill(swatch[color].fill)
       .stroke({ width: 4, color: swatch[color].line });
+  }
+
+  private labelOf(i: number): string {
+    return cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures, this.times, this.sums);
+  }
+
+  /**
+   * Level 13's nonmatch speech, the same for exploring and a known miss (only the boing differs): a groups card names
+   * its two groups and their total, so a groups card and the wrong number say "two and three make five, not seven".
+   * Two numbers fall back to the ordinary line. False when this is not level 13 or both cards are numbers.
+   */
+  private explainTotals(first: number, second: number): boolean {
+    if (this.plan.mode !== 'totals') return false;
+    const [a, b] = [this.cards[first], this.cards[second]];
+    if (a.side && b.side) return false;
+    const word = (n: number) => numberWord(n - 1);
+    const [groups, other] = a.side ? [b, a] : [a, b];
+    const sum = this.sums[groups.pair],
+      that = this.sums[other.pair];
+    if (other.side)
+      void this.ctx.say('memory.total-mix', {
+        groups: groupsLabel(sum),
+        total: word(sum.total),
+        other: word(that.total),
+      });
+    else
+      void this.ctx.say('memory.total-two', {
+        groups: groupsLabel(sum),
+        total: word(sum.total),
+        others: groupsLabel(that),
+        other: word(that.total),
+      });
+    return true;
   }
 
   /** Done with the round: for a course, only after its last table (between tables the cards are dealt again). */
@@ -251,22 +291,24 @@ class MemoryMatch implements Game {
     void this.ctx.instruct(
       this.plan.mode === 'clocks'
         ? 'memory.clock'
-        : this.plan.mode === 'numbers'
-          ? 'memory.number'
-          : this.plan.mode === 'letters'
-            ? 'memory.letter'
-            : this.plan.mode === 'number-words'
-              ? 'memory.number-word'
-              : this.plan.mode === 'fractions'
-                ? 'memory.fraction'
-                : 'memory.start',
+        : this.plan.mode === 'totals'
+          ? 'memory.total'
+          : this.plan.mode === 'numbers'
+            ? 'memory.number'
+            : this.plan.mode === 'letters'
+              ? 'memory.letter'
+              : this.plan.mode === 'number-words'
+                ? 'memory.number-word'
+                : this.plan.mode === 'fractions'
+                  ? 'memory.fraction'
+                  : 'memory.start',
     );
   }
 
   private async choose(i: number) {
     const view = this.views[i];
     if (this.locked || view.matched || this.remaining === 0) return;
-    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures, this.times);
+    const contents = this.labelOf(i);
     if (this.first === i) {
       void this.ctx.say('memory.card', { card: contents });
       return;
@@ -301,9 +343,16 @@ class MemoryMatch implements Game {
         this.drawBoard();
       }
       sfx.sparkle();
-      void this.ctx.say(this.plan.mode === 'clocks' ? 'memory.clock-pair' : 'memory.pair-card', {
-        card: contents,
-      });
+      if (this.plan.mode === 'totals') {
+        const sum = this.sums[this.cards[i].pair];
+        void this.ctx.say('memory.total-pair', {
+          groups: groupsLabel(sum),
+          total: numberWord(sum.total - 1),
+        });
+      } else
+        void this.ctx.say(this.plan.mode === 'clocks' ? 'memory.clock-pair' : 'memory.pair-card', {
+          card: contents,
+        });
       await this.ctx.tw.wait(0.35);
     } else {
       const known = knownMismatch(this.cards, first, i, this.seen);
@@ -312,10 +361,11 @@ class MemoryMatch implements Game {
         this.wrong++;
         sfx.boing();
       }
-      void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
-        first: cardLabel(this.plan.mode, this.cards[first], this.letters, this.pictures, this.times),
-        second: contents,
-      });
+      if (!this.explainTotals(first, i))
+        void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
+          first: this.labelOf(first),
+          second: contents,
+        });
       await this.ctx.tw.wait(1.2);
       a.front.visible = view.front.visible = false;
       a.back.visible = view.back.visible = true;
@@ -341,6 +391,14 @@ class MemoryMatch implements Game {
                 time % 60 === 0
                   ? `on ${Math.floor(time / 60) || 12}`
                   : `halfway between ${Math.floor(time / 60) || 12} and ${(Math.floor(time / 60) % 12) + 1}`,
+            });
+          } else if (this.plan.mode === 'totals') {
+            // Both cards of a pair share its sum: count across its two groups to reach the number.
+            const sum = this.sums[this.cards[partner].pair];
+            void this.ctx.say('memory.total-hint', {
+              groups: groupsLabel(sum),
+              count: countAcross(sum.total),
+              total: numberWord(sum.total - 1),
             });
           } else void this.ctx.say('memory.hint');
           this.drawHint();

@@ -10,6 +10,13 @@ export const VOICE = {
   'memory.clock-hint': [
     'You have seen {card}. Look at the glowing card. The long hand points to {minute}, and the short hand is {hour}.',
   ],
+  'memory.total': ['Find the two groups of dots and the number they make together.'],
+  'memory.total-pair': ['{groups} make {total}. A pair!'],
+  'memory.total-mix': ['{groups} make {total}, not {other}.'],
+  'memory.total-two': ['{groups} make {total}. {others} make {other}.'],
+  'memory.total-hint': [
+    '{groups}. Count them all: {count}. {total}! You have seen its friend. Look at the glowing card.',
+  ],
   'memory.fraction': ['Find the fraction picture and the words that name it!'],
   'memory.fraction-card': ['{amount}.'],
   'memory.card': ['{card}.'],
