@@ -628,6 +628,7 @@ export const game: GameModule = {
   coplayHint: "One reads each ballot's first choice aloud and the other puts it in its pile.",
   offScreen:
     "Nine slips of paper, each ranking three favourite ice creams: sort them into piles, then move the smallest pile's slips to their next choice.",
+  ownKeys: true,
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
   upright: true,

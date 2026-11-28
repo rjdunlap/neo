@@ -30,6 +30,11 @@ export abstract class Scene {
    * Home, Today's six and a round of an upright-ready game. Implies `upright`. Couch play keeps the wide area.
    */
   uprightArea = false;
+  /**
+   * Keys and a pad drive the app's pad pointer here (`src/app/pad-pointer.ts`): a hand the arrows or stick move and Enter or
+   * the bottom button presses. Off on a screen that takes keys itself (the chooser, couch play, the map and lands, a round).
+   */
+  padPointer = true;
   /** Whether Esc holds this scene still behind the pause sheet. Off where the scene has its own way to the grown-ups' page or its own Esc. */
   canPause = true;
   private readonly tracked = new Set<Updatable>();

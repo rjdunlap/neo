@@ -164,6 +164,11 @@ export interface GameModule {
    * the controller implements `touchReturned()` to come back.
    */
   liveController?: true;
+  /**
+   * The game reads the keyboard itself in a round (its own arrow, number or letter keys), so the island's pad pointer
+   * (`src/app/pad-pointer.ts`) takes only a pad there, never the arrows and Enter.
+   */
+  ownKeys?: true;
   /** A keyboard typing game (Pond Typing): couch play hands it the letter keys pressed (`CouchControls.typed`) while its round is on screen. */
   typing?: true;
   /**

@@ -87,6 +87,8 @@ const PLACE_PICTURE = { small: 150, medium: 190, large: 230 } as const;
  * three age places that play one round as a guest before anything is set up, and a smaller Add a player below them.
  */
 export class ChooserScene extends Scene {
+  /** Takes keys itself. */
+  override padPointer = false;
   /** Plain HTML that suits a phone held upright, and a page of its own inputs. */
   upright = true;
   canPause = false;

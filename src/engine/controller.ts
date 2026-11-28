@@ -162,10 +162,15 @@ const typing = (e: KeyboardEvent) => {
   return t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
 };
 
+const NO_KEYS: ReadonlySet<string> = new Set();
+
 /** Scene-owned listeners: no keys are intercepted in the child's game or other pages. */
 export class CouchInput {
   private keys = new Set<string>();
   private sampler = new ControllerSampler();
+  private padSampler = new ControllerSampler();
+  /** The last poll's pads alone, with the keyboard left out: for a round whose game reads the keys itself (`GameModule.ownKeys`). */
+  pads: CouchControls = idle();
   private readonly listening: () => boolean;
   private readonly codes: ReadonlySet<string>;
   private typedKeys: string[] = [];
@@ -238,6 +243,7 @@ export class CouchInput {
     }
     const typed = this.typedKeys;
     this.typedKeys = [];
+    this.pads = this.padSampler.sample(pads, NO_KEYS);
     return { ...this.sampler.sample(pads, this.keys), typed: this.typing() ? typed : [] };
   }
   destroy() {
