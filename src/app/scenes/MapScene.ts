@@ -51,6 +51,13 @@ export class MapScene extends Scene {
   /** At the root, a little boat bobs in the corner's sea; tap it and it toots and bobs. */
   readonly boat = new Container();
   private boatT = 0;
+  /** At the root, a gull circles the island over the sea's edge; tap it and it calls and loops. */
+  readonly gull = new Container();
+  private readonly wings = new Graphics();
+  private gullT = 0.15;
+  private gullLoop = false;
+  /** Seconds to the next whale spout somewhere in the sea (on its own, nothing to tap). */
+  private spoutIn = 4;
   readonly pip = makeCompanion();
   private readonly title = label('Puddle Island', 42, ink);
   private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () =>
@@ -196,7 +203,8 @@ export class MapScene extends Scene {
 
   /**
    * The main app's island does things between its places (2026-11-28, "things happening"): the sea splashes and a fish
-   * jumps where it is tapped, the grass sprouts a flower, and a boat bobs in the corner and toots when tapped. None is a way
+   * jumps where it is tapped, the grass sprouts a flower, a boat bobs in the corner and toots when tapped, a gull circles
+   * the island and loops when tapped, and now and then a whale spouts somewhere at sea. None is a way
    * out, none is a round, and the places on top keep their own taps.
    */
   private alive() {
@@ -242,6 +250,73 @@ export class MapScene extends Scene {
     this.boat.hitArea = new Rectangle(-60, -95, 120, 125);
     onTap(this.boat, () => void this.toot(), { cooldown: 600 });
     this.content.addChild(this.boat);
+    const line = { width: 3, color: swatch.white.line, join: 'round' as const };
+    this.wings
+      .poly([-4, 0, -30, -22, -10, -2])
+      .fill(0xffffff)
+      .stroke(line)
+      .poly([4, 0, 30, -22, 10, -2])
+      .fill(0xffffff)
+      .stroke(line);
+    const body = new Graphics()
+      .ellipse(0, 0, 16, 9)
+      .fill(0xffffff)
+      .stroke(line)
+      .circle(13, -5, 7)
+      .fill(0xffffff)
+      .stroke(line)
+      .circle(15, -6, 1.6)
+      .fill(ink);
+    const beak = new Graphics().poly([19, -6, 29, -3, 19, -1]).fill(swatch.orange.fill);
+    this.gull.addChild(this.wings, body, beak);
+    this.gull.scale.set(1.3);
+    this.gull.hitArea = new Rectangle(-50, -40, 100, 70);
+    onTap(this.gull, () => void this.gullCall(), { cooldown: 900 });
+    this.content.addChild(this.gull);
+  }
+
+  /** Where the gull is on its loop round the island, a little out over the sea. */
+  private gullAt(t: number) {
+    const v = this.view;
+    const a = t * Math.PI * 2;
+    return { x: v.w / 2 + Math.cos(a) * v.w * 0.5, y: v.h / 2 + 22 + Math.sin(a) * v.h * 0.47 };
+  }
+
+  private async gullCall() {
+    if (this.gullLoop) return;
+    this.gullLoop = true;
+    sfx.gull();
+    this.particles.burst(this.gull.x, this.gull.y, {
+      kind: 'dot',
+      colors: [0xffffff, swatch.white.light],
+      count: 6,
+      speed: [40, 120],
+      gravity: 160,
+    });
+    await this.tw.to(this.gull, { rotation: this.gull.rotation - Math.PI * 2 }, { duration: 0.6 });
+    this.gullLoop = false;
+  }
+
+  /** A whale breathes somewhere in the open sea: a spout of drops, now and then, on its own. */
+  private spout() {
+    const v = this.view;
+    for (let i = 0; i < 8; i++) {
+      const x = 40 + Math.random() * (v.w - 80);
+      const y = 120 + Math.random() * (v.h - 200);
+      const dx = (x - v.w / 2) / (v.w * 0.5),
+        dy = (y - (v.h / 2 + 22)) / (v.h * 0.45);
+      if (dx * dx + dy * dy < 1) continue;
+      this.particles.burst(x, y, {
+        kind: 'dot',
+        colors: [swatch.blue.fill, 0xffffff],
+        count: 10,
+        speed: [160, 260],
+        gravity: 500,
+        angle: -Math.PI / 2,
+        spread: 0.5,
+      });
+      return;
+    }
   }
 
   /** A fish leaps out where the sea was tapped and dives back in. */
@@ -442,6 +517,18 @@ export class MapScene extends Scene {
       this.boatT += dt * 0.15;
       this.boat.x = 80 + Math.sin(this.boatT * Math.PI * 2) * 22;
       this.boat.y = v.h - 40 + Math.sin(this.clock * 2) * 4;
+      // The gull goes round once in about forty seconds, flapping, and faces the way it flies.
+      this.gullT += dt / 40;
+      const at = this.gullAt(this.gullT);
+      const next = this.gullAt(this.gullT + 0.002);
+      this.gull.position.set(at.x, at.y);
+      this.gull.scale.x = next.x < at.x ? -1.3 : 1.3;
+      this.wings.scale.y = Math.sin(this.clock * 9);
+      this.spoutIn -= dt;
+      if (this.spoutIn <= 0) {
+        this.spoutIn = 7 + Math.random() * 6;
+        this.spout();
+      }
     }
     // A soft glow around her home spot.
     this.glow
