@@ -10,7 +10,7 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clockFace, fractionFace, pictureFace, totalFace } from './art';
+import { clockFace, fractionFace, pictureFace, shareFace, shareSplit, totalFace } from './art';
 import {
   selectFractionSquares,
   type FractionSquare,
@@ -19,6 +19,9 @@ import {
   countAcross,
   groupsLabel,
   type TotalSum,
+  compareShares,
+  shareOf,
+  SHARES,
   DOT_RADIUS,
   selectDotLayouts,
   selectPictures,
@@ -41,7 +44,7 @@ import {
 import { rangeFor } from '../../progress/difficulty';
 import { courseBest, courseMinimum, courseTables, isMemoryCourse, type Table } from './course';
 
-type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
+type CardView = { node: Container; front: Container; back: Graphics; matched: boolean; split?: Graphics };
 class MemoryMatch implements Game {
   cards: MemoryCard[];
   readonly views: CardView[] = [];
@@ -131,6 +134,12 @@ class MemoryMatch implements Game {
       const node = new Container();
       const front = new Container();
       front.addChild(tile(140, 140, 'white'), this.face(card));
+      // Level 14: the first card of each pair carries a hidden overlay cutting its pieces into its partner's.
+      const split = this.plan.mode === 'shares' && card.side === 0 ? shareSplit(card.pair) : undefined;
+      if (split) {
+        split.visible = false;
+        front.addChild(split);
+      }
       front.visible = false;
       const back = tile(140, 140, 'purple');
       back.poly(starPoints(30, 14)).fill(swatch.purple.light);
@@ -138,13 +147,14 @@ class MemoryMatch implements Game {
       node.hitArea = new Rectangle(-70, -70, 140, 140);
       onTap(node, () => void this.choose(i), { cooldown: 180 });
       this.ctx.stage.addChild(node);
-      this.views.push({ node, front, back, matched: false });
+      this.views.push({ node, front, back, matched: false, split });
     });
   }
 
   private face(card: MemoryCard): Container {
     if (this.plan.mode === 'clocks') return clockFace(this.times[card.pair], card.side);
     if (this.plan.mode === 'totals') return totalFace(this.sums[card.pair], card.side);
+    if (this.plan.mode === 'shares') return shareFace(shareOf(card));
     if (this.plan.mode === 'pictures') return pictureFace(this.pictures[card.pair]);
     if (this.plan.mode === 'fractions') {
       const amount = fraction(card.pair)!;
@@ -211,6 +221,17 @@ class MemoryMatch implements Game {
         other: word(that.total),
       });
     return true;
+  }
+
+  /**
+   * Level 14's overlay: shown on a matched pair's first card (so a half stays visibly two quarters) and on the hinted
+   * pair's first card while its glow lasts. It sits on the card's face, so it shows the next time that card is turned.
+   */
+  private drawSplits() {
+    const hinted = this.hintAt === null ? -1 : this.cards[this.hintAt].pair;
+    this.views.forEach((v, i) => {
+      if (v.split) v.split.visible = v.matched || this.cards[i].pair === hinted;
+    });
   }
 
   /** Done with the round: for a course, only after its last table (between tables the cards are dealt again). */
@@ -286,6 +307,9 @@ class MemoryMatch implements Game {
     // Level 13's instruction names its pair count, so it stays on device speech and needs no rendered clip.
     if (this.plan.mode === 'totals')
       return void this.ctx.instruct('memory.total', { count: numberWord(this.plan.pairs - 1) });
+    // Level 14's lines all carry slots too, so it also stays on device speech.
+    if (this.plan.mode === 'shares')
+      return void this.ctx.instruct('memory.share', { count: numberWord(this.plan.pairs - 1) });
     if (this.course) {
       this.report();
       void this.ctx.instruct('memory.start');
@@ -344,7 +368,10 @@ class MemoryMatch implements Game {
         this.drawBoard();
       }
       sfx.sparkle();
-      if (this.plan.mode === 'totals') {
+      this.drawSplits();
+      if (this.plan.mode === 'shares')
+        void this.ctx.say('memory.share-pair', { first: this.labelOf(first), second: contents });
+      else if (this.plan.mode === 'totals') {
         const sum = this.sums[this.cards[i].pair];
         void this.ctx.say('memory.total-pair', {
           groups: groupsLabel(sum),
@@ -362,7 +389,15 @@ class MemoryMatch implements Game {
         this.wrong++;
         sfx.boing();
       }
-      if (!this.explainTotals(first, i))
+      if (this.plan.mode === 'shares') {
+        // The same line for exploring and a known miss (only the boing differs): which of the two shades more.
+        const more = compareShares(shareOf(this.cards[first]), shareOf(this.cards[i])) > 0 ? first : i;
+        void this.ctx.say('memory.share-mix', {
+          first: this.labelOf(first),
+          second: contents,
+          bigger: this.labelOf(more),
+        });
+      } else if (!this.explainTotals(first, i))
         void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
           first: this.labelOf(first),
           second: contents,
@@ -401,8 +436,16 @@ class MemoryMatch implements Game {
               count: countAcross(sum.total),
               total: numberWord(sum.total - 1),
             });
+          } else if (this.plan.mode === 'shares') {
+            const [coarse, fine] = SHARES[this.cards[partner].pair];
+            void this.ctx.say('memory.share-hint', {
+              card: this.labelOf(partner),
+              coarse: coarse.name,
+              fine: fine.name,
+            });
           } else void this.ctx.say('memory.hint');
           this.drawHint();
+          this.drawSplits();
         }
       }
     }

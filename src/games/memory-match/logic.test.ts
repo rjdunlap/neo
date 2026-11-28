@@ -16,6 +16,13 @@ import {
   countAcross,
   totalCardDots,
   TOTAL_PART,
+  SHARES,
+  SHARE_BOX,
+  compareShares,
+  shareOf,
+  shareStrips,
+  shareLines,
+  splitLines,
   DOT_RADIUS,
   PICTURE_POOLS,
   selectPictures,
@@ -113,32 +120,34 @@ describe('memory matching', () => {
   });
 
   it('preserves existing plans and IDs, inserting the clock bridge in the school order, deck sizes and band windows with scoped instructions', () => {
-    expect(PLANS.map((p) => p.pairs)).toEqual([2, 3, 4, 6, 8, 4, 8, 8, 8, 10, 3, 3, 3]);
+    expect(PLANS.map((p) => p.pairs)).toEqual([2, 3, 4, 6, 8, 4, 8, 8, 8, 10, 3, 3, 3, 3]);
     expect(LEVELS).toEqual({
       toddler: { min: 1, max: 1 },
       preschool: { min: 1, max: 5 },
       prek: { min: 3, max: 9 },
-      school: { min: 8, max: 13, order: [8, 12, 13, 9, 10, 11] },
+      school: { min: 8, max: 14, order: [8, 12, 13, 9, 10, 11, 14] },
     });
     expect(memoryMatch.bands).toContain('toddler');
     expect(rangeFor(LEVELS, 'toddler')).toEqual({ min: 1, max: 1 });
     expect(howToFor(memoryMatch, 1)!.finish).toBe('Find both picture pairs to finish.');
     expect(howToFor(memoryMatch, 2)!.finish).toBe('The round ends when every pair is found.');
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(100)).toBe(PLANS[12]);
+    expect(planFor(100)).toBe(PLANS[13]);
     for (let level = 1; level <= PLANS.length; level++) {
       const steps = howToFor(memoryMatch, level)!.steps.join(' ');
       expect(steps.includes('A number word matches')).toBe(level === 10);
       expect(steps.includes('A picture of equal parts')).toBe(level === 11);
       expect(steps.includes('digital time')).toBe(level === 12);
       expect(steps.includes('two groups of dots')).toBe(level === 13);
+      expect(steps.includes('same share')).toBe(level === 14);
       expect(steps).toContain('first open card again');
       expect(memoryMatch.describeLevel!(level)).toBe(planFor(level).name);
     }
   });
   it('labels both faces from their actual identity with distinct labels for every pair', () => {
     const letters = 'QAZWSXED'.split('');
-    for (const plan of PLANS.filter((p) => p.mode !== 'totals')) {
+    // Levels 13 and 14 name each side differently (groups and total, two equal shares); their own tests cover the labels.
+    for (const plan of PLANS.filter((p) => p.mode !== 'totals' && p.mode !== 'shares')) {
       const labels = Array.from({ length: plan.pairs }, (_, pair) => {
         const times = [120, 270, 420];
         const a = cardLabel(plan.mode, { pair, side: 0 }, letters, undefined, times);
@@ -352,8 +361,10 @@ describe('Same time bridge', () => {
     expect(stepLevel(9, -1, range)).toBe(13);
     expect(stepLevel(13, -1, range)).toBe(12);
     expect(stepLevel(12, -1, range)).toBe(8);
-    expect(nextLevelOffer(11, range)).toBeNull();
-    for (const id of [8, 9, 10, 11, 12, 13]) expect(nextLevel(id, [], range)).toBe(id);
+    expect(nextLevelOffer(11, range)).toBe(14);
+    expect(nextLevelOffer(14, range)).toBeNull();
+    expect(stepLevel(14, -1, range)).toBe(11);
+    for (const id of [8, 9, 10, 11, 12, 13, 14]) expect(nextLevel(id, [], range)).toBe(id);
   });
   it('selects reproducible mixed boards with three distinct hours and one opposite-side partner', () => {
     const reached = new Set<number>(),
@@ -515,5 +526,95 @@ describe('Same total (level 13)', () => {
     const partner = cards.findIndex((c, i) => i !== 0 && c.pair === cards[0].pair);
     expect(hintPartner(cards, 0, new Set([0]), 2)).toBeNull();
     expect(hintPartner(cards, 0, new Set([0, partner]), 2)).toBe(partner);
+  });
+});
+
+describe('Same share (level 14)', () => {
+  const all = SHARES.flat();
+  it('pairs equal shares cut into different pieces, distinct across pairs, each numerator within its whole', () => {
+    expect(planFor(14).mode).toBe('shares');
+    expect(SHARES).toHaveLength(planFor(14).pairs);
+    expect(SHARES.map(([a, b]) => `${a.numerator}/${a.denominator}=${b.numerator}/${b.denominator}`)).toEqual(
+      ['1/2=2/4', '1/3=2/6', '2/3=4/6'],
+    );
+    for (const [coarse, fine] of SHARES) {
+      expect(compareShares(coarse, fine)).toBe(0);
+      expect(fine.denominator).not.toBe(coarse.denominator);
+    }
+    for (const s of all) {
+      expect(s.numerator).toBeGreaterThan(0);
+      expect(s.numerator).toBeLessThan(s.denominator);
+    }
+    for (let p = 0; p < SHARES.length; p++)
+      for (let q = 0; q < SHARES.length; q++)
+        if (p !== q) expect(compareShares(SHARES[p][0], SHARES[q][1])).not.toBe(0);
+    expect(new Set(all.map((s) => s.name)).size).toBe(6);
+    expect(compareShares(SHARES[0][0], SHARES[1][1])).toBeGreaterThan(0);
+    expect(compareShares(SHARES[1][0], SHARES[2][1])).toBeLessThan(0);
+  });
+  it('cuts the same whole into equal strips, shading exactly the same width for both cards of a pair', () => {
+    for (const s of all) {
+      const strips = shareStrips(s);
+      expect(strips).toHaveLength(s.denominator);
+      for (const strip of strips) {
+        expect(Number.isInteger(strip.width)).toBe(true);
+        expect(strip.width).toBe(strips[0].width);
+      }
+      expect(strips[0].x).toBe(-SHARE_BOX.width / 2);
+      expect(strips.reduce((w, strip) => w + strip.width, 0)).toBe(SHARE_BOX.width);
+      expect(strips.filter((strip) => strip.shaded)).toHaveLength(s.numerator);
+    }
+    const shadedWidth = (s: (typeof all)[number]) =>
+      shareStrips(s)
+        .filter((strip) => strip.shaded)
+        .reduce((w, strip) => w + strip.width, 0);
+    for (const [coarse, fine] of SHARES) expect(shadedWidth(coarse)).toBe(shadedWidth(fine));
+  });
+  it('overlays exactly the partner’s extra lines on the first card, so together they draw the partner’s pieces', () => {
+    for (let pair = 0; pair < SHARES.length; pair++) {
+      const [coarse, fine] = SHARES[pair];
+      const split = splitLines(pair);
+      expect(split.length).toBeGreaterThan(0);
+      expect([...shareLines(coarse), ...split].sort((a, b) => a - b)).toEqual(shareLines(fine));
+    }
+  });
+  it('labels both faces of a pair from its share, and matches only the two cards of one share', () => {
+    expect(cardLabel('shares', { pair: 0, side: 0 }, [])).toBe('one half');
+    expect(cardLabel('shares', { pair: 2, side: 1 }, [])).toBe('four sixths');
+    for (let seed = 1; seed <= 100; seed++) {
+      const deck = makeDeck(3, new Rng(seed));
+      for (let i = 0; i < deck.length; i++)
+        for (let j = 0; j < deck.length; j++) {
+          if (i === j) continue;
+          const same = compareShares(shareOf(deck[i]), shareOf(deck[j])) === 0;
+          expect(deck[i].pair === deck[j].pair).toBe(same);
+          if (same) expect(deck[i].side).not.toBe(deck[j].side);
+        }
+    }
+  });
+  it('keeps the known-miss accounting, the seen-only hint and a clean bot finish on level 14 decks', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const cards = makeDeck(3, new Rng(seed));
+      const seen = new Set<number>(),
+        done = new Set<number>();
+      let first: number | null = null,
+        misses = 0,
+        turns = 0;
+      while (done.size < cards.length && turns++ < 50) {
+        const k = nextCard(cards, seen, (i) => done.has(i), first);
+        expect(done.has(k)).toBe(false);
+        if (first === null) {
+          first = k;
+          seen.add(k);
+          continue;
+        }
+        if (knownMismatch(cards, first, k, seen)) misses++;
+        if (cards[first].pair === cards[k].pair) done.add(first).add(k);
+        seen.add(k);
+        first = null;
+      }
+      expect(done.size).toBe(6);
+      expect(misses).toBe(0);
+    }
   });
 });

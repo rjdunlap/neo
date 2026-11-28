@@ -1,0 +1,1 @@
+**Define Pattern Train level 21 *Add three, add four*** (docs only; Wonder Woods may define it now, decided 2026-10-23; a child's play of 19–20 is a person check, not a gate); queue its build. [Dive slice 9](../../deep-dives/pattern-train.md#build-slices-in-order).
