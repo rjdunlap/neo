@@ -154,7 +154,7 @@ export function createSuite({ page, errors, log, ready, scene, screenshot }) {
       kit.store.pin('bubble-pop', 5);
       neo.go.hub();
     });
-    await scene('MapScene');
+    await scene('HomeScene');
     await goGame('bubble-pop', 'toddler');
     assert.equal((await card()).n, 5, 'the pin sets the level on the card');
     [left] = await arrows();
@@ -169,14 +169,14 @@ export function createSuite({ page, errors, log, ready, scene, screenshot }) {
       kit.store.pin('bubble-pop', null);
       neo.go.hub();
     });
-    await scene('MapScene');
+    await scene('HomeScene');
 
     // --- A game with one level in her band has nothing to choose.
     await goGame('quick-tricks', 'toddler');
     assert.deepEqual(await arrows(), [], 'no arrows when there is one level');
     // Leaving without Play changes nothing about her level.
     await page.evaluate(() => neo.scene.helpCard.intro.back());
-    await scene('PlaceScene');
+    await scene('ExploreScene');
 
     // --- The "?" card in a round shows the level but cannot change it.
     await page.evaluate(() => {

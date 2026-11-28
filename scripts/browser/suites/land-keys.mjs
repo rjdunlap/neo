@@ -15,7 +15,7 @@ export function createSuite({ page, errors, log, scene }) {
       }));
     await page.evaluate(() => {
       kit.store.data.profile.band = 'preschool';
-      neo.go.hub();
+      neo.go.explore('places');
     });
     await scene('MapScene');
     await page.waitForTimeout(800);
@@ -43,7 +43,7 @@ export function createSuite({ page, errors, log, scene }) {
     assert.equal(await page.evaluate(() => neo.scene.leaving), false, 'a held Enter does not leave the land');
     await page.keyboard.up('Enter');
     await page.waitForTimeout(500);
-    assert.equal((await state()).name, 'LandScene');
+    assert.equal((await state()).name, 'LocationScene');
     await page.evaluate(() => neo.scene.keys.focus.focusOn('host'));
     await key('Enter');
     assert.ok(await page.evaluate(() => neo.scene.suggested), 'Enter on the host suggests a game');

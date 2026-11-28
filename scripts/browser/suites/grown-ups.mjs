@@ -151,7 +151,7 @@ export function createSuite({
     await page.locator('.parent').waitFor();
     assert.equal(await page.locator('.pause').count(), 0, 'the sheet gives way to the page');
     await page.keyboard.press('Escape');
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.equal(
       await page.locator('.pause').count(),
       0,
@@ -173,7 +173,7 @@ export function createSuite({
       ).observe(document.body, { childList: true });
     });
     await page.keyboard.press('Escape');
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.equal(
       await page.evaluate(() => window.pauseSheetAdded),
       false,
@@ -233,7 +233,7 @@ export function createSuite({
         kit.store.data.settings.howToCards = false;
         neo.go.hub();
       });
-      await finger.waitForFunction(() => neo.scene.constructor.name === 'MapScene' && !neo.switching);
+      await finger.waitForFunction(() => neo.scene.constructor.name === 'HomeScene' && !neo.switching);
       await finger.waitForTimeout(500);
       const cdp = await touchContext.newCDPSession(finger);
       const box = await finger.locator('.gear').boundingBox();

@@ -498,12 +498,15 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
       ),
       progress,
     );
-    await page.evaluate(() => neo.go.place('lap'));
-    await scene('PlaceScene');
-    const lapIds = await page.evaluate(() => neo.scene.landmarks.map((l) => l.mod.id));
+    // Explore's All games (the age places retired with classic/) holds every lap game.
+    const lapIds = await page.evaluate(async (band) => {
+      const { allGames } = await import('/src/content/explore.ts');
+      const { GAMES } = await import('/src/games/registry.ts');
+      const { LANDS } = await import('/src/content/lands.ts');
+      return allGames(band, GAMES, LANDS).map((g) => g.id);
+    }, 'lap');
     for (const id of ['feelings-faces', 'monster-munch']) assert.ok(lapIds.includes(id), id);
-    await screenshot('place-lap-new-games');
-    log('Puddle Lagoon shows both new games, and saved progress survives a reload');
+    log('Explore holds both new games for lap, and saved progress survives a reload');
   }
 
   return { third };

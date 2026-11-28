@@ -111,7 +111,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
     assert.deepEqual(await intro(), { open: true, intro: true, game: false }, 'stray taps do nothing');
     // Back leaves without a round, and the next visit shows the card again.
     await page.mouse.click(back.x, back.y);
-    await scene('PlaceScene');
+    await scene('ExploreScene');
     await goGame('bubble-pop', 'toddler');
     assert.equal((await intro()).open, true, 'the card comes every time');
     [back, play] = await buttons();
@@ -183,7 +183,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
       kit.store.data.settings.howToCards = true;
       neo.go.hub();
     });
-    await scene('MapScene');
+    await scene('HomeScene');
     // The switch is on the grown-up panel, kept in the save.
     await page.evaluate(async () => {
       const { openParentPanel } = await import('/src/parent/panel.ts');
@@ -196,21 +196,18 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
     await page.locator('#p-howto').check();
     assert.equal(await page.evaluate(() => kit.store.data.settings.howToCards), true);
     await page.locator('[data-done]').click();
-    await scene('MapScene');
+    await scene('HomeScene');
 
     // --- From a place, tapping a game opens its card.
-    await page.evaluate(() => neo.go.place('toddler'));
-    await scene('PlaceScene');
-    await page.waitForTimeout(700);
     await page.evaluate(() => {
-      const l = neo.scene.landmarks.find((l) => {
-        const x = l.node.getGlobalPosition().x;
-        return x > 250 && x < 800;
-      });
-      kit.tapOn(l.node, 0, -60);
+      kit.store.data.profile.band = 'toddler';
+      neo.go.land('rainbow-meadow');
     });
+    await scene('LandScene');
+    await page.waitForTimeout(700);
+    await page.evaluate(() => kit.tapOn(neo.scene.showing[0].node, 0, -60));
     await scene('GameScene');
-    assert.equal((await intro()).intro, true, 'a game tapped on the trail shows its card');
+    assert.equal((await intro()).intro, true, 'a game tapped in a place shows its card');
 
     // --- A game with a bot: a demonstration plays in a window, nothing touched reaches it, and it goes when the card does. The controller's
     // highlight is the stopgap for a couch game with no ghost finger yet; the rest of this block is the same for a finger (it waits for the hand).
@@ -273,7 +270,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
       });
       [back, play] = await buttons();
       await page.mouse.click(back.x, back.y);
-      await scene('PlaceScene');
+      await scene('ExploreScene');
       assert.equal(
         await page.evaluate(() => window.__demo.dead),
         true,
