@@ -573,7 +573,7 @@ class StampStudio implements Game {
       life: [0.4, 0.7],
     });
     if (this.currentInvite()) this.sayInvite('stamp.places');
-    else void this.ctx.instruct('stamp.placesdone');
+    else void this.ctx.instruct('stamp.placesdone', { count: 'three' });
     this.drawPlaceGlow();
   }
   /** The soft glow over the open invitation's place, drawn for this paper size (shown after `PLACE_GLOW_AFTER` idle). */
