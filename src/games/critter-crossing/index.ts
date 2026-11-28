@@ -283,6 +283,11 @@ class CritterCrossing implements Game {
    * The ghost finger: send the next critter to the gate, or (on a secret rule, once enough have been tried and one
    * picture is left) wake the guess button and pick that picture.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
     const step = nextStep(this.round, this.plan, this.evidence());

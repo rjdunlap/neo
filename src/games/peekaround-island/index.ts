@@ -380,6 +380,11 @@ class PeekaroundIsland implements Game {
   }
 
   /** Turn to reveal the hider, choose the hidden friend, or carry the named friend to a fitting island spot. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const move = peekTouch(

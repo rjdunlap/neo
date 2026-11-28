@@ -331,6 +331,11 @@ class LightLab implements Game {
    * The ghost finger on the how-to card: tap the mirror the solution still needs turned (the same one the hint names),
    * and on planning levels, with every mirror right, the sun to shine.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle) return null;
     // Level 11: a guess may be any picture, so the demo taps the true one; a choice taps the thing that works.

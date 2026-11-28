@@ -283,6 +283,11 @@ class SingAlongBarn implements Game {
   }
 
   /** The ghost finger on the how-to card: invite the friends one by one, then tap anywhere for each note of the song. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.phase === 'invite') {
       const a = nextInvite(this.invited, this.plan);

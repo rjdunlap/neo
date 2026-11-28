@@ -207,6 +207,11 @@ class SillyScene implements Game {
     this.drawProgress();
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.repairing || this.waitingForReason || this.finished) return null;
     const prop = this.props.find((item) => item.thing === this.nextThing());

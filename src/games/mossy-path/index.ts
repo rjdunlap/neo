@@ -842,6 +842,11 @@ class MossyPath implements Game {
     );
     this.draw();
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (!this.alive || this.finished) return null;
     if (this.planning) {

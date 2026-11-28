@@ -238,6 +238,11 @@ class HabitatHelpers implements Game {
   }
 
   /** The ghost finger: place the pieces that work and open the gate, or pick the visitor the garden welcomes and open the gate. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.roundIndex < 0 || this.roundIndex >= this.rounds.length)
       return null;

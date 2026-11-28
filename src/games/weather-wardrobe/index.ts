@@ -251,6 +251,11 @@ class WeatherWardrobe implements Game {
   }
 
   /** The ghost finger on the how-to card: tap the sky to change the weather (free play), or the next thing that fits the weather. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.plan.mode === 'play') {

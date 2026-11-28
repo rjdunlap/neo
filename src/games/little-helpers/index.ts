@@ -277,6 +277,11 @@ class LittleHelpers implements Game {
   }
 
   /** The ghost finger: send a helper to the fruit until the team is big enough, then blow the whistle where there is one. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     const f = this.fruit;
     if (!f || this.busy || this.finished || this.helpers.some((h) => h.moving)) return null;

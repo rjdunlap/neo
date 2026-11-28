@@ -976,6 +976,11 @@ class SeaLift implements Game {
    * The ghost finger taps the right landing, or at level 4 the right card; level 1's first request also shows the free replay on
    * the card, and level 4's first case taps the friend in the lift for the same reason.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.state.done) return null;
     if (this.level === 1 && !this.replayShown) {

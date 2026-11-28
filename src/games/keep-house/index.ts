@@ -1636,6 +1636,11 @@ class KeepHouse implements Game {
   }
 
   /** The ghost finger: each closed door (the well once before the last); each figure to its workplace; the tile to the near spot; each room to a cell of the first solution, then the bell. Never a wrong drop. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     const l = this.layoutNow;

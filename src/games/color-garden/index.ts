@@ -387,6 +387,11 @@ class ColorGarden implements Game {
   }
 
   /** The ghost finger uses the round's own action: tap to hop, or drag to sort. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     // Level 10: a touch on the grass, off the fruit, to show that anywhere works.

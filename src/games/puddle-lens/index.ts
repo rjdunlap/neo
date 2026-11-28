@@ -1514,6 +1514,11 @@ class PuddleLens implements Game {
 
   // ----- the ghost finger -----
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // At lap the swollen lens waits for her touch, so the ghost finger shows that touch too.
     if (this.plan.level === 1 && this.lap && this.swollen && !this.finished && this.lensHit)

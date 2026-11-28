@@ -379,6 +379,11 @@ class MarketDays implements Game {
   }
 
   /** The ghost finger: pick the banner the solver needs, then tap the town; the unique finish decides every town. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const answer = solve(this.round.map, this.round.plan.target, this.assign, 1)[0];

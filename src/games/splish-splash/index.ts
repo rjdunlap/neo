@@ -419,6 +419,11 @@ class SplishSplash implements Game {
   }
 
   /** The ghost finger: pat the pet's patch, or scrub the next muddy splotch the question allows, back and forth until no mud is left in reach. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     if (this.plan.mode === 'pat') {

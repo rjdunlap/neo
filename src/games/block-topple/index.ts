@@ -302,6 +302,11 @@ class BlockTopple implements Game {
   }
 
   /** The ghost finger: put a finger on the ball, pull back along the reverse of the solver's shot, and let go. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // Level 5: tap the pad with the running total (never a wrong count).
     if (this.pads.length && !this.counting && !this.finished) {

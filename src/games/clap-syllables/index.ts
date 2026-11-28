@@ -221,6 +221,11 @@ class ClapSyllables implements Game {
    * The ghost finger on the how-to card: clap the pad once for each beat (quickly enough that the game does not count the word
    * before the last beat), carry each picture to the hoop for its beats, or tap the picture with as many beats as were played.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || this.index < 0 || this.index >= this.questions.length)
       return null;

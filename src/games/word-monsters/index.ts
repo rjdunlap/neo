@@ -342,6 +342,11 @@ class WordMonsters implements Game {
    * The ghost finger on the how-to card: tap each monster in turn to hear them, tap the one that is the answer, or carry the
    * letter that comes next to the first empty slot.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // Free play never starts a question, so its monsters belong to the first.
     // Level 9: the ghost finger touches the grass beside the big monster, since anywhere wakes it.
