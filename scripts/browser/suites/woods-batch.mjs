@@ -3124,7 +3124,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= Math.min(10, Number(process.env.TO_LEVEL || 10)); level++) {
+      for (let level = fromLevel; level <= Math.min(11, Number(process.env.TO_LEVEL || 11)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -3345,6 +3345,59 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           );
           assert.deepEqual(await counts(), [0, 0]);
           for (let k = 1; k < 6; k++) await tapSnack();
+        } else if (mode === 'diet') {
+          // Level 11, Plants, meat or both?: one animal at a time, three mats; two wrong mats glow the right one.
+          const right = async () =>
+            page.evaluate(async () => {
+              const L = await import('/src/games/animal-snack/logic.ts');
+              return L.MATS.indexOf(L.DIET[neo.scene.game.waiting.name].kind);
+            });
+          const tapMat = async (i) => {
+            await page.evaluate((i) => kit.tapOn(neo.scene.game.mats[i]), i);
+            await settle();
+          };
+          const total = await page.evaluate(() => neo.scene.game.round.animals.length);
+          assert.ok(total === 4 || total === 5, 'four or five animals to sort');
+          const first = await right();
+          const wrong = (first + 1) % 3;
+          await tapMat(wrong);
+          await tapMat(wrong);
+          assert.deepEqual(await counts(), [2, 1], 'two wrong mats: two misses, then a hint');
+          assert.ok(
+            await page.evaluate((i) => neo.scene.game.glowing === neo.scene.game.mats[i], first),
+            'the second miss glows the right mat',
+          );
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.sorted.length),
+            0,
+            'a wrong mat sorts nothing',
+          );
+          for (let k = 0; k < total; k++) {
+            await tapMat(await right());
+            if (k === 2) {
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              const ok = await page.evaluate(() => {
+                const g = neo.scene.game;
+                const b = g.mats.map((m) => m.getBounds());
+                const w = g.waiting?.node.getBounds();
+                return (
+                  b.every((r, i) => i === 0 || r.x >= b[i - 1].x + b[i - 1].width) &&
+                  b.every((r) => r.x >= 0 && r.x + r.width <= innerWidth && r.y + r.height <= innerHeight) &&
+                  (!w || w.y + w.height <= Math.min(...b.map((r) => r.y)) + 20)
+                );
+              });
+              assert.ok(ok, 'upright on a phone the mats sit apart on screen, under the waiting animal');
+              await screenshot('animal-snack-11-phone');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(300);
+            }
+          }
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.sorted.length),
+            total,
+            'every animal on a mat',
+          );
         } else if (mode === 'match') {
           const pairs = await page.evaluate(async () => {
             const L = await import('/src/games/animal-snack/logic.ts');
