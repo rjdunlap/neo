@@ -26,6 +26,7 @@ import type { LandId } from '../content/lands';
 import { setNote, type PlaytestNote } from '../content/playtest';
 import { earnShells as earnedFor } from '../content/shells';
 import { awardStamps, newStamps, type StampKind } from '../content/stamps';
+import { buy as buyLook, colorId, type BuyRefusal } from '../content/shop';
 import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
 import { cleanForms, cleanLookForm, isForm, type FormId } from '../creatures/forms';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
@@ -247,6 +248,21 @@ export class Store {
     this.data.shells = won.shells;
     this.save();
     return { kinds, bonus: won.bonus };
+  }
+
+  /**
+   * Buys one thing from the friend's shop with shells (the progression loop, slice 4) and writes at once, so a reload never
+   * loses a purchase. Refused, with nothing changed, for a band that does not earn shells, an unknown or owned thing, or a
+   * balance short of its price.
+   */
+  buy(id: string): true | BuyRefusal {
+    const r = buyLook(this.data.shop, this.data.shells, id, this.data.profile.band);
+    if ('refused' in r) return r.refused;
+    this.data.shop = r.shop;
+    this.data.shells = r.shells;
+    this.save();
+    this.flush();
+    return true;
   }
 
   /** Whether no round of this game has been finished yet (in any place). */
@@ -751,7 +767,13 @@ export class Store {
    */
   recolor(id: string, color: PetColor): boolean {
     const who = this.data.creatures.owned.find((o) => o.id === id);
-    if (!who || !colorChoices(this.petColors, who.look.color).includes(color)) return false;
+    if (!who) return false;
+    // A colour bought in the friend's shop (the progression loop, slice 4) is the profile's too.
+    if (
+      !colorChoices(this.petColors, who.look.color).includes(color) &&
+      !this.data.shop.owned.includes(colorId(color))
+    )
+      return false;
     who.look.color = color;
     this.save();
     this.flush();

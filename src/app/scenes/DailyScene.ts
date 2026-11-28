@@ -22,7 +22,7 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, checkIcon, playIcon, tilesIcon } from '../../ui/icons';
 import { openPlaytestSheet, type PlaytestSheet } from '../../ui/playtest-sheet';
 import { fitArt } from '../../ui/origin-art';
-import { FONT } from '../../ui/text';
+import { FONT, namePill } from '../../ui/text';
 import { lantern, shellTag } from '../../ui/shells';
 import { openStampsSheet, type StampsSheet } from '../../ui/stamps-sheet';
 import { earnsShells } from '../../content/shells';
@@ -102,6 +102,10 @@ export class DailyScene extends Scene {
     : null;
   /** The pet in the bottom-left corner the cards keep clear of: a poke repeats the page's line, and it cheers when all six are done. */
   readonly pip = makeCompanion();
+  /** Over the friend for a band that earns shells: a tap on either opens the friend's own page and shop. */
+  readonly shopTag = earnsShells(store.data.profile.band)
+    ? namePill(store.companion ? `${store.companion.name}'s shop` : 'Choose a friend')
+    : null;
   readonly day = dayKey(new Date());
   picks: DailyPick[];
   cards: DailyCard[] = [];
@@ -166,6 +170,11 @@ export class DailyScene extends Scene {
     return this.out.leaving;
   }
 
+  private openFriendPage() {
+    if (this.stampsSheet || this.notesSheet || this.sheet || this.leaving) return;
+    this.app.go.friendPage();
+  }
+
   private openStamps() {
     if (this.stampsSheet || this.notesSheet || this.sheet || this.leaving) return;
     voice.stop();
@@ -191,8 +200,11 @@ export class DailyScene extends Scene {
     this.pip.hitArea = new Circle(0, -120, 155);
     onTap(this.pip, () => {
       this.pip.poke();
-      void voice.say(this.allPlayed ? 'daily.done' : 'daily.open');
+      // A grown-up's friend opens its own page and shop (the progression loop, slice 4).
+      if (this.shopTag) this.openFriendPage();
+      else void voice.say(this.allPlayed ? 'daily.done' : 'daily.open');
     });
+    if (this.shopTag) onTap(this.shopTag, () => this.openFriendPage(), { cooldown: 400 });
     this.ui.addChild(
       this.plate,
       this.title,
@@ -202,6 +214,7 @@ export class DailyScene extends Scene {
       this.all,
       this.playAll,
       this.track(this.pip),
+      ...(this.shopTag ? [this.shopTag] : []),
     );
     if (this.notes) this.ui.addChild(this.notes);
     if (this.stamps) this.ui.addChild(this.stamps);
@@ -324,6 +337,10 @@ export class DailyScene extends Scene {
     this.back.position.set(BACK.x, BACK.y);
     this.all.position.set(HOME_BUTTON.x, HOME_BUTTON.y);
     this.pip.position.set(92, v.h - 12);
+    // Beside the friend, not over it: a long friend (River) would hide behind the pill.
+    // A wide view keeps cards out of the left corner, so the pill goes above the friend there.
+    if (v.w >= v.h) this.shopTag?.position.set(12 + this.shopTag.width / 2, v.h - 170);
+    else this.shopTag?.position.set(170 + this.shopTag.width / 2, v.h - 40);
     const wide = v.w >= v.h;
     // The title sits in the top bar when there is room beside the corner buttons, else under them.
     const titleY = v.w >= 760 ? BACK.y - 8 : BACK.y + CORNER_RADIUS + 40;
