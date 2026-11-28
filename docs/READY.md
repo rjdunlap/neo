@@ -59,14 +59,13 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-(Refilled into Next ten 2026-11-26; `frog-hop` level 18, Define Duck Pond and the `market-stall` bakery stall moved there 2026-11-28.)
+(Refilled into Next ten 2026-11-26; `frog-hop` level 18, Define Duck Pond and the `market-stall` bakery stall moved there 2026-11-28, and `frog-hop` level 19 the same day.)
 
 Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs (`day-by-day` level 8 moved to Next ten 2026-11-27; `clock-tower` level 11 and `letter-trails` level 16 moved there the same day):
 
 
 Refilled 2026-11-28 from the dives' slice lists, each checked against the game's level table in `docs/games/` and `LEVELS` on `origin/main` and the open pull requests (stale slice lines in the dives were marked built the same day). A line that follows another of the same game waits for that one to merge, since both take the next free ID:
 
-- **`frog-hop`, level 19 *Who is further along?*** (new-levels tier): after level 18 merges; build its section of the [definition](definitions/frog-hop-entries-and-g1.md#19-who-is-further-along-pre-k) (pre-K order 1, 2, 18, 19, 3, 4). [Dive slice 9](deep-dives/frog-hop.md#build-slices-in-order).
 - **`frog-hop`, level 20 G1 *Hops of a hundred*** (new-levels tier plus the `grownup` band audit): after level 19 merges; build its section of the [definition](definitions/frog-hop-entries-and-g1.md#20-g1-hops-of-a-hundred-grown-up) (grown-up 13, 14, 15, 20; `padValue` gains the question's offset). [Dive slice 11](deep-dives/frog-hop.md#build-slices-in-order).
 - **`market-stall`, G1 *Odd coins*** (new-levels tier plus the `grownup` band audit): after *Which costs more?*; coins 1, 3 and 4 with a true-minimum (dynamic programming) `fewest` (gap 8); rounds include prices where greedy is not minimal. [Dive slice 11](deep-dives/market-stall.md#build-slices-in-order).
 - **`market-stall`, *Is it enough?* (the sell stall)** (new-interaction tier): build the [definition](definitions/market-stall-sell-and-bakery.md#level-is-it-enough-a-round-step-by-step) at the next free ID: a customer pays, she sells or taps *More, please* and the customer counts on; school, after level 8 in `order`. [Dive slice 12](deep-dives/market-stall.md#build-slices-in-order).

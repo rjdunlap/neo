@@ -28,7 +28,8 @@ export type HopMode =
   | 'hops'
   | 'estimate'
   | 'along'
-  | 'dots';
+  | 'dots'
+  | 'missing';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -147,6 +148,12 @@ export const PLANS: HopPlan[] = [
     questions: 5,
     name: 'Hop to the dots: the sign shows dots, she taps the pad with that many, 1 to 5',
   },
+  {
+    mode: 'missing',
+    top: 9,
+    questions: 5,
+    name: 'Which pad lost its number?: a leaf hides one numeral on a short run; choose its number card',
+  },
 ];
 
 /** The number a pad shows and the frog says: its place on the line times the plan's stride. */
@@ -156,18 +163,20 @@ export const padValue = (plan: HopPlan, n: number) => n * (plan.stride ?? 1);
 export const ALONG_LEVEL = 16;
 /** Hop to the dots (level 17): the toddler's second entry, after Hop along. */
 export const DOTS_LEVEL = 17;
+/** Which pad lost its number? (level 18): pre-K's entry between levels 2 and 3. */
+export const MISSING_LEVEL = 18;
 
 export const LEVELS: BandLevels = {
   lap: { min: ALONG_LEVEL, max: ALONG_LEVEL },
   toddler: { min: ALONG_LEVEL, max: DOTS_LEVEL },
   preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 4 },
-  // School holds the school ladder only: 16 and 17 are the youngest's, so the ceiling is a literal, not `PLANS.length`.
+  prek: { min: 1, max: MISSING_LEVEL, order: [1, 2, MISSING_LEVEL, 3, 4] },
+  // School holds the school ladder only: 16 to 18 are the younger bands', so the ceiling is a literal, not `PLANS.length`.
   school: { min: 3, max: 15 },
 };
 
 /** The easy levels with high IDs, appended above the ladder (`GameModule.entryLevels`). */
-export const ENTRY_LEVELS = [ALONG_LEVEL, DOTS_LEVEL] as const;
+export const ENTRY_LEVELS = [ALONG_LEVEL, DOTS_LEVEL, MISSING_LEVEL] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -200,6 +209,9 @@ export interface HopQuestion {
   smalls?: number;
   /** Where does it go?: an unscored guess on a bare line, or the counted placement on a line marked in tens. */
   place?: 'guess' | 'ticks';
+  /** Which pad lost its number?: how many pads the run shows (from `start`), and the three number cards in their order. */
+  run?: number;
+  cards?: number[];
 }
 
 /** The answer a child gives: a pad, for 'gap' the number of hops, for Fraction Match the hops of the second size. */
@@ -215,6 +227,7 @@ export const GAP_CARDS = [1, 2, 3, 4, 5, 6];
  * answer is not on screen.
  */
 export function answerSlot(mode: HopMode, q: HopQuestion, lo: number, secondStage = false): number {
+  if (mode === 'missing') return q.cards!.indexOf(q.target);
   const card = countsHops(mode) || (mode === 'frac-match' && secondStage);
   const slot = card ? GAP_CARDS.indexOf(answerOf(mode, q)) : q.target - lo;
   return slot >= 0 && slot < (card ? GAP_CARDS.length : WINDOW) ? slot : -1;
@@ -324,6 +337,7 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   // Hop along asks nothing: six free taps.
   if (plan.mode === 'along') return [];
   if (plan.mode === 'dots') return dotsQuestions(plan, rng);
+  if (plan.mode === 'missing') return missingQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -649,7 +663,7 @@ export function dotLayout(n: number): { x: number; y: number }[] {
  * Never on 0, the dot levels or the fraction line, where a pad is a quarter tick.
  */
 export const flowerOn = (mode: HopMode, n: number) =>
-  !showsDots(mode) && !isFrac(mode) && !ownScene(mode) && n > 0 && n % 5 === 0;
+  !showsDots(mode) && !isFrac(mode) && !ownScene(mode) && mode !== 'missing' && n > 0 && n % 5 === 0;
 
 /**
  * Scenes (dive slice 6): each round draws one place for the line. The lily pond, stepping stones in a brook, a flower path
@@ -702,9 +716,11 @@ export function hopLayout(
   view: { w: number; h: number; upright?: true },
   mode: HopMode,
   corner = 200,
+  run = 0,
 ): HopLayout {
-  const usesCards = countsHops(mode) || splitsAtTen(mode) || mode === 'frac-match';
-  const n = usesCards ? GAP_CARDS.length : 0;
+  const usesCards = countsHops(mode) || splitsAtTen(mode) || mode === 'frac-match' || mode === 'missing';
+  const n = mode === 'missing' ? MISSING_CARDS : usesCards ? GAP_CARDS.length : 0;
+  if (mode === 'missing' && run > 0) return missingLayout(view, corner, run);
   if (view.upright && view.h > view.w * 1.1) {
     const cardsTop = view.h - (usesCards ? 248 : corner);
     const rowB = cardsTop - 24 - PAD_HIT.h / 2;
@@ -945,3 +961,80 @@ export function dotsPanel(L: AlongLayout): Box {
 /** A wrong pad on the dot level: the target is further along (forward) or back this way. */
 export const dotsMissLine = (target: number, tapped: number) =>
   target > tapped ? 'hop.wrong.dots-forward' : 'hop.wrong.dots-back';
+
+// Which pad lost its number? (level 18, entries slice 18): pre-K ---------------------------------------
+
+/** The run's length, and the three number cards under it. */
+export const MISSING_RUN = { min: 4, max: 6 } as const;
+export const MISSING_CARDS = 3;
+
+/** The numbers a question's run shows, the hidden one included. */
+export const runNumbers = (q: Pick<HopQuestion, 'start' | 'run'>) =>
+  Array.from({ length: q.run! }, (_, i) => q.start + i);
+
+/** The numbers she can see on the run: every one but the number under the leaf. */
+export const shownOnRun = (q: HopQuestion) => runNumbers(q).filter((n) => n !== q.target);
+
+/**
+ * Five questions: a run of 4 to 6 pads starting at 0 to 4 and ending at most 9, one interior numeral hidden. Never the
+ * same run twice running, and the five hidden numbers are distinct. The cards are the answer, one of its two neighbours
+ * (both are on the run, so "the number next to it" is a real slip) and one other number 0 to 9 that is not an end of the
+ * run, shuffled.
+ */
+export function missingQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  const out: HopQuestion[] = [];
+  const hidden = new Set<number>();
+  for (let i = 0; i < plan.questions; i++) {
+    for (;;) {
+      const run = rng.int(MISSING_RUN.min, MISSING_RUN.max);
+      const start = rng.int(0, Math.min(4, plan.top - run + 1));
+      const target = start + rng.int(1, run - 2);
+      const prev = out[i - 1];
+      if (hidden.has(target) || (prev && prev.start === start && prev.run === run)) continue;
+      const neighbour = target + (rng.chance(0.5) ? 1 : -1);
+      const ends = [start, start + run - 1];
+      const others = Array.from({ length: 10 }, (_, k) => k).filter(
+        (k) => k !== target && k !== neighbour && !ends.includes(k),
+      );
+      const cards = rng.shuffle([target, neighbour, rng.pick(others)]);
+      out.push({ start, target, hops: target - start, lo: start, run, cards });
+      hidden.add(target);
+      break;
+    }
+  }
+  return out;
+}
+
+/**
+ * The run of pads centred in the view, the sign above it and the three cards below, clear of the guide's corner. Sideways
+ * the run is one row; upright a run of up to five is one row and a run of six folds into two rows of three.
+ */
+export function missingLayout(
+  view: { w: number; h: number; upright?: true },
+  corner: number,
+  run: number,
+): HopLayout {
+  const upright = view.h > view.w * 1.1;
+  const left = corner + 16 + CARD_HIT.w / 2;
+  const right = view.w - 24 - CARD_HIT.w / 2;
+  const mid = (left + right) / 2;
+  const cardY = view.h - (upright ? 150 : 90);
+  const cards = Array.from({ length: MISSING_CARDS }, (_, i) => ({ x: mid + (i - 1) * 124, y: cardY }));
+  const rows = upright && run > UPRIGHT_PAD_ROW ? [Math.ceil(run / 2), Math.floor(run / 2)] : [run];
+  const pitch = upright ? UPRIGHT_PAD_PITCH : PAD_STEP;
+  // The lower row's numerals (y + 44 on the pad) keep well clear of the cards.
+  const lowY = cardY - CARD_HIT.h / 2 - 40 - PAD_HIT.h / 2;
+  const rowGap = 200;
+  const pads: { x: number; y: number }[] = [];
+  rows.forEach((count, r) => {
+    const y = lowY - (rows.length - 1 - r) * rowGap;
+    const x0 = view.w / 2 - ((count - 1) * pitch) / 2;
+    for (let k = 0; k < count; k++) pads.push({ x: x0 + k * pitch, y });
+  });
+  // Hidden slots past the run sit on its last pad, so a stray position never lands off screen.
+  while (pads.length < WINDOW) pads.push({ ...pads[pads.length - 1] });
+  const topY = Math.min(...pads.map((p) => p.y));
+  const signY = Math.min(upright ? 150 : SIGN.y, topY - PAD_HIT.h / 2 - 130) - SIGN.h / 2;
+  const sign = { x: view.w / 2 - SIGN.w / 2, y: Math.max(16, signY), w: SIGN.w, h: SIGN.h };
+  return { pads, sign, cards };
+}
