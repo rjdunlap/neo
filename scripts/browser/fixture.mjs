@@ -47,7 +47,8 @@ export async function createFixture(browser, suite) {
       ['kind', 'reversed', 'name', 'doer', 'ending'].includes(process.env.WORDGLUE_ONLY)) ||
     (suite === 'villageplanner' && process.env.VILLAGE_PLANNER_PHONE === '1') ||
     (suite === 'fourth' && process.env.FOURTH_ONLY === 'song14') ||
-    (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY))
+    (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY)) ||
+    (suite === 'robot' && process.env.DRIVE_ONLY === '1')
       ? { hasTouch: true, isMobile: true }
       : {}),
   });

@@ -1,0 +1,5 @@
+# 2026-11-28 — Robot Path level 16, Drive the robot
+
+**Changed:** New Robot Path level 16, Drive the robot (preschool, entry level, order `[16, 1, 2]`): no program, each arrow tap moves the robot one cell, a rock or the edge stops it with a wobble and never a miss, the star ends the round; hint, ghost finger and couch bot drive too.
+**Ran:** `npm run typecheck` (clean); robot-path rule tests (112 passed, new "Drive the robot (level 16)" describe); the upright layout test for level 16 on every upright phone view; the registry test; `DRIVE_ONLY=1 BROWSER_SUITE=robot` on a 390×844 touch phone (edge stop, rock stop, autotouch reaches the star, round finished; 3 passes); `FINGER_ONLY=robot-path FINGER_LEVELS=16 FINGER_BAND=preschool BROWSER_SUITE=fingerdemo` (passed, 2.9 s). Screenshot `test-results/browser/robot/robot-path-16-start.png`.
+**Full suite:** `npm test` passed (558 files, 20,645 tests, 5 skipped). **Not run:** `npm run build` (no shared files or assets changed beyond the browser fixture).
