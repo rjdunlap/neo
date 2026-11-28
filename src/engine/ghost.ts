@@ -329,7 +329,7 @@ export class GhostFinger {
 }
 
 /** A cartoon pointing hand, fingertip at (0, 0), about a hundred units tall. */
-function drawHand(): Container {
+export function drawHand(): Container {
   const skin = 0xffd9b8;
   const shade = 0xf1b98f;
   const g = new Container();

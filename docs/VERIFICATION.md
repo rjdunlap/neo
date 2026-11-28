@@ -127,6 +127,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `liftit` | 2026-11-20 · [Lift It level 10, One big pull (toddler entry)](verification/2026-11-20-lift-it-level-10-one-big-pull-toddler-entry.md) | `FROM_LEVEL=10` |
 | `littleloom` | 2026-11-24 · [Little Loom levels 4–5 (PR #2146)](verification/2026-11-24-little-loom-levels-4-5.md) | Levels 4–5: wrong row, Undo, hint, float slip, portrait |
 | `livekeys` | 2026-10-15 · [Lands stage C1b group 3, three games switch live](archive/VERIFICATION-2026-10-15.md#2026-10-15--lands-stage-c1b-group-3-three-games-switch-live) | `LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` |
+| Pad pointer (keys and a pad on touch rounds and plain screens) | 2026-11-28 · [Pad pointer: keys and a pad play every touch round](verification/2026-11-28-pad-pointer-keys-and-a-pad-play-every-touch-round.md) | Unit tests and a scripted key play at 1366 by 768; no suite of its own |
 | `logicgrid` | 2026-11-20 · [Mystery Grid level 8 thumb-size upright layout](verification/2026-11-20-mystery-grid-level-8-thumb-size-upright-layout.md) | `LOGICGRID_FROM=8 LOGICGRID_PHONE=1` |
 | `logroll` | 2026-11-08 · [Log Roll soft moss and the stone bridge](archive/VERIFICATION-2026-11-08.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429) | `LOG_ROLL_LEVELS=6,7` |
 | `lookitup` | 2026-11-23 · [Look It Up level 6, Two pages together](verification/2026-11-23-look-it-up-level-6-two-pages-together.md) | `LOOKITUP_FROM=4` |
