@@ -44,6 +44,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | --- | --- |
 | [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md); RW11 packet: [forms and talents](rework/FORMS-AND-TALENTS.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [Pattern Train: Add three, add four](definitions/pattern-train-add-three-add-four.md) | Pattern Train level 21: name the rule of a +3 or +4 numbered train with a jump chip, then fill the last car; two questions, one hint each; school |
 | [Critter Sort: Pick the signs](definitions/critter-sort-pick-the-signs.md) | Critter Sort level 10: tap two of three picture signs onto overlapping hoops, then sort six critters by her own rules; choosing is never a miss, nothing is kept; school |
 | [Progression loop](definitions/progression-loop.md) | Neopets-style earn, spend and collect by age band: shells, a shop for her friend, stamps; grown-ups first, never lap or toddler |
 | [Playdate Workshop 4–6](definitions/playdate-workshop-4-6.md) | Social-emotional slice 6, Playdate Workshop levels 4–6: the smudged banner (two repairs), a new idea mid-round (revise the plan) and Ask first (an unspoken request); school 3–6, no misses |
