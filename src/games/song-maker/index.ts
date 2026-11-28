@@ -20,6 +20,8 @@ import {
   awakeSpots,
   barOf,
   beadToTap,
+  changedFrom,
+  changeTap,
   composeReady,
   endsHome,
   finishedAtHome,
@@ -27,10 +29,13 @@ import {
   key,
   makeSong,
   MOTIF_WINDOW,
+  requestBeats,
+  requestMet,
   ROW_STEPS,
   songLayout,
   songPlan,
   wakeTouch,
+  type ChangeRequest,
   type Note,
   type SongLayout,
   type Song,
@@ -49,6 +54,53 @@ function checkArt(): Graphics {
     .lineTo(26, -20)
     .stroke({ width: 13, color: ink, cap: 'round', join: 'round' });
 }
+/**
+ * Change one thing: the request's picture on a little wooden card. Higher: a low jelly and an arrow up. Down: a jelly
+ * stepping down to a lower one. Match: two jellies alike with an equals sign. Quiet: an empty, dashed beat.
+ */
+function requestArt(request: ChangeRequest): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-80, -50, 160, 100, 16)
+    .fill(wood.light)
+    .stroke({ width: 6, color: wood.line });
+  const jelly = (x: number, y: number, color: ColorName) =>
+    g.circle(x, y, 17).fill(swatch[color].fill).stroke({ width: 3, color: swatch[color].line });
+  const arrow = (x: number, y0: number, y1: number) => {
+    const d = Math.sign(y1 - y0) * 12;
+    g.moveTo(x, y0)
+      .lineTo(x, y1)
+      .moveTo(x - 12, y1 - d)
+      .lineTo(x, y1)
+      .lineTo(x + 12, y1 - d)
+      .stroke({ width: 7, color: ink, cap: 'round', join: 'round' });
+  };
+  if (request === 'higher') {
+    jelly(-30, 22, rowColor(3, 4));
+    arrow(28, 30, -32);
+  } else if (request === 'down') {
+    jelly(-44, -16, rowColor(1, 4));
+    jelly(0, 22, rowColor(3, 4));
+    arrow(46, -30, 30);
+  } else if (request === 'match') {
+    jelly(-46, 0, 'yellow');
+    jelly(46, 0, 'yellow');
+    g.moveTo(-14, -8)
+      .lineTo(14, -8)
+      .moveTo(-14, 8)
+      .lineTo(14, 8)
+      .stroke({ width: 6, color: ink, cap: 'round' });
+  } else {
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      g.moveTo(Math.cos(a) * 26, Math.sin(a) * 26).arc(0, 0, 26, a, a + 0.36);
+    }
+    g.stroke({ width: 5, color: wood.line, cap: 'round' });
+  }
+  c.addChild(g);
+  return c;
+}
+
 // Session-only, keyed by the loaded profile's save. Replaced/reset saves start fresh; demos never consume it.
 const recentMotifs = new WeakMap<object, string[]>();
 
@@ -153,11 +205,16 @@ class SongMaker implements Game {
   readonly replay: RoundButton | null = null;
   /** My song: the check button, asleep until she has lit three jellies and the loop has played a whole round since her last change. */
   readonly check: RoundButton | null = null;
+  /** Change one thing: the before button, which plays the pet's tune as it was, and the request's picture. */
+  readonly before: RoundButton | null = null;
+  private readonly sign: Container | null = null;
   /** My song: beats played since her last change, and whether the check is awake. */
   beatsSinceChange = 0;
   checkAwake = false;
   /** Bring it home: checks that missed home so far, whether the pet is playing the two versions, and whether she must change something before the check wakes again. */
   private homeMisses = 0;
+  /** Change one thing: checks that did not do what the picture asks. */
+  private changeMisses = 0;
   private explaining = false;
   private needsChange = false;
   private cell = 100;
@@ -214,7 +271,20 @@ class SongMaker implements Game {
       ctx.stage.addChild(this.anywhere);
       this.wakeLayout();
     }
-    if (this.plan.mode === 'compose' || this.plan.mode === 'answer') {
+    if (this.plan.mode === 'revise') {
+      // The pet's tune starts lit; she moves, adds or puts out jellies in any beat, one jelly a beat.
+      for (const n of this.song.notes) {
+        const bead = this.beads.find((b) => b.note.col === n.col && b.note.row === n.row);
+        if (bead) {
+          bead.lit = true;
+          this.placed.add(key(n));
+        }
+      }
+      this.before = new RoundButton(replayArt(), swatch.yellow, 50, () => void this.playBefore());
+      this.sign = requestArt(this.song.request ?? 'higher');
+      ctx.stage.addChild(this.before, this.sign);
+    }
+    if (this.plan.mode === 'compose' || this.plan.mode === 'answer' || this.plan.mode === 'revise') {
       this.check = new RoundButton(checkArt(), swatch.green, 50, () => this.checkPressed());
       this.check.eventMode = 'none';
       this.check.alpha = 0.35;
@@ -241,6 +311,9 @@ class SongMaker implements Game {
         void this.ctx.instruct(
           this.plan.home ? 'song.home' : this.plan.cols === 4 ? 'song.finish' : 'song.answer',
         );
+        break;
+      case 'revise':
+        void this.ctx.instruct(`song.change.${this.song.request ?? 'higher'}`);
         break;
       case 'ghost':
         void this.ctx.instruct('song.copy');
@@ -271,6 +344,13 @@ class SongMaker implements Game {
     }
     if (this.plan.mode === 'answer' && this.check && this.answered() >= this.plan.notes)
       return this.checkAwake ? { tap: { on: this.check }, pause: 0.3 } : null;
+    if (this.plan.mode === 'revise' && this.check) {
+      // One change that does what the picture asks, then the check once the loop has played it round.
+      if (this.met()) return this.checkAwake ? { tap: { on: this.check }, pause: 0.3 } : null;
+      const n = changeTap(this.plan, this.song.request ?? 'higher', this.song.notes, this.litNotes());
+      const bead = this.beads.find((b) => b.note.col === n.col && b.note.row === n.row);
+      return bead ? { tap: { on: bead }, pause: 0.15 } : null;
+    }
     const note = beadToTap(this.plan, this.song, this.placed);
     const bead = note && this.beads.find((b) => b.note.col === note.col && b.note.row === note.row);
     if (!bead) return null;
@@ -311,6 +391,16 @@ class SongMaker implements Game {
     this.tap(bead);
   }
 
+  /** Every lit jelly on the board, as notes. */
+  private litNotes() {
+    return this.beads.filter((b) => b.lit).map((b) => ({ ...b.note }));
+  }
+
+  /** Change one thing: whether her song now does what the picture asks. */
+  private met() {
+    return requestMet(this.plan, this.song.request ?? 'higher', this.song.notes, this.litNotes());
+  }
+
   /** Answer/Finish my song: her lit jellies, one at most in each answer beat. */
   private answered() {
     const from = answerFrom(this.plan);
@@ -319,7 +409,8 @@ class SongMaker implements Game {
 
   /** Answer/Finish my song: a beat holds one jelly, so a tap there moves it, and a tap on the lit one puts it out. Nothing is ever wrong. */
   private answerTap(bead: Bead) {
-    const from = answerFrom(this.plan);
+    // Change one thing: every beat is hers to change, with the same one-jelly-a-beat rule.
+    const from = this.plan.mode === 'revise' ? 0 : answerFrom(this.plan);
     const mine = this.beads.filter((b) => b.lit && !b.given && b.note.col >= from).map((b) => b.note);
     const next = new Set(answerTap(mine, bead.note).map(key));
     for (const b of this.beads) {
@@ -343,12 +434,13 @@ class SongMaker implements Game {
     this.needsChange = false;
     this.beatsSinceChange = 0;
     this.syncCheck();
+    this.drawGlow();
   }
 
   private tap(bead: Bead) {
     this.sing(bead);
     if (this.done || bead.given || this.explaining) return;
-    if (this.plan.mode === 'answer') {
+    if (this.plan.mode === 'answer' || this.plan.mode === 'revise') {
       this.answerTap(bead);
       return;
     }
@@ -439,9 +531,14 @@ class SongMaker implements Game {
     const check = this.check;
     if (!check || this.done) return;
     const ready =
-      this.plan.mode === 'answer'
-        ? answerReady(this.plan, this.answered(), this.beatsSinceChange) && !this.needsChange
-        : composeReady(this.plan, this.litCount(), this.beatsSinceChange);
+      this.plan.mode === 'revise'
+        ? changedFrom(this.song.notes, this.litNotes()) &&
+          this.beatsSinceChange >= this.plan.cols &&
+          !this.needsChange &&
+          !this.explaining
+        : this.plan.mode === 'answer'
+          ? answerReady(this.plan, this.answered(), this.beatsSinceChange) && !this.needsChange
+          : composeReady(this.plan, this.litCount(), this.beatsSinceChange);
     if (ready === this.checkAwake) return;
     this.checkAwake = ready;
     check.eventMode = ready ? 'static' : 'none';
@@ -449,11 +546,13 @@ class SongMaker implements Game {
     if (ready) {
       sfx.sparkle();
       const readyLine =
-        this.plan.mode === 'answer'
-          ? this.plan.cols === 4
-            ? 'song.finish.ready'
-            : 'song.answer.ready'
-          : 'song.compose.ready';
+        this.plan.mode === 'revise'
+          ? 'song.change.ready'
+          : this.plan.mode === 'answer'
+            ? this.plan.cols === 4
+              ? 'song.finish.ready'
+              : 'song.answer.ready'
+            : 'song.compose.ready';
       void this.ctx.say(readyLine);
     }
   }
@@ -461,19 +560,18 @@ class SongMaker implements Game {
   /** My song: the check plays her song round once more, then finishes. Nothing was ever wrong, so nothing is counted. */
   private checkPressed() {
     if (this.done || !this.checkAwake || this.explaining) return;
-    if (this.plan.home && !endsHome(this.plan, this.answerNotes())) {
+    if (this.plan.home && !endsHome(this.plan, this.litNotes())) {
       void this.missedHome();
+      return;
+    }
+    if (this.plan.mode === 'revise' && !this.met()) {
+      void this.missedChange();
       return;
     }
     this.done = true;
     this.glow.clear();
     if (this.check) this.check.eventMode = 'none';
     void this.ctx.tw.wait((60 / (music.bpm() ?? FALLBACK_BPM)) * this.plan.cols).then(() => this.celebrate());
-  }
-
-  /** Answer levels: the whole board's notes as heard, the pet's given beats and her answer. */
-  private answerNotes() {
-    return this.beads.filter((b) => b.lit).map((b) => ({ ...b.note }));
   }
 
   /**
@@ -484,6 +582,39 @@ class SongMaker implements Game {
   private async missedHome() {
     this.misses++;
     this.homeMisses++;
+    const hers = this.litNotes();
+    await this.playVersions([hers, finishedAtHome(this.plan, hers)]);
+    void this.ctx.say('song.home.hear');
+    if (this.homeMisses === 2) {
+      this.hints++;
+      void this.ctx.say('song.hint');
+    }
+    this.drawGlow();
+  }
+
+  /**
+   * Change one thing: the check found her song not doing what the picture asks. That is a miss (the request was spoken
+   * first): a boing, then the pet plays its tune as it was and her song after it, and says what is still to do. The check
+   * sleeps until she changes something; after two misses a jelly glows whose tap brings the song closer.
+   */
+  private async missedChange() {
+    this.misses++;
+    this.changeMisses++;
+    await this.playVersions([this.song.notes, this.litNotes()]);
+    void this.ctx.say(`song.change.${this.song.request ?? 'higher'}.again`);
+    if (this.changeMisses === 2) {
+      this.hints++;
+      void this.ctx.say('song.hint');
+    }
+    this.drawGlow();
+  }
+
+  /**
+   * A check that missed a spoken rule (Bring it home, Change one thing): a boing, then the pet plays each version in
+   * turn with a beat between, while the loop and taps wait. The check sleeps until she changes something. Her jellies
+   * are never moved for her.
+   */
+  private async playVersions(versions: readonly (readonly Note[])[]) {
     this.explaining = true;
     this.needsChange = true;
     this.checkAwake = false;
@@ -492,47 +623,48 @@ class SongMaker implements Game {
       this.check.alpha = 0.35;
     }
     this.listening = true;
+    sfx.boing();
     const beat = 60 / (music.bpm() ?? FALLBACK_BPM);
-    const hers = this.answerNotes();
-    const played = [hers, finishedAtHome(this.plan, hers)];
-    for (const [i, notes] of played.entries()) {
-      if (i === 1) await this.ctx.tw.wait(beat);
-      for (let col = 0; col < this.plan.cols; col++) {
-        this.drawPlayhead(col);
-        const n = notes.find((n) => n.col === col);
-        if (n) {
-          sfx.marimba(this.step(n.row), 0.5);
-          this.beads.find((b) => b.note.col === col && b.note.row === n.row)?.pop(0.6);
-        }
-        await this.ctx.tw.wait(beat);
-      }
+    await this.ctx.tw.wait(beat);
+    for (const [i, notes] of versions.entries()) {
+      if (i > 0) await this.ctx.tw.wait(beat);
+      await this.playNotes(notes, beat);
     }
     this.col = -1;
     this.listening = false;
     this.explaining = false;
-    void this.ctx.say('song.home.hear');
-    if (this.homeMisses === 2) {
-      this.hints++;
-      void this.ctx.say('song.hint');
-    }
     this.beatsSinceChange = 0;
-    this.drawGlow();
   }
 
-  /** Plays the tune to copy, one beat per column, lighting each column as it goes. */
-  private async playTune(first = false) {
-    if ((this.listening && !first) || this.done) return;
-    this.listening = true;
-    const beat = 60 / (music.bpm() ?? FALLBACK_BPM);
+  /** One pass over the beats: the playhead moves, and each note in `notes` sings and pops its jelly. */
+  private async playNotes(notes: readonly Note[], beat: number) {
     for (let col = 0; col < this.plan.cols; col++) {
       this.drawPlayhead(col);
-      const n = this.song.notes.find((n) => n.col === col);
+      const n = notes.find((n) => n.col === col);
       if (n) {
         sfx.marimba(this.step(n.row), 0.5);
         this.beads.find((b) => b.note.col === col && b.note.row === n.row)?.pop(0.6);
       }
       await this.ctx.tw.wait(beat);
     }
+  }
+
+  /** Change one thing: the before button plays the pet's tune as it was, while the loop waits. */
+  private async playBefore() {
+    if (this.listening || this.done || this.explaining) return;
+    this.listening = true;
+    await this.playNotes(this.song.notes, 60 / (music.bpm() ?? FALLBACK_BPM));
+    this.listening = false;
+    this.col = -1;
+    // What she checks is what she hears next on the loop.
+    this.beatsSinceChange = 0;
+  }
+
+  /** Plays the tune to copy, one beat per column, lighting each column as it goes. */
+  private async playTune(first = false) {
+    if ((this.listening && !first) || this.done) return;
+    this.listening = true;
+    await this.playNotes(this.song.notes, 60 / (music.bpm() ?? FALLBACK_BPM));
     this.listening = false;
     this.col = -1;
   }
@@ -562,7 +694,8 @@ class SongMaker implements Game {
       this.plan.mode === 'free' ||
       this.plan.mode === 'wake' ||
       this.plan.mode === 'compose' ||
-      this.plan.mode === 'answer'
+      this.plan.mode === 'answer' ||
+      this.plan.mode === 'revise'
         ? {
             kind: 'tune' as const,
             cols: this.plan.cols,
@@ -639,6 +772,18 @@ class SongMaker implements Game {
             alpha: 0.18,
           });
       }
+    // Change one thing: the beats the request is about get a soft yellow band under the board.
+    if (p.mode === 'revise' && this.song.request)
+      for (const col of requestBeats(p, this.song.request)) {
+        const bar = barOf(lay, col);
+        b.roundRect(
+          bar.x0 + bar.cell * (col - bar.from) + 10,
+          bar.y0 + bar.cell * p.rows + 2,
+          bar.cell - 20,
+          10,
+          5,
+        ).fill(swatch.yellow.fill);
+      }
     for (const bead of this.beads) {
       const bar = barOf(lay, bead.note.col);
       bead.position.set(
@@ -662,6 +807,8 @@ class SongMaker implements Game {
     this.drawCard(lay);
     this.replay?.position.set(lay.replay.x, lay.replay.y);
     this.check?.position.set(lay.replay.x, lay.replay.y);
+    this.before?.position.set(lay.before.x, lay.before.y);
+    this.sign?.position.set(lay.sign.x, lay.sign.y);
     if (this.col >= 0) this.drawPlayhead(this.col);
     this.drawGlow();
   }
@@ -739,6 +886,14 @@ class SongMaker implements Game {
   private drawGlow() {
     const g = this.glow.clear();
     if (this.done) return;
+    // Change one thing: after two checks that missed, the jelly to tap next glows (a lit one to put out, or a spot to move to).
+    if (this.plan.mode === 'revise') {
+      if (this.changeMisses < 2 || !this.song.request || this.met()) return;
+      const n = changeTap(this.plan, this.song.request, this.song.notes, this.litNotes());
+      const bead = this.beads.find((b) => b.note.col === n.col && b.note.row === n.row);
+      if (bead) g.circle(bead.x, bead.y, bead.cell * 0.48).stroke({ width: 7, color: swatch.yellow.line });
+      return;
+    }
     // Bring it home: after two checks that missed, the home jelly in the last beat glows.
     if (this.plan.home) {
       const home = this.beads.find(

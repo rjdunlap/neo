@@ -14,6 +14,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           'song11',
           'song12',
           'song13',
+          'song14',
           'puzzle',
           'weather',
           'sink',
@@ -306,6 +307,62 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.waitForTimeout(400);
       log(
         'Song Maker 13: off-home check is a miss with both versions played, glow after two, home ends, sticker passed',
+      );
+    }
+
+    // Song Maker 14, Change one thing: a change that misses the picture's request is a miss (both versions played),
+    // the hint glows after two, the before button replays the pet's tune, and the hinted tap makes the change.
+    if (!only || only === 'song' || only === 'song14') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('song-maker', 14, 'Mia', 'school');
+      await page.waitForTimeout(600);
+      const r14 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const at = (col, row) => g.beads.find((b) => b.note.col === col && b.note.row === row);
+        const rowOf = (col) => g.beads.find((b) => b.lit && b.note.col === col)?.note.row;
+        const allLit = g.beads.filter((b) => b.lit).length === 6 && !!g.song.request;
+        // Moving beat 2's jelly changes the song but never does what any request asks.
+        const missOnce = async () => {
+          kit.tapOn(at(1, (rowOf(1) + 1) % 4));
+          await kit.sleep(150);
+          const woke = await kit.until(() => g.checkAwake, 15000);
+          kit.tapOn(g.check);
+          await kit.sleep(100);
+          const missed = g.explaining && !g.checkAwake && !g.done;
+          const explained = await kit.until(() => !g.explaining, 30000);
+          return woke && missed && explained && g.check.eventMode === 'none';
+        };
+        const asleepAtStart = await kit.until(() => g.beatsSinceChange >= 8, 15000).then(() => !g.checkAwake);
+        const miss1 = (await missOnce()) && g.misses === 1 && g.hints === 0;
+        kit.tapOn(g.before);
+        await kit.sleep(100);
+        const beforePlays = g.listening;
+        await kit.until(() => !g.listening, 15000);
+        const miss2 = (await missOnce()) && g.misses === 2 && g.hints === 1;
+        const glow = g.glow.getBounds().width > 50;
+        return { request: g.song.request, allLit, asleepAtStart, miss1, beforePlays, miss2, glow };
+      });
+      await screenshot('song-maker-14-portrait');
+      const done14 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const t = g.autotouch();
+        kit.tapOn(t.tap.on);
+        await kit.sleep(150);
+        const woke = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        return woke;
+      });
+      assert.ok(Object.values(r14).every(Boolean) && done14, `song 14 ${JSON.stringify(r14)}`);
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [2, 1], 'song 14 score');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      log(
+        `Song Maker 14 (${r14.request}): missed change is a miss, before replays, glow after two, hinted change ends, sticker passed`,
       );
     }
 
