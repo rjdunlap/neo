@@ -20,6 +20,7 @@ import { DressScene } from './scenes/DressScene';
 import { StickerBookScene } from './scenes/StickerBookScene';
 import { CouchScene } from './scenes/CouchScene';
 import { DailyScene } from './scenes/DailyScene';
+import { FriendPageScene } from './scenes/FriendPageScene';
 
 export function createRoutes(app: App): Routes {
   return {
@@ -57,6 +58,7 @@ export function createRoutes(app: App): Routes {
     room: () => void app.show(new RoomScene(app)),
     friends: (previewId, origin) => void app.show(new FriendsScene(app, previewId, origin)),
     dress: (id, origin) => void app.show(new DressScene(app, id, origin)),
+    friendPage: () => void app.show(new FriendPageScene(app)),
     journal: () => void app.show(new JournalScene(app)),
     // The library is the root's (src/rework.ts); the island never makes a library origin, so it opens the treehouse.
     library: () => void app.show(new RoomScene(app)),

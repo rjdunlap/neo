@@ -55,9 +55,26 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 14,
+      to: 14,
       text: 'Tap the big lily to hop ten and the little lily to hop one. Land the frog on the flag.',
     },
+    {
+      from: 15,
+      text: 'The line goes from 0 to 100 with no other numbers. Tap where the number on the sign goes, or slide the frog there. On the last line the marks count by tens: put the frog on the right mark.',
+    },
   ],
-  finish: 'Answer the questions to bring the frog home.',
-  note: 'Two misses show the hops and glow the answer. Help counts once per question; tapping a pad when a number card is wanted is free.',
+  finish: [
+    { to: 14, text: 'Answer the questions to bring the frog home.' },
+    { from: 15, text: 'Three guesses, then one number placed on the marked line.' },
+  ],
+  note: [
+    {
+      to: 14,
+      text: 'Two misses show the hops and glow the answer. Help counts once per question; tapping a pad when a number card is wanted is free.',
+    },
+    {
+      from: 15,
+      text: 'A guess is never a mistake: the frog hops to the real place. On the marked line a wrong mark counts, and after two the right mark glows.',
+    },
+  ],
 };

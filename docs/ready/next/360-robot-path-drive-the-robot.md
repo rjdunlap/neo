@@ -1,0 +1,1 @@
+**`robot-path`, *Drive the robot*** (new-interaction tier): the next free stable ID (currently 16), preschool below level 1 with `order` and `entryLevels`; a `live` mode with no program or play button, each arrow moves one cell, a rock stops it gently, no misses, a bot that taps the shortest route. [Dive slice 9](../../deep-dives/robot-path.md#build-slices-in-order).

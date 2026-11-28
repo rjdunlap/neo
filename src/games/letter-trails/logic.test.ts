@@ -38,9 +38,23 @@ import {
   LAST_LEVEL,
   LITTLE_TOLERANCE,
   inFrame,
+  LITTLE_WORD_LEVEL,
+  MY_NAME_LEVEL,
+  nameLevel,
+  signName,
+  writtenName,
 } from './logic';
 import { PICTURE_WORDS } from '../word-monsters/logic';
-import { FRAME, FRAME_X, LOWER, isLower, strokesOf } from '../../learning/tracing/lowercase';
+import {
+  CAPITAL_IN_FRAME,
+  FRAME,
+  FRAME_X,
+  LOWER,
+  frameStrokesOf,
+  framedCapital,
+  isLower,
+  strokesOf,
+} from '../../learning/tracing/lowercase';
 import { traceWaypoints } from '../../learning/tracing/strokes';
 
 describe('Letter Trails plans', () => {
@@ -60,6 +74,8 @@ describe('Letter Trails plans', () => {
         if (level <= 6) expect(PLANS[level - 1].letters).toContain(word);
         if (level === 7) expect(SHORT_WORDS).toContain(word.toLowerCase());
         if (level === 8) expect(word).toBe('ZOEROSE');
+        if (level === LITTLE_WORD_LEVEL) expect(SHORT_WORDS).toContain(word);
+        if (level === MY_NAME_LEVEL) expect(word).toBe('Zoerose');
         expect(word).toBe(trailWord(level, 'Zoë-Rose', new Rng(seed)));
       }
   });
@@ -67,7 +83,7 @@ describe('Letter Trails plans', () => {
     expect(trailLevel(0)).toBe(1);
     expect(trailLevel(100)).toBe(PLANS.length);
     expect(trailWord(8, 'Mia', new Rng(2))).toBe('MIA');
-    expect(trailWord(100, 'Mia', new Rng(2))).toHaveLength(1);
+    expect(trailWord(100, 'Mia', new Rng(2))).toBe(trailWord(PLANS.length, 'Mia', new Rng(2)));
     for (let level = 1; level <= PLANS.length; level++)
       expect(trailTolerance(level)).toBe(inFrame(level) ? LITTLE_TOLERANCE : level <= 2 ? 0.095 : 0.075);
   });
@@ -702,7 +718,7 @@ describe('Level 15, Big and little: any little letter beside its capital', () =>
   it('draws any of the 26 little letters in the frame, for school only', () => {
     expect(BIG_LEVEL).toBe(15);
     expect(inFrame(BIG_LEVEL)).toBe(true);
-    expect(LEVELS.school!.max).toBe(BIG_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(BIG_LEVEL);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(BIG_LEVEL)).toEqual(['solid']);
     expect(severalLetters(BIG_LEVEL)).toBe(false);
@@ -718,5 +734,118 @@ describe('Level 15, Big and little: any little letter beside its capital', () =>
       expect(strokesOf(l.toUpperCase()).length).toBeGreaterThan(0);
       expect(WORDS[l.toUpperCase()]).toBeTruthy();
     }
+  });
+});
+
+describe('Level 16, Little words', () => {
+  it('traces one of level 7’s pictured words in little letters, in the frame, for school only', () => {
+    expect(LITTLE_WORD_LEVEL).toBe(16);
+    expect(inFrame(LITTLE_WORD_LEVEL)).toBe(true);
+    expect(severalLetters(LITTLE_WORD_LEVEL)).toBe(true);
+    expect(nameLevel(LITTLE_WORD_LEVEL)).toBe(false);
+    expect(guidesFor(LITTLE_WORD_LEVEL)).toEqual(['solid']);
+    expect(trailTolerance(LITTLE_WORD_LEVEL)).toBe(LITTLE_TOLERANCE);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 400; seed++) {
+      const word = trailWord(LITTLE_WORD_LEVEL, 'Mia', new Rng(seed));
+      expect(word).toBe(word.toLowerCase());
+      expect(word.length).toBeLessThanOrEqual(5);
+      expect((PICTURE_WORDS as readonly string[]).includes(word)).toBe(true);
+      for (const l of word) {
+        expect(isLower(l)).toBe(true);
+        expect(frameStrokesOf(l)).toBe(LOWER[l]);
+      }
+      seen.add(word);
+    }
+    expect(seen.size).toBe(SHORT_WORDS.length);
+  });
+
+  it('counts at most one miss and one hint per letter, as level 7 does', () => {
+    const rough = [
+      { misses: 5, hints: 2 },
+      { misses: 0, hints: 0 },
+      { misses: 1, hints: 0 },
+    ];
+    expect(roundTally(LITTLE_WORD_LEVEL, rough)).toEqual({ misses: 2, hints: 1 });
+  });
+
+  it('accepts each letter of every word in order at the little corridor, and the bot route completes it', () => {
+    for (const word of SHORT_WORDS)
+      for (const l of word)
+        for (const stroke of frameStrokesOf(l)) {
+          const points = sampleStroke(stroke);
+          let at = 0,
+            prev = points[0];
+          for (const p of traceWaypoints(points)) {
+            at = advanceTrace(points, at, prev, p, LITTLE_TOLERANCE);
+            prev = p;
+          }
+          expect(at).toBe(points.length - 1);
+        }
+  });
+});
+
+describe('Level 17, My name, the way it is written', () => {
+  it('traces a capital first, then little letters, capped at eight, for school only', () => {
+    expect(MY_NAME_LEVEL).toBe(17);
+    expect(LEVELS.school!.max).toBe(MY_NAME_LEVEL);
+    expect(PLANS).toHaveLength(MY_NAME_LEVEL);
+    expect(inFrame(MY_NAME_LEVEL)).toBe(true);
+    expect(nameLevel(MY_NAME_LEVEL)).toBe(true);
+    expect(nameLevel(8)).toBe(true);
+    expect(severalLetters(MY_NAME_LEVEL)).toBe(true);
+    expect(trailWord(MY_NAME_LEVEL, 'Dana', new Rng(1))).toBe('Dana');
+    expect(trailWord(MY_NAME_LEVEL, 'DANA', new Rng(1))).toBe('Dana');
+    expect(trailWord(MY_NAME_LEVEL, 'zoë', new Rng(1))).toBe('Zoe');
+    expect(trailWord(MY_NAME_LEVEL, 'Maximiliana', new Rng(1))).toBe('Maximili');
+    expect(trailWord(MY_NAME_LEVEL, '李', new Rng(1))).toBe('Pip');
+    expect(trailWord(MY_NAME_LEVEL, '', new Rng(1))).toBe('Pip');
+    for (const name of ['Mia', 'Anne-Marie Josephine', 'W'.repeat(60), 'Ēlla', 'o']) {
+      const traced = trailWord(MY_NAME_LEVEL, name, new Rng(3));
+      expect(traced.length).toBeLessThanOrEqual(NAME_CAP);
+      expect(traced[0]).toMatch(/[A-Z]/);
+      expect(traced.slice(1)).toMatch(/^[a-z]*$/);
+      expect(writtenName(name).startsWith(traced)).toBe(true);
+      for (const l of traced) expect(frameStrokesOf(l).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('signs the whole name as it is written at 17, and in capitals at 8', () => {
+    expect(signName(MY_NAME_LEVEL, 'Maximiliana')).toBe('Maximiliana');
+    expect(signName(8, 'Maximiliana')).toBe('MAXIMILIANA');
+    expect(signName(MY_NAME_LEVEL, '')).toBe('Pip');
+  });
+
+  it('stands every capital in the frame: top line to base line, inside the lines, same strokes and order', () => {
+    for (const cap of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+      const framed = framedCapital(cap);
+      expect(frameStrokesOf(cap)).toBe(framed);
+      expect(framed).toHaveLength(LETTERS[cap].length);
+      const ys = framed.flat().map((p) => p[1]);
+      const xs = framed.flat().map((p) => p[0]);
+      expect(Math.min(...ys)).toBeGreaterThanOrEqual(FRAME.top - 1e-9);
+      expect(Math.max(...ys)).toBeLessThanOrEqual(FRAME.base + 1e-9);
+      expect(Math.min(...xs)).toBeGreaterThanOrEqual(FRAME_X[0]);
+      expect(Math.max(...xs)).toBeLessThanOrEqual(FRAME_X[1]);
+      // It starts where the capital starts, shrunk: at the top of the frame for every capital.
+      expect(framed[0][0][1]).toBeLessThan(FRAME.top + CAPITAL_IN_FRAME / 4);
+      // A capital is taller than a little letter's middle space: it reaches the top line, not the middle one.
+      expect(Math.min(...ys)).toBeLessThan(FRAME.mid);
+    }
+  });
+
+  it('accepts each framed capital stroke in order at the little corridor, and the bot route completes it', () => {
+    for (const cap of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+      for (const stroke of framedCapital(cap)) {
+        const points = sampleStroke(stroke);
+        let at = 0,
+          prev = points[0];
+        for (const p of traceWaypoints(points)) {
+          at = advanceTrace(points, at, prev, p, LITTLE_TOLERANCE);
+          prev = p;
+        }
+        expect(at).toBe(points.length - 1);
+      }
   });
 });

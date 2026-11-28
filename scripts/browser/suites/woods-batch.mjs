@@ -926,6 +926,82 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Level 15, Where does it go?: three unscored guesses on a bare 0–100 line, then a ten placed on the line marked in tens.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [15]).includes(15)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 15);
+      await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy, null, {
+        timeout: 20000,
+      });
+      await page.waitForTimeout(150);
+      const idle = () =>
+        page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
+      // A place on the line, by a real tap on the band at that number's x (or a number's nearest place).
+      const tapAt = async (n) => {
+        await page.evaluate((n) => {
+          const g = neo.scene.game;
+          const p = g.band.toGlobal({ x: g.x(n), y: g.L.line.y });
+          kit.tap(p.x, p.y);
+        }, n);
+        await page.waitForTimeout(250);
+        await idle();
+      };
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.questions.map((q) => q.place)), [
+        'guess',
+        'guess',
+        'guess',
+        'ticks',
+      ]);
+      assert.equal(await page.evaluate(() => neo.scene.game.q.target), 37, 'the first guess is 37');
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.est');
+      // A far guess (80 for 37) is never a miss: the frog hops to the real place.
+      await tapAt(80);
+      await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, {
+        timeout: 30000,
+      });
+      const first = await page.evaluate(() => neo.scene.game.guesses[0]);
+      assert.equal(first.target, 37);
+      assert.ok(Math.abs(first.guess - 80) <= 1, `the guess reads where she tapped (${first.guess})`);
+      assert.deepEqual(await counts(), [0, 0], 'a guess is never a miss');
+      // A guess by sliding the frog: it rides the line and lets go near the number.
+      const second = await page.evaluate(() => neo.scene.game.q.target);
+      await page.evaluate((n) => {
+        const g = neo.scene.game;
+        const from = g.frog.toGlobal({ x: 0, y: -30 });
+        const to = g.band.toGlobal({ x: g.x(n), y: g.L.line.y - 30 });
+        return kit.drag(kit.line([from.x, from.y], [to.x, to.y], 20));
+      }, second);
+      await page.waitForTimeout(300);
+      await page.waitForFunction(() => neo.scene.game.index === 2 && !neo.scene.game.busy, null, {
+        timeout: 30000,
+      });
+      const slid = await page.evaluate(() => neo.scene.game.guesses[1]);
+      assert.ok(Math.abs(slid.guess - second) <= 2, `the slide lands near ${second} (${slid.guess})`);
+      await page.waitForTimeout(200);
+      await screenshot('frog-hop-15-guess-phone');
+      const third = await page.evaluate(() => neo.scene.game.q.target);
+      await tapAt(third);
+      await page.waitForFunction(() => neo.scene.game.index === 3 && !neo.scene.game.busy, null, {
+        timeout: 30000,
+      });
+      // The marked line: a wrong mark is one miss; Show a hint twice is one hint; the right mark ends the round.
+      const tens = await page.evaluate(() => neo.scene.game.q.target);
+      await tapAt(tens === 20 ? 30 : tens - 10);
+      assert.deepEqual(await counts(), [1, 0], 'a wrong mark is one miss');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.evaluate(() => neo.scene.game.askForHint());
+      assert.deepEqual(await counts(), [1, 1], 'Show a hint counts once');
+      assert.equal(await page.evaluate(() => neo.scene.game.glowAt), tens, 'the right mark glows');
+      await page.waitForTimeout(200);
+      await screenshot('frog-hop-15-marks-phone');
+      await tapAt(tens + 2);
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [1, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 15: a far guess with no miss, a slid guess, the marks by tens, a wrong mark one miss, one counted hint, a near tap snapping to the right mark, phone screenshots, saved score and sticker passed',
+      );
+    }
     // Level 14, Big hops and little hops: an open line, a big lily (+10), a small lily (+1) and back.
     if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [14]).includes(14)) {
       await page.setViewportSize({ width: 768, height: 1024 });

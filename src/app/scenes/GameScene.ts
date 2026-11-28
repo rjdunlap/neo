@@ -72,6 +72,7 @@ import { STAMP_SHORT, type StampKind } from '../../content/stamps';
 import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
+import { PAD_POINTER, PadPointer } from '../pad-pointer';
 import { goToOrigin } from '../origin';
 import { ResultBackdrop, resultPlace } from './result-backdrop';
 import { isParentPanelOpen } from '../../parent/panel';
@@ -86,6 +87,8 @@ import { captionPlace, captionShows, type CaptionPlace } from '../../ui/caption-
  * the pet guide, the round's Back and help buttons, co-play tips, and the celebration at the end.
  */
 export class GameScene extends Scene {
+  /** Takes keys itself: `control()` where the game has controller play, its own pad pointer elsewhere. */
+  override padPointer = false;
   /** Built when the round is about to start: after the intro, for a game that is opened for the first time. */
   private game: Game | null = null;
   private readonly lifetime = new Lifetime();
@@ -175,13 +178,19 @@ export class GameScene extends Scene {
   private gone = false;
   /** Keys and pads: sampled from the start so a press that opened the round is not read again as the round's first move. */
   private keys!: CouchInput;
+  /** Keys and a pad in a game with no controller play of its own at this level: a hand that taps and drags (`pad-pointer.ts`). */
+  private pointer?: PadPointer;
   private readonly inputInUse = new InputInUse();
   /** A key or button has been pressed since the round began (or since the last touch): the Enter that pressed Play does not count. */
   private keyed = false;
   private readonly touchDown = (e: PointerEvent) => {
+    const pad = e.pointerId === PAD_POINTER;
     if (this.game && !this.finished && !this.helpCard && !this.navigating && !this.onShellButton(e))
       this.held.down(soundCount.n);
     else this.held.cancel();
+    // The pad pointer's own press is the keys at work, not a finger coming back.
+    if (pad) return;
+    this.pointer?.lift();
     if (this.inputInUse.kind === 'controller') this.returningTouch = true;
     this.inputInUse.touched();
     if (this.keyed && !this.finished) {
@@ -270,6 +279,9 @@ export class GameScene extends Scene {
       () => undefined,
       { listening: () => !this.app.paused && !isParentPanelOpen() },
     );
+
+    this.pointer = new PadPointer(this.app.renderer.canvas, this.root, () => this.app.renderer.screen);
+    this.root.addChild(this.pointer.layer);
 
     this.keys.peekEnabled = () => !!this.game?.togglePeek && !this.finished && !this.helpCard;
 
@@ -492,10 +504,12 @@ export class GameScene extends Scene {
   private drive(keys: CouchControls, dt: number, wasController: boolean) {
     const lead = keys.players[0];
     if (this.finished) {
+      this.pointer?.lift();
       this.driveCelebration(keys, dt, wasController);
       return;
     }
     if (this.helpCard) {
+      this.pointer?.lift();
       const intro = !this.game;
       if (!keys.players.some((p) => p.action || p.back || p.undo || p.direction >= 0)) return;
       if (intro && keys.players.some((p) => p.action)) this.playFromIntro();
@@ -510,8 +524,14 @@ export class GameScene extends Scene {
       return;
     }
     if (pressed(keys)) this.keyed = true;
-    if (this.keyed && this.game?.control && controllerPlays(this.mod, this.level))
-      this.game.control(keys, dt);
+    const controlled = !!this.game?.control && controllerPlays(this.mod, this.level);
+    if (this.keyed && controlled) this.game!.control!(keys, dt);
+    // Any other round takes keys and a pad through the hand, which presses the game's own touch handling.
+    this.pointer?.update(
+      this.mod.ownKeys ? this.keys.pads : keys,
+      dt,
+      !!this.game && !controlled && !this.navigating && !isParentPanelOpen(),
+    );
   }
 
   /** The buttons after a round: arrows move the ring, the bottom button presses. The first press only shows where the ring is. */
@@ -559,6 +579,7 @@ export class GameScene extends Scene {
     window.removeEventListener('pointercancel', this.touchUp);
     window.removeEventListener('blur', this.touchUp);
     this.keys?.destroy();
+    this.pointer?.destroy();
     this.dailySheet?.close();
     this.closeHelp();
     this.lifetime.destroy();

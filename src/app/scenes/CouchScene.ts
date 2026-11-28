@@ -125,6 +125,8 @@ const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', cls = ''
 
 /** Adult-only host: separate navigation, session goal and save; games retain their own rules. */
 export class CouchScene extends Scene {
+  /** Takes keys itself. */
+  override padPointer = false;
   upright = true;
   /** Couch play has its own pause menu on Esc. */
   canPause = false;

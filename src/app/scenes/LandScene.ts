@@ -121,6 +121,8 @@ export interface LandOptions {
  * nearest hers it has.
  */
 export class LandScene extends Scene {
+  /** Takes keys itself. */
+  override padPointer = false;
   readonly land: Land;
   /** Her band, from her profile. */
   readonly band: Band;

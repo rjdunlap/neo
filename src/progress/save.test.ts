@@ -32,6 +32,7 @@ describe('migrate', () => {
     // A save from when the app had a play timer: the limit is retired, and always saved as 0 (no limit).
     expect(save.settings).toEqual({
       placeLayout: 'path',
+      startView: 'explore',
       volume: 1,
       music: false,
       sessionMinutes: 0,
@@ -556,6 +557,18 @@ describe('migrate', () => {
     expect(migrate({ settings: { briefResults: true } }).settings.briefResults).toBe(true);
     const save = defaults();
     save.settings.briefResults = true;
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('starts Explore-first, repairs the starting view and keeps it through a backup (D8)', () => {
+    expect(defaults().settings.startView).toBe('explore');
+    expect(migrate({}).settings.startView).toBe('explore');
+    expect(migrate({ settings: { volume: 0.5 } }).settings.startView).toBe('explore');
+    for (const bad of [3, 'mix', 'SIX', null, true])
+      expect(migrate({ settings: { startView: bad } }).settings.startView).toBe('explore');
+    expect(migrate({ settings: { startView: 'six' } }).settings.startView).toBe('six');
+    const save = defaults();
+    save.settings.startView = 'six';
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 

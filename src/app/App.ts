@@ -44,6 +44,8 @@ import { mixMemory } from './discovery';
 import { chooseTransition, frameAt, TRANSITION_SECONDS, type Box, type Transition } from './transition';
 import { ease } from '../engine/tween';
 import { markTiming } from '../engine/timing';
+import { PAD_POINTER, PadPointer } from './pad-pointer';
+import { CouchInput } from '../engine/controller';
 
 /**
  * A game round played as one story request: at the story's level, coming home to the story's scene. Without a
@@ -116,6 +118,8 @@ export interface Routes {
   friends(previewId?: string, origin?: BookOrigin): void;
   /** Dressing one owned friend (RW06), from Friends; back returns to Friends with that friend on the stage. */
   dress(id: string, origin?: BookOrigin): void;
+  /** A grown-up's friend and its shop (the progression loop, slice 4), from the friend on Today's six; back returns there. */
+  friendPage(): void;
   /**
    * Plays a game at the levels for `band` (her own band if omitted), resolved to a band the game has
    * (`playBand`), or as a step of a story (the Windy or the Woodland Picnic). `origin` is where home goes afterwards; without one, her home spot. `level` plays that level (held inside her band's range) instead of her saved one, as the celebration's "next level" does.
@@ -183,6 +187,9 @@ export class App {
   private padSheet: PadSheet | null = null;
   /** What the person is using across the plain island screens (the map, the lands): a finger until a key or button, a finger again on a touch. A game round keeps its own. */
   readonly input = new InputInUse();
+  /** Keys and a pad on a screen with no key handling of its own (`Scene.padPointer`): a hand that taps and drags. */
+  private padKeys?: CouchInput;
+  private padPointer?: PadPointer;
 
   get renderer(): Renderer {
     return this.pixi.renderer;
@@ -222,7 +229,27 @@ export class App {
     // iOS settles the safe area a moment after a turn; the probe's box changes when it does.
     if (typeof ResizeObserver === 'function') new ResizeObserver(() => this.applyView()).observe(this.probe);
     document.addEventListener('visibilitychange', () => this.syncSleep());
-    window.addEventListener('pointerdown', () => this.input.touched(), true);
+    // The pad pointer's presses are keys at work, not a finger (`pad-pointer.ts`).
+    window.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (e.pointerId === PAD_POINTER) return;
+        this.input.touched();
+        this.padPointer?.lift();
+      },
+      true,
+    );
+    this.padKeys = new CouchInput(
+      () => {
+        audio.unlock();
+        voice.unlock();
+      },
+      () => undefined,
+      { listening: () => this.padPointerOn() },
+    );
+    this.padPointer = new PadPointer(this.pixi.canvas, this.root, () => this.renderer.screen);
+    this.padPointer.root = () => this.scene?.root ?? this.root;
+    this.pixi.stage.addChild(this.padPointer.layer);
     window.addEventListener('keydown', (e) => this.onKey(e));
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
     // The paper look (docs/ART-STYLE.md): new or redrawn flat shapes become paper cut-outs before the frame is drawn.
@@ -523,7 +550,17 @@ export class App {
       if (action === 'press') this.sheet.press();
       else if (action) this.sheet.move(action === 'up' ? -1 : 1);
     }
+    // Polled every frame, so a press is never read twice on the screen it lands on.
+    const keys = this.padKeys?.poll();
+    if (keys) this.padPointer?.update(keys, dt, this.padPointerOn());
     if (!this.scene || this.paused) return;
     this.scene.update(dt);
+  }
+
+  /** The app's own pad pointer is in play: a screen without keys of its own, nothing over it and nothing changing. */
+  private padPointerOn(): boolean {
+    return (
+      !!this.scene?.padPointer && !this.paused && !this.switching && !this.turning && !isParentPanelOpen()
+    );
   }
 }

@@ -34,6 +34,8 @@ const LANDMARK_SCALE = 0.85;
  * where she was last, and when she has a birthday the home spot becomes her new age place.
  */
 export class MapScene extends Scene {
+  /** Takes keys itself. */
+  override padPointer = false;
   private readonly sea = new Graphics();
   private readonly island = new Graphics();
   private readonly glow = new Graphics();

@@ -1,1 +1,0 @@
-**`stir-see`, levels 1–5** (new-game tier): cup, spoon and pretend materials, per [definition](../../definitions/stir-and-see.md); Bubble Beach else Tinker Lab, toddler–school, no reviewer below level 6. [Matter slice 6](../../deep-dives/subjects/matter.md#build-slices-in-order).

@@ -97,6 +97,12 @@ async function boot() {
         // A guest (play-first slice 2) sees the six and their rounds on every device, nothing else, until Add me.
         void app.show(six || app.phoneOnly || store.entry.guest ? new DailyScene(app) : new HomeScene(app));
       },
+      // Any way into the six takes a pending `?daily` too (D8's starting view opens them straight from "Who's playing?"),
+      // so the six's Back is Home rather than the six again.
+      daily: () => {
+        daily = false;
+        island.daily();
+      },
       room: () => void app.show(new PlayScene(app)),
       library: () => void app.show(new LibraryScene(app)),
       book: (at) => void app.show(new BookScene(app, at)),

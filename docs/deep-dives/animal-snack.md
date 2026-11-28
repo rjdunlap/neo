@@ -158,7 +158,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 8. **Levels 9–10, The menu board and The long menu** (built 2026-11-16, [PR #1704](https://github.com/rjdunlap/neo/pull/1704); see [the game page](../games/animal-snack.md#design-notes)). They open the school window (`school` 8–10, `school` in `bands`); a chalkboard of lines, each an animal, a printed numeral and a food word, a free speaker per line. Tier: new levels on an existing interaction: rule tests, one browser play of levels 9 and 10 and `fingerdemo` at them.
 9. **The pet's turn** (built 2026-11-17, PR #1775) and the **below-level-1 entries** (they wait on decision 3; Open wide first, Taste test second).
 10. **Level 1, one big animal** (built 2026-11-12, [PR #1592](https://github.com/rjdunlap/neo/pull/1592), in place; see [the game page](../games/animal-snack.md#design-notes)). Lap-only level 1 now opens with one big animal and a touch anywhere feeds it; Open wide below stays a sketch for a drag.
-11. **Sketches:** the diet sort, thank-you gifts, wild friends, a week of snacks.
+11. **Sketches:** the diet sort (its definition is queued in [READY](../READY.md) 2026-11-28, with every diet checked against cited sources as the `EATS` table was), thank-you gifts, wild friends, a week of snacks.
 
 ## What was built in this session
 
