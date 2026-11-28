@@ -1064,6 +1064,21 @@ class WhoAmI implements Game {
   }
 
   /** The ghost finger: tap the sign to hear each clue, then (level 1) one friend it does not fit and the one it does, or flip every friend it rules out. */
+  /**
+   * Guided first play: the bot taps the sign to hear each clue and, in Fit, shows one miss on purpose; the hand skips both
+   * and shows the next real choice. The bot's own flags are put back.
+   */
+  showMove(): TouchIntent | null {
+    const heard = this.botHeard;
+    const missed = this.botShowedMiss;
+    this.botHeard = this.play.clue;
+    this.botShowedMiss = true;
+    const move = this.autotouch();
+    this.botHeard = heard;
+    this.botShowedMiss = missed;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.play.done || !this.sign) return null;
     if (this.riddling) {
