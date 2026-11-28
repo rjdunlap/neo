@@ -56,8 +56,8 @@ function targets(v: View, level: number): Target[] {
   return out;
 }
 
-it('covers levels 1 to 10: free play, replies, turns, the tree, the call and the pairs', () => {
-  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+it('covers levels 1 to 12: free play, replies, turns, the tree, the call, the pairs, her own answer and longer calls', () => {
+  expect(levels).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   expect(levels.filter(treeLevel)).toEqual([7, 9]);
 });
 

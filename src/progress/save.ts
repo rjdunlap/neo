@@ -22,6 +22,7 @@ import { cleanForms, cleanLookForm, type FormId } from '../creatures/forms';
 
 import { isLandId, type LandId } from '../content/lands';
 import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
+import { cleanShells, emptyShells, type ShellsSave } from '../content/shells';
 
 /** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
 export type Language2 = 'none' | 'pt-PT';
@@ -123,6 +124,10 @@ export interface SaveData {
     sessionMinutes: 0;
     coplayHints: boolean;
     howToCards: boolean;
+    /** "Short results" (D4a): a shorter result after a round in the pilot games. Off unless a grown-up turns it on. */
+    briefResults: boolean;
+    /** "Short reminders" (D4b): a shorter how-to card for a game, level and input she has just been shown this visit. Off unless a grown-up turns it on. */
+    briefIntros: boolean;
     speech: boolean;
     /** "Show the words": a `school` player sees the guide's question written out, for a phone on silent (a `grownup` always does). */
     showWords: boolean;
@@ -153,6 +158,8 @@ export interface SaveData {
   explore: { last: LandId | null };
   /** A grown-up's playtest notes on Today's six rounds (`src/content/playtest.ts`): one per game and day, bounded. */
   playtest: PlaytestNote[];
+  /** The progression loop's shells (`src/content/shells.ts`): earned by grown-ups' finished rounds, capped per game per day. */
+  shells: ShellsSave;
 }
 
 export const HISTORY_LENGTH = 10;
@@ -171,6 +178,8 @@ export function defaults(): SaveData {
       sessionMinutes: 0,
       coplayHints: true,
       howToCards: true,
+      briefResults: false,
+      briefIntros: false,
       showWords: false,
       speech: true,
       language2: 'none',
@@ -190,6 +199,7 @@ export function defaults(): SaveData {
     journal: emptyJournal(),
     explore: { last: null },
     playtest: [],
+    shells: emptyShells(),
   };
 }
 
@@ -381,6 +391,8 @@ export function migrate(raw: unknown): SaveData {
       sessionMinutes: 0,
       coplayHints: bool(settings.coplayHints, d.settings.coplayHints),
       howToCards: bool(settings.howToCards, d.settings.howToCards),
+      briefResults: bool(settings.briefResults, d.settings.briefResults),
+      briefIntros: bool(settings.briefIntros, d.settings.briefIntros),
       speech: bool(settings.speech, d.settings.speech),
       showWords: bool(settings.showWords, d.settings.showWords),
       // Exactly one of the two values; `pt`, `pt-BR` or anything else is off, never a guessed variety.
@@ -401,6 +413,7 @@ export function migrate(raw: unknown): SaveData {
     journal: cleanJournal(raw.journal),
     explore: { last: isObj(raw.explore) && isLandId(raw.explore.last) ? raw.explore.last : null },
     playtest: cleanPlaytest(raw.playtest),
+    shells: cleanShells(raw.shells),
   };
 }
 

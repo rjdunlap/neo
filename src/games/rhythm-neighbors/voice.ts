@@ -13,6 +13,13 @@ export const VOICE = {
   ],
   'neighbors.choose': ['Did the frog copy the woodpecker, or answer with something different?'],
   'neighbors.listen-again': ['Let us listen to them again.'],
+  'neighbors.own': [
+    'The woodpecker knocks. {name}, now answer with something new! Tap the frogs any way you like, then tap the green arrow.',
+  ],
+  'neighbors.own-turn': ['Your turn, {name}! Answer with something new.'],
+  'neighbors.echo': ['That is an echo, {name}! Can you answer with something new?'],
+  'neighbors.more': ['Play a few more notes, {name}, then tap the green arrow.'],
+  'neighbors.sample': ['Here is one answer, {name}. Now make your own!'],
   'neighbors.my-turn': ['Your turn! Tap the glowing frog.'],
   'neighbors.turns': [
     'The bird calls, then the frogs answer. Listen, then play the frog pictures from left to right. Tap the green arrow when ready.',

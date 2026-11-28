@@ -794,7 +794,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         ]),
       );
       assert(
-        duckTargets.every(([x, y, radius]) => x === 0 && y === -46 && radius === (mode === 'bye' ? 53 : 72)),
+        duckTargets.every(
+          ([x, y, radius]) =>
+            x === 0 &&
+            y === -46 &&
+            (mode === 'every' ? radius >= 53 && radius < 56 : radius === (mode === 'bye' ? 53 : 72)),
+        ),
         'Duck sprite preserves hit circles',
       );
       if (level === duckTop) await screenshot(`duck-pond-${level}-illustrated-portrait`);
@@ -848,6 +853,18 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               .then(() => page.waitForTimeout(400))
               .then(() => screenshot(`duck-pond-${level}-stop-portrait`))
           : null;
+      // Level 16: one portrait screenshot of the card row filling, with the glow on a duck, on the last total.
+      const everyShot =
+        mode === 'every'
+          ? page
+              .waitForFunction(
+                () => neo.scene.game.every?.total === 6 && neo.scene.game.every.found.size >= 3,
+                null,
+                { timeout: 120000 },
+              )
+              .then(() => page.waitForTimeout(700))
+              .then(() => screenshot(`duck-pond-${level}-every-way-portrait`))
+          : null;
       await page.evaluate(async () => {
         window.__duckLayouts = [];
         const g = neo.scene.game;
@@ -888,6 +905,77 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             throw new Error('a touch after the fifth must quack and bring no one');
           await kit.until(() => g.finished, 20000);
           if (g.misses || g.hints) throw new Error('nothing on level 13 may count');
+          return;
+        }
+        if (g.plan.mode === 'every') {
+          // Level 16: she finds every way. Total 3: an empty side is no split (no card, the pet asks her to send some), a keep
+          // makes a card, a repeat makes none, and the mirror is a new card. Total 6: two repeats in a row glow one duck (one hint).
+          const L = await import('/src/games/duck-pond/logic.ts');
+          const right = () => g.every.right.filter(Boolean).length;
+          const settle = () => kit.until(() => g.swimmers.every((d) => !d.hopping), 5000);
+          const cross = async (side) => {
+            const d = g.every[side].find((x) => x && !x.hopping);
+            kit.tapOn(d, 0, -46);
+            await kit.sleep(120);
+            await settle();
+          };
+          const setRight = async (n) => {
+            while (right() < n) await cross('left');
+            while (right() > n) await cross('right');
+          };
+          const keep = async () => {
+            kit.tapOn(g.check);
+            await kit.sleep(300);
+            await ready();
+          };
+          for (let r = 0; r < g.plan.rounds; r++) {
+            await ready();
+            const e = g.every;
+            const total = e.total;
+            if (total !== 3 + r) throw new Error(`Every way: total ${total} in round ${r}`);
+            if (g.swimmers.length !== total)
+              throw new Error(`Every way: ${g.swimmers.length} ducks for ${total}`);
+            if (g.cardRow.children.length !== 1) throw new Error('Every way: cards before the first keep');
+            if (r === 0 && right() !== 0) throw new Error('Every way: the first round starts on the left');
+            if (r === 0) {
+              await setRight(0);
+              await keep();
+              if (e.found.size !== 0 || g.cardRow.children.length !== 1)
+                throw new Error('Every way: an empty side must not make a card');
+              await setRight(1);
+              if (g.signText.text !== `${total - 1} and 1`) throw new Error(`Sign reads ${g.signText.text}`);
+              await keep();
+              if (e.found.size !== 1 || g.cardRow.children.length !== 2)
+                throw new Error('Every way: a keep must make a card');
+              await keep();
+              if (e.found.size !== 1 || e.again !== 1 || g.cardRow.children.length !== 2)
+                throw new Error('Every way: a repeat must make no card');
+              await setRight(2);
+              await keep();
+              await kit.until(() => g.round > r || g.finished, 20000);
+              if (g.hints !== 0 || g.misses !== 0)
+                throw new Error(`Every way: ${g.misses} misses, ${g.hints} hints`);
+              continue;
+            }
+            if (r === 3) {
+              await setRight(1);
+              await keep();
+              await keep();
+              await keep();
+              if (g.hints !== 1 || !g.swimmers.some((d) => d.glowing))
+                throw new Error(`Every way: two repeats must glow a duck (${g.hints} hints)`);
+            }
+            for (let guard = 0; guard < 60 && g.every && g.every.total === total; guard++) {
+              const mv = L.everyMove(total, right(), g.every.found);
+              if (mv === 'check') await keep();
+              else if (mv) await cross(mv);
+              else break;
+            }
+            await kit.until(() => g.round > r || g.finished, 20000);
+          }
+          await kit.until(() => g.finished, 30000);
+          if (g.misses !== 0 || g.hints !== 1)
+            throw new Error(`Every way: ${g.misses} misses, ${g.hints} hints`);
           return;
         }
         for (let r = 0; r < g.plan.rounds; r++) {
@@ -1056,6 +1144,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       if (scatterShot) await scatterShot;
       if (mixedShot) await mixedShot;
       if (stopShot) await stopShot;
+      if (everyShot) await everyShot;
       const layoutsSeen = await page.evaluate(() => window.__duckLayouts);
       if (layoutsSeen.length) log(`Duck Pond ${level} layouts dealt: ${layoutsSeen.join(', ')}`);
       await screenshot(`duck-pond-${level}`);
@@ -1064,9 +1153,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await score('duck-pond'),
         stop
           ? [1, 0]
-          : mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends'
-            ? [0, 0]
-            : [2, 1],
+          : mode === 'every'
+            ? [0, 1]
+            : mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends'
+              ? [0, 0]
+              : [2, 1],
         `ducks ${level} score`,
       );
       if (level === 5 || level === 7 || level === 9 || level === duckTop) await portrait(false);

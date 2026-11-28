@@ -1,7 +1,7 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { Rng } from '../engine/random';
 import type { View } from '../engine/view';
-import { cheek, ink, swatch, toward } from './palette';
+import { swatch, toward } from './palette';
 import { drawFibre } from './paper';
 import { bakePaper } from './paperize';
 
@@ -43,13 +43,86 @@ export function gradientTexture(top: number, bottom: number): Texture {
 
 const cssColor = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 
-const CLOUD_PUFFS: [number, number, number][] = [
-  [-50, 0, 34],
-  [-15, -18, 44],
-  [28, -8, 38],
-  [58, 6, 26],
-  [0, 10, 36],
+const CLOUD_SHAPE: [number, number][] = [
+  [-88, 26],
+  [-96, 6],
+  [-82, -22],
+  [-56, -34],
+  [-38, -26],
+  [-34, -50],
+  [-10, -66],
+  [16, -56],
+  [24, -44],
+  [46, -46],
+  [66, -30],
+  [74, -16],
+  [92, -8],
+  [96, 18],
+  [70, 32],
+  [-60, 32],
 ];
+
+/**
+ * A cut-paper cloud about 192 × 100 at scale 1, centred on (x, y): one silhouette with a flat underside and a lumpy
+ * top, on a darker piece peeking out below it, rather than a stack of circles. The sky's clouds and weather icons.
+ */
+export function cutCloud(g: Graphics, x: number, y: number, k: number, fill = 0xffffff, under = 0xc9dcea) {
+  const n = CLOUD_SHAPE.length;
+  const cut = (dy: number) => {
+    // Rounded through the midpoints, so each lump is a soft scissor curve.
+    const at = (i: number): [number, number] => [
+      x + CLOUD_SHAPE[i % n][0] * k,
+      y + (CLOUD_SHAPE[i % n][1] + dy) * k,
+    ];
+    const mid = (i: number): [number, number] => {
+      const [ax, ay] = at(i),
+        [bx, by] = at(i + 1);
+      return [(ax + bx) / 2, (ay + by) / 2];
+    };
+    g.moveTo(...mid(n - 1));
+    for (let i = 0; i < n; i++) g.quadraticCurveTo(...at(i), ...mid(i));
+    return g.closePath();
+  };
+  cut(9).fill(under);
+  cut(0).fill(fill);
+  return g;
+}
+
+/**
+ * Twelve snipped paper rays, long orange and short yellow by turns and none quite alike, round a disc of radius 54 × k
+ * at (x, y) (the disc itself is the caller's). The sky's sun and weather icons.
+ */
+export function sunRays(g: Graphics, x: number, y: number, k: number) {
+  for (let i = 0; i < 12; i++) {
+    const a = (i * Math.PI) / 6 + (i % 3) * 0.04;
+    const long = i % 2 === 0;
+    const r0 = 38 * k,
+      r1 = (long ? 96 - (i % 4) * 3 : 82 + (i % 3) * 2) * k;
+    const half = long ? 0.3 : 0.24;
+    g.poly(
+      [
+        x + Math.cos(a - half) * r0,
+        y + Math.sin(a - half) * r0,
+        x + Math.cos(a) * r1,
+        y + Math.sin(a) * r1,
+        x + Math.cos(a + half) * r0,
+        y + Math.sin(a + half) * r0,
+      ],
+      true,
+    ).fill(long ? swatch.orange.fill : swatch.yellow.fill);
+  }
+  return g;
+}
+
+/** A falling raindrop, its point up. */
+export function drop(g: Graphics, x: number, y: number, h: number, color: number) {
+  const w = h * 0.36;
+  g.moveTo(x, y - h / 2)
+    .bezierCurveTo(x + w * 0.4, y - h * 0.1, x + w, y + h * 0.1, x, y + h / 2)
+    .bezierCurveTo(x - w, y + h * 0.1, x - w * 0.4, y - h * 0.1, x, y - h / 2)
+    .closePath()
+    .fill(color);
+}
 
 export class Cloud extends Container {
   readonly baseScale: number;
@@ -58,9 +131,10 @@ export class Cloud extends Container {
 
   constructor(rng: Rng) {
     super();
+    // One cut silhouette (a flat underside and lumpy top), on a blue-grey piece peeking out below it, rather than a
+    // stack of circles.
     const g = new Graphics();
-    for (const [x, y, r] of CLOUD_PUFFS) g.circle(x, y + 7, r).fill(0xdcecf7);
-    for (const [x, y, r] of CLOUD_PUFFS) g.circle(x, y, r).fill(0xffffff);
+    cutCloud(g, 0, 0, 1);
     this.addChild(g);
     this.baseScale = rng.range(0.7, 1.1);
     this.scale.set(this.baseScale);
@@ -89,29 +163,10 @@ export class Sun extends Container {
 
   constructor() {
     super();
+    // A cut-paper sun: twelve snipped rays, long and short by turns and none quite alike, behind a yellow disc. No face or blush: it is a sun, not a sticker.
     const y = swatch.yellow;
-    for (let i = 0; i < 10; i++) {
-      const a = (i * Math.PI) / 5;
-      this.rays.moveTo(Math.cos(a) * 74, Math.sin(a) * 74).lineTo(Math.cos(a) * 96, Math.sin(a) * 96);
-    }
-    this.rays.stroke({ width: 12, color: y.fill, cap: 'round' });
-    const line = { width: 5, color: ink, cap: 'round' as const };
-    const face = new Graphics()
-      .circle(0, 0, 58)
-      .fill(y.fill)
-      .stroke({ width: 6, color: y.line })
-      .moveTo(-27, -6)
-      .quadraticCurveTo(-18, -18, -9, -6)
-      .stroke(line)
-      .moveTo(9, -6)
-      .quadraticCurveTo(18, -18, 27, -6)
-      .stroke(line)
-      .ellipse(-34, 12, 10, 6)
-      .ellipse(34, 12, 10, 6)
-      .fill({ color: cheek, alpha: 0.6 })
-      .moveTo(-14, 14)
-      .quadraticCurveTo(0, 30, 14, 14)
-      .stroke(line);
+    sunRays(this.rays, 0, 0, 1);
+    const face = new Graphics().circle(0, 0, 54).fill(y.fill);
     this.addChild(this.rays, face);
   }
 

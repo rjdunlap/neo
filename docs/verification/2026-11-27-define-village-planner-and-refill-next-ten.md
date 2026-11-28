@@ -1,0 +1,5 @@
+# 2026-11-27 — Define Village Planner and refill Next ten (PR #2295)
+
+**Changed:** Defined `village-planner` levels 1–3 (`docs/definitions/village-planner.md`) from slice 4 of the [routines and self-care study](../deep-dives/subjects/routines-self-care.md#build-slices-in-order); updated [docs/README.md](../README.md), [docs/STUDY-BACKLOG.md](../STUDY-BACKLOG.md), and the study's build-slice row; queued `village-planner` levels 1–3 in [Next ten](../READY.md#next-ten) and refilled it (`day-by-day` level 8 moved from Queued plus three docs-only definitions: Stir and See, Discovery D5b, Discovery D8).
+**Ran:** Exhaustive Node enumeration over all three Village Planner job graphs (`L1`: 12 feasible plans, all 2 trips; `L2`: 50 feasible, 36 at 2 trips and 14 at 3 trips; `L3`: 32 feasible, 3 at 2 trips, 15 at 3 trips, 14 at 4 trips); `node scripts/ready.mjs`; `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** Code checks (`typecheck`, `npm test`, `npm run build`, browser suites) — docs-only session per [verification budget](../../AGENTS.md#verification-budget); PR CI runs format, lint, unit tests and build on merge.

@@ -1,0 +1,5 @@
+# 2026-11-27 — Rhythm Neighbors level 12, Longer calls (PR #2303)
+
+**Changed:** `rhythm-neighbors`: level 12 (`long` plan, `makeLong`: three four-note replies on two frogs after calls of three or four knocks, never the reply's shape; school `order` `[5, 6, 10, 11, 12]`, how-to). The `creative` suite's rhythm loop now covers 12, and its thinking-pause check waits for the reply to empty instead of three real seconds (the game's clock ran slow on a busy machine and failed level 6 the same way).
+**Ran:** `npm run typecheck`; `npx vitest run src/games/rhythm-neighbors src/content/barrels.test.ts src/content/game-docs.test.ts` (rules: every reply four notes and different from its call, voices alternate, the ghost finger's taps are accepted, and phone-upright targets at 12); `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm FROM_LEVEL=12` (pause, two misses then a hint, guided finish, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=12` (40 s).
+**Not run:** the full unit suite (left to PR CI), build, offline and the other browser suites; no shared code changed. Levels 6 to 11 of the rhythm loop were not re-run.

@@ -30,6 +30,7 @@ import type { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { MixHost } from '../mix';
+import { PickHost } from '../pick';
 import { mixSpotArt } from '../../ui/mix';
 import { Scene } from '../Scene';
 
@@ -153,6 +154,8 @@ export class PlaceScene extends Scene {
   /** Little surprises, first along the path at lap and toddler, or null. */
   readonly mixSpot: MixSpot | null;
   readonly mix: MixHost;
+  /** Pick for me (D7a): the button beside the book and its sheet. */
+  readonly picker: PickHost;
   /** The twinkles on games not yet played, by game ID. */
   readonly sparkles = new Map<string, Sparkle>();
   scroll = 0;
@@ -204,6 +207,14 @@ export class PlaceScene extends Scene {
       gamesFor(band).map((g) => g.id),
     );
     this.mixSpot = mixSpot(this.mix.mods);
+    this.picker = new PickHost(
+      app,
+      band,
+      this.ui,
+      () => this.view,
+      (go) => this.leave(go),
+      this.mix,
+    );
   }
 
   override holdsMix(): boolean {
@@ -254,7 +265,15 @@ export class PlaceScene extends Scene {
       this.shelf = this.track(new Shelf(hearted, (item) => this.launch(item)));
       this.ui.addChild(this.shelf);
     }
-    this.ui.addChild(this.track(this.pip), this.home, this.book, this.heading, this.previous, this.next);
+    this.ui.addChild(
+      this.track(this.pip),
+      this.home,
+      this.book,
+      this.picker.button,
+      this.heading,
+      this.previous,
+      this.next,
+    );
     if (this.backdrop.sun)
       onTap(
         this.backdrop.sun,
@@ -326,12 +345,14 @@ export class PlaceScene extends Scene {
     this.pip.position.set(92, v.h - 12);
     this.home.position.set(65, 65);
     this.book.position.set(v.w - 65, 65);
+    this.picker.button.position.set(v.w - 185, 65);
     this.heading.position.set(v.w / 2, 65);
     // Up in the sky, clear of the games.
     this.previous.position.set(60, ground - 145);
     this.next.position.set(v.w - 60, ground - 145);
     this.applyScroll();
     this.mix.resize(v);
+    this.picker.resize(v);
   }
 
   enter() {
@@ -359,7 +380,7 @@ export class PlaceScene extends Scene {
   }
 
   private down(e: FederatedPointerEvent) {
-    if (this.leaving || this.touch || this.mix.covering || palmOnGlass()) return;
+    if (this.leaving || this.touch || this.mix.covering || this.picker.covering || palmOnGlass()) return;
     const x = this.content.toLocal(e.global).x;
     const target = this.find(e.target);
     this.touch = {
@@ -508,6 +529,7 @@ export class PlaceScene extends Scene {
   update(dt: number) {
     super.update(dt);
     this.mix.update(dt);
+    this.picker.update(dt);
     if (!this.touch && Math.abs(this.velocity) > 5) {
       this.scroll = Math.max(0, Math.min(this.maxScroll, this.scroll + this.velocity * dt));
       this.velocity *= Math.exp(-4 * dt);

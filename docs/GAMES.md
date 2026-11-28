@@ -210,6 +210,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *preschool–school* · [Timeline Trail](games/timeline-trail.md)
 
+### Animal Charades
+
+*preschool–pre-K* · [Animal Charades](games/animal-charades.md)
+
 ## Counting Cove
 
 ### Duck Pond
@@ -358,6 +362,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *toddler–school* · [Maker Lane](games/maker-lane.md)
 
+### Toy Drawer
+
+*preschool–school* · [Toy Drawer](games/toy-drawer.md)
+
 ## Rainbow Meadow
 
 ### Shape Sorter
@@ -378,7 +386,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Garden Grow
 
-*lap–pre-K* · [Garden Grow](games/garden-grow.md)
+*lap–school* · [Garden Grow](games/garden-grow.md)
 
 ### Treasure Map
 
@@ -590,11 +598,15 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Playdate Workshop
 
-*preschool–pre-K* · [Playdate Workshop](games/playdate-workshop.md)
+*preschool–school* · [Playdate Workshop](games/playdate-workshop.md)
 
 ### Common Ground
 
 *school–grown-up* · [Common Ground](games/common-ground.md)
+
+### Dream Cards
+
+*school* · [Dream Cards](games/dream-cards.md)
 
 ## Tinker Lab
 
@@ -714,6 +726,18 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Memory Desk](games/memory-desk.md)
 
+### Draw a Ramp
+
+*preschool–school* · [Draw a Ramp](games/draw-a-ramp.md)
+
+### Wave Ribbon
+
+*school–grown-up* · [Wave Ribbon](games/wave-ribbon.md)
+
+### Pond Merge
+
+*pre-K–school* · [Pond Merge](games/pond-merge.md)
+
 ## Lantern Lake
 
 ### Snowball Merge
@@ -823,5 +847,9 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 ### Two Tablets
 
 *grown-up* · [Two Tablets](games/two-tablets.md)
+
+### Village Planner
+
+*school–grown-up* · [Village Planner](games/village-planner.md)
 
 <!-- end generated -->

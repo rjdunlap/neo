@@ -1,5 +1,6 @@
 // BEGIN game imports (scripts/content-barrels.mjs)
 import { VOICE as adventureWalkVoice } from '../games/adventure-walk/voice.ts';
+import { VOICE as animalCharadesVoice } from '../games/animal-charades/voice.ts';
 import { VOICE as animalSnackVoice } from '../games/animal-snack/voice.ts';
 import { VOICE as atticFindsVoice } from '../games/attic-finds/voice.ts';
 import { VOICE as beatBuilderVoice } from '../games/beat-builder/voice.ts';
@@ -34,7 +35,9 @@ import { VOICE as dominoPondVoice } from '../games/domino-pond/voice.ts';
 import { VOICE as dominoRunVoice } from '../games/domino-run/voice.ts';
 import { VOICE as dotLinkVoice } from '../games/dot-link/voice.ts';
 import { VOICE as downWeGoVoice } from '../games/down-we-go/voice.ts';
+import { VOICE as drawARampVoice } from '../games/draw-a-ramp/voice.ts';
 import { VOICE as drawThePatternVoice } from '../games/draw-the-pattern/voice.ts';
+import { VOICE as dreamCardsVoice } from '../games/dream-cards/voice.ts';
 import { VOICE as driftCardsVoice } from '../games/drift-cards/voice.ts';
 import { VOICE as dropsJourneyVoice } from '../games/drops-journey/voice.ts';
 import { VOICE as duckPondVoice } from '../games/duck-pond/voice.ts';
@@ -122,6 +125,7 @@ import { VOICE as pileMatchVoice } from '../games/pile-match/voice.ts';
 import { VOICE as pixelPicturesVoice } from '../games/pixel-pictures/voice.ts';
 import { VOICE as playdateWorkshopVoice } from '../games/playdate-workshop/voice.ts';
 import { VOICE as pondCongaVoice } from '../games/pond-conga/voice.ts';
+import { VOICE as pondMergeVoice } from '../games/pond-merge/voice.ts';
 import { VOICE as pondTypingVoice } from '../games/pond-typing/voice.ts';
 import { VOICE as puddleGobbleVoice } from '../games/puddle-gobble/voice.ts';
 import { VOICE as puddleLensVoice } from '../games/puddle-lens/voice.ts';
@@ -182,13 +186,16 @@ import { VOICE as tideLineVoice } from '../games/tide-line/voice.ts';
 import { VOICE as tideTablesVoice } from '../games/tide-tables/voice.ts';
 import { VOICE as tilePairsVoice } from '../games/tile-pairs/voice.ts';
 import { VOICE as timelineTrailVoice } from '../games/timeline-trail/voice.ts';
+import { VOICE as toyDrawerVoice } from '../games/toy-drawer/voice.ts';
 import { VOICE as trackwayTalesVoice } from '../games/trackway-tales/voice.ts';
 import { VOICE as treasureMapVoice } from '../games/treasure-map/voice.ts';
 import { VOICE as truthBridgeVoice } from '../games/truth-bridge/voice.ts';
 import { VOICE as twoTabletsVoice } from '../games/two-tablets/voice.ts';
+import { VOICE as villagePlannerVoice } from '../games/village-planner/voice.ts';
 import { VOICE as villageVoteVoice } from '../games/village-vote/voice.ts';
 import { VOICE as vineSnipVoice } from '../games/vine-snip/voice.ts';
 import { VOICE as waterRoadVoice } from '../games/water-road/voice.ts';
+import { VOICE as waveRibbonVoice } from '../games/wave-ribbon/voice.ts';
 import { VOICE as weatherWardrobeVoice } from '../games/weather-wardrobe/voice.ts';
 import { VOICE as welcomeWaysVoice } from '../games/welcome-ways/voice.ts';
 import { VOICE as whoAmIVoice } from '../games/who-am-i/voice.ts';
@@ -211,6 +218,10 @@ export const SHARED = {
   'discovery.offer': ['Next game: {title}. Or choose another.'],
   'discovery.another': ['Another game. {title}.'],
   'discovery.empty': ['You can play again, or go home.'],
+  'pick.offer': ['Pick one for me?'],
+  'pick.another': ['Another one. {title}.'],
+  'pick.shuffle': ['A mix just for you!'],
+  'pick.all': ['That was all of them.'],
   'mix.offer': ['Little surprises! Games in a row.'],
   'mix.stop': ['{title}.'],
   'mix.next': ['Next: {title}.'],
@@ -246,6 +257,8 @@ export const SHARED = {
   'couch.course.typing': ['Three ponds, every bubble popped!'],
   'couch.course.sunbeams': ['Five boards, every flower awake!'],
   'couch.course.codedoors': ['Five doors, every code cracked!'],
+  'couch.course.robotpath': ['Five mazes, every star reached!'],
+  'couch.course.cardtables': ['All {count} tables, every pair found!'],
   'couch.course.best': ['A new best! Look at that sliding!'],
   'couch.keepsake': ['A keepsake for your first trip: Lantern Night!'],
   // Couch play: what each game asks of the players, one variant so the caption matches the speech.
@@ -283,6 +296,7 @@ export const SHARED = {
   'couch.launch.long': ['Whoa, too far! Push up for less power.'],
   'couch.egg.catch': ['Use the stick or arrow keys to slide the basket under the falling eggs!'],
   'couch.robot.start': ['Help the robot reach the star! Move the stick to add steps, then press the bottom button to play.'],
+  'couch.robot.counts': ['Push the same direction again to go further: push it four times for four steps! Then press the bottom button.'],
   'couch.how.treasure-map': ['Move the ring to the square the map asks for, then press the bottom button to dig. Find the column first, then the row!'],
   'couch.map.steps': ['Start where the pet is. Go {dirs}. Move the ring to where you end up, and press the bottom button!'],
   'couch.how.garden-rows': ['Move the ring to an empty spot and press the bottom button. Pick a flower, and press again to plant it. No flower may repeat in a row or a column!'],
@@ -683,6 +697,7 @@ export const SCRIPT = {
   ...SHARED,
   // BEGIN game entries (scripts/content-barrels.mjs)
   ...adventureWalkVoice,
+  ...animalCharadesVoice,
   ...animalSnackVoice,
   ...atticFindsVoice,
   ...beatBuilderVoice,
@@ -717,7 +732,9 @@ export const SCRIPT = {
   ...dominoRunVoice,
   ...dotLinkVoice,
   ...downWeGoVoice,
+  ...drawARampVoice,
   ...drawThePatternVoice,
+  ...dreamCardsVoice,
   ...driftCardsVoice,
   ...dropsJourneyVoice,
   ...duckPondVoice,
@@ -805,6 +822,7 @@ export const SCRIPT = {
   ...pixelPicturesVoice,
   ...playdateWorkshopVoice,
   ...pondCongaVoice,
+  ...pondMergeVoice,
   ...pondTypingVoice,
   ...puddleGobbleVoice,
   ...puddleLensVoice,
@@ -865,13 +883,16 @@ export const SCRIPT = {
   ...tideTablesVoice,
   ...tilePairsVoice,
   ...timelineTrailVoice,
+  ...toyDrawerVoice,
   ...trackwayTalesVoice,
   ...treasureMapVoice,
   ...truthBridgeVoice,
   ...twoTabletsVoice,
+  ...villagePlannerVoice,
   ...villageVoteVoice,
   ...vineSnipVoice,
   ...waterRoadVoice,
+  ...waveRibbonVoice,
   ...weatherWardrobeVoice,
   ...welcomeWaysVoice,
   ...whoAmIVoice,

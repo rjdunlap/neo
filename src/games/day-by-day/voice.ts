@@ -19,6 +19,30 @@ export const VOICE = {
     'We used the records to compare two pretend weeks. These records tell us about these weeks. They do not tell us what the weather will do next.',
   ],
 
+  'daylight.first': [
+    'Here are two pretend daylight records from a pretend town, taken at different times of year. Each bar is one day. A longer bar means more daylight. Which record shows longer daylight? Tap a record to hear it, tap a summary to hear it, then tap the arrow to check.',
+  ],
+  'daylight.second': [
+    'Now two more pretend records. Look at the bars, one by one. Do the two records show the same daylight, or different daylight? Hear a summary, then tap the arrow.',
+  ],
+  'daylight.record': ['Record {record}, from {when}. Longer bars are more daylight.'],
+  'daylight.longer': ['Record {record} shows longer daylight.'],
+  'daylight.same': ['The two records show the same daylight. Every bar is the same length.'],
+  'daylight.different': ['The two records show different daylight. Some bars are not the same length.'],
+  'daylight.counter': [
+    'Look at the bars side by side. Match the first bar of one record with the first bar of the other, then the next ones. Which are longer?',
+  ],
+  'daylight.evidence.longer': [
+    'Every bar in record {record} is longer, so record {record} shows longer daylight.',
+  ],
+  'daylight.evidence.same': ['Every bar matches, so the two records show the same daylight.'],
+  'daylight.evidence.different': [
+    'The bars are not the same length, so the records show different daylight.',
+  ],
+  'daylight.done': [
+    'We compared two pretend daylight records. These are pretend bars for a pretend town. They do not tell us about a real place.',
+  ],
+
   'month.after': [
     'The months go round and round the year, and January comes right after December. Which month comes after {month}? Tap a month to hear it, then tap the arrow.',
   ],

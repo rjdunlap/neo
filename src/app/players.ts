@@ -1,4 +1,4 @@
-import { discoveryMemory, mixMemory } from './discovery';
+import { discoveryMemory, introMemory, mixMemory, pickMemory } from './discovery';
 import { store } from '../progress/store';
 import { forgetArcade } from '../content/arcade';
 import { forgetExplore } from '../content/explore';
@@ -25,7 +25,9 @@ export async function selectPlayer(id: string): Promise<boolean> {
 /** Whoever is active just changed (a switch, or the active player was removed or restored): forget the last one's place. */
 export function playerChanged() {
   discoveryMemory.clear();
+  introMemory.clear();
   mixMemory.forget();
+  pickMemory.forget();
   forgetPlaces();
   forgetSubjects();
   forgetLands();

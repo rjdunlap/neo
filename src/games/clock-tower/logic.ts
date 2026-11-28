@@ -4,12 +4,14 @@ import type { BandLevels } from '../../progress/difficulty';
 /**
  * Clock Tower: set the big clock by dragging its hands, which snap to the marks. First the hour
  * hand alone, then both hands for o'clock, half past, and quarter past and to. Then read the
- * clock and choose a visible fictional appointment, and finally set the time an hour later.
+ * clock and choose a visible fictional appointment, set an hour later, an hour earlier, five-minute
+ * times, and half an hour from now.
  *
  * Times are in minutes after midnight on a 12-hour face; the hour hand moves with the minutes,
  * as on a real clock, so half past three has it halfway between 3 and 4.
  */
-export type ClockMode = 'hour' | 'oclock' | 'half' | 'quarter' | 'read' | 'later' | 'five';
+export type ClockMode =
+  'hour' | 'oclock' | 'half' | 'quarter' | 'read' | 'later' | 'five' | 'earlier' | 'half-later';
 
 export interface ClockPlan {
   mode: ClockMode;
@@ -41,11 +43,35 @@ export const PLANS: ClockPlan[] = [
     rounds: 4,
     name: 'Five-minute times: count by fives to set 3:25 (the long hand stops at any number)',
   },
+  {
+    mode: 'earlier',
+    rounds: 4,
+    name: "One hour earlier: set the clock an hour before the time shown (o'clock and half past)",
+  },
+  {
+    mode: 'half-later',
+    rounds: 4,
+    name: 'Half an hour from now: set the clock 30 minutes after the time shown (crossing the hour when needed)',
+  },
 ];
+
+/** Levels 6 and 8 both change the shown time by whole hours; these are the modes with a comparison panel. */
+export const isShift = (mode: ClockMode): mode is 'later' | 'earlier' =>
+  mode === 'later' || mode === 'earlier';
+
+/** Modes that start from a given `task.from` time instead of a fixed default face. */
+export const hasFrom = (mode: ClockMode): mode is 'later' | 'earlier' | 'half-later' =>
+  isShift(mode) || mode === 'half-later';
+
+/** Minutes added on the 12-hour face: an hour later, or an hour earlier (+11 hours). */
+const SHIFT: Record<'later' | 'earlier', number> = { later: 60, earlier: 660 };
+/** The starting hours that make the change cross the 12: 11→12 and 12→1, or 12→11 and 1→12. */
+const WRAP_HOURS: Record<'later' | 'earlier', number[]> = { later: [11, 12], earlier: [12, 1] };
 
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: PLANS.length },
+  // Level 8 (an hour earlier) is easier than 7's five-minute times, so it plays before it; level 9 follows 7.
+  school: { min: 2, max: PLANS.length, order: [2, 3, 4, 5, 6, 8, 7, 9] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -53,7 +79,7 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 /** Minutes the long hand can point to on each level. */
 export function minuteChoices(mode: ClockMode): number[] {
   if (mode === 'hour' || mode === 'oclock') return [0];
-  if (mode === 'half' || mode === 'read' || mode === 'later') return [0, 30];
+  if (mode === 'half' || mode === 'read' || isShift(mode)) return [0, 30];
   if (mode === 'five') return Array.from({ length: 12 }, (_, i) => i * 5);
   return [0, 15, 30, 45];
 }
@@ -64,7 +90,7 @@ export const FIVE_ASKED = [5, 10, 20, 25, 35, 40, 50, 55];
 /** A time to set or read, in minutes (0–719 on the 12-hour face). */
 export interface ClockTask {
   time: number;
-  /** For 'later': where the clock starts. */
+  /** For 'later', 'earlier', and 'half-later': where the clock starts. */
   from?: number;
   /** For 'read': the visible evidence on this task's pretend appointment board. */
   options?: Appointment[];
@@ -128,13 +154,25 @@ export function makeTasks(plan: ClockPlan, rng: Rng): ClockTask[] {
     }
     return out;
   }
+  if (plan.mode === 'half-later') {
+    // Cover all four quarter positions (crossing and noncrossing), including crossing 12.
+    const quarterOrder = rng.shuffle([0, 15, 30, 45]);
+    const crossFaceSlot = quarterOrder.findIndex((m) => m >= 30);
+    for (let i = 0; i < plan.rounds; i++) {
+      const minute = quarterOrder[i];
+      const hour = i === crossFaceSlot ? rng.pick([11, 12]) : rng.int(1, 12);
+      const shown = toMinutes(hour, minute);
+      out.push({ time: (shown + 30) % 720, from: shown });
+    }
+    return out;
+  }
   const minutes = minuteChoices(plan.mode);
-  // Half past is always asked at least once, and "one hour later" always crosses the 12 (11→12 and 12→1).
+  // Half past is always asked at least once, and "an hour later" or "earlier" always crosses the 12 both ways.
   const halfSlot = rng.int(0, plan.rounds - 1);
   const wrapSlots = rng.shuffle(Array.from({ length: plan.rounds }, (_, i) => i)).slice(0, 2);
   while (out.length < plan.rounds) {
     const wrapAt = wrapSlots.indexOf(out.length);
-    const hour = plan.mode === 'later' && wrapAt >= 0 ? 11 + wrapAt : rng.int(1, 12);
+    const hour = isShift(plan.mode) && wrapAt >= 0 ? WRAP_HOURS[plan.mode][wrapAt] : rng.int(1, 12);
     // Quarter levels show every quarter at least once, half levels mostly ask for half past.
     const minute =
       plan.mode === 'five'
@@ -147,8 +185,9 @@ export function makeTasks(plan: ClockPlan, rng: Rng): ClockTask[] {
               : 0
             : rng.pick(minutes);
     const shown = toMinutes(hour, minute);
-    const task: ClockTask =
-      plan.mode === 'later' ? { time: (shown + 60) % 720, from: shown } : { time: shown };
+    const task: ClockTask = isShift(plan.mode)
+      ? { time: (shown + SHIFT[plan.mode]) % 720, from: shown }
+      : { time: shown };
     if (out.some((t) => t.time === task.time)) continue;
     out.push(task);
   }
@@ -220,8 +259,8 @@ export function demoAction(mode: ClockMode, hour: number, minute: number, task: 
 /** Digital labels share the face's normalized time. */
 export const digital = (time: number) => `${hourOf(time)}:${String(time % 60).padStart(2, '0')}`;
 
-/** Worked hour change: unwrap the hand's destination so 12→1 animates forwards. */
-export function laterExample(task: ClockTask) {
+/** Worked hour change: unwrap the hand's destination so 12→1 animates forwards (and 1→12 backwards). */
+export function laterExample(task: ClockTask, direction: 'later' | 'earlier' = 'later') {
   const from = task.from!;
   const hourStart = handsFor(from).hour;
   return {
@@ -231,7 +270,25 @@ export function laterExample(task: ClockTask) {
     toSpeech: spoken(task.time),
     minute: from % 60,
     hourStart,
-    hourEnd: hourStart + 5,
+    hourEnd: hourStart + (direction === 'later' ? 5 : -5),
+  };
+}
+
+/** Worked half-hour advance: a +30-minute clockwise arc from the starting minute, crossing the hour when >= 30. */
+export function halfLaterExample(task: ClockTask) {
+  const from = task.from!;
+  const fromMinute = from % 60;
+  return {
+    from: digital(from),
+    to: digital(task.time),
+    fromSpeech: spoken(from),
+    toSpeech: spoken(task.time),
+    fromMinute,
+    toMinute: task.time % 60,
+    arcMinutes: 30,
+    crossesHour: fromMinute >= 30,
+    fromHour: hourOf(from),
+    toHour: hourOf(task.time),
   };
 }
 
@@ -247,9 +304,16 @@ export function requestFor(
   mode: ClockMode,
   task: ClockTask,
 ): { heading: string; time: string; speech: string } {
-  const time = mode === 'later' ? task.from! : task.time;
+  const time = hasFrom(mode) ? task.from! : task.time;
   return {
-    heading: mode === 'later' ? 'One hour after' : 'Set the clock to',
+    heading:
+      mode === 'later'
+        ? 'One hour after'
+        : mode === 'earlier'
+          ? 'One hour before'
+          : mode === 'half-later'
+            ? 'Half an hour after'
+            : 'Set the clock to',
     time: digital(time),
     speech: spoken(time),
   };

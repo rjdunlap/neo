@@ -4,13 +4,13 @@
 
 **ID:** `day-by-day` · **Land:** Cozy Village · **Ages:** preschool–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
-**Skills:** weekday order, yesterday and tomorrow, weather records, counting observations, comparing evidence
+**Skills:** weekday order, yesterday and tomorrow, weather records, counting observations, comparing evidence, comparing bar records
 
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 9 |
 | pre-K | 1, 2, 4 |
-| school | 2, 4, 10, 3, 5, 6, 7 |
+| school | 2, 4, 10, 3, 5, 6, 7, 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 5 | Count this weather, including none |
 | 6 | Weather Window: compare two supplied weeks |
 | 7 | Month wheel: the month before and after, round the year |
+| 8 | Daylight records: compare two pretend records |
 | 9 | Three little skies: match three pictured skies |
 | 10 | Count beside the record |
 
@@ -28,9 +29,11 @@
 
 **Starts as:** place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden; preschool starts at level 9, matching three pictured skies
 
-**Grows into:** yesterday, tomorrow across the week boundary, then count sunny records, or tomorrow and yesterday from any day; supplied-record counting bridge at 10; count any weather, including zero, at 5; compare two supplied weeks at 6; the month wheel at 7 (school); preschool's entry, three little skies (9), then pre-K at 1
+**Grows into:** yesterday, tomorrow across the week boundary, then count sunny records, or tomorrow and yesterday from any day; supplied-record counting bridge at 10; count any weather, including zero, at 5; compare two supplied weeks at 6; the month wheel at 7 and daylight records at 8 (school); preschool's entry, three little skies (9), then pre-K at 1
 
 ## Design notes
+
+Daylight records (level 8, school only, built 2026-11-27, PR #2302): two supplied, explicitly pretend records from one pretend town ("taken at different times of year") sit as two panels, each five aligned bars on a toy scale of ten drawn over a faint ten-long track. A longer bar is more daylight; the bars are not hours and the level names no season, hemisphere or cause (decision 3). Question one has one record longer on every aligned bar by at least two (which side is seeded); question two is the equality example, either the same record twice or a different pair with the other side longer, asked as same or different. `makeDaylight` and `daylightTrue` in `logic.ts` make exactly one summary true. Tapping a record says its name and highlights it, with no hold; the arrow confirms a chosen summary and only a wrong confirm is a miss. Two misses on a question add one hint that glows the longer record (both when the question is same or different) and the true summary. The ghost finger visits both records, then answers. The wide layout sits the records right of the replay button; the upright layout stacks them. The `daylight.` lines have no rendered clips yet and use device speech.
 
 Month wheel (level 7, school only, built 2026-11-24, PR #2101): twelve month cards (100x100) sit on an ellipse ring, January at the top and clockwise, with an arrow to confirm. Three questions from `monthQuestions` in `logic.ts` use six distinct months: one across the year's turn (after December or before January), then one before and one after. A tap on a card says its name and selects it; the arrow confirms. A wrong confirm is a miss and the line names both neighbours; two wrong answers give one hint that glows the named month and the answer. No month lengths, seasons or holidays. The bot taps the answer, then the arrow. The new `month.` lines have no rendered clips yet and use device speech; the ring layout is tested at three view sizes (`month-wheel.test.ts`). School order is now [2, 4, 10, 3, 5, 6, 7].
 

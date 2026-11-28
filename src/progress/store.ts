@@ -24,6 +24,7 @@ import { flipItem, moveItem, tidy } from '../content/room';
 import { SPECIES, type SpeciesId } from '../creatures/species';
 import type { LandId } from '../content/lands';
 import { setNote, type PlaytestNote } from '../content/playtest';
+import { earnShells as earnedFor } from '../content/shells';
 import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
 import { cleanForms, cleanLookForm, isForm, type FormId } from '../creatures/forms';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
@@ -218,6 +219,15 @@ export class Store {
     stats.history = [...stats.history, round].slice(-HISTORY_LENGTH);
     if (adapt) stats.level = nextLevel(round.level, stats.history, range);
     this.save();
+  }
+
+  /** A finished round's shells for this profile's band (0 at the day's cap or for a band that does not earn). */
+  earnShells(gameId: string, day: string): number {
+    const { next, shells } = earnedFor(this.data.shells, gameId, this.data.profile.band, day);
+    if (shells === 0) return 0;
+    this.data.shells = next;
+    this.save();
+    return shells;
   }
 
   /** Whether no round of this game has been finished yet (in any place). */

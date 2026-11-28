@@ -140,17 +140,20 @@ export function picture(word: string): Container {
       g.roundRect(-40, -46, 80, 20, 6).fill(swatch.red.line);
       break;
     case 'moon':
-      // A crescent: the outer edge round the left, the inner edge curving back.
-      g.moveTo(10, -56)
-        .arc(10, 0, 56, -Math.PI / 2, Math.PI / 2, true)
-        .quadraticCurveTo(-34, 0, 10, -56)
+      // A fat crescent of warm cream paper with a few craters pressed into it.
+      g.moveTo(14, -58)
+        .bezierCurveTo(-46, -54, -62, 30, -10, 54)
+        .bezierCurveTo(14, 64, 40, 54, 52, 36)
+        .bezierCurveTo(4, 44, -22, -2, 14, -58)
         .closePath()
-        .fill(swatch.yellow.light)
+        .fill(0xfbe7a6)
         .stroke(line(swatch.yellow.line));
+      g.circle(-24, -8, 7).circle(-12, 26, 5).circle(-30, 20, 3.5).fill(0xefd185);
       break;
     case 'spoon':
-      g.ellipse(0, -30, 26, 34).fill(0xdfe3ea).stroke(line(swatch.white.line));
       g.roundRect(-7, 0, 14, 64, 7).fill(0xdfe3ea).stroke(line(swatch.white.line, 4));
+      g.ellipse(0, -30, 26, 34).fill(0xdfe3ea).stroke(line(swatch.white.line));
+      g.ellipse(0, -28, 16, 23).fill(0xc9cfd9);
       break;
     case 'fish':
       g.poly([34, 0, 60, -22, 60, 22]).fill(swatch.orange.fill).stroke(line(swatch.orange.line));

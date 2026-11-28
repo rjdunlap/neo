@@ -1145,3 +1145,20 @@ describe('the chosen book goal', () => {
     expect(savedAs('neo.save').book.goal).toBeNull();
   });
 });
+
+describe('shells (the progression loop)', () => {
+  it('a grown-up profile earns them and keeps them; a child profile earns none', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('prek');
+    expect(store.earnShells('tile-pairs', '2026-11-25')).toBe(0);
+    expect(store.data.shells.balance).toBe(0);
+    store.setBand('grownup');
+    expect(store.earnShells('tile-pairs', '2026-11-25')).toBe(5);
+    expect(store.data.shells.balance).toBe(5);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.shells.balance).toBe(5);
+  });
+});

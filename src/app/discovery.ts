@@ -1,5 +1,6 @@
 import type { Origin, Routes } from './App';
 import type { Band } from '../progress/bands';
+import type { PickScope } from '../content/pick';
 import { MIX_IDS, startMix, step, type DailyStop, type MixEvent, type MixState } from '../content/mix';
 
 export type DiscoveryToken = { owner: object; epoch: number };
@@ -30,6 +31,38 @@ export class DiscoveryMemory {
   }
 }
 export const discoveryMemory = new DiscoveryMemory();
+
+/** The most introductions remembered; the oldest go first. */
+export const INTRO_LIMIT = 64;
+
+/**
+ * Which full how-to cards she has pressed Play on this visit (D4b): in memory only, per save object, never saved or shown.
+ * It is UI support state, not mastery. A profile switch or a replaced save forgets it; a stale scene cannot read or write it.
+ */
+export class IntroMemory {
+  private keys: string[] = [];
+  private readonly owner = new DiscoveryMemory();
+
+  clear() {
+    this.keys = [];
+    this.owner.clear();
+  }
+  token(owner: object): DiscoveryToken {
+    const before = this.owner.token(owner);
+    return before;
+  }
+  has(token: DiscoveryToken, owner: object, key: string): boolean {
+    return this.owner.current(token, owner) && this.keys.includes(key);
+  }
+  /** Play was pressed on a full card. */
+  introduced(token: DiscoveryToken, owner: object, key: string): void {
+    if (!this.owner.current(token, owner)) return;
+    this.keys = this.keys.filter((k) => k !== key);
+    this.keys.push(key);
+    if (this.keys.length > INTRO_LIMIT) this.keys.splice(0, this.keys.length - INTRO_LIMIT);
+  }
+}
+export const introMemory = new IntroMemory();
 
 /** The ordinary route resolves the current band, ordered range and pin; no cached level or Again shortcut. */
 export function launchDiscovery(go: Pick<Routes, 'game'>, id: string, band: Band, origin?: Origin) {
@@ -156,3 +189,39 @@ export class MixMemory {
   }
 }
 export const mixMemory = new MixMemory();
+
+/**
+ * Pick for me (D7a), in memory only: the scope she last chose and the game she last opened from a pick, for one save object.
+ * A profile switch, reset, restore or undo replaces `store.data` (and `forget` runs), a reload loses it. Nothing is saved.
+ */
+export class PickMemory {
+  private owner?: object;
+  private chosen?: PickScope;
+  private lastPlayed?: string;
+
+  forget() {
+    this.owner = undefined;
+    this.chosen = undefined;
+    this.lastPlayed = undefined;
+  }
+  private mine(owner: object): boolean {
+    if (this.owner !== owner) {
+      this.forget();
+      this.owner = owner;
+    }
+    return true;
+  }
+  scope(owner: object): PickScope | undefined {
+    return this.owner === owner ? this.chosen : undefined;
+  }
+  last(owner: object): string | undefined {
+    return this.owner === owner ? this.lastPlayed : undefined;
+  }
+  choose(owner: object, scope: PickScope) {
+    if (this.mine(owner)) this.chosen = scope;
+  }
+  played(owner: object, id: string) {
+    if (this.mine(owner)) this.lastPlayed = id;
+  }
+}
+export const pickMemory = new PickMemory();

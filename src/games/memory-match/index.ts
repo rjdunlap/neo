@@ -32,20 +32,33 @@ import {
   planFor,
   pictureIdentity,
   type MemoryCard,
+  type MemoryMode,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import { courseBest, courseMinimum, courseTables, isMemoryCourse, type Table } from './course';
 
 type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
 class MemoryMatch implements Game {
-  readonly cards: MemoryCard[];
+  cards: MemoryCard[];
   readonly views: CardView[] = [];
   readonly seen = new Set<number>();
-  private readonly plan;
+  private plan: { pairs: number; mode: MemoryMode; name: string };
   private readonly letters: string[];
-  readonly pictures: readonly MemoryPicture[];
+  pictures: readonly MemoryPicture[];
   readonly dots: readonly DotSpot[][];
   readonly squares: readonly FractionSquare[];
   readonly times: readonly number[];
+  // A couch challenge course: fixed tables played in a row, scored by cards turned over (docs/DESIGN.md "Adding a challenge course").
+  private readonly course: { tables: Table[]; par: number[]; minimum: number } | null = null;
+  private index = 0;
+  private doneBoards: number[] = [];
+  /** Flips already spent on the table we are resuming, so leaving and coming back cannot erase them. */
+  private carry = 0;
+  private flips = 0;
+  private assisted = false;
+  private get boardFlips() {
+    return this.carry + this.flips;
+  }
   private readonly background = new Graphics();
   private readonly hint = new Graphics();
   private first: number | null = null;
@@ -72,16 +85,42 @@ class MemoryMatch implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.versus = !!ctx.couch?.versus;
-    this.times = this.plan.mode === 'clocks' ? selectTimes(ctx.rng) : [];
-    this.cards = makeDeck(this.plan.pairs, ctx.rng);
-    this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
-    this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
+    const run = ctx.couch?.course;
+    if (run && isMemoryCourse(run.id)) {
+      this.course = {
+        tables: courseTables(run.id),
+        par: courseBest(run.id),
+        minimum: courseMinimum(run.id),
+      };
+      this.index = Math.min(this.course.tables.length - 1, run.resume.board);
+      this.doneBoards = run.resume.done.slice();
+      this.carry = run.resume.attempts;
+      this.assisted = run.resume.assisted;
+      const table = this.course.tables[this.index];
+      this.plan = { pairs: table.pairs, mode: 'pictures', name: 'Card table' };
+      this.cards = table.cards;
+      this.pictures = table.pictures;
+      this.times = [];
+      this.letters = [];
+    } else {
+      this.times = this.plan.mode === 'clocks' ? selectTimes(ctx.rng) : [];
+      this.cards = makeDeck(this.plan.pairs, ctx.rng);
+      this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
+      this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
+    }
     this.dots = this.plan.mode === 'numbers' ? selectDotLayouts(this.plan.pairs, ctx.rng) : [];
     this.squares = this.plan.mode === 'fractions' ? selectFractionSquares(ctx.rng) : [];
     this.remaining = this.plan.pairs;
     ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
     this.ring.eventMode = 'none';
     this.board.eventMode = 'none';
+    this.buildCards();
+  }
+
+  /** One node per card, built again for each table of a course. */
+  private buildCards() {
+    for (const v of this.views) v.node.destroy({ children: true });
+    this.views.length = 0;
     this.cards.forEach((card, i) => {
       const node = new Container();
       const front = new Container();
@@ -92,7 +131,7 @@ class MemoryMatch implements Game {
       node.addChild(front, back);
       node.hitArea = new Rectangle(-70, -70, 140, 140);
       onTap(node, () => void this.choose(i), { cooldown: 180 });
-      ctx.stage.addChild(node);
+      this.ctx.stage.addChild(node);
       this.views.push({ node, front, back, matched: false });
     });
   }
@@ -134,11 +173,81 @@ class MemoryMatch implements Game {
       .stroke({ width: 4, color: swatch[color].line });
   }
 
+  /** Done with the round: for a course, only after its last table (between tables the cards are dealt again). */
   get finished() {
-    return this.remaining === 0;
+    return this.remaining === 0 && !(this.course && this.index + 1 < this.course.tables.length);
+  }
+
+  /** The next table of a course: its cards, its pictures, and nothing carried over from the last. */
+  private loadTable(i: number) {
+    const table = this.course!.tables[i];
+    this.index = i;
+    this.plan = { pairs: table.pairs, mode: 'pictures', name: 'Card table' };
+    this.cards = table.cards;
+    this.pictures = table.pictures;
+    this.remaining = table.pairs;
+    this.first = null;
+    this.focus = 0;
+    this.flips = 0;
+    this.wrong = 0;
+    this.hintAt = null;
+    this.hint.clear();
+    this.seen.clear();
+    this.botWait = 1.5;
+    this.buildCards();
+  }
+
+  /** Hand a course's numbers to the shell. `finished` means the table just ended, so none of its flips are "in progress". */
+  private report(finished = false) {
+    const run = this.ctx.couch?.course;
+    if (!run || !this.course) return;
+    run.progress({
+      board: this.index,
+      boards: this.course.tables.length,
+      done: this.doneBoards.slice(),
+      attempts: finished ? 0 : this.boardFlips,
+      par: this.course.par[this.index],
+      minimum: this.course.minimum,
+      assisted: this.assisted,
+    });
+  }
+
+  /** The flips for the table just finished, over the cards for a moment. */
+  private async boardScore() {
+    const par = this.course!.par[this.index],
+      total = this.course!.tables.length,
+      n = this.doneBoards[this.doneBoards.length - 1];
+    const flips = `${n} ${n === 1 ? 'flip' : 'flips'}`;
+    const text =
+      n <= par
+        ? `Table ${this.index + 1} of ${total}: ${flips}, on par or better!`
+        : `Table ${this.index + 1} of ${total}: ${flips} (par ${par})`;
+    const note = new Container();
+    const t = label(text, 30, ink);
+    const padX = 22,
+      padY = 14;
+    note.addChild(
+      new Graphics()
+        .roundRect(-t.width / 2 - padX, -t.height / 2 - padY, t.width + padX * 2, t.height + padY * 2, 16)
+        .fill(cream)
+        .stroke({ width: 3, color: swatch.green.line }),
+      t,
+    );
+    note.position.set(this.ctx.view.w / 2, this.ctx.view.h / 2);
+    note.alpha = 0;
+    this.ctx.stage.addChild(note);
+    await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.wait(1.1);
+    await this.ctx.tw.to(note, { alpha: 0 }, { duration: 0.25 });
+    note.destroy({ children: true });
   }
 
   start() {
+    if (this.course) {
+      this.report();
+      void this.ctx.instruct('memory.start');
+      return;
+    }
     void this.ctx.instruct(
       this.plan.mode === 'clocks'
         ? 'memory.clock'
@@ -165,6 +274,11 @@ class MemoryMatch implements Game {
     view.front.visible = true;
     view.back.visible = false;
     sfx.pop(5 + (this.cards[i].pair % 5));
+    // A course counts every card turned over, and saves it at once so a reload cannot lose it.
+    if (this.course) {
+      this.flips++;
+      this.report();
+    }
     if (this.first === null) {
       void this.ctx.say('memory.card', { card: contents });
       this.first = i;
@@ -213,6 +327,10 @@ class MemoryMatch implements Game {
         const partner = hintPartner(this.cards, first, this.seen, this.wrong);
         if (partner !== null) {
           this.hints++;
+          if (this.course) {
+            this.assisted = true;
+            this.report();
+          }
           this.hintAt = partner;
           if (this.plan.mode === 'clocks') {
             const time = this.times[this.cards[partner].pair];
@@ -231,6 +349,19 @@ class MemoryMatch implements Game {
     }
     this.seen.add(i);
     this.first = null;
+    if (!this.remaining && this.course) {
+      this.doneBoards.push(this.boardFlips);
+      this.report(true);
+      this.carry = 0;
+      if (!this.ctx.demo) await this.boardScore();
+      if (this.index + 1 < this.course.tables.length) {
+        this.loadTable(this.index + 1);
+        this.locked = false;
+        this.resize(this.ctx.view);
+        this.report();
+        return;
+      }
+    }
     this.locked = false;
     if (!this.remaining)
       this.ctx.finish({

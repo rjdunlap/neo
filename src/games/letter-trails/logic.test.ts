@@ -34,6 +34,7 @@ import {
   MAGIC_LEVEL,
   HOOKS_LEVEL,
   OVER_LEVEL,
+  BIG_LEVEL,
   LAST_LEVEL,
   LITTLE_TOLERANCE,
   inFrame,
@@ -362,7 +363,7 @@ describe('Level 11, Magic c: a, d and g', () => {
   it('draws a, d or g, each with its capital’s picture, in the frame, for school', () => {
     expect(MAGIC_LEVEL).toBe(11);
     expect(inFrame(MAGIC_LEVEL)).toBe(true);
-    expect(LEVELS.school!.max).toBe(LAST_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(MAGIC_LEVEL)).toEqual(['solid']);
     expect(severalLetters(MAGIC_LEVEL)).toBe(false);
@@ -429,7 +430,7 @@ describe('Level 12, Lines and hooks: u i e l k y j', () => {
   it('draws one of the seven, each with its capital’s picture, in the frame, for school only', () => {
     expect(HOOKS_LEVEL).toBe(12);
     expect(inFrame(HOOKS_LEVEL)).toBe(true);
-    expect(LEVELS.school!.max).toBe(LAST_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(HOOKS_LEVEL)).toEqual(['solid']);
     expect(severalLetters(HOOKS_LEVEL)).toBe(false);
@@ -522,7 +523,7 @@ describe('Level 13, Down, up and over: p r n m h b', () => {
   it('draws one of the six, each with its capital’s picture, in the frame, for school only', () => {
     expect(OVER_LEVEL).toBe(13);
     expect(inFrame(OVER_LEVEL)).toBe(true);
-    expect(LEVELS.school!.max).toBe(LAST_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(OVER_LEVEL)).toEqual(['solid']);
     expect(severalLetters(OVER_LEVEL)).toBe(false);
@@ -616,7 +617,7 @@ describe('Level 14, The last four: f q x z', () => {
   it('draws one of the four, each with its capital’s picture, in the frame, for school only', () => {
     expect(LAST_LEVEL).toBe(14);
     expect(inFrame(LAST_LEVEL)).toBe(true);
-    expect(LEVELS.school!.max).toBe(LAST_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(LAST_LEVEL)).toEqual(['solid']);
     expect(severalLetters(LAST_LEVEL)).toBe(false);
@@ -632,7 +633,7 @@ describe('Level 14, The last four: f q x z', () => {
   });
 
   it('with levels 10–13 covers all 26 little letters exactly once', () => {
-    const all = PLANS.slice(LITTLE_LEVEL - 1)
+    const all = PLANS.slice(LITTLE_LEVEL - 1, LAST_LEVEL)
       .map((p) => p.letters)
       .join('');
     expect([...all].sort().join('')).toBe('abcdefghijklmnopqrstuvwxyz');
@@ -694,5 +695,28 @@ describe('Level 14, The last four: f q x z', () => {
         const points = sampleStroke(stroke);
         for (let i = 1; i < points.length; i++) expect(offTrail(points[i], points[i - 1], tol)).toBe(false);
       }
+  });
+});
+
+describe('Level 15, Big and little: any little letter beside its capital', () => {
+  it('draws any of the 26 little letters in the frame, for school only', () => {
+    expect(BIG_LEVEL).toBe(15);
+    expect(inFrame(BIG_LEVEL)).toBe(true);
+    expect(LEVELS.school!.max).toBe(BIG_LEVEL);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(BIG_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(BIG_LEVEL)).toBe(false);
+    expect(trailTolerance(BIG_LEVEL)).toBe(LITTLE_TOLERANCE);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 2000; seed++) seen.add(trailWord(BIG_LEVEL, 'Ana', new Rng(seed)));
+    expect([...seen].sort().join('')).toBe('abcdefghijklmnopqrstuvwxyz');
+  });
+
+  it('has a little-letter table and a capital with a picture and strokes for every letter', () => {
+    for (const l of PLANS[BIG_LEVEL - 1].letters) {
+      expect(strokesOf(l).length).toBeGreaterThan(0);
+      expect(strokesOf(l.toUpperCase()).length).toBeGreaterThan(0);
+      expect(WORDS[l.toUpperCase()]).toBeTruthy();
+    }
   });
 });

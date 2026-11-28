@@ -164,6 +164,7 @@ export const LANDS: readonly Land[] = [
       'ready-for-adventure',
       'who-am-i',
       'timeline-trail',
+      'animal-charades',
     ],
   },
   {
@@ -234,6 +235,7 @@ export const LANDS: readonly Land[] = [
       'keep-house',
       'notice-board',
       'maker-lane',
+      'toy-drawer',
     ],
   },
   {
@@ -343,6 +345,7 @@ export const LANDS: readonly Land[] = [
       'thought-bubbles',
       'playdate-workshop',
       'common-ground',
+      'dream-cards',
     ],
   },
   {
@@ -389,6 +392,9 @@ export const LANDS: readonly Land[] = [
       'circuit-garden',
       'measuring-post',
       'memory-desk',
+      'draw-a-ramp',
+      'wave-ribbon',
+      'pond-merge',
     ],
   },
   {
@@ -435,6 +441,7 @@ export const LANDS: readonly Land[] = [
       'market-days',
       'count-the-ballots',
       'two-tablets',
+      'village-planner',
     ],
   },
 ];

@@ -57,6 +57,7 @@ import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { benchLayout as workshopDetectiveLayout } from './workshop-detective/layout';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
+import { waveLayout } from './wave-ribbon/layout';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
 import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
 import { sizeOf as bunnySize } from './bunny-patches/logic';
@@ -66,6 +67,7 @@ import { layout as ballotsLayout } from './count-the-ballots/layout';
 import { roomLayout as commonGroundLayout } from './common-ground/layout';
 import { marketLayout } from './market-days/layout';
 import { tabletsLayout } from './two-tablets/layout';
+import { plannerLayout } from './village-planner/layout';
 import { outcropLayout } from './outcrop-detective/layout';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
@@ -241,6 +243,14 @@ const MEASURE: Record<string, () => Size[]> = {
       ['button', l.button],
     ];
   },
+  'village-planner': () => {
+    const l = plannerLayout(v, 5, 6);
+    return [
+      ['slot', l.slot],
+      ['tile', l.tile],
+      ['button', l.button],
+    ];
+  },
   'number-nook': () =>
     grown(nookLevels.grownup!).map((level) => {
       const { rows, cols } = nookPlan(level);
@@ -376,6 +386,14 @@ const MEASURE: Record<string, () => Size[]> = {
       ['button', side(l.check)],
     ];
   },
+  'wave-ribbon': () => {
+    const l = waveLayout(v, true, true);
+    return [
+      ['button', 100],
+      ['lane toggle', side(l.laneSize)],
+      ['hypothesis card', side(l.card)],
+    ];
+  },
   'tile-pairs': () =>
     grown(tileLevels.grownup!).flatMap((level) => {
       tilePairsLayout(v, makeBoard(level, new Rng(1)));
@@ -432,6 +450,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'count-the-ballots': { px: 50.8, what: 'button' },
   'market-days': { px: 50.8, what: 'banner' },
   'two-tablets': { px: 50.8, what: 'sign' },
+  'village-planner': { px: 50.8, what: 'button' },
   'common-ground': { px: 55.9, what: 'piece' },
   'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
@@ -448,6 +467,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'truth-bridge': { px: 52.8, what: 'plank' },
+  'wave-ribbon': { px: 50.8, what: 'button' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
   'workshop-detective': { px: 45.7, what: 'mark toggle' },

@@ -16,6 +16,17 @@ export const VOICE = {
     'That says {now}. Watch: {from} becomes {time}, one hour later. The minutes stay the same.',
   ],
   'clock.later.example': ['One hour later: {from} becomes {time}. The minutes stay the same.'],
+  'clock.earlier': ['The clock says {time}. Make it say one hour earlier, then ring the bell!'],
+  'clock.earlier.wrong': [
+    'That says {now}. Watch: {from} goes back to {time}, one hour earlier. The minutes stay the same.',
+  ],
+  'clock.earlier.example': ['One hour earlier: {from} goes back to {time}. The minutes stay the same.'],
+  'clock.half-later': ['The clock says {time}. Make it say half an hour later, then ring the bell!'],
+  'clock.half-later.wrong': ['That says {now}. Halfway around from {from} is {time}, thirty minutes later.'],
+  'clock.half-later.wrong.cross': [
+    'That says {now}. Thirty minutes from {from} crosses twelve to {time}, in the next hour.',
+  ],
+  'clock.half-later.example': ['Half an hour after {from} is {time}, thirty minutes around the clock.'],
   'clock.five.zero': [
     'At 12, the digital clock shows zero minutes. A full turn is sixty minutes: the next hour starts at zero.',
   ],

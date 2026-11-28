@@ -67,7 +67,7 @@ Brain Age's daily training offers a handful of short exercises (calculation, mem
 - Tapping a card speaks the game's title and opens its intro with the how-to card as usual; a direct entry to a later level is what the how-to card is designed for.
 - **All six done:** the page shows a small flourish (the pet cheers, a few particles; `daily.done` spoken) when every card is ticked. Nothing is recorded, nothing is awarded beyond the six ordinary stickers, and the cards stay playable.
 - **Grown-ups' page:** one plain-HTML line that Today's six is a different mix each day, chosen by age, and that nothing is missed; optionally today's list with each level's `describeLevel` (slice 2).
-- No new save field. If a record across days is ever wanted, it is a separate developer decision, not an extension of this one.
+- No new save field. If a record across days is ever wanted, it is a separate developer decision, not an extension of this one. (Decided 2026-11-25: grown-ups' shells and records across days belong to the [progression loop](progression-loop.md), which may show them on this page.)
 
 ### R6. Play all six in order (optional)
 

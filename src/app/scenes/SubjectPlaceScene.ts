@@ -26,6 +26,7 @@ import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
 import { MixHost } from '../mix';
+import { PickHost } from '../pick';
 import { mixSpotArt } from '../../ui/mix';
 import { Scene, type Updatable } from '../Scene';
 import { gamesFor } from './PlaceScene';
@@ -103,6 +104,8 @@ export class SubjectPlaceScene extends Scene {
   private leaving = false;
   private icons: Updatable[] = [];
   readonly mix: MixHost;
+  /** Pick for me (D7a): the button beside the book and its sheet. */
+  readonly picker: PickHost;
   private readonly lost = () => this.cancel();
   private readonly release = (e: PointerEvent) => {
     if (this.touch?.id === e.pointerId) this.cancel();
@@ -121,6 +124,14 @@ export class SubjectPlaceScene extends Scene {
       () => this.view,
       this.tw,
       gamesFor(band).map((g) => g.id),
+    );
+    this.picker = new PickHost(
+      app,
+      band,
+      this.ui,
+      () => this.view,
+      (go) => this.leave(go),
+      this.mix,
     );
     this.games = gamesFor(band);
     this.subjects = SUBJECTS.filter((s) => this.games.some((g) => g.region === s.id));
@@ -175,7 +186,7 @@ export class SubjectPlaceScene extends Scene {
     this.content.addChild(this.backdrop, this.choices);
     this.choices.eventMode = 'static';
     this.choices.on('pointerdown', (e: FederatedPointerEvent) => {
-      if (this.leaving || this.touch || this.mix.covering || palmOnGlass()) return;
+      if (this.leaving || this.touch || this.mix.covering || this.picker.covering || palmOnGlass()) return;
       const p = this.choices.toLocal(e.global);
       const card = this.cards.find(
         (c) => c.node.visible && (c.node.hitArea as Rectangle).contains(p.x - c.node.x, p.y - c.node.y),
@@ -226,6 +237,7 @@ export class SubjectPlaceScene extends Scene {
       this.track(this.pip),
       this.home,
       this.book,
+      this.picker.button,
       this.back,
       this.heading,
       this.previous,
@@ -393,6 +405,7 @@ export class SubjectPlaceScene extends Scene {
     this.backdrop.resize(v);
     this.home.position.set(65, 65);
     this.book.position.set(v.w - 65, 65);
+    this.picker.button.position.set(v.w - 185, 65);
     this.back.position.set(185, 65);
     this.back.visible = this.state.subject !== null;
     this.heading.position.set(v.w / 2 + 35, 65);
@@ -413,10 +426,12 @@ export class SubjectPlaceScene extends Scene {
         .fill(swatch.teal.line);
     this.dots.eventMode = 'none';
     this.mix.resize(v);
+    this.picker.resize(v);
   }
   override update(dt: number) {
     super.update(dt);
     this.mix.update(dt);
+    this.picker.update(dt);
   }
   enter() {
     music.play(STYLES.hub);

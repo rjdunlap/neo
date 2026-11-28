@@ -1,18 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { clockTower } from './index';
+import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
 import {
   appointmentFor,
   demoAction,
   fiveExample,
+  halfLaterExample,
+  hasFrom,
   laterExample,
   requestFor,
   EVENTS,
   FIVE_ASKED,
   handsFor,
   hourOf,
+  LEVELS,
   makeTasks,
   minuteChoices,
   PLANS,
@@ -37,10 +41,10 @@ describe('Clock Tower', () => {
       for (let seed = 1; seed <= 100; seed++)
         for (const task of makeTasks(plan, new Rng(seed))) {
           const request = requestFor(plan.mode, task);
-          const time = plan.mode === 'later' ? task.from! : task.time;
+          const time = hasFrom(plan.mode) ? task.from! : task.time;
           expect(request.time).toBe(`${hourOf(time)}:${String(time % 60).padStart(2, '0')}`);
           expect(request.speech).toBe(spoken(time));
-          if (plan.mode === 'later') expect(request.time).not.toBe(requestFor('oclock', task).time);
+          if (hasFrom(plan.mode)) expect(request.time).not.toBe(requestFor('oclock', task).time);
           if (plan.mode === 'five') expect(request.speech).not.toContain(':');
         }
     expect(spoken(timeOf(3, 5))).toBe('three oh five');
@@ -49,7 +53,7 @@ describe('Clock Tower', () => {
 
   it('covers the current plans and truthfully explains the four answers and automatic support', () => {
     expect(clockTower.levels('prek')).toEqual({ min: 1, max: 4 });
-    expect(clockTower.levels('school')).toEqual({ min: 2, max: PLANS.length });
+    expect(clockTower.levels('school')).toEqual(LEVELS.school);
     for (let level = 1; level <= PLANS.length; level++) {
       expect(PLANS[level - 1].rounds).toBe(4);
       const card = howToFor(clockTower, level)!;
@@ -97,6 +101,8 @@ describe('Clock Tower', () => {
           expect(minuteChoices(plan.mode)).toContain(t.time % 60);
           expect(hourOf(t.time)).toBeGreaterThanOrEqual(1);
           if (plan.mode === 'later') expect(t.time).toBe((t.from! + 60) % 720);
+          if (plan.mode === 'earlier') expect(t.time).toBe((t.from! + 660) % 720);
+          if (plan.mode === 'half-later') expect(t.time).toBe((t.from! + 30) % 720);
         }
         if (plan.mode === 'quarter') expect(new Set(tasks.map((t) => t.time % 60)).size).toBe(4);
       }
@@ -163,10 +169,10 @@ describe('Clock Tower', () => {
           let hour =
             plan.mode === 'read'
               ? hourOf(task.time)
-              : plan.mode === 'later'
+              : hasFrom(plan.mode)
                 ? hourOf(task.from!)
                 : (hourOf(task.time) + 4) % 12 || 12;
-          let minute = plan.mode === 'read' ? task.time % 60 : plan.mode === 'later' ? task.from! % 60 : 0;
+          let minute = plan.mode === 'read' ? task.time % 60 : hasFrom(plan.mode) ? task.from! % 60 : 0;
           const first = demoAction(plan.mode, hour, minute, task);
           if (plan.mode === 'read') {
             expect(first.kind).toBe('pick');
@@ -197,6 +203,104 @@ describe('Clock Tower', () => {
       for (const task of later) expect(task.time).toBe((task.from! + 60) % 720);
       expect(new Set(later.map((task) => task.time)).size).toBe(later.length);
     }
+  });
+
+  it('level 8 reverses level 6: an hour earlier, crossing the 12 both ways, minutes unchanged', () => {
+    expect(PLANS[8 - 1].mode).toBe('earlier');
+    for (let seed = 1; seed <= 200; seed++) {
+      const tasks = makeTasks(PLANS[8 - 1], new Rng(seed));
+      expect(tasks).toHaveLength(4);
+      expect(tasks.map((task) => hourOf(task.from!))).toEqual(expect.arrayContaining([12, 1]));
+      for (const task of tasks) {
+        expect(task.time).toBe((task.from! + 660) % 720);
+        expect(task.time % 60).toBe(task.from! % 60);
+        expect([0, 30]).toContain(task.from! % 60);
+        expect(hourOf(task.time)).toBe(hourOf(task.from!) === 1 ? 12 : hourOf(task.from!) - 1);
+      }
+      expect(new Set(tasks.map((task) => task.time)).size).toBe(tasks.length);
+    }
+  });
+
+  it('plays level 8 before level 7 for school, and keeps every level reachable', () => {
+    const school = rangeFor(LEVELS, 'school');
+    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 8, 7, 9]);
+    expect(rangeFor(LEVELS, 'prek').max).toBe(4);
+  });
+
+  it('level 9 asks half an hour later from all quarter starts, crossing and noncrossing', () => {
+    expect(PLANS[9 - 1].mode).toBe('half-later');
+    expect(minuteChoices('half-later')).toEqual([0, 15, 30, 45]);
+    let sawTwelveWrap = false;
+    for (let seed = 1; seed <= 200; seed++) {
+      const tasks = makeTasks(PLANS[9 - 1], new Rng(seed));
+      expect(tasks).toHaveLength(4);
+      expect(new Set(tasks.map((task) => task.from! % 60)).size).toBe(4);
+      expect(new Set(tasks.map((task) => task.time)).size).toBe(4);
+      for (const task of tasks) {
+        const from = task.from!;
+        expect(task.time).toBe((from + 30) % 720);
+        expect(minuteChoices('half-later')).toContain(from % 60);
+        expect(minuteChoices('half-later')).toContain(task.time % 60);
+        const crosses = from % 60 >= 30;
+        expect(hourOf(task.time)).toBe(crosses ? (hourOf(from) % 12) + 1 : hourOf(from));
+        if (hourOf(from) === 12 && crosses) sawTwelveWrap = true;
+      }
+    }
+    expect(sawTwelveWrap).toBe(true);
+  });
+
+  it('explains level 9 with a +30-minute arc and crossing-hour wording when minutes wrap', () => {
+    for (let hour = 1; hour <= 12; hour++)
+      for (const minute of [0, 15, 30, 45]) {
+        const from = timeOf(hour, minute);
+        const time = (from + 30) % 720;
+        const e = halfLaterExample({ from, time });
+        expect(e.from).toBe(requestFor('half-later', { from, time }).time);
+        expect(e.to).toBe(requestFor('oclock', { time }).time);
+        expect(e.arcMinutes).toBe(30);
+        expect(e.fromMinute).toBe(minute);
+        expect(e.toMinute).toBe((minute + 30) % 60);
+        expect(e.crossesHour).toBe(minute >= 30);
+        expect(e.toHour).toBe(minute >= 30 ? (hour % 12) + 1 : hour);
+        const wrong = (
+          e.crossesHour ? SCRIPT['clock.half-later.wrong.cross'][0] : SCRIPT['clock.half-later.wrong'][0]
+        )
+          .replace('{now}', spoken(from))
+          .replace('{from}', e.fromSpeech)
+          .replace('{time}', e.toSpeech);
+        expect(wrong).toContain(spoken(from));
+        expect(wrong).toContain(spoken(time));
+        if (e.crossesHour) expect(wrong).toContain('next hour');
+        const right = SCRIPT['clock.half-later.example'][0]
+          .replace('{from}', e.fromSpeech)
+          .replace('{time}', e.toSpeech);
+        expect(right).toContain(spoken(from));
+        expect(right).toContain(spoken(time));
+        expect(requestFor('half-later', { from, time }).heading).toBe('Half an hour after');
+      }
+    expect(howToFor(clockTower, 9)!.steps.join(' ')).toContain('30 minutes');
+    expect(howToFor(clockTower, 9)!.note).toContain('30-minute arc');
+  });
+
+  it('explains an hour earlier with the same times as the request, moving backwards through 12', () => {
+    for (let hour = 1; hour <= 12; hour++)
+      for (const minute of [0, 30]) {
+        const from = timeOf(hour, minute),
+          time = (from + 660) % 720;
+        const e = laterExample({ from, time }, 'earlier');
+        expect(e.from).toBe(requestFor('earlier', { from, time }).time);
+        expect(e.to).toBe(requestFor('oclock', { time }).time);
+        expect(e.hourEnd - e.hourStart).toBe(-5);
+        expect(((e.hourEnd % 60) + 60) % 60).toBe(handsFor(time).hour);
+        const speech = SCRIPT['clock.earlier.example'][0]
+          .replace('{from}', e.fromSpeech)
+          .replace('{time}', e.toSpeech);
+        expect(speech).toContain(spoken(from));
+        expect(speech).toContain(spoken(time));
+        expect(speech).toContain('minutes stay the same');
+        expect(requestFor('earlier', { from, time }).heading).toBe('One hour before');
+      }
+    expect(howToFor(clockTower, 8)!.steps.join(' ')).toContain('one hour before');
   });
 
   it('explains every hour change using the old/new task times, moving forwards through 12', () => {

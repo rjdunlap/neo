@@ -22,6 +22,11 @@ export const HOW_TO: GameHowTo = {
       text: 'The woodpecker knocks and a frog answers. Tap the two matching frogs if the frog copied the knocks, or the frog with its own bubble if it answered with a different rhythm.',
     },
     {
+      from: 11,
+      to: 11,
+      text: 'The woodpecker knocks. Answer with two to five frog notes in a rhythm of your own, then tap the green arrow.',
+    },
+    {
       from: 3,
       to: 3,
       text: 'Tap the woodpecker to hear its call, then answer with two or three frog notes.',
@@ -40,6 +45,11 @@ export const HOW_TO: GameHowTo = {
       from: 6,
       to: 6,
       text: 'Take turns with the woodpecker, playing your frog part each time, then join the final duet.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'The woodpecker knocks three or four times. Play the four pictured frog notes, resting longer where the picture shows a long gap, then tap the green arrow.',
     },
     { to: 6, text: 'Tap the green arrow when the song is ready.' },
   ],
@@ -67,6 +77,16 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'After four exchanges, the bird and the frog sing a short song together and the round ends.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'After three answers, the bird and the frogs sing the last one together and the round ends.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'After three replies, the bird and the frogs sing a short song together; tap a frog to join in, then the round ends.',
     },
     {
       from: 3,
@@ -98,6 +118,16 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'Two of the four exchanges are copies and two are different answers. A wrong tap replays the pair, and after two wrong taps the right tile glows. The replay button plays the pair again.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'Any rhythm that is not a copy of the knocks is an answer, on one frog or two. A copy, or a single note, is gently asked again and never counted. The music-note button sings a sample answer and is not a hint.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'The reply stays pictured, so nothing needs remembering. A long pause in the middle starts it again and is never a miss. Two misses make the next frog glow, and the help button plays it for her.',
     },
     {
       from: 5,

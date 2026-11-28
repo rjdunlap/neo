@@ -14,6 +14,7 @@ import { FRAME, FRAME_X, strokesOf } from '../../learning/tracing/lowercase';
 import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../../learning/tracing/strokes';
 import { rangeFor } from '../../progress/difficulty';
 import {
+  BIG_LEVEL,
   fullName,
   guidesFor,
   hintCounts,
@@ -59,6 +60,8 @@ class LetterTrails implements Game {
   private readonly canvas = new Container();
   /** Level 10's four-line frame (top, dashed middle, base, bottom), under the trail. */
   private readonly frame = new Graphics();
+  /** Level 15's capital, faint in the corner: shown beside the little letter, never traced or judged. */
+  private readonly ghost = new Graphics();
   private readonly outline = new Graphics();
   private readonly ink = new Graphics();
   private readonly beacon = new Graphics();
@@ -93,7 +96,7 @@ class LetterTrails implements Game {
     this.guides = guidesFor(ctx.level);
     // Drawn after the word, so a look never changes which letter or word a seed gives.
     this.look = pickLook(ctx.rng);
-    ctx.stage.addChild(this.background, this.canvas, this.heading, this.pips);
+    ctx.stage.addChild(this.background, this.ghost, this.canvas, this.heading, this.pips);
     this.canvas.addChild(this.frame, this.outline, this.ink, this.beacon, this.firefly);
     this.firefly.addChild(
       new Graphics()
@@ -245,6 +248,7 @@ class LetterTrails implements Game {
     this.beacon.clear();
     this.firefly.visible = false;
     this.frame.clear();
+    this.ghost.clear();
     this.traced.add(this.capital);
     if (this.several) await this.flourish();
     else {
@@ -465,6 +469,20 @@ class LetterTrails implements Game {
         .lineTo(Math.min(x1, x + dash), FRAME.mid * this.size)
         .stroke({ width: 5, color: swatch.blue.fill, cap: 'round' });
   }
+  /** Level 15: the letter's capital drawn faint in the top-left corner, as a picture to match. */
+  private drawGhost(v: View) {
+    this.ghost.clear();
+    if (trailLevel(this.ctx.level) !== BIG_LEVEL || this.picture || this.done) return;
+    const box = Math.min(150, v.w * 0.2);
+    this.ghost.position.set(16, 16);
+    for (const stroke of strokesOf(this.capital)) {
+      stroke.forEach(([x, y], i) => {
+        if (i === 0) this.ghost.moveTo(x * box, y * box);
+        else this.ghost.lineTo(x * box, y * box);
+      });
+      this.ghost.stroke({ width: 12, color: swatch.purple.fill, alpha: 0.35, cap: 'round', join: 'round' });
+    }
+  }
   /** Less help each time: three pips under the heading, filled up to the try she is on. */
   private drawPips() {
     this.pips.clear();
@@ -487,15 +505,23 @@ class LetterTrails implements Game {
     this.heading.position.set(v.w / 2, 65);
     this.heading.style.fontSize = Math.min(38, (v.w - 250) / Math.max(8, this.word.length * 1.6));
     this.drawFrame();
+    this.drawGhost(v);
     this.draw();
     this.placeFirefly();
     if (this.picture) this.picture.position.set(this.size / 2, this.size / 2);
   }
   async start() {
     if (this.several) await this.ctx.say('trails.word', { word: this.spoken });
-    void this.ctx.instruct(inFrame(this.ctx.level) ? 'trails.little' : 'trails.start', {
-      letter: this.capital,
-    });
+    void this.ctx.instruct(
+      trailLevel(this.ctx.level) === BIG_LEVEL
+        ? 'trails.big'
+        : inFrame(this.ctx.level)
+          ? 'trails.little'
+          : 'trails.start',
+      {
+        letter: this.capital,
+      },
+    );
   }
   update(dt: number) {
     this.clock += dt;

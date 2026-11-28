@@ -2,7 +2,7 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type DuckMode =
-  'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends' | 'double' | 'teen';
+  'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends' | 'double' | 'teen' | 'every';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -85,6 +85,8 @@ export const PLANS: DuckPlan[] = [
   { mode: 'double', rounds: 5, min: 1, max: 5, near: 2, split: true },
   // School (dive slice 8, appended as 15): a full ten arrives at once, then 1–9 more; how many in all, or how many past ten.
   { mode: 'teen', rounds: 5, min: 1, max: 9, padMax: 19 },
+  // School (dive slice 9, appended as 16): send ducks across the bridge and find every way to share 3, 4, 5, then 6; `rounds` counts totals.
+  { mode: 'every', rounds: 4, min: 3, max: 6, split: true },
 ];
 
 export const LEVELS: BandLevels = {
@@ -92,8 +94,8 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 9 },
-  // Doubles (14) and Ten and some more (15) go on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
-  school: { min: 8, max: 15, order: [8, 9, 10, 11, 14, 15] },
+  // Doubles (14), Ten and some more (15) and Every way (16) go on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
+  school: { min: 8, max: 16, order: [8, 9, 10, 11, 14, 15, 16] },
 };
 
 export interface HidingPuzzle {
@@ -160,6 +162,102 @@ export function teenRounds(rng: Rng, plan: DuckPlan): TeenRound[] {
 /** A teen round's answer, and the range its pads are dealt from: 11–19 for in all, 1–9 for past ten. */
 export const teenAnswer = (t: TeenRound) => (t.ask === 'total' ? 10 + t.ones : t.ones);
 export const teenPadRange = (t: TeenRound): [number, number] => (t.ask === 'total' ? [11, 19] : [1, 9]);
+
+/** Level 16: one way to share the ducks across the bridge. */
+export interface Way {
+  left: number;
+  right: number;
+}
+
+/** Every ordered way to share `total` ducks between two non-empty sides: `total − 1` of them, `(total − 1, 1)` down to `(1, total − 1)`. A way's key is its right count. */
+export function everyWay(total: number): Way[] {
+  return Array.from({ length: Math.max(0, total - 1) }, (_, i) => ({ left: total - 1 - i, right: i + 1 }));
+}
+
+/**
+ * What keeping the split with `right` ducks across says: `none` (a side is empty, so it is not a split yet), `new`, `swap`
+ * (new, but its mirror `total − right` is already found; only the line the pet says differs) or `again`.
+ */
+export function keepVerdict(
+  total: number,
+  right: number,
+  found: ReadonlySet<number>,
+): 'none' | 'new' | 'swap' | 'again' {
+  if (right <= 0 || right >= total) return 'none';
+  if (found.has(right)) return 'again';
+  return found.has(total - right) ? 'swap' : 'new';
+}
+
+/** The round is over exactly when every way has a card. */
+export const roundDone = (total: number, found: ReadonlySet<number>) => found.size === total - 1;
+
+/** The right counts not found yet. */
+const unfound = (total: number, found: ReadonlySet<number>) =>
+  Array.from({ length: Math.max(0, total - 1) }, (_, i) => i + 1).filter((r) => !found.has(r));
+
+/**
+ * The move that most reduces how far the pond is from the nearest split not found yet: `left` (tap a duck on the left to send it
+ * across) or `right` (tap one on the right to bring it back); ties go toward more ducks across. Always a move that is
+ * possible. Null when the round is done, or when the pond already holds an unfound split (the check is the next touch).
+ */
+export function nextHintMove(
+  total: number,
+  right: number,
+  found: ReadonlySet<number>,
+): 'left' | 'right' | null {
+  const todo = unfound(total, found);
+  if (!todo.length || todo.includes(right)) return null;
+  const dist = (t: number) => Math.abs(t - right);
+  const best = Math.min(...todo.map(dist));
+  return todo.some((t) => dist(t) === best && t > right) ? 'left' : 'right';
+}
+
+/** What a capable child touches next at level 16: the check once the pond holds an unfound split, else the hint's duck. */
+export function everyMove(
+  total: number,
+  right: number,
+  found: ReadonlySet<number>,
+): 'check' | 'left' | 'right' | null {
+  if (roundDone(total, found)) return null;
+  return unfound(total, found).includes(right) ? 'check' : nextHintMove(total, right, found);
+}
+
+/** Level 16's totals in order: no randomness, `min` up to `max`. */
+export const everyTotals = (plan: DuckPlan) =>
+  Array.from({ length: plan.max - plan.min + 1 }, (_, i) => plan.min + i);
+
+/** The seats of a level 16 pond: up to six a side, three to a row, each side filled outward from the bridge. */
+export interface EverySeats {
+  left: [number, number][];
+  right: [number, number][];
+  scale: number;
+  /** A duck's tap radius in its own units (it is `POND_HIT_R`, or half the seat gap, on screen). */
+  hitR: number;
+}
+
+/**
+ * Fixed for a round's total so a duck never changes size as it crosses: full size up to five, a little smaller (0.9) for six
+ * so six fit a side. Seat `i` of either side is the same row and column mirrored across the bridge.
+ */
+export function everySeats(total: number): EverySeats {
+  const big = total > 5;
+  const gap = big ? 100 : DUCK_GAP;
+  const rows = big ? ([-36, 66] as const) : ([-36, 72] as const);
+  const scale = big ? 0.9 : 1;
+  const side = (sign: -1 | 1) =>
+    Array.from({ length: total }, (_, i): [number, number] => [
+      sign * (SPLIT_BRIDGE_HALF + SPLIT_CLEAR + (i % 3) * gap),
+      rows[Math.floor(i / 3)],
+    ]);
+  return { left: side(-1), right: side(1), scale, hitR: Math.min(POND_HIT_R, gap / 2) / scale };
+}
+
+/** The first seat index no duck holds (`taken`), so a duck that crosses lands on the nearest free seat to the bridge and never on another. */
+export const firstFreeSeat = (taken: readonly number[]) => {
+  let i = 0;
+  while (taken.includes(i)) i++;
+  return i;
+};
 
 /** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
 export function tenStarts(rng: Rng, plan: DuckPlan): number[] {

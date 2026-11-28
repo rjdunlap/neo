@@ -13,7 +13,8 @@ import { soundCount } from '../../audio/sound-count';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
-import { howToFor, shouldExplain } from '../../content/howto';
+import { briefResult } from '../../content/brief-result';
+import { briefIntro, howToFor, introKey, shouldExplain, type IntroInput } from '../../content/howto';
 import { islandDemo } from '../../content/demos';
 import { COUCH_INFO, type CouchInfo } from '../../couch/catalog';
 import { Demo } from '../../couch/demo';
@@ -22,6 +23,7 @@ import { discoveryCandidates, suggestDiscovery } from '../../content/discovery';
 import { GAMES } from '../../games/registry';
 import {
   discoveryMemory,
+  introMemory,
   launchDiscovery,
   launchStop,
   leaveMix,
@@ -38,7 +40,7 @@ import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
 import { CouchInput, type CouchControls } from '../../engine/controller';
 import { nextSpot } from '../../couch/focus';
 import { cancelHeld } from '../../engine/drag';
-import { onTap } from '../../engine/input';
+import { onTap, pointerKind } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { DAILY_NEXT, RESULT_NAME_W, dailySpots, resultSpots } from '../result-layout';
@@ -65,6 +67,7 @@ import {
   treehouseIcon,
 } from '../../ui/icons';
 import { FONT } from '../../ui/text';
+import { shellTag } from '../../ui/shells';
 import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
@@ -123,7 +126,13 @@ export class GameScene extends Scene {
   private discovered: JournalEntry[] = [];
   /** A blossom this round grew for the first time (RW11 slice 2): the result shows it opening. */
   private grewForm: FormId | null = null;
+  /** Rounds of this game finished before the one now settled (the short result is never a first round's). */
+  private earlierRounds = 0;
   private readonly discoveryToken = discoveryMemory.token(store.data);
+  private readonly introToken = introMemory.token(store.data);
+  /** The short reminder (D4b) is the card now open, and the input it opened for; Show me, or a different input, swaps in the full card. */
+  private briefOpen: IntroInput | null = null;
+  private showFullIntro: (() => void) | null = null;
   private discovery: {
     id: string;
     tile: DiscoveryTile;
@@ -144,6 +153,8 @@ export class GameScene extends Scene {
   private resultStar: ReturnType<typeof makeCompanion> | null = null;
   private resultSticker: Container | null = null;
   private resultPill: Container | null = null;
+  /** Shells this round earned (the progression loop): 0 for a band that does not earn them, or at the day's cap. */
+  private shellsEarned = 0;
   private resultReady = false;
   private navigating = false;
   private returningTouch = false;
@@ -260,16 +271,29 @@ export class GameScene extends Scene {
     this.keys.peekEnabled = () => !!this.game?.togglePeek && !this.finished && !this.helpCard;
 
     // Every time a game is opened it explains itself on a card (with a demonstration where there is a bot), and the round waits for Play.
-    const card = shouldExplain({
+    const explained = shouldExplain({
       enabled: store.data.settings.howToCards,
       id: this.mod.id,
       story: !!this.story,
       again: this.again,
-    })
-      ? howToFor(this.mod, this.level)
-      : null;
-    if (card) this.openIntro(card);
-    else this.build();
+    });
+    const card = explained ? howToFor(this.mod, this.level) : null;
+    if (card) {
+      // Only an exact game, band, level and input that she pressed Play on this visit gets the short reminder (D4b).
+      const input = this.introInput();
+      const introduced =
+        input !== null && introMemory.has(this.introToken, store.data, this.introKeyFor(input));
+      const brief = briefIntro({
+        cards: store.data.settings.howToCards,
+        brief: store.data.settings.briefIntros,
+        explained,
+        mix: !!this.mixRound,
+        daily: !!this.origin && 'daily' in this.origin,
+        input,
+        introduced,
+      });
+      this.openIntro(card, brief ? input : null);
+    } else this.build();
   }
 
   /** The game for this round, drawn onto the stage; nothing in it starts until `begin`. */
@@ -422,6 +446,8 @@ export class GameScene extends Scene {
       this.syncDiscovery();
       this.syncMix();
     }
+    // A short reminder was made for one input: a different one gets the full card with its demonstration.
+    if (this.briefOpen && this.introInput() !== this.briefOpen) this.showFullIntro?.();
     // A stop card's row is for touch: a key or pad takes it off, and a touch puts it back.
     if (
       this.helpCard &&
@@ -593,9 +619,9 @@ export class GameScene extends Scene {
   }
 
   /** The how-to card fills the screen with Play and Back, and no round has been built or started. */
-  private openIntro(info: NonNullable<ReturnType<typeof howToFor>>) {
+  private openIntro(info: NonNullable<ReturnType<typeof howToFor>>, briefFor: IntroInput | null = null) {
     const mod = this.mod;
-    const demo = this.demoAt(this.level);
+    const demo = briefFor ? undefined : this.demoAt(this.level);
     // Held arrows choose the level the round is built at. They stay within her band's levels, like the grown-up zone's picker.
     const range = mod.levels(this.band);
     // The ladder marks what her progress suggests and a grown-up's pin; neither follows the arrows. A celebration's next level is not a suggestion.
@@ -609,7 +635,7 @@ export class GameScene extends Scene {
       voice.stop();
       void voice.say(mod.titleLine);
     };
-    const card = new HowToPanel(info, () => undefined, {
+    const intro: HowToIntro = {
       icon: () => mod.hubIcon(),
       play: () => this.playFromIntro(),
       back: () => this.backFromIntro(),
@@ -620,8 +646,23 @@ export class GameScene extends Scene {
       demo,
       pick,
       levelCard: mod.levelCard,
-      stops: this.stopRowFor(),
-    });
+      stops: briefFor ? undefined : this.stopRowFor(),
+      brief: !!briefFor,
+      showMe: () => this.showFullIntro?.(),
+    };
+    const card = new HowToPanel(info, () => undefined, intro);
+    if (briefFor) {
+      this.briefOpen = briefFor;
+      this.showFullIntro = () => {
+        if (!this.briefOpen || this.game || this.gone || this.helpCard !== card) return;
+        this.briefOpen = null;
+        this.showFullIntro = null;
+        intro.brief = false;
+        const shown = this.demoAt(this.level);
+        if (shown) audio.hush(true);
+        card.show(info, shown);
+      };
+    }
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
     // The loop that follows her in from the place would sit under a demonstration of making music; `begin` plays the same style later.
@@ -656,6 +697,15 @@ export class GameScene extends Scene {
     this.app.applyView();
   }
 
+  /** `touch` or `mouse` for the short reminder's key; the controller route has none (D4b). */
+  private introInput(): IntroInput | null {
+    return this.inputInUse.kind === 'controller' ? null : pointerKind();
+  }
+
+  private introKeyFor(input: IntroInput): string {
+    return introKey({ id: this.mod.id, band: this.band, level: this.level, input });
+  }
+
   private setOrientation() {
     // The dev-only sweep can inspect layouts before an upright rollout.
     this.upright = this.uprightArea =
@@ -668,6 +718,12 @@ export class GameScene extends Scene {
   private playFromIntro() {
     if (this.game || !this.liveResult() || this.navigating) return;
     voice.stop();
+    // Play on a full card is what introduces the mode; Play on the short reminder, a finished round and Again are not new.
+    const input = this.introInput();
+    if (this.helpCard && !this.briefOpen && input)
+      introMemory.introduced(this.introToken, store.data, this.introKeyFor(input));
+    this.briefOpen = null;
+    this.showFullIntro = null;
     this.closeHelp();
     this.build().resize(this.place.game);
     this.begin();
@@ -790,6 +846,7 @@ export class GameScene extends Scene {
     if (asked && formForFlower(result.grew) === asked && store.growForm(asked, `garden:${result.grew}`))
       this.grewForm = asked;
     const band = this.band;
+    this.earlierRounds = store.data.games[this.mod.id]?.plays ?? 0;
     store.recordRound(
       this.mod.id,
       {
@@ -816,6 +873,7 @@ export class GameScene extends Scene {
     else if (this.story) store.completeStep(this.story.step, this.story.story ?? 'picnic');
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
+    this.shellsEarned = store.earnShells(this.mod.id, dayKey(new Date()));
     // A mix stop is settled once, by its first completed round; the round itself is settled above, as always.
     if (this.mixRound) mixMemory.finish(this.mixRound, store.data, seed);
     // Save the round and its sticker now: a write that only starts as the page closes can be lost.
@@ -823,10 +881,39 @@ export class GameScene extends Scene {
     void this.celebrate(seed);
   }
 
+  /**
+   * A grown-up's shells ride under the result's sticker (the progression loop), so they move with it; nothing is drawn at
+   * the day's cap or for a band that does not earn. Under it, unless a journal card will need that room (a short, wide
+   * view): then beside it.
+   */
+  private addShellTag(sticker: Container) {
+    if (this.shellsEarned <= 0) return;
+    const tag = shellTag(`+${this.shellsEarned} shells`, 26, true);
+    const short = this.view.h * (0.555 - 0.33) < 220;
+    if (this.discovered.length && short) tag.x = 110 + 24 + tag.width / 2;
+    else tag.y = 142;
+    tag.rotation = 0.08; // level, against the sticker's tilt
+    sticker.addChild(tag);
+  }
+
   /** Happy pet, confetti, a sticker, then "again?". */
   private async celebrate(seed: number) {
     const v = this.view;
     const layer = (this.resultLayer = new Container());
+    // D4a: an option a grown-up turns on. The round, sticker and settlement above are identical; only the presentation is short.
+    const brief = briefResult({
+      on: store.data.settings.briefResults,
+      guest: !!store.entry.guest,
+      id: this.mod.id,
+      earlierRounds: this.earlierRounds,
+      made: !!this.made,
+      discovered: this.discovered.length > 0,
+      grewForm: !!this.grewForm,
+      story: !!this.story,
+      mix: !!this.mixRound,
+      daily: this.dailyRound,
+      book: !!this.origin && 'book' in this.origin,
+    });
     const place = resultPlace(this.origin, { story: !!this.story, root: this.app.creatureWorld });
     const backdrop = (this.resultPlace = place ? this.track(new ResultBackdrop(place, v)) : null);
     const veil = new Graphics().rect(0, 0, v.w, v.h).fill({ color: 0xfff4e3, alpha: this.veilAlpha() });
@@ -848,8 +935,9 @@ export class GameScene extends Scene {
     this.tip?.destroy({ children: true });
     this.tip = null;
 
-    if (backdrop) void this.tw.to(backdrop, { alpha: 1 }, { duration: 0.3 });
-    await this.tw.to(veil, { alpha: 1 }, { duration: 0.3 });
+    const fade = brief ? 0.2 : 0.3;
+    if (backdrop) void this.tw.to(backdrop, { alpha: 1 }, { duration: fade });
+    await this.tw.to(veil, { alpha: 1 }, { duration: fade });
     void this.tw.to(this.resultPetOffset, { y: 0 }, { duration: 0.6, ease: ease.outBack });
     const colors = RAINBOW.map((c) => swatch[c].fill);
     const cannon = {
@@ -861,41 +949,72 @@ export class GameScene extends Scene {
       gravity: 700,
       life: [1.6, 2.4] as [number, number],
     };
-    confetti.burst(0, v.h, { ...cannon, angle: -Math.PI / 3 });
-    confetti.burst(v.w, v.h, { ...cannon, angle: (-Math.PI * 2) / 3 });
-    sfx.tada();
-    void voice.say('praise');
-    await this.tw.wait(0.5);
-    // The species' own move and chirp (the sprout's hop, the river's rear, the glider's loop), then a cheer.
-    star.poke();
-    star.cheer();
-    const hopLoop = async () => {
-      for (;;) {
-        await this.tw.wait(1.3);
-        star.hop(0.7);
-      }
-    };
-    void hopLoop();
+    let stickerLine: Promise<void> | null = null;
+    if (brief) {
+      // The short result: the sticker at once, one cannon of confetti and one spoken line. The buttons follow below; none of
+      // this waits for them, and none of it takes a press (the decoration ignores the pointer).
+      confetti.burst(0, v.h, { ...cannon, count: 14, angle: -Math.PI / 3 });
+      sfx.tada();
+      star.poke();
+      star.cheer();
+      void this.tw.wait(1.3).then(() => star.hop(0.7));
+      const sticker = (this.resultSticker = stickerize(this.mod.sticker(seed), 110));
+      sticker.position.set(this.view.w / 2, this.view.h * 0.33);
+      sticker.scale.set(0);
+      sticker.rotation = -0.08;
+      this.addShellTag(sticker);
+      layer.addChild(sticker);
+      void this.tw.to(sticker.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+      sfx.sparkle();
+      confetti.burst(sticker.x, sticker.y, {
+        kind: 'star',
+        colors: [0xffd54a, 0xffffff],
+        count: 18,
+        speed: [200, 380],
+        gravity: 0,
+        life: [0.6, 1],
+      });
+      for (const o of [sticker, confetti, star]) o.eventMode = 'none';
+      stickerLine = this.whileHere(voice.say('sticker'));
+      await this.tw.wait(0.2);
+    } else {
+      confetti.burst(0, v.h, { ...cannon, angle: -Math.PI / 3 });
+      confetti.burst(v.w, v.h, { ...cannon, angle: (-Math.PI * 2) / 3 });
+      sfx.tada();
+      void voice.say('praise');
+      await this.tw.wait(0.5);
+      // The species' own move and chirp (the sprout's hop, the river's rear, the glider's loop), then a cheer.
+      star.poke();
+      star.cheer();
+      const hopLoop = async () => {
+        for (;;) {
+          await this.tw.wait(1.3);
+          star.hop(0.7);
+        }
+      };
+      void hopLoop();
 
-    await this.tw.wait(0.6);
-    const sticker = (this.resultSticker = stickerize(this.mod.sticker(seed), 110));
-    sticker.position.set(this.view.w / 2, this.view.h * 0.33);
-    sticker.scale.set(0);
-    sticker.rotation = -0.08;
-    layer.addChild(sticker);
-    void this.tw.to(sticker.scale, { x: 1, y: 1 }, { duration: 0.55, ease: ease.outBack });
-    sfx.sparkle();
-    confetti.burst(sticker.x, sticker.y, {
-      kind: 'star',
-      colors: [0xffd54a, 0xffffff],
-      count: 18,
-      speed: [200, 380],
-      gravity: 0,
-      life: [0.6, 1],
-    });
-    await this.tw.wait(0.5);
-    void voice.say('sticker');
-    await this.tw.wait(1.8);
+      await this.tw.wait(0.6);
+      const sticker = (this.resultSticker = stickerize(this.mod.sticker(seed), 110));
+      sticker.position.set(this.view.w / 2, this.view.h * 0.33);
+      sticker.scale.set(0);
+      sticker.rotation = -0.08;
+      this.addShellTag(sticker);
+      layer.addChild(sticker);
+      void this.tw.to(sticker.scale, { x: 1, y: 1 }, { duration: 0.55, ease: ease.outBack });
+      sfx.sparkle();
+      confetti.burst(sticker.x, sticker.y, {
+        kind: 'star',
+        colors: [0xffd54a, 0xffffff],
+        count: 18,
+        speed: [200, 380],
+        gravity: 0,
+        life: [0.6, 1],
+      });
+      await this.tw.wait(0.5);
+      void voice.say('sticker');
+      await this.tw.wait(1.8);
+    }
 
     // A first look at something for her journal: a little card with what she found, then on to the buttons.
     if (this.discovered.length) {
@@ -1050,8 +1169,9 @@ export class GameScene extends Scene {
     }
     layer.addChild(this.ring);
     this.layoutResult(this.view);
-    const speech = this.resultVoice(keep ? 'keep.offer' : 'again');
-    const serial = this.speechSerial;
+    // The full result asks "again?" at once. The short one lets its single sticker line finish first.
+    let speech = brief ? Promise.resolve() : this.resultVoice(keep ? 'keep.offer' : 'again');
+    let serial = this.speechSerial;
     // Wait out the buttons' arrival. A finger already held over the new tile has never armed it.
     await this.tw.wait(0.45);
     if (!this.liveResult() || this.navigating) return;
@@ -1059,6 +1179,13 @@ export class GameScene extends Scene {
     this.syncDiscovery(false);
     this.syncMix();
     const nextDaily = this.showDailyNext();
+    if (brief) {
+      await stickerLine;
+      // A button pressed meanwhile (the heart's own line) has already spoken: ask nothing over it.
+      if (this.speechSerial !== serial || !this.liveResult() || this.navigating) return;
+      speech = this.resultVoice('again');
+      serial = this.speechSerial;
+    }
     await speech;
     if (this.speechSerial === serial && nextDaily && this.liveResult() && !this.navigating)
       void voice.say('mix.next', { title: titleOf(nextDaily.mod) });

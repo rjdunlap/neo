@@ -349,7 +349,7 @@ describe('game registry', () => {
     const g = gameById('day-by-day')!;
     const school = g.levels('school'),
       prek = g.levels('prek');
-    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6, 7]);
+    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6, 7, 8]);
     expect(levelsInOrder(prek)).toEqual([1, 2, 4]);
     expect(g.entryLevels).toEqual([10, 9]);
     expect(stepLevel(4, 1, school)).toBe(10);
@@ -606,6 +606,8 @@ describe('game registry', () => {
       'day-by-day',
       'domino-pond',
       'domino-run',
+      'draw-a-ramp',
+      'dream-cards',
       'drift-cards',
       'drops-journey',
       'duck-pond',
@@ -673,6 +675,7 @@ describe('game registry', () => {
       'pile-match',
       'pixel-pictures',
       'pond-conga',
+      'pond-merge',
       'puddle-lens',
       'puppet-stage',
       'puzzle-pals',
@@ -718,11 +721,14 @@ describe('game registry', () => {
       'tide-tables',
       'tile-pairs',
       'timeline-trail',
+      'toy-drawer',
       'trackway-tales',
       'truth-bridge',
       'two-tablets',
+      'village-planner',
       'village-vote',
       'water-road',
+      'wave-ribbon',
       'welcome-ways',
       'who-am-i',
       'word-code',

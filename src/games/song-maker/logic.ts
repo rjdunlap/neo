@@ -11,6 +11,8 @@ export interface SongPlan {
   notes: number;
   /** listen: how many shadow choices each beat offers (default: none, all rows open). */
   choices?: number;
+  /** answer: her answer must end on the home (bottom) jelly, and the check says so when it does not. */
+  home?: boolean;
   name: string;
 }
 
@@ -75,6 +77,15 @@ export const SONG_PLANS: SongPlan[] = [
     choices: 2,
     name: 'Listen, then pick each note of a 4-note tune from two shadows',
   },
+  // Level 13, Bring it home: level 10's board with questions that start on the home jelly and end away from it; her answer must end on home.
+  {
+    mode: 'answer',
+    cols: 8,
+    rows: 4,
+    notes: 4,
+    home: true,
+    name: "Answer the pet's 4-note question, ending your answer on the home jelly",
+  },
 ];
 
 /** Answer my song: the first beat (column) of her answer; beats before it are the pet's question. */
@@ -96,6 +107,32 @@ export const QUESTIONS: readonly (readonly number[])[] = [
   [2, 2, 1, 0],
   [3, 2, 3, 1],
   [1, 2, 3, 2],
+];
+
+/**
+ * Bring it home's questions: four beats that start on the home (bottom) row and end away from it, so the question
+ * feels unfinished. Six authored, each using at least two rows.
+ */
+export const HOME_QUESTIONS: readonly (readonly number[])[] = [
+  [3, 2, 1, 2],
+  [3, 3, 2, 1],
+  [3, 2, 3, 1],
+  [3, 1, 0, 1],
+  [3, 2, 2, 0],
+  [3, 3, 1, 2],
+];
+
+/** The home jelly's row: the bottom of the board. */
+export const homeRow = (plan: SongPlan) => plan.rows - 1;
+
+/** Bring it home: her answer ends on home when the last beat's jelly sits on the home row. */
+export const endsHome = (plan: SongPlan, lit: readonly Note[]) =>
+  lit.some((n) => n.col === plan.cols - 1 && n.row === homeRow(plan));
+
+/** Bring it home: her answer with only beat 8 changed to the home jelly, the pet's "finished" version. */
+export const finishedAtHome = (plan: SongPlan, lit: readonly Note[]): Note[] => [
+  ...lit.filter((n) => n.col !== plan.cols - 1),
+  { col: plan.cols - 1, row: homeRow(plan) },
 ];
 
 export const songPlan = (level: number) =>
@@ -204,11 +241,12 @@ export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = [
       const given = OPENINGS[Number(id.slice(2))].map((row, col) => ({ col, row }));
       return { notes: [], given, motif: id };
     }
-    const choices = QUESTIONS.map((_, i) => `q:${i}`).filter(
-      (id) => !recent.slice(-MOTIF_WINDOW).includes(id),
-    );
+    const [prefix, pool] = plan.home ? (['h', HOME_QUESTIONS] as const) : (['q', QUESTIONS] as const);
+    const choices = pool
+      .map((_, i) => `${prefix}:${i}`)
+      .filter((id) => !recent.slice(-MOTIF_WINDOW).includes(id));
     const id = rng.pick(choices);
-    const given = QUESTIONS[Number(id.slice(2))].map((row, col) => ({ col, row }));
+    const given = pool[Number(id.slice(2))].map((row, col) => ({ col, row }));
     return { notes: [], given, motif: id };
   }
   if (plan.mode === 'pattern') {
@@ -280,7 +318,11 @@ export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string
 
 /** Answer/Finish my song: the ghost finger's reply, one jelly a beat, a step off each given note (wrapping within `plan.rows`) so it is a reply, not an echo. */
 export const answerBot = (song: Song, plan: SongPlan = songPlan(10)): Note[] =>
-  song.given.map((n, i) => ({ col: answerFrom(plan) + i, row: (n.row + 1) % plan.rows }));
+  song.given.map((n, i) => ({
+    col: answerFrom(plan) + i,
+    // Bring it home: the ghost finger ends where the rule says, on the home jelly.
+    row: plan.home && i === song.given.length - 1 ? homeRow(plan) : (n.row + 1) % plan.rows,
+  }));
 
 /** Answer my song: the check is awake once every answer beat holds a jelly and all eight beats have played since her last change. */
 export const answerReady = (plan: SongPlan, answered: number, beatsSinceChange: number) =>
@@ -436,5 +478,6 @@ export const LEVELS: BandLevels = {
   // Level 12 (Two to choose) gives pre-K an easier ear entry right before level 7.
   prek: { min: 5, max: 12, order: [5, 11, 6, 12, 7, 9] },
   // Level 10 (Answer my song) is school only until a person check says pre-K can hold the 8-beat board.
-  school: { min: 6, max: 10, order: [6, 7, 9, 10] },
+  // Level 13 (Bring it home) is the same board with one spoken rule, so it follows level 10.
+  school: { min: 6, max: 13, order: [6, 7, 9, 10, 13] },
 };

@@ -223,6 +223,14 @@ export const sfx = {
     }
   },
 
+  /** Water running into a vessel: a short band-passed hiss whose pitch rises as it fills (`level` 0 to 1), unpitched. */
+  trickle(level = 0) {
+    const o = out();
+    if (!o) return;
+    const l = Number.isFinite(level) ? Math.min(1, Math.max(0, level)) : 0;
+    noise(o.ctx, o.dest, o.t, 0.1, 0.1, { type: 'bandpass', hz: (500 + 1700 * l) * jitter(60), q: 3 });
+  },
+
   splash() {
     const o = out();
     if (!o) return;

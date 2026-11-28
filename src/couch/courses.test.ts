@@ -59,6 +59,12 @@ describe('the couch courses', () => {
     expect(courseSpec('codedoors')).toMatchObject({ game: 'secret-code', boards: 5, minimum: 16 });
     expect(courseInfo('codedoors').reference).toBe(true);
     expect(courseInfo('sunbeams').reference).toBeUndefined();
+    expect(courseSpec('robotpath')).toMatchObject({ game: 'robot-path', boards: 5, minimum: 51 });
+    expect(courseInfo('robotpath').routes).toBe(true);
+    expect(courseInfo('robotpath').reference).toBeUndefined();
+    expect(courseSpec('cardtables')).toMatchObject({ game: 'memory-match', boards: 4 });
+    expect(courseInfo('cardtables').reference).toBe(true);
+    expect(courseInfo('cardtables').minimum).toBe(courseInfo('cardtables').best.reduce((n, b) => n + b, 0));
   });
 
   it('is played by a game that is on the couch, at a level its band really has', () => {
@@ -103,5 +109,11 @@ describe('the couch courses', () => {
     expect(countOf(courseInfo('sunbeams'), 15)).toBe('15 turns');
     expect(countOf(courseInfo('codedoors'), 1)).toBe('1 try');
     expect(countOf(courseInfo('codedoors'), 16)).toBe('16 tries');
+    expect(isCourseId('robotpath')).toBe(true);
+    expect(countOf(courseInfo('robotpath'), 1)).toBe('1 step');
+    expect(countOf(courseInfo('robotpath'), 51)).toBe('51 steps');
+    expect(isCourseId('cardtables')).toBe(true);
+    expect(countOf(courseInfo('cardtables'), 1)).toBe('1 flip');
+    expect(countOf(courseInfo('cardtables'), 40)).toBe('40 flips');
   });
 });

@@ -31,6 +31,7 @@ export async function createFixture(browser, suite) {
     (suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
     (suite === 'comeback' && process.env.COMEBACK_PHONE === '1') ||
     (suite === 'woods' && process.env.WOODS_ONLY === 'shop' && process.env.FROM_LEVEL === '13') ||
+    (suite === 'woods' && process.env.WOODS_ONLY === 'grow' && Number(process.env.FROM_LEVEL) >= 12) ||
     (suite === 'movienight' && process.env.MOVIE_PHONE === '1') ||
     (suite === 'mossypath' && process.env.MOSSY_ONLY === 'upright') ||
     (suite === 'raingarden' && Number(process.env.FROM_LEVEL) >= 5) ||
@@ -44,6 +45,7 @@ export async function createFixture(browser, suite) {
         ['two', 'tell'].includes(process.env.THOUGHT_BUBBLES_ONLY))) ||
     (suite === 'wordglue' &&
       ['kind', 'reversed', 'name', 'doer', 'ending'].includes(process.env.WORDGLUE_ONLY)) ||
+    (suite === 'villageplanner' && process.env.VILLAGE_PLANNER_PHONE === '1') ||
     (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY))
       ? { hasTouch: true, isMobile: true }
       : {}),

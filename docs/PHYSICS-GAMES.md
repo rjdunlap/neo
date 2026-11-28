@@ -53,7 +53,7 @@ All names are generic. "Tier" is the list above. Effort is relative (S / M / L).
 | **Lift It** ([machines/tools study](deep-dives/subjects/machines-tools.md), which refines this seed) | Tinybop Simple Machines; Physics Playground's agents | Get a heavy crate up to the treehouse with a lever, a ramp, a pulley or a wedge; a movable load pulley with two supporting strands takes twice the rope travel in the ideal model, a ramp a longer push. Simple machines and trade-offs; several machines work | preschool–school | 1 (stated rules) | M; [built 2026-10-20, levels 1–6](definitions/lift-it.md) (pulleys only; ramps and levers later) |
 | **Build a Boat** (a mode of Sink or Float; Raft Delivery in the notebook is the nearby game) | the classic foil-boat challenge | Shape a hull wide or deep to carry more cargo before it sinks; compare two boats; the model is stated, not full fluid physics. *Same material, change the shape* belongs to Make it float (Sink or Float level 7, [definition](definitions/make-it-float.md)); Build a Boat keeps cargo and hull capacity | school | 1 (a stated buoyancy rule) | M |
 | **Mobile Maker** (a Seesaw Balance extension) | Calder mobiles, PhET Balancing Act | Hang objects on a mobile's arms so it balances; heavier near the middle, lighter far out. Unequal arms and the idea of torque | school | 1 (a torque rule, in eighths as Block Tower does) | M |
-| **Draw a Ramp** | Physics Playground, Crayon Physics; notebook's Rainbow Road | Draw a line that becomes a ramp, a bridge or a slide so a ball reaches the balloon; many solutions, replay and undo | preschool–school | 3 (circle-vs-segment collisions; a small extension of `ball.ts`) | M–L |
+| **Draw a Ramp** | Physics Playground, Crayon Physics; notebook's Rainbow Road | Draw a line that becomes a ramp, a bridge or a slide so a ball reaches the balloon; many solutions, replay and undo | preschool–school | 3 (circle-vs-capsule solver in `logic.ts`) | M–L; [defined 2026-11-27, levels 1–3](definitions/draw-a-ramp.md) |
 | **More parts for Chain Reaction** (a ladder, not a new game) | Thinkrolls' chapters, GraviTrax | Add one part per level range: a see-saw, a fan, a spring, a magnet, a bell; each introduces one force. The same sockets and replay | pre-K–school | 2 | M |
 | **Vine Snip** and **Block Topple** | [vine-snip.md](definitions/vine-snip.md) (defined 2026-11-03), [block-topple.md](definitions/block-topple.md) (defined 2026-11-03) | Both defined | | 3 | M–L |
 
@@ -80,7 +80,7 @@ Parents: the family table (play together, chunk 16) is the natural home for the 
 
 1. **Domino Run** is built (2026-10-20, a tier-1 game for toddlers to school; [definition](definitions/domino-run.md)).
 2. **Swing Pals** is built (2026-10-20, levels 1–6; [definition](definitions/swing-pals.md)), and **Lift It** is built (2026-10-20, levels 1–6; [definition](definitions/lift-it.md)).
-3. Make the physics-engine decision (settled for **Vine Snip** and **Block Topple**, both now defined) before **Draw a Ramp** and **Pond Merge**.
+3. Make the physics-engine decision (settled October 23 for rule-model solvers in `logic.ts`; **Vine Snip** and **Block Topple** built, **Draw a Ramp** defined) before **Pond Merge**.
 
 ## Open decisions (for the developer)
 
