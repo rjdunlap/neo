@@ -1411,6 +1411,62 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           );
           continue;
         }
+        if (plan.mode === 'which') {
+          // Which coin? (dive slice 9, level 14): no bell or slate; two wrong coins (a miss each, the second glows the asked
+          // coin and counts one hint), then the asked coin; later orders are answered straight away.
+          const coin = (v) => `neo.scene.game.purse.find((p) => p.value === ${v}).node`;
+          const settle = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const ask = await page.evaluate(() => neo.scene.game.order.ask);
+            if (n === 0) {
+              assert.deepEqual(
+                await page.evaluate(() => [
+                  neo.scene.game.bell.visible,
+                  neo.scene.game.purse.map((p) => p.value),
+                  neo.scene.game.purse.every((p) => p.node.children.length === 3),
+                ]),
+                [false, [1, 2, 5], true],
+                'no bell; the 1, 2 and 5 coins in the purse, each with pips',
+              );
+              const others = plan.coins.filter((v) => v !== ask);
+              await tap(coin(others[0]));
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'a wrong coin is a miss');
+              assert.equal(await page.evaluate(() => neo.scene.game.coinGlow.visible), false);
+              await tap(coin(others[1]));
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss is the hint');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.coinGlow.visible),
+                true,
+                'the asked coin glows',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              assert.ok(
+                await page.evaluate(() => {
+                  const g = neo.scene.game;
+                  const right = g.purse.find((p) => p.value === g.order.ask).node;
+                  return g.coinGlow.x === right.x && g.coinGlow.y === right.y;
+                }),
+                'the glow follows the asked coin when the phone turns upright',
+              );
+              await screenshot('market-stall-14-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
+            await tap(coin(ask));
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          log(
+            'Market Stall 14 (Which coin?): no bell, pips, two wrong coins, the glowing hint, saved score and sticker',
+          );
+          continue;
+        }
         if (plan.mode === 'trade') {
           const counter = 'neo.scene.game.tradeCounter';
           const bell = 'neo.scene.game.bell';

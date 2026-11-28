@@ -8,8 +8,8 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| preschool | 1–2 |
-| pre-K | 2–4 |
+| preschool | 1, 2, 14 |
+| pre-K | 2, 14, 3, 4 |
 | school | 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12 |
 
 | Level | Plays like |
@@ -27,12 +27,13 @@
 | 11 | Change from twenty: a customer pays 20 for a price of 11 to 19, count up to give the change |
 | 12 | Can I buy it? A purse of 6 to 14 shells against three prices, then spend it all on two things |
 | 13 | Trade up: swap small coins for a bigger one until 6 to 12 shells are the fewest coins |
+| 14 | Which coin? Give the shopkeeper the one, two or five-shell coin asked for |
 
 <!-- end generated -->
 
 **Starts as:** count out shell coins at fruit, flower or balloon stalls
 
-**Grows into:** ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells, telling how much is in a purse (level 8), paying 11 to 20 with a ten-shell coin (level 9), adding two prices past ten (level 10), making change from 20, deciding what a purse can buy and trading small coins for larger ones without changing their total
+**Grows into:** naming the one, two and five-shell coins (level 14, between levels 2 and 3), ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells, telling how much is in a purse (level 8), paying 11 to 20 with a ten-shell coin (level 9), adding two prices past ten (level 10), making change from 20, deciding what a purse can buy and trading small coins for larger ones without changing their total
 
 ## Design notes
 
@@ -53,5 +54,7 @@ Level 6 counts up the change: each change coin says its value, then the shopkeep
 **Level 12, Can I buy it? (2026-11-23).** An `afford` plan, coins 1, 2, 5 and 10, four orders: two choose orders, then two spend orders. Choose: tap a good the purse covers; nothing is spent. The first too-dear tap is a miss, a later one is the nudge, which lights the cheapest affordable good (one hint per order). Spend: pick two goods, a free put-back, a third pick refused free; the bell with fewer than two picked is free; a wrong pair is a miss and stays picked; two misses light the right pair (one hint per order). Departures from the definition: the purse amount is folded into `shop.afford.ask` and `shop.spend.ask` (no `shop.afford.purse`), the shelf is shifted right by `SHELF.shift` (40) so the leftmost good stays inside the awning, the mat coins are drawn at scale 1.25, and `LEVELS.school.order` was added with level 13 and places Trade up before Can I buy it?. Rules and tests are in `logic.ts` and `logic.test.ts`; the placement is covered by `upright.test.ts`.
 
 **Level 13, Trade up (2026-11-23).** The school ladder ends 11, 13, 12. Three orders begin with 10 ones, then two seeded heaps worth 6–12 shells with no repeat in adjacent orders. Tap coins to pick them, then tap Trade when they add up to a 2-, 5- or 10-shell coin. Undo restores the last heap in its original order. The slate keeps the starting total and the bell accepts any heap with the fewest coins. Early bells and unusable selections are free. The second early bell lights the coins for the first exchange on a shortest path or lights Undo when no exchange path reaches the fewest. Further bells can refresh the help, with one hint counted per order. The exchange rules are in `trade-logic.ts` and the heap and control handling are in `trade-counter.ts`. Coins have 100-unit cells in two rows of six on a centred mat. Undo, Trade and the bell sit 170 units apart along the foot. The short layout keeps the mat above the caption, and the awning clears Help. The four fixed feedback lines have Kokoro clips. The slotted instruction, exchange and completion lines use device speech.
+
+**Level 14, Which coin? (2026-11-27).** A `which` plan with coins 1, 2 and 5, played between levels 2 and 3 (preschool 1, 2, 14; pre-K 2, 14, 3, 4; not in the school ladder, and `entryLevels: [14]` starts a school player carried there at level 3). Four orders ask for each coin once in a shuffled order, then one more that is not the last asked (`makeWhichOrders`). Each order shows one good whose tag is the asked worth, so a muted round still shows which coin, and the shopkeeper says "Give me the five-shell coin!" (`shop.which`). The coins carry pips as at levels 1–3 (`hasPips`). No bell and no slate: one tap on the asked coin hands it over, the shopkeeper counts its pips aloud ("1, 2, 3, 4, 5", `pipCount`) and takes it. Another coin is a boing and a miss that says what that coin is worth and stays in the purse; the second miss of an order glows the asked coin (one hint per order, `coinGlow`, which follows the coin when the phone turns). The coin's first-tap naming of levels 2, 3 and 9 does not apply here.
 
 **Upright on a phone (2026-11-19).** `stallLayout` in `logic.ts` places the stall, and `purseFor`, `AWNING`, `COIN_HIT`, `BELL_HIT` and `MAT_BOX` live there too, tested over every level of every band and five upright views (plus 360 × 800) in `upright.test.ts`. Held upright the whole stall moves down the tall screen instead of sitting at the top over an empty lower half: the awning starts at 220 or lower (clear of Home), the counter sits at the larger of 580 and 45% of the height, capped so its front stays above the purse, and the awning is drawn from `awningTop`. Sideways keeps the old layout.

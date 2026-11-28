@@ -343,8 +343,10 @@ describe('Market Stall', () => {
   });
 
   describe('a total she can see (TotoLogic P8)', () => {
-    it('stays hidden on pair, change and purse levels', () => {
-      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([4, 6, 8, 10, 11]);
+    it('stays hidden on pair, change, purse and Which coin? levels', () => {
+      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([
+        4, 6, 8, 10, 11, 14,
+      ]);
       expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9, 12, 13]);
     });
 

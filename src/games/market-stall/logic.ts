@@ -9,10 +9,11 @@ import type { BandLevels } from '../../progress/difficulty';
  * keep the stall (a customer pays with a 10 and the child gives the change), pay with the fewest coins, count a purse of
  * mixed coins and tap the number card that says how much is in it, then pay prices from 11 to 20 with a ten-shell coin,
  * then give the change from a 20, counting up from the price, and at the top say whether a purse can buy each of three things
- * and spend a whole purse on two of them.
+ * and spend a whole purse on two of them. Between levels 2 and 3, *Which coin?* (level 14) asks for the one, two or
+ * five-shell coin by name, before she pays with fives.
  */
 export type ShopMode =
-  'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse' | 'afford' | 'trade';
+  'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse' | 'afford' | 'trade' | 'which';
 
 export interface ShopPlan {
   mode: ShopMode;
@@ -109,13 +110,27 @@ export const PLANS: ShopPlan[] = [
     orders: 3,
     name: 'Trade up: swap small coins for a bigger one until 6 to 12 shells are the fewest coins',
   },
+  {
+    // Level 14, Which coin? (dive slice 9): an entry between levels 2 and 3, placed by `order`. Nothing is bought.
+    mode: 'which',
+    coins: [1, 2, 5],
+    price: [1, 5],
+    orders: 4,
+    name: 'Which coin? Give the shopkeeper the one, two or five-shell coin asked for',
+  },
 ];
 
+/** Which coin? (level 14): coin recognition between levels 2 and 3, an entry level placed by `order`. */
+export const WHICH_LEVEL = 14;
+
 export const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 4 },
-  school: { min: 3, max: PLANS.length, order: [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12] },
+  preschool: { min: 1, max: WHICH_LEVEL, order: [1, 2, WHICH_LEVEL] },
+  prek: { min: 2, max: WHICH_LEVEL, order: [2, WHICH_LEVEL, 3, 4] },
+  school: { min: 3, max: 13, order: [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12] },
 };
+
+/** Levels below the school ladder that an older band does not list; carried there, they start at its easiest level. */
+export const ENTRY_LEVELS = [WHICH_LEVEL] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -137,6 +152,8 @@ export interface Order {
   tradeAmount?: number;
   /** On 'afford' levels: whether she chooses one thing the purse can buy or spends it all on two, and the purse's total. */
   afford?: { kind: 'choose' | 'spend'; purse: number };
+  /** On the Which coin? level: the coin the shopkeeper asks for (the order's one price). */
+  ask?: number;
 }
 
 /** An order at the afford level: three prices on the shelf and a purse. */
@@ -145,6 +162,7 @@ export type AffordOrder = Order & { afford: { kind: 'choose' | 'spend'; purse: n
 /** The amount to put on the counter (the price, both prices, or the change from what was paid), or what the purse holds. */
 export function target(plan: ShopPlan, o: Order): number {
   if (o.tradeAmount !== undefined) return o.tradeAmount;
+  if (o.ask !== undefined) return o.ask;
   if (o.purse) return sum(o.purse);
   if (o.afford) return o.afford.purse;
   const total = o.prices.reduce((a, b) => a + b, 0);
@@ -157,8 +175,19 @@ export function makeTradeOrders(rng: Rng): number[] {
   return [10, second, rng.pick(amounts.filter((amount) => amount !== second))];
 }
 
+/**
+ * Which coin? asks for each of the level's coins once, in a shuffled order, then one more that is not the last asked, so no
+ * coin is asked twice running. The tag shows the asked value, so a muted round still says which coin.
+ */
+export function makeWhichOrders(plan: ShopPlan, rng: Rng): Order[] {
+  const asks = rng.shuffle([...plan.coins]);
+  while (asks.length < plan.orders) asks.push(rng.pick(plan.coins.filter((c) => c !== asks.at(-1))));
+  return asks.map((ask) => ({ prices: [ask], ask }));
+}
+
 export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
   if (plan.mode === 'afford') return makeAffordOrders(plan, rng);
+  if (plan.mode === 'which') return makeWhichOrders(plan, rng);
   if (plan.mode === 'trade') return makeTradeOrders(rng).map((tradeAmount) => ({ prices: [], tradeAmount }));
   const out: Order[] = [];
   if (plan.mode === 'purse') {
@@ -310,6 +339,15 @@ export function coinToName(level: number, value: number, named: ReadonlySet<numb
 /** Levels whose coins carry pips (fresh 2): the ones where she is still learning what each coin is worth. */
 export const PIP_LEVELS = 3;
 
+/** Whether a level's coins carry pips: the first three, and Which coin?, where the pips are what she counts. */
+export const hasPips = (level: number) => level <= PIP_LEVELS || level === WHICH_LEVEL;
+
+/** The shopkeeper's count of a coin's pips when it is handed over: "1, 2, 3, 4, 5". */
+export const pipCount = (value: number) => Array.from({ length: value }, (_, i) => i + 1).join(', ');
+
+/** The word for a coin on the Which coin? level, said in the ask and when a wrong coin is named. */
+export const coinWord = (value: number) => (value === 1 ? 'one' : COIN_WORDS[value]);
+
 /** On a coin with pips the numeral shrinks and lifts (in coin radii) so the pips have room below it. */
 export const PIP_NUMERAL = { scale: 0.8, y: -0.2 };
 
@@ -440,7 +478,7 @@ export function purseFor(view: { w: number; h: number }, n: number): { x: number
  * reach. Not in pair or purse mode, where adding up is the puzzle, nor in change mode, where the ten strip counts up instead.
  */
 export const showsTotal = (plan: ShopPlan) =>
-  plan.mode !== 'pair' && plan.mode !== 'change' && plan.mode !== 'purse';
+  plan.mode !== 'pair' && plan.mode !== 'change' && plan.mode !== 'purse' && plan.mode !== 'which';
 
 /** The number on the counter's slate: the coins' sum, or null when the level keeps it back or the counter is empty. */
 export const totalShown = (plan: ShopPlan, coins: number[]): number | null =>
