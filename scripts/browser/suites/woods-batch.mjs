@@ -926,6 +926,68 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Level 16, Hop along (lap and toddler): six free taps on the pond, one on the bank; nothing is wrong.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [16]).includes(16)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 16);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.along');
+      const said = await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.alongSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.alongSaid.push([String(id), vars?.n]), say(id, vars));
+        return true;
+      });
+      assert.ok(said);
+      // A real tap at a place in the pond (near a pad, not on it), or on the bank.
+      const tapPad = async (k, dy = 0) => {
+        await page.evaluate(
+          ({ k, dy }) => {
+            const g = neo.scene.game;
+            const s = g.L.spots[k];
+            const p = g.pond.toGlobal({ x: s.x, y: s.y + dy });
+            kit.tap(p.x, p.y);
+          },
+          { k, dy },
+        );
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      await tapPad(3, 50);
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 3, 'a tap near pad 3 hops there');
+      assert.deepEqual(
+        await page.evaluate(() => alongSaid.filter(([id]) => id === 'count').map(([, n]) => n)),
+        [1, 2, 3],
+        'each landing says its number',
+      );
+      await screenshot('frog-hop-16-phone');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        const b = g.L.bank;
+        const p = g.bank.toGlobal({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
+        kit.tap(p.x, p.y);
+      });
+      await page.waitForTimeout(250);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 0, 'the bank sends the frog home');
+      assert.ok(await page.evaluate(() => alongSaid.some(([id, n]) => id === 'hop.along.home' && n === 3)));
+      await tapPad(5);
+      await tapPad(5);
+      await tapPad(2, -40);
+      assert.equal(await page.evaluate(() => neo.scene.finished), false, 'five taps do not end the round');
+      await tapPad(1);
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 16: pond taps hop pad by pad saying each number, the bank sends it home, the sixth tap ends with no misses, phone screenshot, saved sticker passed',
+      );
+    }
+
     // Level 15, Where does it go?: three unscored guesses on a bare 0–100 line, then a ten placed on the line marked in tens.
     if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [15]).includes(15)) {
       await page.setViewportSize({ width: 390, height: 844 });

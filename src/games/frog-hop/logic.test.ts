@@ -183,7 +183,7 @@ describe('Frog Hop support', () => {
   });
 
   it('covers the whole ladder in school and rejects nonexistent descriptions', () => {
-    expect(frogHop.levels('school')).toEqual({ min: 3, max: PLANS.length });
+    expect(frogHop.levels('school')).toEqual({ min: 3, max: 15 });
     expect(frogHop.describeLevel(0)).toBeUndefined();
     expect(frogHop.describeLevel(PLANS.length + 1)).toBeUndefined();
     expect(SCRIPT['hop.ten'][0]).toContain('{k}');

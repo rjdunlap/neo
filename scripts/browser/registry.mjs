@@ -1365,7 +1365,7 @@ export async function runSuite(suite, fixture) {
       neo.go.start();
     });
     await pickFirst();
-    await scene('MapScene');
+    await scene('HomeScene'); // Picking a player opens Home's yard since the cutover (#2336).
   }
   if (suite === 'discovery')
     await (

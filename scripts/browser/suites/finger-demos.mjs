@@ -134,7 +134,7 @@ export function createSuite({ page, errors, log, scene }) {
     await page.evaluate(() => {
       neo.go.hub();
     });
-    await scene('MapScene');
+    await scene('HomeScene'); // The house goes Home's yard since the cutover (#2336).
   }
 
   return { fingerDemos };

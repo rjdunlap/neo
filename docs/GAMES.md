@@ -238,7 +238,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Frog Hop
 
-*preschool–school* · [Frog Hop](games/frog-hop.md)
+*lap–school* · [Frog Hop](games/frog-hop.md)
 
 ### Picture Graph
 
