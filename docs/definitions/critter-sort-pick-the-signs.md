@@ -1,5 +1,7 @@
 # Critter Sort level 10: Pick the signs (definition)
 
+**Built:** level 10 (PR #2371), built 2026-11-28; this is the last level in the Critter Sort ladder, so no further section to read.
+
 Defined 2026-11-28 on `claude/define-critter-sort-pick-the-signs` ([PR #2367](https://github.com/rjdunlap/neo/pull/2367)) as slice 9 of the [Critter Sort deep dive](../deep-dives/critter-sort.md#build-slices-in-order), from its [level 10 row](../deep-dives/critter-sort.md#new-levels-on-top). Decision 3 there was settled on 2026-10-23: this level is **play only**, and nothing is kept in the treehouse or the journal. Every [open decision](#open-decisions) below has a default the build uses, so none waits on the developer.
 
 **What it adds:** level 10 of `critter-sort` (`src/games/critter-sort/`), filling the ID that has been reserved for it. Six critters wait on the grass beside two empty overlapping hoops. Three picture signs are offered, and she taps two of them to put them on the hoops. Then she sorts the six critters by **her own** rules: left, right, the middle for both, or the leaf mat for neither.
@@ -30,18 +32,18 @@ Two rounds make one sticker. Each round deals a new seeded group of six critters
 ### 1. Choose (never counted)
 
 1. The hoops start empty, with blank sign boards above them. The three offered signs sit in a row **across the empty hoops** at the hoops' height (`layout.choices` x positions, `centers[0].y`). They use level 4's guess tiles: 140 × 120 drawn, with a 148 × 128 hit area. They sit there rather than in level 4's bottom row because, upright on a phone, the bottom row of loose critters is at `h - 25`, which would overlap a tray at `h - 90`. The empty hoops hold nothing to cover yet.
-2. Spoken (`ctx.instruct('sort.pick')`): "You choose the rules! Tap two signs to put on the hoops."
+2. Spoken (`ctx.instruct('sortpick.choose')`): "You choose the rules! Tap two signs to put on the hoops."
 3. The first tap sends that sign to the left board and the second to the right board, each with a short tween. A sign already on a board cannot be tapped from the tray again, so the same sign never goes on both hoops.
 4. Until the first critter is dropped, tapping a board's sign sends it back to its tray place. That is free.
 5. When both boards are full, the third sign fades out and is untracked. The tray is gone before any critter can be dragged. Critters are not draggable while she is choosing (`drag.enabled = false`), and a tap on one says the choosing line again.
-6. Spoken (`ctx.instruct('sort.pick.go', { a, b })`): "Your hoops! One is for critters {a}, the other for critters {b}. Critters that fit both go in the middle. Critters that fit neither go on the leaf mat." The pet repeats this line from then on.
+6. Spoken (`ctx.instruct('sortpick.go', { a, b })`): "Your hoops! One is for critters {a}, the other for critters {b}. Critters that fit both go in the middle. Critters that fit neither go on the leaf mat." The pet repeats this line from then on.
 
 ### 2. Sort by her rules
 
 1. From here it is level 3's `venn` behaviour with the explicit leaf mat, and `round.rules` set to her two choices in board order. `placeOf`, `sortPlaceAt`, `spotFor`, `hintFor` (with `mat`) and `nextToSort` are used unchanged.
 2. **The signs lock at the first drop.** Changing a rule after sorting has started would have to undo placed critters, and level 8 already teaches re-sorting. The [alternative](#open-decisions) is a "new signs" button.
-3. **The middle or a one-sign part may be empty.** Her choice can be two signs no critter shares (`brown` and `white`), or one sign whose critters all fit the other too. That is a true result about her rules, not a fault. When the round finishes with an empty middle, she hears `sort.pick.nomiddle`: "No critter fits both of your signs, so the middle stays empty. That is a real answer!" An empty one-sign part needs no line, because the diagram already shows it.
-4. When all six are placed: `sort.pick.yay`, "You made your own sort! Your hoops were critters {a} and critters {b}." Round 2 deals new critters and a new offer.
+3. **The middle or a one-sign part may be empty.** Her choice can be two signs no critter shares (`brown` and `white`), or one sign whose critters all fit the other too. That is a true result about her rules, not a fault. When the round finishes with an empty middle, she hears `sortpick.nomiddle`: "No critter fits both of your signs, so the middle stays empty. That is a real answer!" An empty one-sign part needs no line, because the diagram already shows it.
+4. When all six are placed: `sortpick.yay`, "You made your own sort! Your hoops were critters {a} and critters {b}." Round 2 deals new critters and a new offer.
 
 ## Misses, hints and glow
 
@@ -85,11 +87,11 @@ Seeds 0–199 throughout.
 - The board signs are drawn only after a choice. `ruleIcon(rule)` is reused, so there is no new art.
 - While choosing, `busy` stays false. Tile taps use `onTap` with a 350 ms cooldown, and the tiles keep level 4's touch-down feedback.
 - `destroy()` already removes `options`. The tray fade's tween is scene-owned (`ctx.tw`), and its completion checks that the round is still current, as the example line does today.
-- `autotouch()`: tap the two tiles `pickOrder` names, wait for `sort.pick.go`, then drag as at level 3.
+- `autotouch()`: tap the two tiles `pickOrder` names, wait for `sortpick.go`, then drag as at level 3.
 
 ## Voice lines (`voice.ts`)
 
-New: `sort.pick`, `sort.pick.go`, `sort.pick.nomiddle` and `sort.pick.yay`, with the texts above. Then run `node scripts/content-barrels.mjs`. Device speech says them until the next clip batch, as for the fresh rules.
+New: `sortpick.choose`, `sortpick.go`, `sortpick.nomiddle` and `sortpick.yay`, with the texts above (prefix `sortpick`, which the clip renderer skips, so they stay on device speech and need no rendered clip in a cloud build). Then run `node scripts/content-barrels.mjs`. Device speech says them until the next clip batch, as for the fresh rules.
 
 ## How-to card (`howto.ts`)
 
