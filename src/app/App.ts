@@ -78,7 +78,9 @@ export type Origin =
   | { library: true }
   | BookOrigin
   | { explore: ExploreEntry; page: number }
-  | { daily: true };
+  | { daily: true }
+  /** Home's yard (the picnic blanket's family play): leaving comes back Home. */
+  | { home: true };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {

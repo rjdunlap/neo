@@ -14,8 +14,8 @@ export async function loadHomeBackdrop(): Promise<void> {}
  * fibre and outline each frame. The picture is sized for this screen (its width in device pixels, plus room for the
  * cover fit's overhang); `?nopaper` keeps it flat and live.
  */
-export function homeBackdrop(): Container {
-  const c = paperHome();
+export function homeBackdrop(tree = true): Container {
+  const c = paperHome(tree);
   if (typeof window === 'undefined' || !PAPER_ON) return c;
   const walk = (n: Container) => {
     if (n instanceof Graphics) paperizeContext(n.context);

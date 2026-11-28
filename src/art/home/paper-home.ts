@@ -8,7 +8,8 @@ import { BACKDROP } from '../../creatures/home-layout';
  * (`BACKDROP.floor`), so every layout placed on the picture still fits. A wide phone shows only the lower 700 units or so,
  * so everything that matters stands low.
  */
-export function paperHome(): Container {
+/** `tree` false leaves the treehouse out: Home stands its own (`yardTreehouse`) where an upright phone can see it. */
+export function paperHome(tree = true): Container {
   const { w, h, floor } = BACKDROP;
   const L = -w / 2,
     T = -h,
@@ -16,10 +17,14 @@ export function paperHome(): Container {
   const c = new Container();
   const back = new Graphics();
   const front = new Graphics();
-  const tree = treehouse();
-  tree.scale.set(0.72);
-  tree.position.set(-480, ground + 40);
-  c.addChild(back, tree, front);
+  c.addChild(back);
+  if (tree) {
+    const house = treehouse();
+    house.scale.set(0.72);
+    house.position.set(-480, ground + 40);
+    c.addChild(house);
+  }
+  c.addChild(front);
   c.eventMode = 'none';
 
   const g = back;

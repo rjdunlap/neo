@@ -12,6 +12,15 @@ export const HOME_NAMES = {
   daily: 'Today’s six',
 } as const;
 
+/** The things in Home's yard (`yardLayout`): their pills name where each one leads. Play with {pet} is `playName`. */
+export const YARD_NAMES = {
+  board: 'Today’s six',
+  arcade: 'All games',
+  signpost: 'The island',
+  blanket: 'Family play',
+  basket: 'New friend',
+} as const;
+
 /** The result's buttons at the root (`GameScene.showResult`). The way out is Back at the root, the house Home. */
 export const RESULT_NAMES = {
   again: 'Again',

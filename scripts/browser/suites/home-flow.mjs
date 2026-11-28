@@ -258,7 +258,8 @@ export function createSuite({
           (entry === null || neo.scene.page === at),
         { entry, at },
       );
-    await tap('neo.scene.explore');
+    // Home is a yard since 2026-11-28: its signpost opens Places; Explore's entries page is still a route.
+    await page.evaluate(() => neo.go.explore());
     await explore(null);
     assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.entry)), [
       'places',
@@ -298,7 +299,7 @@ export function createSuite({
       const { forgetArcade } = await import('/src/content/arcade.ts');
       forgetArcade();
     });
-    await tap('neo.scene.explore');
+    await page.evaluate(() => neo.go.explore());
     await explore(null);
     const pressed = await page.evaluate(() => {
       const arcade = neo.scene.cards.find((c) => c.entry === 'arcade').node;
