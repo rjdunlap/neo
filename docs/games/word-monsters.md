@@ -12,7 +12,7 @@
 | toddler | 1, 15, 2 |
 | preschool | 15, 2, 3, 4, 5 |
 | pre-K | 3–6 |
-| school | 5, 6, 7, 8, 10, 16, 11, 12, 14, 13, 17, 18 |
+| school | 5, 6, 7, 8, 10, 19, 16, 11, 12, 14, 13, 17, 18 |
 
 | Level | Plays like |
 | --- | --- |
@@ -34,12 +34,13 @@
 | 16 | Blend it: the monsters say their sounds one by one; tap the picture of the word they make |
 | 17 | The magic e: add the quiet e to the end and the vowel says its name (cap to cape) |
 | 18 | Change one sound: tap out one letter at a time to climb a word ladder (hat, cat, can, cap, cup) |
+| 19 | Which vowel? "What is in the middle of pig?" Tap the one of five vowel monsters |
 
 <!-- end generated -->
 
 **Starts as:** tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster)
 
-**Grows into:** find the first letter of her name, then find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, hat, dog), then the last sound of a word ("what does cat end with?"), say a word slowly while building it, then fix one letter in the pet’s word, then build words where one monster wears two letters for one sound (fish, duck, bath), then add a quiet e to the end of a built word to make a new one (cap, cape), then climb a four-rung word ladder by changing one letter at a time (hat, cat, can, cap, cup)
+**Grows into:** find the first letter of her name, then find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, hat, dog), then the last sound of a word ("what does cat end with?"), then the vowel in its middle ("what is in the middle of pig?"), say a word slowly while building it, then fix one letter in the pet’s word, then build words where one monster wears two letters for one sound (fish, duck, bath), then add a quiet e to the end of a built word to make a new one (cap, cape), then climb a four-rung word ladder by changing one letter at a time (hat, cat, can, cap, cup)
 
 ## Design notes
 
@@ -60,6 +61,8 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 **Level 16, Blend it (school, 2026-11-26, PR #2225).** Three monsters stand in the boxes' row, wearing the letters of a pictured word (m, a, p), and three picture cards wait below (mop, mat, map), all starting with the same letter. The monsters light in turn and say their sounds, never the word. She taps the picture they make, then the word is said and the next one comes. Tap a monster to hear the sounds again (free); a card tapped while the sounds are still playing only wiggles. A wrong card says its own word and sounds ("mat is mmm, aah, tuh. Listen again!") and the monsters' sounds run again; two wrong cards glow the right one (one hint). Three words a round with different first letters, the first one she can stretch (m, n, s, f, l or r), drawn from the pictured 3-letter words with no repeated letter or mirror pair, grouped by first letter, where a group needs at least three words (`BLEND_GROUPS`). It sits after level 10 in school's order, and it makes no phonics claim until the iPad voice's sounds are checked. The ghost finger taps the right card.
 
 **Level 17, The magic e (school, 2026-11-26, PR #2232).** A pictured word stands built in three boxes (c, a, p, with a cap picture) and a fourth box waits. Three loose monsters: the quiet e and two spares (s, d, t, r or g). She drags one into the fourth box. A spare says what it spells ("caps is a different word. Try the quiet e!"), and two misses glow the e (one hint). The e fits: the word is said (cap), the picture changes (cape), the vowel monster says its name ("ay") and the new word is said. Four pairs: cap/cape, can/cane, pin/pine, tub/tube; three a round. Taking the e away again is not built.
+
+**Level 19, Which vowel? (school, 2026-11-28, the deep dive's plan level 17).** Level 10's picture and tap, asking for the middle sound instead: a pictured three-letter word is said ("What is in the middle of pig?") and all five vowel monsters stand in a, e, i, o, u order every question, so only the sound tells them apart. Four words a round, each with a different vowel (`MIDDLE_WORDS`: the pictured three-letter words with a vowel in the middle, leaving out those ending in l, r or x, where the vowel blurs into the ending, as RF.K.2d does). A wrong vowel says who it is and its sound ("I'm E! I say eh."), two misses glow the right one (one hint), and tapping the picture says the word again (free). It sits right after level 10 in school's order (first, last, then middle sounds) and before Blend it. The vowel sounds are the device voice's stand-ins (aah, eh, ih, aw, uh); "eh" and "ih" have not been checked apart on a phone's voice, so it makes no phonics claim until they are. The ghost finger taps the right vowel.
 
 **Level 18, Change one sound (school, 2026-11-26, PR #2234).** A four-rung word ladder over five pictured three-letter words (`LADDER_CHAINS`, starting with hat → cat → can → cap → cup; eight chains, each visiting the first, middle and last slot). The current word stands in the three boxes above the picture of the next word. She taps the box that changes to hop its monster out to the waiting spot, then drags the new letter in. Pulling out a box and dragging the same letter back (or tapping a different box) is free; dropping a wrong new letter says who the monster is ("I'm M! I say mmm."), and two misses glow the box that changes, then after it is opened two more misses glow the right new monster. Once the new letter lands, the word sounds out box by box and becomes the starting word for the next rung.
 

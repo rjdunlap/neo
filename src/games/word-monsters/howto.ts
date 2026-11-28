@@ -46,6 +46,11 @@ export const HOW_TO: GameHowTo = {
       text: 'The monsters light up one by one and say their sounds. Listen, run the sounds together and tap the picture of the word they make. Tap a monster to hear the sounds again.',
     },
     {
+      from: 19,
+      to: 19,
+      text: 'Listen to the pictured word, then tap the vowel monster that says the sound in its middle. Tap the picture to hear the word again.',
+    },
+    {
       from: 17,
       to: 17,
       text: 'A word is built. Drag the quiet e to the empty box at the end and the vowel says its name. Another letter makes a different word.',

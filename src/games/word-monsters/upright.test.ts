@@ -44,8 +44,8 @@ const levels = [
 ].sort((a, b) => a - b);
 const building = ['build', 'spell', 'slow', 'team', 'repair', 'ladder', 'family', 'end'];
 
-it('covers levels 1 to 18', () => {
-  expect(levels).toEqual(Array.from({ length: 18 }, (_, i) => i + 1));
+it('covers levels 1 to 19', () => {
+  expect(levels).toEqual(Array.from({ length: 19 }, (_, i) => i + 1));
 });
 
 describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
@@ -134,7 +134,7 @@ describe.each(Object.entries(views))('Word Monsters upright on %s', (_, v) => {
             }
           }
           const picture =
-            plan.mode === 'last'
+            plan.mode === 'last' || plan.mode === 'middle'
               ? LAST_PICTURE
               : plan.mode === 'slow' || plan.mode === 'team' || q.repair || q.ladder
                 ? BUILD_PICTURE

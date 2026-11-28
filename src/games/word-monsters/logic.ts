@@ -17,6 +17,7 @@ export type MonsterMode =
   | 'family'
   | 'end'
   | 'last'
+  | 'middle'
   | 'slow'
   | 'repair'
   | 'team'
@@ -205,6 +206,20 @@ export const LADDER_PLAN: MonsterPlan = {
   name: 'Change one sound: tap out one letter at a time to climb a word ladder (hat, cat, can, cap, cup)',
 };
 
+/**
+ * Level 19, Which vowel? (the plan's level 17): level 10's picture and tap, but for the sound in the middle. All five
+ * vowel monsters stand in a, e, i, o, u order every time, so only the sound tells them apart. It follows last sounds in
+ * school's order: first, last, then middle, the hardest to hear (RF.K.2d).
+ */
+export const MIDDLE_LEVEL = 19;
+export const VOWELS = ['a', 'e', 'i', 'o', 'u'] as const;
+export const MIDDLE_PLAN: MonsterPlan = {
+  mode: 'middle',
+  rounds: 4,
+  choices: VOWELS.length,
+  name: 'Which vowel? "What is in the middle of pig?" Tap the one of five vowel monsters',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: MINE_LEVEL, order: [1, MINE_LEVEL, 2] },
@@ -213,13 +228,14 @@ export const LEVELS: BandLevels = {
   // 9 is lap's big monster, so the school order skips it.
   school: {
     min: 5,
-    max: LADDER_LEVEL,
+    max: MIDDLE_LEVEL,
     order: [
       5,
       6,
       7,
       8,
       LAST_LEVEL,
+      MIDDLE_LEVEL,
       BLEND_LEVEL,
       SLOW_LEVEL,
       REPAIR_LEVEL,
@@ -254,23 +270,25 @@ export const planFor = (level: number) =>
     ? BIG_PLAN
     : level === LAST_LEVEL
       ? LAST_PLAN
-      : level === MAGIC_LEVEL
-        ? MAGIC_PLAN
-        : level === LADDER_LEVEL
-          ? LADDER_PLAN
-          : level === BLEND_LEVEL
-            ? BLEND_PLAN
-            : level === SLOW_LEVEL
-              ? SLOW_PLAN
-              : level === REPAIR_LEVEL
-                ? REPAIR_PLAN
-                : level === TEAM_LEVEL
-                  ? TEAM_PLAN
-                  : level === FOUR_LEVEL
-                    ? FOUR_PLAN
-                    : level === MINE_LEVEL
-                      ? MINE_PLAN
-                      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+      : level === MIDDLE_LEVEL
+        ? MIDDLE_PLAN
+        : level === MAGIC_LEVEL
+          ? MAGIC_PLAN
+          : level === LADDER_LEVEL
+            ? LADDER_PLAN
+            : level === BLEND_LEVEL
+              ? BLEND_PLAN
+              : level === SLOW_LEVEL
+                ? SLOW_PLAN
+                : level === REPAIR_LEVEL
+                  ? REPAIR_PLAN
+                  : level === TEAM_LEVEL
+                    ? TEAM_PLAN
+                    : level === FOUR_LEVEL
+                      ? FOUR_PLAN
+                      : level === MINE_LEVEL
+                        ? MINE_PLAN
+                        : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -390,6 +408,14 @@ export type PictureWord = Word | (typeof END_WORDS)[number] | (typeof FAMILIES)[
 
 /** Level 10's words: every pictured word except those ending in x, whose "ks" is two sounds. */
 export const LAST_WORDS = PICTURE_WORDS.filter((w) => !w.endsWith('x'));
+
+/**
+ * Level 19's words: pictured three-letter words whose middle letter is a short vowel, leaving out those that end in l, r
+ * or x, where the vowel blurs into the ending (RF.K.2d leaves them out too).
+ */
+export const MIDDLE_WORDS = PICTURE_WORDS.filter(
+  (w) => w.length === 3 && (VOWELS as readonly string[]).includes(w[1]) && !'lrx'.includes(w[2]),
+);
 
 /** Letters that are each other's mirror (b d p q, i l): a word holding two would ask her to tell them apart unheard. */
 const MIRRORS = ['bdpq', 'il'];
@@ -657,6 +683,17 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng, childName = ''): Ques
         word,
         monsters: pickLetters(rng, plan.choices, decoy ? [last, first] : [last], WHO_POOL),
       });
+    }
+    return out;
+  }
+  if (plan.mode === 'middle') {
+    // No two words in a round share a vowel, so the answer moves along the row from one question to the next.
+    const vowels = new Set<string>();
+    for (const word of rng.shuffle([...MIDDLE_WORDS])) {
+      if (out.length >= plan.rounds) break;
+      if (vowels.has(word[1])) continue;
+      vowels.add(word[1]);
+      out.push({ answer: word[1], word, monsters: [...VOWELS] });
     }
     return out;
   }

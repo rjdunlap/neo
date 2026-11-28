@@ -13,7 +13,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     // Word Monsters: sounds, finding letters, first sounds, building words by dragging, (10) last sounds and (11) a word
     // built from the word alone, where tapping the boxes says its sounds (one hint per word); (13) the same with a wide
     // two-letter team monster (sh, ch, th, ck) that fills one box, shown at three views and in its box.
-    // Level 14 reuses the word-only round with four boxes and five loose monsters.
+    // Level 14 reuses the word-only round with four boxes and five loose monsters; 19 asks for a word's middle vowel.
     // MONSTER_LEVELS=10 plays only the listed levels.
     const monsterLevels = process.env.MONSTER_LEVELS
       ? process.env.MONSTER_LEVELS.split(',').map(Number)
@@ -36,6 +36,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
       if (
         mode === 'last' ||
+        mode === 'middle' ||
         mode === 'slow' ||
         mode === 'repair' ||
         mode === 'team' ||
