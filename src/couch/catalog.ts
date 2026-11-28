@@ -180,7 +180,8 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     lines: { 'neighbors.rhythm': 'couch.neighbors.rhythm' },
   },
   'jelly-drums': {
-    goal: 'couch.how.jelly-drums',
+    // The island's echo line, which already has a rendered clip; the control rows below name the buttons.
+    goal: 'jelly.echo',
     tagline: 'Hear a long tune on the jellies, then play it back note for note.',
     controls: [
       { parts: STICK, text: 'Move the ring along the jellies.', keys: 'Left / right arrows' },

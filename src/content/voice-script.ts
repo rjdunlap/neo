@@ -265,7 +265,6 @@ export const SHARED = {
   'couch.how.penguin-slide': ['Slide the penguin with the stick or arrow keys. It only stops when it bumps into something. Collect every fish!'],
   'couch.how.bouncy-launch': ['Push down to squash the spring, press the bottom button to launch, and land on the star cloud!'],
   'couch.how.memory-match': ['Move the highlight, press the bottom button to turn a card over, and find the pairs! In a face-off, a match earns another turn.'],
-  'couch.how.jelly-drums': ['Listen to the long tune, then play it back. Move the ring along the jellies and press the bottom button to play one. The left button plays the tune again!'],
   'couch.how.rhythm-neighbors': ['Listen to the bird and the frog reply, then play it back with the left and right buttons. Send it with the bottom button!'],
   'couch.how.light-lab': ['Move the highlight to a mirror and press the bottom button to turn it. Carry the sunbeam to every flower, then shine the sun!'],
   'couch.how.secret-code': ['Pick stones with left and right and press the bottom button to place them. When every slot is full, press again to turn the key. Use the clues to crack the code!'],
