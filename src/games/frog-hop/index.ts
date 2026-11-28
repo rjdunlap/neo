@@ -58,6 +58,7 @@ import { GUIDE_CORNER } from '../../creatures/home-layout';
 import { EstimateLine } from './estimate-scene';
 import { HopsLine } from './hops-scene';
 import { AlongPond } from './along-scene';
+import { DotsPond } from './dots-scene';
 import { DOTS_Y, drawDots, Pad } from './pad-art';
 /** A small code-drawn bloom at the front edge of a landmark pad: five petals round a yellow middle. */
 function drawFlower(g: Graphics, x: number, y: number) {
@@ -994,6 +995,8 @@ export const frogHop: GameModule = {
         ? new EstimateLine(ctx)
         : mode === 'along'
           ? new AlongPond(ctx)
-          : new FrogHop(ctx);
+          : mode === 'dots'
+            ? new DotsPond(ctx)
+            : new FrogHop(ctx);
   },
 };
