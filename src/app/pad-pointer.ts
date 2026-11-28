@@ -184,11 +184,15 @@ export function touchSpots(
   root: Container,
   screen: { w: number; h: number },
   skip?: Container,
-  extra: readonly Container[] = [],
+  extra: readonly (Container | PointerSpot)[] = [],
 ): PointerSpot[] {
   const out: PointerSpot[] = [];
   const big = screen.w * screen.h * 0.3;
   for (const c of extra) {
+    if (!(c instanceof Container)) {
+      if (c.x >= 0 && c.y >= 0 && c.x <= screen.w && c.y <= screen.h) out.push(c);
+      continue;
+    }
     const at = c.destroyed || !c.parent || !seen(c) ? null : middle(c);
     if (at && at.x >= 0 && at.y >= 0 && at.x <= screen.w && at.y <= screen.h)
       out.push({ x: at.x, y: at.y, ref: c });
@@ -245,7 +249,7 @@ export class PadPointer {
   /** What the hand can jump between: the scene's whole tree (the app's pointer follows the scene in play). */
   root: () => Container;
   /** Things the game says a finger would touch that have no listener of their own (`Game.pointerSpots`). */
-  extra: () => readonly Container[] = () => [];
+  extra: () => readonly (Container | PointerSpot)[] = () => [];
 
   constructor(
     private readonly canvas: HTMLCanvasElement,

@@ -298,9 +298,10 @@ export interface Game {
   /**
    * Things a finger would touch that the pad pointer cannot find by their listeners, because the game hears touches on a
    * layer or the stage and picks the nearest thing itself (Bubble Pop's bubbles). The hand jumps to them and follows them as
-   * they move (`src/app/pad-pointer.ts`). Never a hint: list every candidate, right or wrong.
+   * they move (`src/app/pad-pointer.ts`). A place with nothing drawn to name it (a landing, a square of a board) is a point
+   * in `ctx.stage` units. Never a hint: list every candidate, right or wrong.
    */
-  pointerSpots?(): readonly Container[];
+  pointerSpots?(): readonly (Container | { x: number; y: number })[];
   /**
    * What a capable player would press this frame, for the couch intro's "watch me" demo. The demo
    * hands it straight to `control()`, so it can only do what a real controller can.

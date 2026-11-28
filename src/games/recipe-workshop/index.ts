@@ -334,6 +334,13 @@ class RecipeWorkshop implements Game {
 
   /* Input -------------------------------------------------------------------------------------------- */
 
+  /** For the pad pointer: the middle of everything `targetAt` hears (one layer hears every touch). */
+  pointerSpots() {
+    const L = this.L;
+    const boxes = [...L.pots, ...L.toppers, L.spoon, L.undo, ...L.serves, ...L.bowls, L.card, ...L.bubbles];
+    return boxes.filter((b): b is Box => !!b).map((b) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 }));
+  }
+
   private targetAt(x: number, y: number): Target | null {
     const L = this.L,
       m = 15;
