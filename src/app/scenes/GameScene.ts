@@ -67,7 +67,8 @@ import {
   treehouseIcon,
 } from '../../ui/icons';
 import { FONT } from '../../ui/text';
-import { shellTag } from '../../ui/shells';
+import { shellTag, stampTag } from '../../ui/shells';
+import { STAMP_SHORT, type StampKind } from '../../content/stamps';
 import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
@@ -155,6 +156,8 @@ export class GameScene extends Scene {
   private resultPill: Container | null = null;
   /** Shells this round earned (the progression loop): 0 for a band that does not earn them, or at the day's cap. */
   private shellsEarned = 0;
+  /** Stamps this round earned (the progression loop), in goal order; their bonus is already in `shellsEarned`. */
+  private stampsEarned: StampKind[] = [];
   private resultReady = false;
   private navigating = false;
   private returningTouch = false;
@@ -874,6 +877,16 @@ export class GameScene extends Scene {
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
     this.shellsEarned = store.earnShells(this.mod.id, dayKey(new Date()));
+    // Stamps belong to the grown-up games, read from their grown-up ladder whatever level this round played.
+    if (this.mod.bands.includes('grownup')) {
+      const won = store.earnStamps(this.mod.id, this.mod.levels('grownup'), {
+        level: this.level,
+        misses: result.misses,
+        hints: result.hints,
+      });
+      this.stampsEarned = won.kinds;
+      this.shellsEarned += won.bonus;
+    }
     // A mix stop is settled once, by its first completed round; the round itself is settled above, as always.
     if (this.mixRound) mixMemory.finish(this.mixRound, store.data, seed);
     // Save the round and its sticker now: a write that only starts as the page closes can be lost.
@@ -889,11 +902,24 @@ export class GameScene extends Scene {
   private addShellTag(sticker: Container) {
     if (this.shellsEarned <= 0) return;
     const tag = shellTag(`+${this.shellsEarned} shells`, 26, true);
-    const short = this.view.h * (0.555 - 0.33) < 220;
+    const short = this.view.h * (0.555 - 0.33) < 220 + (this.stampsEarned.length ? 46 : 0);
     if (this.discovered.length && short) tag.x = 110 + 24 + tag.width / 2;
     else tag.y = 142;
     tag.rotation = 0.08; // level, against the sticker's tilt
     sticker.addChild(tag);
+    if (this.stampsEarned.length) {
+      // One or two are named; more (a first round straight at a clean top level) are counted, to fit an upright phone.
+      const n = this.stampsEarned.length;
+      const words =
+        n > 2
+          ? `${n} new stamps`
+          : `New stamp${n > 1 ? 's' : ''}: ${this.stampsEarned.map((k) => STAMP_SHORT[k]).join(', ')}`;
+      const stamp = stampTag(words, 22);
+      stamp.rotation = 0.08;
+      // Under the shells, or (beside the sticker) under them there.
+      stamp.position.set(tag.x + (tag.x ? (stamp.width - tag.width) / 2 : 0), tag.y + 46);
+      sticker.addChild(stamp);
+    }
   }
 
   /** Happy pet, confetti, a sticker, then "again?". */
