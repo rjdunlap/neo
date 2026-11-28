@@ -969,6 +969,11 @@ class MakerLane implements Game {
   }
 
   /** The ghost finger: tap the waving stall (level 1), drag the bundle to the maker who can use it (2), tap the right card (3). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // The demo hears a step's line out, as a child watching it would.
     if (this.busy || this.finished || this.stepLine) return null;

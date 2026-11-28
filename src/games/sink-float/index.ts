@@ -238,6 +238,11 @@ class SinkFloat implements Game {
    * The ghost finger on the how-to card: tap each thing to drop it in, guess the right button for it, or carry it to its basket.
    * (A guess is never a wrong answer here, but a demonstration shows the plain right one.)
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     if (this.plan.mode === 'shape') return this.choosing ? { tap: { on: this.tileFor('boat').node } } : null;

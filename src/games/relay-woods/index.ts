@@ -361,6 +361,11 @@ export class RelayWoods implements Game {
     this.asked = true;
     void this.ctx.say(this.relay.next === 'reset' ? 'relay-woods.reset-hint' : 'relay-woods.hint');
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (!this.alive || this.busy || this.finished) return null;
     // Demo previews the level's distinctive choice using the same input handlers.

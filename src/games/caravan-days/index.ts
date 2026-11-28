@@ -1943,6 +1943,11 @@ class CaravanDays implements Game {
    * The ghost finger: kneel, each bale, the camel; the reachable water; the safe plan to the city, then Go; the good the next
    * stop wants, then Go; both loads, the better last, then Go. Never a far oasis, a decoy or the smaller load.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     if (this.plan.level === 1) {

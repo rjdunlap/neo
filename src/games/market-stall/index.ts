@@ -419,6 +419,11 @@ class MarketStall implements Game {
   update() {}
 
   /** The ghost finger: put the coins of the payment on the counter one at a time, then ring the bell. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.order) return null;
     if (this.tradeCounter) return this.tradeCounter.touch(this.bell);

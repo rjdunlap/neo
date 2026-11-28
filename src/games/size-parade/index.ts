@@ -1442,6 +1442,11 @@ class SizeParade implements Game {
     }
   }
   /** The ghost finger: tap the biggest or smallest friend, carry the next friend in size to its place in the line, or (level 16) tap the one friend. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.done) return null;
     if (this.plan.mode === 'cycle') {

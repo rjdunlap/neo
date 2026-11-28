@@ -696,6 +696,11 @@ class FruitSums implements Game {
       .stroke({ width: 7, color: swatch.yellow.fill });
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.landed.every(Boolean)) return null;
     if (this.three) {

@@ -456,6 +456,11 @@ class StopAndGo implements Game {
    * The ghost finger: tap the light at the toy level; at the others wait over the car at the front (or the step button) until the
    * light is green and tap then; at the crossing give one road its green at a time.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const mode = this.plan.mode;

@@ -500,6 +500,11 @@ class ClockTower implements Game {
     }
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // The demo waits for the right answer's line and the next instruction, as a child hearing them would.
     if (this.busy || this.finished || this.grab || !this.task || this.unasked) return null;

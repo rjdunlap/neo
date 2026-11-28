@@ -561,6 +561,11 @@ class PhotoSafari implements Game {
   }
 
   /** The ghost finger on the how-to card: photograph the animal that was asked for, or each animal in turn. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || !this.scene) return null;
     if (this.mystery) {

@@ -545,6 +545,11 @@ class GoodnightRoom implements Game {
   }
 
   /** The ghost finger on the how-to card: say goodnight to each friend, or to the one named and then the next. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked) return null;
     // Level 11: a touch on the floor, off the friend, to show that anywhere works.

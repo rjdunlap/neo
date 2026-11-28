@@ -783,6 +783,14 @@ class PeekabooBarn implements Game {
   }
 
   /** The ghost finger on the how-to card: tap the place that hides who was asked for, or in free play each place in turn. */
+  /** Guided first play points at the bot's next spot; the bot's own place in its round of the houses is left as it was. */
+  showMove(): TouchIntent | null {
+    const keep = this.lastTouched;
+    const move = this.autotouch();
+    this.lastTouched = keep;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || this.asking > 0) return null;
     if (this.plan.mode === 'hide') {

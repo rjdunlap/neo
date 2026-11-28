@@ -1344,6 +1344,11 @@ class HelperHouse implements Game {
    * line up one gap, the heater line down one, then Watch; at level 9, Watch (the ordinary day earns its leaf, the heat
    * wave fails), the heater line down one gap, then Watch.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.run || this.busy || !this.layoutNow) return null;
     const m = nextMove(this.brief, this.board, this.daysPlayed);

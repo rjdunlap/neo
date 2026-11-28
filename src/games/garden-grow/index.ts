@@ -253,6 +253,11 @@ class GardenGrow implements Game {
   }
 
   /** The ghost finger: plant the beds, take the packet asked for, and make it rain when the seeds are right. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     if (this.big) return { tap: { on: this.bigBed }, receiver: this.tapLayer };

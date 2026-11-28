@@ -722,6 +722,11 @@ class KeyItOut implements Game {
     return this.key.endOf(name);
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.phase !== 'play') return null;
     const h = hint(this.board, this.page);

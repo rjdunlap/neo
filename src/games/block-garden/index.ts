@@ -415,6 +415,11 @@ class BlockGarden implements Game {
   }
 
   /** The ghost finger: carry the piece of the next placement in a shortest way from here and land its shadow on that spot. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.garden || this.carrying !== null) return null;
     const key = this.key();

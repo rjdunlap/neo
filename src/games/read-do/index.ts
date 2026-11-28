@@ -214,6 +214,11 @@ class ReadDo implements Game {
       .roundRect(c.x - 90, c.y - 85, 180, 170, 26)
       .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     return this.busy || this.finished || this.unasked || !this.task
       ? null

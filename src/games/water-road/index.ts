@@ -1002,6 +1002,11 @@ class WaterRoad implements Game {
   }
 
   /** The ghost finger: every stone then the handle; the closed frame then the open one, and the closed ring when asked; the block to the unheld slot, then the handle. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     const state = this.plan.level === 1 ? this.ks! : this.plan.level === 2 ? this.ps! : this.bs!;
