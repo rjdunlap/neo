@@ -48,7 +48,7 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 5. **Today's six extras** (from option C; defined below, built): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
 6. **Seasons** (from option C; defined below, built): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
 7. **Lantern Lodge** (from option B; defined below, built): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
-8. **A daily gift** for grown-ups (never stacking or shown as missed), then the `school` band with the prices grown-up play has set.
+8. **A daily gift** for grown-ups (never stacking or shown as missed; defined below, built), then the `school` band with the prices grown-up play has set (waits for the developer).
 
 ### Slice 2: shells for grown-ups
 
@@ -116,3 +116,12 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 - **Never taken away.** Built once, kept for good; no upkeep, no decay, no chance, and it opens no game or level.
 - **Save.** `SaveData.lodge: { built: LodgePiece[] }`, repaired by `cleanLodge` (known pieces, once, each kept only with its chain of supports). `store.buildLodge(id)` refuses a child band, an unknown or built piece, a piece whose support is not built, or a short balance, changing nothing.
 - **Later.** More pieces, and moving pieces around, once grown-ups have used it.
+
+### Slice 8: the daily gift
+
+**Built 2026-11-28.**
+
+- **Gift.** The first time a grown-up opens Today's six on a local day, 10 shells arrive by themselves, with a pill under the title for a moment ("+10 shells · today's gift") and the balance updated. There is nothing to tap or remember.
+- **Never stacking.** One gift a day at most; days away bring one gift on the next visit, not one per day missed, and nothing shows a day without one.
+- **Save.** `SaveData.gift: { day }` (`src/content/gift.ts`), the last day a gift arrived, repaired by `cleanGift`. `store.claimGift(day)` gives nothing to a band that does not earn.
+- **The school band** stays off: the definition switches it on once grown-up play has set the prices, so it waits for the developer to say when.

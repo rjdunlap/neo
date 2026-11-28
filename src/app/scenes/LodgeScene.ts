@@ -13,7 +13,8 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { shellTag } from '../../ui/shells';
 import { FONT } from '../../ui/text';
-import type { App } from '../App';
+import type { App, Origin } from '../App';
+import { goToOrigin } from '../origin';
 import { Scene } from '../Scene';
 
 const MUTED = 0x6b5d52;
@@ -27,7 +28,10 @@ const MUTED = 0x6b5d52;
 export class LodgeScene extends Scene {
   upright = true;
   uprightArea = true;
-  private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () => this.app.go.daily());
+  private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () =>
+    // Back to where it was opened from (Home passes its origin), else Today's six.
+    goToOrigin(this.app.go, this.origin, () => this.app.go.daily()),
+  );
   private readonly title = new Text({
     text: 'Lantern Lodge',
     style: { fontFamily: FONT, fontSize: 34, fill: ink, fontWeight: '700' },
@@ -59,7 +63,10 @@ export class LodgeScene extends Scene {
   /** The piece offered, or null. */
   chosen: LodgePiece | null = null;
 
-  constructor(app: App) {
+  constructor(
+    app: App,
+    private readonly origin?: Origin,
+  ) {
     super(app);
   }
 

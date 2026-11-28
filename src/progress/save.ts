@@ -28,6 +28,7 @@ import { cleanShop, emptyShop, type ShopSave } from '../content/shop';
 import { cleanSixes, emptySixes, type SixesSave } from '../content/sixes';
 import { cleanSeasons, emptySeasons, type SeasonsSave } from '../content/seasons';
 import { cleanLodge, emptyLodge, type LodgeSave } from '../content/lodge';
+import { cleanGift, emptyGift, type GiftSave } from '../content/gift';
 
 /** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
 export type Language2 = 'none' | 'pt-PT';
@@ -177,6 +178,8 @@ export interface SaveData {
   seasons: SeasonsSave;
   /** The progression loop's Lantern Lodge (`src/content/lodge.ts`): the pieces a grown-up has built with shells. */
   lodge: LodgeSave;
+  /** The progression loop's daily gift (`src/content/gift.ts`): the last day a grown-up's gift arrived. */
+  gift: GiftSave;
 }
 
 export const HISTORY_LENGTH = 10;
@@ -226,6 +229,7 @@ export function defaults(): SaveData {
     sixes: emptySixes(),
     seasons: emptySeasons(),
     lodge: emptyLodge(),
+    gift: emptyGift(),
   };
 }
 
@@ -447,6 +451,7 @@ export function migrate(raw: unknown): SaveData {
     sixes: cleanSixes(raw.sixes),
     seasons: cleanSeasons(raw.seasons),
     lodge: cleanLodge(raw.lodge),
+    gift: cleanGift(raw.gift),
   };
 }
 

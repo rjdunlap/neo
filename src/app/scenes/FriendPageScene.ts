@@ -24,7 +24,8 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, colourSwatch, crossIcon } from '../../ui/icons';
 import { shellTag } from '../../ui/shells';
 import { FONT } from '../../ui/text';
-import type { App } from '../App';
+import type { App, Origin } from '../App';
+import { goToOrigin } from '../origin';
 import { Scene } from '../Scene';
 
 type Card = Container & { item?: WearableId; species?: SpeciesId };
@@ -45,7 +46,10 @@ export class FriendPageScene extends Scene {
   upright = true;
   uprightArea = true;
   private readonly floor = new Graphics();
-  private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () => this.app.go.daily());
+  private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () =>
+    // Back to where it was opened from (Home passes its origin), else Today's six.
+    goToOrigin(this.app.go, this.origin, () => this.app.go.daily()),
+  );
   private readonly off = new RoundButton(crossIcon(), swatch.white, OFF_RADIUS, () => this.allOff());
   private readonly title = new Text({
     text: '',
@@ -75,7 +79,10 @@ export class FriendPageScene extends Scene {
   /** The thing being tried on and not yet bought, or null. */
   trying: ShopId | null = null;
 
-  constructor(app: App) {
+  constructor(
+    app: App,
+    private readonly origin?: Origin,
+  ) {
     super(app);
   }
 
