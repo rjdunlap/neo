@@ -50,6 +50,8 @@ vi.mock('idb-keyval', () => ({
 import { MAX_PROFILES, INDEX_KEY, type ProfileIndex } from './profiles';
 import { defaults, type SaveData } from './save';
 import { Store } from './store';
+import { MixMemory } from '../app/discovery';
+import { GAMES } from '../games/registry';
 
 const counter = () => {
   let n = 0;
@@ -1180,5 +1182,117 @@ describe('stamps (the progression loop)', () => {
     });
     store.setBand('school');
     expect(store.earnStamps('word-code', range, { level: 1, misses: 0, hints: 0 }).kinds).toEqual([]);
+  });
+});
+
+describe('the saved mix (D5b)', () => {
+  const IDS = ['bubble-pop', 'sing-along-barn', 'fill-dump'];
+  const loaded = async () => {
+    const store = make();
+    await store.load();
+    store.data.profile.band = 'lap';
+    const mem = new MixMemory((o) => o === store.data && store.save());
+    return { store, mem };
+  };
+  /** `GameScene.finishRound`'s synchronous block for a mix round: history, sticker, the stop's settle, then the flush. */
+  const finishRound = (store: Store, mem: MixMemory, p: number, seed: number, flush = true) => {
+    const r = mem.launch(store.data, p)!;
+    const id = mem.live(store.data)!.ids[p];
+    store.recordRound(id, { ...ANY_ROUND, seconds: 5, at: NOW }, { min: 1, max: 3 }, true);
+    store.addSticker(id, seed);
+    mem.finish(r, store.data, seed);
+    if (flush) store.flush();
+  };
+  const reload = async (record: unknown) => {
+    disk.set('neo.save', structuredClone(record));
+    return loaded();
+  };
+  /** Sticker, history and item receipt agree: every played item has its sticker, and every sticker its played item. */
+  const agree = (data: SaveData) => {
+    const played = (data.mix.session?.items ?? []).filter((it) => it.s === 'p');
+    const rounds = Object.values(data.games).reduce((n, g) => n + g.history.length, 0);
+    expect(data.stickers.length).toBe(rounds);
+    if (data.mix.session) expect(played.length).toBe(data.stickers.length);
+    for (const it of played) expect(data.stickers.some((st) => st.seed === it.seed)).toBe(true);
+  };
+
+  it("a crash before or after a round's write reloads all of that round or none of it, and a replay awards once per stop", async () => {
+    const { store, mem } = await loaded();
+    mem.start(store.data, 'lap', IDS);
+    store.flush();
+    const before = structuredClone(disk.get('neo.save')) as SaveData;
+    expect(before.mix.session!.items.map((it) => it.s)).toEqual(['u', 'u', 'u']);
+
+    finishRound(store, mem, 0, 77, false);
+    // The write has not fired yet: the stored record is still the old one.
+    expect(disk.get('neo.save')).toEqual(before);
+    store.flush();
+    const after = structuredClone(disk.get('neo.save')) as SaveData;
+    expect(after.mix.session!.items).toEqual([{ s: 'p', seed: 77 }, { s: 'u' }, { s: 'u' }]);
+    expect(after.stickers.map((st) => st.seed)).toEqual([77]);
+
+    // Old record: nothing of the round, the first stop is still to play.
+    const old = await reload(before);
+    agree(old.store.data);
+    expect(old.store.data.stickers).toEqual([]);
+    expect(old.mem.hydrate(old.store.data, 'lap', GAMES, 'lap')).toBe(true);
+    expect(old.mem.at(old.store.data, 'lap')!.items.map((i) => i.state)).toEqual([
+      'upcoming',
+      'upcoming',
+      'upcoming',
+    ]);
+
+    // New record: the round, its sticker and its played stop together; the mix carries on from the second stop.
+    const fresh = await reload(after);
+    agree(fresh.store.data);
+    expect(fresh.mem.hydrate(fresh.store.data, 'lap', GAMES, 'lap')).toBe(true);
+    const state = fresh.mem.at(fresh.store.data, 'lap')!;
+    expect([state.items.map((i) => i.state), state.at, state.round]).toEqual([
+      ['played', 'upcoming', 'upcoming'],
+      null,
+      0,
+    ]);
+    expect(fresh.store.data.stickers.length).toBe(1); // hydrating awards nothing
+
+    // Replay the new record: finish the next stop; one sticker per played stop in all.
+    finishRound(fresh.store, fresh.mem, 1, 88);
+    const third = (await reload(disk.get('neo.save'))).store.data;
+    agree(third);
+    expect(third.stickers.map((st) => [st.game, st.seed])).toEqual([
+      ['bubble-pop', 77],
+      ['sing-along-barn', 88],
+    ]);
+    expect(third.mix.session!.items).toEqual([{ s: 'p', seed: 77 }, { s: 'p', seed: 88 }, { s: 'u' }]);
+
+    // The last stop's write clears the session: a reload on the ending has nothing to carry on.
+    const last = await reload(third);
+    last.mem.hydrate(last.store.data, 'lap', GAMES, 'lap');
+    finishRound(last.store, last.mem, 2, 99);
+    expect((disk.get('neo.save') as SaveData).mix.session).toBeNull();
+  });
+
+  it('survives a backup and restore, keeps each profile to its own, and a reset clears it', async () => {
+    const { store, mem } = await loaded();
+    const a = store.activeId;
+    mem.hold(store.data, 'lap', ['fill-dump', 'bubble-pop']);
+    mem.start(store.data, 'lap', ['fill-dump', 'bubble-pop']);
+    mem.apply(store.data, { type: 'skip', p: 0 });
+    const mine = structuredClone(store.data.mix);
+    expect(mine).toEqual({
+      lineups: { lap: ['fill-dump', 'bubble-pop'] },
+      session: { place: 'lap', ids: ['fill-dump', 'bubble-pop'], items: [{ s: 's' }, { s: 'u' }] },
+    });
+    const text = await store.exportAll();
+    mem.forget();
+    const b = store.addProfile()!;
+    await store.switchTo(b);
+    expect(store.data.mix).toEqual({ lineups: {}, session: null });
+    await store.switchTo(a);
+    expect(store.data.mix).toEqual(mine);
+    store.reset();
+    expect(store.data.mix).toEqual({ lineups: {}, session: null });
+    await store.restoreAll(text);
+    await store.switchTo(a);
+    expect(store.data.mix).toEqual(mine);
   });
 });

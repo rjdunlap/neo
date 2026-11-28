@@ -2,6 +2,7 @@ import type { GameModule } from '../games/types';
 import { playBand, type Band } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
 import { DISCOVERY_IDS } from './discovery';
+import type { MixPlace, SavedItem, SavedSession } from './saved-mix';
 
 /**
  * Little surprises (Discovery D2b): one finite mix on a lap or toddler home spot, held in memory only.
@@ -201,4 +202,58 @@ export function mixReturn(s: MixState, cardsOn: boolean): MixReturn {
   const p = nextUp(s);
   if (p === null) return { kind: 'ending' };
   return cardsOn ? { kind: 'stop', p } : { kind: 'sheet' };
+}
+
+// The saved mix (D5b) ------------------------------------------------------------------------
+
+const LETTER: Record<ItemState, SavedItem['s']> = {
+  upcoming: 'u',
+  played: 'p',
+  skipped: 's',
+  unavailable: 'x',
+};
+const STATE: Record<SavedItem['s'], ItemState> = {
+  u: 'upcoming',
+  p: 'played',
+  s: 'skipped',
+  x: 'unavailable',
+};
+
+/** A live place session as the save keeps it, or null once nothing is upcoming (a reload on the ending shows nothing to resume). */
+export function savedSession(place: MixPlace, ids: readonly string[], s: MixState): SavedSession | null {
+  if (nextUp(s) === null) return null;
+  return {
+    place,
+    ids: [...ids],
+    items: s.items.map((it) =>
+      it.state === 'played' && it.seed !== undefined ? { s: 'p', seed: it.seed } : { s: LETTER[it.state] },
+    ),
+  };
+}
+
+/**
+ * A saved session made live again on the mix spot's tap, or null (the tap then starts an ordinary new mix). Her own lap or
+ * toddler home spot only. A stop whose game is gone, no longer plays by touch or at her band becomes unavailable: nothing is
+ * substituted. A played stop with no matching sticker (a hand-edited or partial backup) is to play again; this never awards.
+ * The session starts with no stop at play (`at: null`, round 0), exactly like a fresh one.
+ */
+export function hydrateSession(
+  saved: SavedSession | null | undefined,
+  catalog: readonly Candidate[],
+  stickers: readonly { game: string; seed: number }[],
+  profileBand: Band,
+  placeBand: Band,
+): { ids: readonly string[]; state: MixState } | null {
+  if (!saved || saved.place !== placeBand || !MIX_BANDS.includes(profileBand) || placeBand !== profileBand)
+    return null;
+  const items = saved.ids.map((id, i): MixItem => {
+    const it = saved.items[i] ?? { s: 'u' };
+    if (!mixStop(profileBand, placeBand, catalog, id)) return { state: 'unavailable' };
+    if (it.s !== 'p') return { state: STATE[it.s] };
+    return stickers.some((st) => st.game === id && st.seed === it.seed)
+      ? { state: 'played', seed: it.seed }
+      : { state: 'upcoming' };
+  });
+  if (!items.some((it) => it.state === 'upcoming')) return null;
+  return { ids: [...saved.ids], state: { items, at: null, round: 0 } };
 }

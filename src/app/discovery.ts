@@ -1,7 +1,19 @@
 import type { Origin, Routes } from './App';
 import type { Band } from '../progress/bands';
 import type { PickScope } from '../content/pick';
-import { MIX_IDS, startMix, step, type DailyStop, type MixEvent, type MixState } from '../content/mix';
+import {
+  hydrateSession,
+  MIX_IDS,
+  savedSession,
+  startMix,
+  step,
+  type DailyStop,
+  type MixEvent,
+  type MixState,
+} from '../content/mix';
+import { isMixPlace, type SavedMix } from '../content/saved-mix';
+import type { GameModule } from '../games/types';
+import { store } from '../progress/store';
 
 export type DiscoveryToken = { owner: object; epoch: number };
 
@@ -107,9 +119,22 @@ interface HeldLineup {
   ids: readonly string[];
 }
 
+/** The save a mix belongs to, when the owner is a save (tests may use a bare object, which saves nothing). */
+const savedOf = (owner: object): SavedMix | undefined => {
+  const mix = (owner as { mix?: SavedMix }).mix;
+  return mix && typeof mix === 'object' && mix.lineups ? mix : undefined;
+};
+const sameIds = (a: readonly string[], b: readonly string[]) =>
+  a.length === b.length && a.every((id, i) => id === b[i]);
+
 /**
- * The live Little surprises session (D2b), in memory only. It belongs to one save object: a profile switch, reset,
- * restore or undo replaces `store.data`, so late finishes and taps from the old session do nothing; a reload forgets it.
+ * The live Little surprises session (D2b), in memory. It belongs to one save object: a profile switch, reset, restore or
+ * undo replaces `store.data`, so late finishes and taps from the old session do nothing.
+ *
+ * The saved mix (D5b): each start, settle and end of a place session, and each lineup edit, is mirrored into that save's
+ * `mix` field at once and `persist` asks for the debounced write, as any setting does. A round's settle is mirrored in the
+ * same synchronous block as its sticker, before `GameScene` flushes, so one write holds both. A reload forgets the live
+ * session but keeps the saved one, which the next tap on the mix spot hydrates (`hydrate`).
  */
 export class MixMemory {
   private session?: MixSession;
@@ -118,13 +143,16 @@ export class MixMemory {
   /** The grown-up's chosen lineup (D5a): kept across sessions until the save object changes or the page reloads. */
   private held?: HeldLineup;
 
+  constructor(private readonly persist: (owner: object) => void = (o) => o === store.data && store.save()) {}
+
   start(owner: object, place: Band, ids: readonly string[] = MIX_IDS): number {
     this.pending = undefined;
     const frozen = Object.freeze([...ids]);
     this.session = { owner, id: ++this.serial, place, state: startMix(frozen), ids: frozen };
+    this.mirror(this.session);
     return this.session.id;
   }
-  /** Play all on Today's six: the page's six frozen with their bands and levels; played ones start played. */
+  /** Play all on Today's six: the page's six frozen with their bands and levels; played ones start played. Never saved. */
   startDaily(owner: object, stops: readonly DailyStop[], state: MixState, place: Band, day: string): number {
     this.pending = undefined;
     const frozen = Object.freeze(stops.map((s) => Object.freeze({ ...s })));
@@ -132,23 +160,79 @@ export class MixMemory {
     this.session = { owner, id: ++this.serial, place, state, ids, stops: frozen, day };
     return this.session.id;
   }
-  /** Ends the live session; the held lineup stays for the next one. */
+  /** She left the mix (Explore, Home on the ending, any other screen): the live session ends and its saved copy with it. */
   end() {
+    const s = this.session;
+    this.drop();
+    if (s && !s.stops) this.clearSaved(s.owner);
+  }
+  private drop() {
     this.session = undefined;
     this.pending = undefined;
     this.serial++;
   }
-  /** A different player, or a replaced save: the session and the held lineup both go. */
+  /** A different player, or a replaced save: the session and the held lineup both go; each save keeps its own saved mix. */
   forget() {
-    this.end();
+    this.drop();
     this.held = undefined;
   }
-  /** The held lineup for this save at this home spot, if a grown-up has edited one. */
+  /** The held lineup for this save at this home spot, if a grown-up has edited one (this visit, or saved before). */
   lineup(owner: object, place: Band): readonly string[] | undefined {
-    return this.held?.owner === owner && this.held.place === place ? this.held.ids : undefined;
+    if (this.held?.owner === owner && this.held.place === place) return this.held.ids;
+    return isMixPlace(place) ? savedOf(owner)?.lineups[place] : undefined;
   }
+  /** The lineup, saved as it is made. The default lineup is saved as no lineup, so Reset brings Little surprises back. */
   hold(owner: object, place: Band, ids: readonly string[]) {
     this.held = { owner, place, ids: [...ids] };
+    const mix = savedOf(owner);
+    if (!mix || !isMixPlace(place)) return;
+    const was = mix.lineups[place];
+    const next = sameIds(ids, MIX_IDS) ? undefined : [...ids];
+    if (was === next || (was && next && sameIds(was, next))) return;
+    if (next) mix.lineups[place] = next;
+    else delete mix.lineups[place];
+    this.persist(owner);
+  }
+  /**
+   * With no live session, makes this save's unfinished mix at this home spot live again, checked now (`hydrateSession`).
+   * True when it did. A saved session that cannot be offered here is cleared, so the tap starts an ordinary new mix.
+   */
+  hydrate(
+    owner: object,
+    place: Band,
+    catalog: readonly Pick<GameModule, 'id' | 'bands' | 'inputs'>[],
+    profileBand: Band,
+  ): boolean {
+    if (this.live(owner)) return false;
+    const mix = savedOf(owner);
+    if (!mix?.session) return false;
+    const stickers = (owner as { stickers?: { game: string; seed: number }[] }).stickers ?? [];
+    const h = hydrateSession(mix.session, catalog, stickers, profileBand, place);
+    if (!h) {
+      this.clearSaved(owner);
+      return false;
+    }
+    this.pending = undefined;
+    this.session = { owner, id: ++this.serial, place, state: h.state, ids: Object.freeze([...h.ids]) };
+    this.mirror(this.session);
+    return true;
+  }
+  /** A saved session that her band or home spot no longer offers (a birthday): cleared when the spot is shown. */
+  discardStale(owner: object, profileBand: Band) {
+    const s = savedOf(owner)?.session;
+    if (s && s.place !== profileBand) this.clearSaved(owner);
+  }
+  private mirror(s: MixSession) {
+    const mix = savedOf(s.owner);
+    if (!mix || s.stops || !isMixPlace(s.place)) return;
+    mix.session = savedSession(s.place, s.ids, s.state);
+    this.persist(s.owner);
+  }
+  private clearSaved(owner: object) {
+    const mix = savedOf(owner);
+    if (!mix?.session) return;
+    mix.session = null;
+    this.persist(owner);
   }
   live(owner: object): Readonly<MixSession> | undefined {
     return this.own(owner);
@@ -163,8 +247,10 @@ export class MixMemory {
   }
   apply(owner: object, event: MixEvent): MixState | undefined {
     const s = this.own(owner);
-    if (s) s.state = step(s.state, event);
-    return s?.state;
+    if (!s) return undefined;
+    s.state = step(s.state, event);
+    if (event.type !== 'launch') this.mirror(s);
+    return s.state;
   }
   /** A new round at stop `p`: the next GameScene built claims it. */
   launch(owner: object, p: number, lead?: MixRound['lead']): MixRound | undefined {

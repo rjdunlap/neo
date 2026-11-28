@@ -184,27 +184,29 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
     }
     await stopCard('bubble-pop', 4);
     assert.deepEqual((await live()).ids, ['bubble-pop', 'bubble-pop', 'fill-dump', other]);
-    // 7. Another player and back: the spot plays Little surprises.
-    await page.evaluate(async () => {
-      const { selectPlayer } = await import('/src/app/players.ts');
-      const first = kit.store.profiles[0].id;
-      await selectPlayer(kit.store.addProfile());
-      await selectPlayer(first);
-      kit.store.data.profile.band = 'lap';
-      kit.store.data.settings.howToCards = true;
-      kit.store.data.settings.placeLayout = 'path';
-      neo.go.place('lap');
-    });
-    await scene('PlaceScene');
-    await page.waitForTimeout(300);
-    {
+    // 7. Another player starts from Little surprises; back to the first, the spot carries on her saved four-stop mix (D5b).
+    const tapSpotAs = async (who) => {
+      await page.evaluate(async (who) => {
+        const { selectPlayer } = await import('/src/app/players.ts');
+        await selectPlayer(who === 'new' ? kit.store.addProfile() : kit.store.profiles[0].id);
+        kit.store.data.profile.band = 'lap';
+        kit.store.data.settings.howToCards = true;
+        kit.store.data.settings.placeLayout = 'path';
+        neo.go.place('lap');
+      }, who);
+      await scene('PlaceScene');
+      await page.waitForTimeout(300);
       const [x, y] = await spot();
       await page.evaluate(([x, y]) => kit.tap(x, y), [x, y]);
-    }
+    };
+    await tapSpotAs('new');
     await stopCard('bubble-pop', 3);
     assert.deepEqual((await live()).ids, ['bubble-pop', 'sing-along-barn', 'fill-dump']);
+    await tapSpotAs('first');
+    await stopCard('bubble-pop', 4);
+    assert.deepEqual((await live()).ids, ['bubble-pop', 'bubble-pop', 'fill-dump', other]);
     log(
-      `Make my mix D5a: hold opens the table, add/repeat/full, drag to reorder and off the row, Play a four-stop mix (Skip, play, result tile at stop 3), Explore keeps the lineup, another player resets it (added ${other})`,
+      `Make my mix D5a: hold opens the table, add/repeat/full, drag to reorder and off the row, Play a four-stop mix (Skip, play, result tile at stop 3), Explore keeps the lineup, another player starts from the default, the first keeps hers (added ${other})`,
     );
   }
 

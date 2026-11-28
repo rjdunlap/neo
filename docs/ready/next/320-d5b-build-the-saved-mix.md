@@ -1,1 +1,0 @@
-**D5b build, the saved mix** (save and navigation tier): build the [definition](../../definitions/saved-mix.md): `SaveData.mix` (lineups per place and one unfinished session) mirrored in the same block as the round's sticker, hydration on the mix spot's tap, a crash-boundary unit test, `DISCOVERY_ONLY=saved-mix` and the offline check.

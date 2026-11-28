@@ -1,10 +1,12 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GAMES } from '../games/registry';
 import { BANDS } from '../progress/bands';
 import { defaults } from '../progress/save';
 import { store } from '../progress/store';
 import { MixMemory } from '../app/discovery';
 import { endingLine, MIX_IDS, mixGames, mixReturn, nextUp, startMix, step, type MixState } from './mix';
+// The saved mix (D5b) asks the store for a debounced write: no IndexedDB here.
+vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => {}, del: async () => {} }));
 
 const finishAt = (s: MixState, p: number, seed = 7) => {
   const launched = step(s, { type: 'launch', p });
