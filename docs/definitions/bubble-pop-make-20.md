@@ -2,7 +2,7 @@
 
 **Status:** Defined 2026-11-28 from the Next ten line and the [deep dive's sketch](../deep-dives/bubble-pop.md#new-levels-on-top) ("a make 20 bonds level, 11 + 9"). **Docs only:** no code, browser or device evidence. [OBSERVATIONS](../OBSERVATIONS.md) has no Bubble Pop notes, so nothing below draws on observed play. The build is queued as its own Next ten line.
 
-**Fun action and purpose.** The same bonds play as levels 10 (*Make 5*) and 11 (*Make 10*): ten numbered bubbles drift in place, she taps one to hold it and taps the one that makes the sign's number with it, and both pop. Here the sign says 20 and the bubbles carry 1 to 19. The learning purpose is **the pairs that make 20, found through making ten**: every pair is a number up to 10 and a teen whose ones make ten with it (3 and 17, because 3 and 7 make 10 and the ten makes 20). That is 1.OA.C.6's "making ten" strategy and 2.OA.B.2's fluency within 20; the how-to card claims nothing beyond naming what the level asks.
+**Fun action and purpose.** The same bonds play as levels 10 (*Make 5*) and 11 (*Make 10*): ten numbered bubbles drift in place, she taps one to hold it and taps the one that makes the sign's number with it, and both pop. Here the sign says 20 and the bubbles carry 1 to 19. The learning purpose is **the pairs that make 20, found through making ten**: every pair but 10 and 10 is a number below 10 and a teen whose ones make ten with it (3 and 17, because 3 and 7 make 10 and the ten makes 20). That is 1.OA.C.6's "making ten" strategy and 2.OA.B.2's fluency within 20; the how-to card claims nothing beyond naming what the level asks.
 
 ## Identity and overlap
 
@@ -50,7 +50,7 @@ The instruction is the existing `bubble.bonds` with `n: 20`. Run `node scripts/c
 
 ## How-to card (`howto.ts`)
 
-- Steps, `from: 20, to: 20`: "The sign at the top shows 20, the number the two bubbles make together." and "Tap a bubble to hold it, then tap the bubble that makes 20 with it. Tap the held bubble again to let it go." and "Each pair is a small number and a teen: the small number and the teen's ones make 10, then the ten makes 20 (3 and 17)."
+- Steps, `from: 20, to: 20`: "The sign at the top shows 20, the number the two bubbles make together." and "Tap a bubble to hold it, then tap the bubble that makes 20 with it. Tap the held bubble again to let it go." and "Most pairs are a small number and a teen: the small number and the teen's ones make 10, then the ten makes 20 (3 and 17). 10 and 10 is a pair too."
 - Finish, `from: 20, to: 20`: "The round ends when the last pair is popped."
 - Note, `from: 20, to: 20`: "A pair that does not make 20 only wobbles and its total is said; after two in a row, the first bubble of the try and its partner glow and the pet says how making 10 gets there."
 
