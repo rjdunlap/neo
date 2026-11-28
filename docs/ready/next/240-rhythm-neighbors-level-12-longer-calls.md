@@ -1,1 +1,0 @@
-**`rhythm-neighbors`, level 12 *Longer calls*** (new-levels tier): four-note shapes and three- or four-knock calls, school top 12 (school `order` becomes `[5, 6, 10, 11, 12]`), how-to, voice; level 11 is built, per [dive slice 7](../../deep-dives/rhythm-neighbors.md#build-slices-in-order).

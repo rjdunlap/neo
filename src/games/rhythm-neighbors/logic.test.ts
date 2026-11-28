@@ -12,7 +12,17 @@ import {
   shapeOf,
   type Phrase,
 } from './logic';
-import { OWN_MAX, OWN_MIN, OWN_ROUNDS, isEcho, makeOwn, sampleAnswer } from './logic';
+import {
+  LONG_REPLIES,
+  LONG_ROUNDS,
+  makeLong,
+  OWN_MAX,
+  OWN_MIN,
+  OWN_ROUNDS,
+  isEcho,
+  makeOwn,
+  sampleAnswer,
+} from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
 it('uses distinct calls and replies, all playable on offered instruments', () => {
   for (let l = 1; l <= 6; l++)
@@ -83,9 +93,9 @@ import {
 import { judgeEcho } from '../sound-garden/logic';
 const key = (g: readonly string[]) => g.join('');
 it('keys its plans by level ID', () => {
-  expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   for (const l of LEVEL_IDS) expect(planFor(l)).toBe(PLANS[l]);
-  expect(planFor(12)).toBe(PLANS[11]);
+  expect(planFor(13)).toBe(PLANS[12]);
   expect(planFor(0)).toBe(PLANS[1]);
 });
 it('draws from twelve different reply shapes and calls of two or three knocks', () => {
@@ -306,7 +316,7 @@ it('level 10 makes four exchanges, two copies and two answers, with the tile rul
 it('level 10 is reached from 6 for pre-K and school, and the same pairs come from the same seed', () => {
   expect(planFor(10).pairs).toBe(true);
   expect(LEVELS.prek?.order).toEqual([4, 5, 6, 10]);
-  expect(LEVELS.school?.order).toEqual([5, 6, 10, 11]);
+  expect(LEVELS.school?.order).toEqual([5, 6, 10, 11, 12]);
   expect(makePhrases(10, new Rng(7))).toEqual(makePhrases(10, new Rng(7)));
   expect(makePhrases(6, new Rng(7)).length).toBe(3);
 });
@@ -355,4 +365,33 @@ it('level 11 gives three different calls with a sample answer that passes, on on
   }
   expect(makeOwn(new Rng(7))).toEqual(makeOwn(new Rng(7)));
   expect(makePhrases(11, new Rng(7))).toEqual(makeOwn(new Rng(7)));
+});
+
+it('level 12 gives three four-note replies after calls of three or four knocks, each different from its call, and the ghost finger passes', () => {
+  expect(planFor(12).long).toBe(true);
+  expect(LEVELS.school?.max).toBe(12);
+  expect(LONG_REPLIES.length).toBeGreaterThanOrEqual(LONG_ROUNDS);
+  for (let seed = 1; seed <= 200; seed++) {
+    const rounds = makeLong(new Rng(seed));
+    expect(rounds).toHaveLength(LONG_ROUNDS);
+    expect(new Set(rounds.map((r) => r.gaps.join(''))).size).toBe(LONG_ROUNDS);
+    for (const p of rounds) {
+      expect(p.gaps).toHaveLength(3);
+      expect(p.voices).toHaveLength(4);
+      expect(p.voices.every((v, i) => i === 0 || v !== p.voices[i - 1])).toBe(true);
+      expect(p.call.length).toBeGreaterThanOrEqual(2);
+      expect(p.call.length).toBeLessThanOrEqual(3);
+      expect(shapeOf(p.gaps)).not.toBe(shapeOf(p.call));
+      const taps: { voice: number; at: number }[] = [];
+      let at = 0;
+      for (let played = 0; played <= p.voices.length; played++) {
+        const move = nextNote(p, played);
+        if ('send' in move) break;
+        taps.push({ voice: move.voice, at });
+        at += MIN_TAP_GAP + move.rest;
+      }
+      expect(accepts(p, taps, true, false), `seed ${seed}`).toBe(true);
+    }
+  }
+  expect(makePhrases(12, new Rng(7))).toEqual(makeLong(new Rng(7)));
 });
