@@ -16,6 +16,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Queued
 
+- **Define Frog Hop G1, Hops of a hundred** ([deep dive](deep-dives/frog-hop.md), decision 6 settled 2026-10-23: the grown-up window). Needs a `grownup` band or a couch-side plan table first, so this is a definition slice, not a build.
+
 
 
 
