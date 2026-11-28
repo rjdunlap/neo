@@ -99,6 +99,8 @@ Every new line goes under the game's `hop.` prefix, which is not a rendered pref
 
 **Tier.** New interaction: typecheck, rule tests, one filtered play at 18 (one wrong card, the hint), one portrait screenshot, `fingerdemo` at 18.
 
+*Built 2026-11-28 on `claude/frog-hop-which-pad-lost` ([PR #2379](https://github.com/rjdunlap/neo/pull/2379)); see the [game page](../games/frog-hop.md) for what was built and its two departures (a wrong card already on the run says it is already here, not only the shown neighbour; the run takes its own centred layout).*
+
 ## 19 *Who is further along?* (pre-K)
 
 **Fun action and purpose.** Two frogs sit on the 0–8 line, one on 3 and one on 7. "Who has hopped further?" She taps a frog. Which numeral is larger, read from its place on the line (K.CC.C.7), with a story: both frogs started at 0. Different from Duck Pond's *Which pond has more?*, which compares sets, not places.

@@ -51,6 +51,8 @@ import {
   hopLayout,
   sceneFor,
   CARD_HIT,
+  runNumbers,
+  shownOnRun,
   type HopScene,
   type HopLayout,
 } from './logic';
@@ -116,7 +118,7 @@ class FrogHop implements Game {
   readonly plan: HopPlan;
   readonly questions: HopQuestion[];
   readonly pads: Pad[] = [];
-  readonly cards: { n: number; node: Container }[] = [];
+  readonly cards: { n: number; node: Container; text: Text }[] = [];
   readonly frog = frogArt();
   /** The number the frog sits on. */
   at = 0;
@@ -152,6 +154,10 @@ class FrogHop implements Game {
   /** Fraction Match lands on a pad first, then asks for a card. */
   private matchStage: 'land' | 'count' = 'land';
   private readonly glow = new Graphics();
+  /** Which pad lost its number?: the leaf over the hidden numeral, lifted at a corner after two misses, blown off when right. */
+  private readonly leaf = new Graphics();
+  private leafPeek = false;
+  private leafGone = false;
   private view: View;
   private wrongs = 0;
   private helped = false;
@@ -217,22 +223,38 @@ class FrogHop implements Game {
       this.pads.push(pad);
       this.row.addChild(pad);
     }
-    // Last in the row, so the marks fade with the pads when the long line slides.
+    // Last in the row, so the marks (and the leaf) fade with the pads when the long line slides.
     this.row.addChild(this.marks);
+    const missing = this.plan.mode === 'missing';
+    if (missing) {
+      this.leaf.eventMode = 'none';
+      drawLeaf(this.leaf);
+      this.row.addChild(this.leaf);
+    }
     this.markPads();
-    if (countsHops(this.plan.mode) || splitsAtTen(this.plan.mode) || this.plan.mode === 'frac-match') {
-      for (const n of GAP_CARDS) {
+    if (
+      countsHops(this.plan.mode) ||
+      splitsAtTen(this.plan.mode) ||
+      this.plan.mode === 'frac-match' ||
+      missing
+    ) {
+      // The missing-number cards change every question; the others always read 1 to 6.
+      for (const n of missing ? this.questions[0].cards! : GAP_CARDS) {
         const node = new Container();
-        node.addChild(tile(104, 110, 'white'), label(String(n), 52, ink));
+        const text = label(String(n), 52, ink);
+        node.addChild(tile(104, 110, 'white'), text);
         node.hitArea = new Rectangle(-CARD_HIT.w / 2, -CARD_HIT.h / 2, CARD_HIT.w, CARD_HIT.h);
-        onTap(node, () => void this.tapCard(n), { cooldown: 300 });
-        this.cards.push({ n, node });
+        const card = { n, node, text };
+        onTap(node, () => void this.tapCard(card.n), { cooldown: 300 });
+        this.cards.push(card);
         ctx.stage.addChild(node);
       }
     }
     // Last, so the ring sits over the cards as well as the pads.
     this.ring.eventMode = 'none';
     ctx.stage.addChild(this.ring);
+    // The first run fades in with its question, so the nine-pad line is never seen behind the how-to card.
+    if (missing) for (const node of [this.row, this.frog, ...this.cards.map((c) => c.node)]) node.alpha = 0;
   }
 
   get q() {
@@ -272,6 +294,7 @@ class FrogHop implements Game {
   private cardStage() {
     const mode = this.plan.mode;
     return (
+      mode === 'missing' ||
       countsHops(mode) ||
       (splitsAtTen(mode) && this.makeTenStage === 'bridge') ||
       (mode === 'frac-match' && this.matchStage === 'count')
@@ -364,7 +387,7 @@ class FrogHop implements Game {
 
   resize(v: View) {
     this.view = v;
-    this.layout = hopLayout(v, this.plan.mode, GUIDE_CORNER.w);
+    this.layout = hopLayout(v, this.plan.mode, GUIDE_CORNER.w, this.q?.run ?? 0);
     this.backdrop.resize(v);
     this.drawScene(v);
     this.pads.forEach((p, i) => p.position.set(this.layout.pads[i].x, this.layout.pads[i].y));
@@ -385,6 +408,16 @@ class FrogHop implements Game {
       this.flag.position.set(this.padX(this.q.target), this.padPos(this.q.target).y);
     this.sign.position.set(v.w / 2, this.layout.sign.y + this.layout.sign.h / 2);
     this.cards.forEach((c, i) => c.node.position.set(this.layout.cards[i].x, this.layout.cards[i].y));
+    this.placeLeaf();
+  }
+
+  /** The leaf sits on the hidden pad's numeral; lifted, it tilts up and right so the numeral peeks out. */
+  private placeLeaf() {
+    const q = this.q;
+    if (this.plan.mode !== 'missing' || !q || this.leafGone) return;
+    const pad = this.padPos(q.target);
+    this.leaf.position.set(pad.x + (this.leafPeek ? 26 : 0), pad.y + 44 + (this.leafPeek ? -22 : 0));
+    this.leaf.rotation = this.leafPeek ? 0.45 : 0;
   }
 
   private frogMoving = false;
@@ -497,6 +530,7 @@ class FrogHop implements Game {
     this.clearTally();
     if (this.index >= this.questions.length) return void this.finale();
     const q = this.q;
+    if (mode === 'missing') return this.askMissing(line);
     if (q.lo !== this.lo) await this.slideWindow(q.lo);
     if (this.at !== q.start) await this.leap(q.start);
     if (mode === 'count-up') {
@@ -561,6 +595,61 @@ class FrogHop implements Game {
   /** The guide was tapped while the ask waits: say this question's ask, not the last one's. */
   sayWaitingAsk() {
     return this.askNow();
+  }
+
+  /**
+   * Which pad lost its number?: the pads and the frog fade out, the new run comes in with the frog on its first pad and a
+   * leaf over one numeral, the cards take the question's three numbers, and the sign shows the run with a "?".
+   */
+  private async askMissing(line?: Promise<unknown>) {
+    const q = this.q;
+    const fade = (alpha: number) =>
+      Promise.all(
+        [this.row, this.frog, ...this.cards.map((c) => c.node)].map((node) =>
+          this.ctx.tw.to(node, { alpha }, { duration: 0.2 }),
+        ),
+      );
+    await fade(0);
+    this.lo = q.lo;
+    this.at = q.start;
+    this.pads.forEach((p, i) => {
+      p.set(this.lo + i);
+      p.visible = i < q.run!;
+    });
+    this.cards.forEach((c, i) => {
+      c.n = q.cards![i];
+      c.text.text = String(c.n);
+    });
+    this.leafPeek = false;
+    this.leafGone = false;
+    this.leaf.alpha = 1;
+    this.resize(this.view);
+    this.setSign(
+      runNumbers(q)
+        .map((n) => (n === q.target ? '?' : String(n)))
+        .join('   '),
+    );
+    await fade(1);
+    this.focus = 0;
+    this.busy = false;
+    this.ask(() => this.ctx.instruct('hop.missing', { n: q.target - 1 }), line);
+  }
+
+  /** The right card: the leaf blows away up and to the right, and the numeral is there. */
+  private async blowLeaf() {
+    this.leafGone = true;
+    sfx.whoosh();
+    await this.ctx.tw.to(
+      this.leaf,
+      { x: this.leaf.x + 140, y: this.leaf.y - 120, rotation: 1.4, alpha: 0 },
+      { duration: 0.5, ease: ease.outQuad },
+    );
+  }
+
+  /** A gentle sideways shake for a wrong card. */
+  private async shake(node: Container) {
+    const x = node.x;
+    for (const dx of [14, -14, 8, 0]) await this.ctx.tw.to(node, { x: x + dx }, { duration: 0.06 });
   }
 
   /** Hop by tens: `30 + 20` on the sign, said as "hop two tens" (or "one ten"). */
@@ -628,14 +717,14 @@ class FrogHop implements Game {
    * Pad by pad, counting each hop aloud, or with `numerals` saying the pad it lands on and adding a tally dot over the
    * frog, so the hop count and the numerals are both there (`landingNumbers` is the rule).
    */
-  private async hopCount(to: number, numerals = false) {
+  private async hopCount(to: number, numerals = false, tally = numerals) {
     const dir = Math.sign(to - this.at);
     this.frogMoving = true;
     for (let k = 1; this.at !== to; k++) {
       const next = this.at + dir;
       const y = this.frogY(next);
       void this.ctx.say('count', { n: numerals ? padValue(this.plan, next) : k });
-      if (numerals) this.addTally();
+      if (tally) this.addTally();
       sfx.pop(5 + k);
       void this.ctx.tw
         .to(this.frog, { y: Math.min(this.frog.y, y) - 50 }, { duration: 0.16, ease: ease.outQuad })
@@ -690,7 +779,8 @@ class FrogHop implements Game {
       this.inertTaps++;
       sfx.squeak();
       if (this.inertTaps === 2) {
-        void this.ctx.say('hop.cards');
+        if (this.plan.mode === 'missing') void this.ctx.instruct('hop.missing', { n: this.q.target - 1 });
+        else void this.ctx.say('hop.cards');
         for (const { node } of this.cards) {
           void this.ctx.tw
             .to(node.scale, { x: 1.08, y: 1.08 }, { duration: 0.15 })
@@ -731,6 +821,7 @@ class FrogHop implements Game {
     if (splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge' && n === this.q.toTen)
       return void this.bridgeTen();
     if (this.plan.mode === 'frac-match' && n === this.q.answer2) return void this.right();
+    if (this.plan.mode === 'missing' && n === this.q.target) return void this.right();
     this.miss(n);
   }
 
@@ -782,7 +873,13 @@ class FrogHop implements Game {
     this.glowing = null;
     const q = this.q;
     const mode = this.plan.mode;
-    if (mode === 'frac-hop') {
+    if (mode === 'missing') {
+      // The leaf blows off, then the frog hops the whole run saying every number, the uncovered one included.
+      await this.blowLeaf();
+      void this.ctx.say('count', { n: q.start });
+      await this.ctx.tw.wait(0.5);
+      await this.hopCount(q.start + q.run! - 1, true, false);
+    } else if (mode === 'frac-hop') {
       if (this.at !== q.start) await this.leap(q.start);
       await this.hopBy(q.jump!, q.count!, 'names');
       this.pads[q.target - this.lo].mark(fracName(q.target));
@@ -851,7 +948,12 @@ class FrogHop implements Game {
         n: q.target,
       });
     } else if (mode === 'next') await this.ctx.say(q.ask === 'more' ? 'hop.wrong.more' : 'hop.wrong.less');
-    else if (isFrac(mode)) await this.sayFracMiss(n);
+    else if (mode === 'missing') {
+      const card = this.cards.find((c) => c.n === n);
+      if (card) void this.shake(card.node);
+      await this.ctx.say('hop.wrong.missing', { m: n });
+      if (shownOnRun(q).includes(n)) await this.ctx.say('hop.missing.here', { m: n });
+    } else if (isFrac(mode)) await this.sayFracMiss(n);
     else {
       const card = this.cardStage();
       const stopped = (splitsAtTen(mode) || mode === 'your-way') && this.makeTenStage === 'rest';
@@ -876,6 +978,11 @@ class FrogHop implements Game {
         else await this.hopBy(q.jump!, q.count!, 'names');
         await this.ctx.tw.wait(0.3);
         await this.leap(q.start);
+      } else if (mode === 'missing') {
+        // The leaf's corner lifts so the numeral peeks out; the right card glows below.
+        this.leafPeek = true;
+        sfx.pop(8);
+        this.placeLeaf();
       } else if (mode === 'your-way') {
         // The demonstration stops at 10 and names the split, then hops the rest and goes back to where she was.
         const from = this.at;
@@ -935,6 +1042,23 @@ class FrogHop implements Game {
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
+}
+
+/** A lily leaf with a notch and veins, drawn round its centre, wide enough to cover a pad's numeral. */
+function drawLeaf(g: Graphics) {
+  g.ellipse(0, 0, 40, 30)
+    .fill(swatch.green.fill)
+    .stroke({ width: 4, color: swatch.green.line })
+    .moveTo(-34, 0)
+    .lineTo(30, 0)
+    .moveTo(-6, 0)
+    .lineTo(10, -18)
+    .moveTo(-6, 0)
+    .lineTo(10, 18)
+    .stroke({ width: 3, color: swatch.green.line })
+    .moveTo(30, 0)
+    .lineTo(44, -6)
+    .stroke({ width: 5, color: wood.line });
 }
 
 class HopIcon extends WigglyIcon {

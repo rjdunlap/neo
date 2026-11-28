@@ -926,6 +926,67 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Level 18, Which pad lost its number? (pre-K): a leaf hides one numeral; a wrong card already on the run, a second for
+    // the lifted leaf and the glowing card, then the answers.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [18]).includes(18)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 18);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.missing');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.missingSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.missingSaid.push([String(id), vars?.m ?? vars?.n]), say(id, vars));
+      });
+      const tapCard = async (n) => {
+        await page.evaluate((n) => kit.tapOn(neo.scene.game.cards.find((c) => c.n === n).node), n);
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      const q = await page.evaluate(() => {
+        const { start, run, target, cards } = neo.scene.game.q;
+        return { start, run, target, cards };
+      });
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.pads.filter((p) => p.visible).length),
+        q.run,
+        'only the run is shown',
+      );
+      // The neighbour card is always on the run: "the number next to it".
+      const wrong = q.cards.find((c) => Math.abs(c - q.target) === 1);
+      await tapCard(wrong);
+      const said = await page.evaluate(() => missingSaid.map(([id, v]) => `${id}:${v}`));
+      assert.ok(said.includes(`hop.wrong.missing:${wrong}`), said.join(' '));
+      assert.ok(said.includes(`hop.missing.here:${wrong}`), said.join(' '));
+      await tapCard(wrong);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.glowing?.children[1]?.text),
+        String(q.target),
+        'two misses glow the answer card',
+      );
+      await screenshot('frog-hop-18-phone-hint');
+      await tapCard(q.target);
+      const counted = await page.evaluate(() =>
+        missingSaid.filter(([id]) => id === 'count').map(([, n]) => n),
+      );
+      assert.deepEqual(
+        counted,
+        Array.from({ length: q.run }, (_, i) => q.start + i),
+        'the frog says every number on the run',
+      );
+      for (let i = 1; i < 5; i++) await tapCard(await page.evaluate(() => neo.scene.game.q.target));
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 18: a run with one leaf, a wrong neighbour card named and "already here", two misses lift the leaf and glow the card, the run counted aloud, 2 misses 1 hint saved, phone screenshot',
+      );
+    }
+
     // Level 17, Hop to the dots (toddler): the sign shows dots; one wrong pad, a second for the glow, then the supported finish.
     if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [17]).includes(17)) {
       await page.setViewportSize({ width: 390, height: 844 });

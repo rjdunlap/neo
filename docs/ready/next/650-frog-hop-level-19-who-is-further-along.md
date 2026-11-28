@@ -1,0 +1,1 @@
+**`frog-hop`, level 19 *Who is further along?*** (new-levels tier): after level 18 merges; build its section of the [definition](../../definitions/frog-hop-entries-and-g1.md#19-who-is-further-along-pre-k) (pre-K order 1, 2, 18, 19, 3, 4). [Dive slice 9](../../deep-dives/frog-hop.md#build-slices-in-order).

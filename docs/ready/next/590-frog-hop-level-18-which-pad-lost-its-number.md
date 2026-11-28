@@ -1,1 +1,0 @@
-**`frog-hop`, level 18 *Which pad lost its number?*** (new-interaction tier): after level 17 merges; build its section of the [definition](../../definitions/frog-hop-entries-and-g1.md#18-which-pad-lost-its-number-pre-k) (pre-K order 1, 2, 18, 3, 4). [Dive slice 9](../../deep-dives/frog-hop.md#build-slices-in-order).
