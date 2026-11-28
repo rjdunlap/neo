@@ -611,6 +611,11 @@ class Round implements Game {
   }
 
   /** The ghost finger follows the hint walk: marks, Check, levers, Try it, marks, Check. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy) return null;
     const want = rightMarks(this.look, this.records);

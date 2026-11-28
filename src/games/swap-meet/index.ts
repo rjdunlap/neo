@@ -590,6 +590,11 @@ class SwapMeet implements Game {
     const line = hintLine(this.round, this.state, a)!;
     void this.ctx.say(line.line, line.params);
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.alive && this.routes.length)
       return { tap: { on: [...this.routes].sort((a, b) => a.marks - b.marks)[0].card } };

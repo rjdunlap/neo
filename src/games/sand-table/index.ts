@@ -901,6 +901,11 @@ class SandTable implements Game {
   }
 
   /** The ghost finger: a short round that ends with a visible change, then the flag. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     const step = botStep(this.state, this.taken);

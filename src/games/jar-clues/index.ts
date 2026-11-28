@@ -699,6 +699,11 @@ class JarClues implements Game {
     return { on: this.pad, x: b.x, y: b.y };
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.stroke) return null;
     const at = (b: Box) => ({ x: b.x, y: b.y });

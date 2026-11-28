@@ -881,6 +881,11 @@ class Round implements Game {
   }
 
   /** The ghost finger: pick a seat, a picture and a clue (or point), then finish. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.done || !this.ctx.alive) return null;
     if (!this.seated) return { tap: { on: this.seatButtons[0] } };

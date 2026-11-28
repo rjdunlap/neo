@@ -1122,6 +1122,11 @@ class QuickTricks implements Game {
    * The ghost finger: carry the leaf that covers everyone over the friends, the partner sock to the monster, and a stretched handle or
    * the long enough plank across the river; then the green arrow once the trick has had its payoff.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     if (this.waiting) return { tap: { on: this.next } };
