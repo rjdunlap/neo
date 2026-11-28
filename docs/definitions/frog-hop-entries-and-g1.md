@@ -63,6 +63,8 @@ Every new line goes under the game's `hop.` prefix, which is not a rendered pref
 
 ## 17 *Hop to the dots* (toddler)
 
+*In progress 2026-11-28 on `claude/frog-hop-hop-to-the-dots`.*
+
 **Fun action and purpose.** Level 1 with dots for a child who cannot read numerals yet. The sign shows dots only (no numeral), in the five-frame grouping of `dotLayout`, and the voice says "Hop to three!" She taps the pad with that many dots; each pad shows its dots and its numeral, so the numeral sits beside the quantity. Give-N shaped: match a small quantity to its place on the line.
 
 **A round.** Five questions. Questions 1 and 2 use pads 1 to 3 only; 3 to 5 use pads 1 to 5. The frog starts on the bank each question. A right pad: the frog hops there pad by pad, saying each number, then `hop.landed`. The asked number is 1 to 5 (1 to 3 on the short line), never the same as the previous question's.
