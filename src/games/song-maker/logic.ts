@@ -1,7 +1,8 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
-export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen' | 'wake' | 'compose' | 'answer';
+export type SongMode =
+  'free' | 'ghost' | 'card' | 'pattern' | 'listen' | 'wake' | 'compose' | 'answer' | 'revise';
 
 export interface SongPlan {
   mode: SongMode;
@@ -86,6 +87,14 @@ export const SONG_PLANS: SongPlan[] = [
     home: true,
     name: "Answer the pet's 4-note question, ending your answer on the home jelly",
   },
+  // Level 14, Change one thing: the pet's whole 6-beat tune is lit; a pictured request asks for one change (My song's 6×4 board).
+  {
+    mode: 'revise',
+    cols: 6,
+    rows: 4,
+    notes: 6,
+    name: "Change one thing in the pet's song: raise the end, match two beats, go down, or add a quiet beat",
+  },
 ];
 
 /** Answer my song: the first beat (column) of her answer; beats before it are the pet's question. */
@@ -134,6 +143,113 @@ export const finishedAtHome = (plan: SongPlan, lit: readonly Note[]): Note[] => 
   ...lit.filter((n) => n.col !== plan.cols - 1),
   { col: plan.cols - 1, row: homeRow(plan) },
 ];
+
+/**
+ * Change one thing: what the picture asks of the pet's tune. `higher`, the last beat's jelly sits higher than it did;
+ * `match`, beat 4's jelly is on the same row as beat 1's; `down`, the last two beats both sound and the last is lower;
+ * `quiet`, at least one beat has no jelly.
+ */
+export type ChangeRequest = 'higher' | 'match' | 'down' | 'quiet';
+export const CHANGE_REQUESTS: readonly ChangeRequest[] = ['higher', 'match', 'down', 'quiet'];
+
+/**
+ * Change one thing's tunes: a jelly on every beat of the 6×4 board (row 0 the top), each authored for one request so
+ * the request is not already true and several single changes make it true. A `higher` tune ends on the bottom row; a
+ * `down` tune's last two beats share a row above the bottom, so moving either one works.
+ */
+export const CHANGE_TUNES: readonly { request: ChangeRequest; rows: readonly number[] }[] = [
+  { request: 'higher', rows: [3, 2, 1, 2, 2, 3] },
+  { request: 'higher', rows: [2, 1, 2, 3, 2, 3] },
+  { request: 'higher', rows: [1, 2, 3, 2, 1, 3] },
+  { request: 'match', rows: [3, 2, 1, 0, 1, 3] },
+  { request: 'match', rows: [2, 1, 2, 3, 2, 3] },
+  { request: 'match', rows: [0, 1, 2, 3, 2, 3] },
+  { request: 'down', rows: [3, 2, 1, 2, 1, 1] },
+  { request: 'down', rows: [2, 3, 2, 1, 0, 0] },
+  { request: 'down', rows: [3, 3, 2, 1, 2, 2] },
+  { request: 'quiet', rows: [2, 1, 0, 1, 2, 3] },
+  { request: 'quiet', rows: [3, 1, 2, 0, 1, 3] },
+  { request: 'quiet', rows: [1, 0, 1, 2, 3, 2] },
+];
+
+const rowIn = (notes: readonly Note[], col: number) => notes.find((n) => n.col === col)?.row;
+
+/** Change one thing: whether `lit` does what the request asks of the pet's `tune`. Any other changes are welcome. */
+export function requestMet(
+  plan: SongPlan,
+  request: ChangeRequest,
+  tune: readonly Note[],
+  lit: readonly Note[],
+) {
+  const last = plan.cols - 1;
+  switch (request) {
+    case 'higher': {
+      const now = rowIn(lit, last);
+      const was = rowIn(tune, last);
+      return now !== undefined && was !== undefined && now < was;
+    }
+    case 'match': {
+      const one = rowIn(lit, 0);
+      return one !== undefined && one === rowIn(lit, 3);
+    }
+    case 'down': {
+      const before = rowIn(lit, last - 1);
+      const end = rowIn(lit, last);
+      return before !== undefined && end !== undefined && end > before;
+    }
+    case 'quiet':
+      return new Set(lit.map((n) => n.col)).size < plan.cols;
+  }
+}
+
+/** Change one thing: whether her song differs from the pet's tune at all (the check sleeps until it does). */
+export const changedFrom = (tune: readonly Note[], lit: readonly Note[]) =>
+  tune.length !== lit.length || tune.some((n) => !lit.some((m) => m.col === n.col && m.row === n.row));
+
+/** Change one thing: the beats the request is about, marked on the board (none for a quiet beat, which can be any). */
+export const requestBeats = (plan: SongPlan, request: ChangeRequest): number[] =>
+  request === 'higher'
+    ? [plan.cols - 1]
+    : request === 'match'
+      ? [0, 3]
+      : request === 'down'
+        ? [plan.cols - 2, plan.cols - 1]
+        : [];
+
+/**
+ * Change one thing: the one tap (with `answerTap`'s move-in-a-beat rule) that brings her song closest to the request,
+ * from whatever she has now. It is the glowing hint and the ghost finger's move. From the pet's tune one tap is
+ * enough; from any song at most two are.
+ */
+export function changeTap(
+  plan: SongPlan,
+  request: ChangeRequest,
+  tune: readonly Note[],
+  lit: readonly Note[],
+): Note {
+  const last = plan.cols - 1;
+  const bottom = plan.rows - 1;
+  switch (request) {
+    case 'higher':
+      return { col: last, row: Math.max(0, (rowIn(tune, last) ?? bottom) - 1) };
+    case 'match': {
+      const one = rowIn(lit, 0);
+      if (one !== undefined) return { col: 3, row: one };
+      const four = rowIn(lit, 3);
+      return { col: 0, row: four ?? rowIn(tune, 0) ?? 0 };
+    }
+    case 'down': {
+      const before = rowIn(lit, last - 1);
+      if (before !== undefined && before < bottom) return { col: last, row: bottom };
+      return { col: last - 1, row: 0 };
+    }
+    case 'quiet': {
+      // A rest in the middle of the song: beat 4 if it sounds, else the first beat that does.
+      const pick = lit.find((n) => n.col === 3) ?? [...lit].sort((a, b) => a.col - b.col)[0];
+      return pick ? { ...pick } : { col: 3, row: 0 };
+    }
+  }
+}
 
 export const songPlan = (level: number) =>
   SONG_PLANS[Math.max(0, Math.min(SONG_PLANS.length - 1, level - 1))];
@@ -226,6 +342,8 @@ export interface Song {
   candidates?: Note[];
   /** The pattern level's shape, named aloud before play. */
   pattern?: PatternId;
+  /** Change one thing: what the picture asks; `notes` is the pet's tune, lit at the start. */
+  request?: ChangeRequest;
 }
 
 /** A song for one round. Every note has its own column, and a song never sits on a single pitch. */
@@ -248,6 +366,19 @@ export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = [
     const id = rng.pick(choices);
     const given = pool[Number(id.slice(2))].map((row, col) => ({ col, row }));
     return { notes: [], given, motif: id };
+  }
+  if (plan.mode === 'revise') {
+    const choices = CHANGE_TUNES.map((_, i) => `c:${i}`).filter(
+      (id) => !recent.slice(-MOTIF_WINDOW).includes(id),
+    );
+    const id = rng.pick(choices);
+    const tune = CHANGE_TUNES[Number(id.slice(2))];
+    return {
+      notes: tune.rows.map((row, col) => ({ col, row })),
+      given: [],
+      request: tune.request,
+      motif: id,
+    };
   }
   if (plan.mode === 'pattern') {
     const p = rng.pick(PATTERNS);
@@ -312,6 +443,8 @@ export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string
   // Wake: the next spot in the order it wakes; the ghost finger only ever lights, so each one is awake by its turn.
   if (plan.mode === 'wake') return awakeSpots(placed.size).find((n) => !placed.has(key(n))) ?? null;
   if (plan.mode === 'answer') return answerBot(song, plan).find((n) => !placed.has(key(n))) ?? null;
+  // Change one thing: the bot's one change is `changeTap` on the live board (see the game), not a list of notes.
+  if (plan.mode === 'revise') return null;
   const notes = plan.mode === 'free' || plan.mode === 'compose' ? freeSong(plan) : song.notes;
   return notes.find((n) => !placed.has(key(n))) ?? null;
 }
@@ -393,7 +526,11 @@ export interface SongLayout {
   y0: number;
   bars: SongBar[];
   card: { x: number; y: number };
+  /** The replay button at the listening level, and the check where there is one. */
   replay: { x: number; y: number };
+  /** Change one thing: the before button (replays the pet's tune) and the request's picture. */
+  before: { x: number; y: number };
+  sign: { x: number; y: number };
 }
 
 /** The block a beat's column sits in. */
@@ -414,6 +551,8 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
   if (v.upright) {
     const card = { x: v.w / 2, y: 130 };
     const replay = { x: v.w - 80, y: 130 };
+    const before = { x: v.w - 200, y: 130 };
+    const sign = { x: v.w / 2 - 40, y: 130 };
     if (plan.mode === 'pattern' || (plan.mode === 'answer' && plan.cols > 4)) {
       const half = plan.cols / 2;
       const top = 40 + GIVEN_CELL * plan.rows + 40;
@@ -430,6 +569,8 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
         ],
         card,
         replay,
+        before,
+        sign,
       };
     }
     const left = 24;
@@ -446,11 +587,16 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
       bars: [{ from: 0, cols: plan.cols, x0, y0, cell, tappable: true }],
       card,
       replay,
+      before,
+      sign,
     };
   }
   const bottomCheck = plan.mode === 'answer' && plan.cols > 6;
   const sideCheck =
-    plan.mode === 'listen' || plan.mode === 'compose' || (plan.mode === 'answer' && !bottomCheck);
+    plan.mode === 'listen' ||
+    plan.mode === 'compose' ||
+    plan.mode === 'revise' ||
+    (plan.mode === 'answer' && !bottomCheck);
   const left = plan.mode === 'card' ? v.w * 0.36 : 175;
   const right = v.w - (sideCheck ? 130 : 40);
   const top = 130;
@@ -465,7 +611,10 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number; upright?: 
     y0,
     bars: [{ from: 0, cols: plan.cols, x0, y0, cell, tappable: true }],
     card: { x: v.w * 0.18, y: v.h * 0.4 },
-    replay: { x: v.w - 70, y: bottomCheck ? v.h - 62 : v.h / 2 },
+    // Change one thing stacks its two buttons in the right margin: before above, the check below.
+    replay: { x: v.w - 70, y: bottomCheck ? v.h - 62 : plan.mode === 'revise' ? v.h / 2 + 65 : v.h / 2 },
+    before: { x: v.w - 70, y: v.h / 2 - 65 },
+    sign: { x: v.w / 2, y: 66 },
   };
 }
 
@@ -479,5 +628,6 @@ export const LEVELS: BandLevels = {
   prek: { min: 5, max: 12, order: [5, 11, 6, 12, 7, 9] },
   // Level 10 (Answer my song) is school only until a person check says pre-K can hold the 8-beat board.
   // Level 13 (Bring it home) is the same board with one spoken rule, so it follows level 10.
-  school: { min: 6, max: 13, order: [6, 7, 9, 10, 13] },
+  // Level 14 (Change one thing) revises the pet's whole tune, so it comes last.
+  school: { min: 6, max: 14, order: [6, 7, 9, 10, 13, 14] },
 };

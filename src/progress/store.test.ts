@@ -1182,3 +1182,28 @@ describe('stamps (the progression loop)', () => {
     expect(store.earnStamps('word-code', range, { level: 1, misses: 0, hints: 0 }).kinds).toEqual([]);
   });
 });
+
+describe('the friend shop (the progression loop)', () => {
+  it('a grown-up buys with shells and keeps it; a child profile cannot buy', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    store.data.shells.balance = 150;
+    expect(store.buy('wear:crown')).toBe('short');
+    expect(store.buy('color:lilac')).toBe(true);
+    expect(store.data.shells.balance).toBe(30);
+    expect(store.buy('color:lilac')).toBe('owned');
+    // A bought paint colour is the friend's to wear, though it was never mixed.
+    const pal = store.meet('sprout', 'Pip', 'teal', 'grownup:friend')!;
+    expect(store.recolor(pal.id, 'lilac')).toBe(true);
+    expect(store.recolor(pal.id, 'rose')).toBe(false);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.shop.owned).toEqual(['color:lilac']);
+    again.setBand('school');
+    again.data.shells.balance = 500;
+    expect(again.buy('wear:scarf')).toBe('band');
+    expect(again.data.shells.balance).toBe(500);
+  });
+});

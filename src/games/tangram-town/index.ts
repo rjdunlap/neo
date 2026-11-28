@@ -15,6 +15,7 @@ import { WigglyIcon } from '../shared';
 import { townLayout } from './layout';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  ENTRY_LEVELS,
   LEVELS,
   makeFlipRepair,
   makeRepair,
@@ -27,7 +28,10 @@ import {
   unavailableSlots,
   viableCovers,
   hintFor,
+  isMiss,
   makePieces,
+  SNAP,
+  SNAP_HOME,
   planFor,
   targetFor,
   VERTICES,
@@ -89,9 +93,18 @@ class TangramTown implements Game {
   done = false;
   constructor(private readonly ctx: GameContext) {
     this.plan = buildFor(ctx.level, ctx.rng);
-    this.filled = this.plan.targets.map(() => false);
+    this.filled = this.plan.targets.map((_, i) => !!this.plan.preset?.includes(i));
     ctx.stage.addChild(this.bg, this.board, this.paletteGlow);
     this.board.addChild(this.outlines, this.glow);
+    // One piece home: the pieces already in the picture sit on the board itself (drawHint clears only the outlines).
+    for (const i of this.plan.preset ?? []) {
+      const t = this.plan.targets[i],
+        g = shape(t.shape, 'purple');
+      g.position.set(t.x, t.y);
+      g.rotation = (t.turns * Math.PI) / 2;
+      g.eventMode = 'none';
+      this.board.addChild(g);
+    }
     this.glow.eventMode = this.paletteGlow.eventMode = 'none';
     this.turn = new RoundButton(againIcon(), swatch.blue, 50, () => {
       if (!this.selected || this.done || this.selected.placed) return;
@@ -125,7 +138,9 @@ class TangramTown implements Game {
           this.selected.art.rotation = (this.selected.piece.turns * Math.PI) / 2;
         }
       }
-      void ctx.say('tangram.help');
+      void (this.plan.onePiece
+        ? ctx.say('tangram.home-help', { picture: this.plan.picture })
+        : ctx.say('tangram.help'));
       this.drawHint();
     });
     ctx.stage.addChild(this.turn, this.help);
@@ -139,7 +154,7 @@ class TangramTown implements Game {
       ctx.stage.addChild(node);
       const c: Choice = { piece, node, art, drag: null!, placed: false, named: false };
       c.drag = draggable(node, ctx.tw, {
-        tapToPlace: () => ctx.level <= TAP_PLACE_TO && !this.done && !c.placed,
+        tapToPlace: () => (ctx.level <= TAP_PLACE_TO || !!this.plan.onePiece) && !this.done && !c.placed,
         onPick: () => {
           this.selected = c;
           sfx.tick();
@@ -158,6 +173,7 @@ class TangramTown implements Game {
             local.y,
             this.plan.targets,
             unavailableSlots(this.plan, this.filled),
+            this.plan.onePiece ? SNAP_HOME : SNAP,
           );
           if (target >= 0) {
             this.filled[target] = true;
@@ -193,13 +209,7 @@ class TangramTown implements Game {
             void ctx.say('tangram.covered');
             return false;
           }
-          if (
-            this.plan.targets.some(
-              (t, i) =>
-                !unavailableSlots(this.plan, this.filled)[i] &&
-                Math.hypot(t.x - local.x, t.y - local.y) < 105,
-            )
-          ) {
+          if (isMiss(this.plan, local.x, local.y, unavailableSlots(this.plan, this.filled))) {
             this.misses++;
             this.wrong++;
             sfx.boing();
@@ -249,7 +259,13 @@ class TangramTown implements Game {
   }
   start() {
     void this.ctx.instruct(
-      this.plan.covers ? 'tangram.covers' : this.plan.rotate ? 'tangram.turn' : 'tangram.fit',
+      this.plan.covers
+        ? 'tangram.covers'
+        : this.plan.onePiece
+          ? 'tangram.home'
+          : this.plan.rotate
+            ? 'tangram.turn'
+            : 'tangram.fit',
       { picture: this.plan.picture },
     );
   }
@@ -479,6 +495,7 @@ export const tangramTown: GameModule = {
   skills: ['shape-composition', 'rotation', 'spatial-reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   touchDemo: true,
