@@ -203,7 +203,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 11. **The plan's level 16, Change one sound** **Done (2026-11-26, [PR #2234](https://github.com/rjdunlap/neo/pull/2234), built as level 18).** Eight four-rung ladder chains over existing pictured words (`hat → cat → can → cap → cup`, etc.) and tap-to-lift with free put-back.
 12. **Entries below and between** (placed with `order`, which is built): *One big monster* (built as lap level 9, not 18+: the numbers 9–17 above are this plan's, so unbuilt plan levels take the next free stable IDs), *My letter* (built 2026-11-23 as level 15, PR #2070), *Big and little*, then *Spell my name* (decision 5 settled 2026-10-23: a pre-K level, letter names, eight letters at most, the `PIP` fallback); neither is built.
 13. **Level 17, Which vowel?** (to define, after a child plays 9 to 11).
-14. **The grown-up window** (G1 to G4, decision 8) after Lands stage B; the BFS word-ladder is its first piece.
+14. **The grown-up window** (G1 to G4, decision 8; the `grownup` band exists on `origin/main`, so it no longer waits on Lands stage B); the BFS word-ladder is its first piece.
 15. **Sketches**: a word for a clue, plurals and -ing, a journal page of words, the alphabet line-up.
 
 ## What was built in this session
