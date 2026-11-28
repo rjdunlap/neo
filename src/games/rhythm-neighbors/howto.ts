@@ -46,6 +46,11 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Take turns with the woodpecker, playing your frog part each time, then join the final duet.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'The woodpecker knocks three or four times. Play the four pictured frog notes, resting longer where the picture shows a long gap, then tap the green arrow.',
+    },
     { to: 6, text: 'Tap the green arrow when the song is ready.' },
   ],
   finish: [
@@ -77,6 +82,11 @@ export const HOW_TO: GameHowTo = {
       from: 11,
       to: 11,
       text: 'After three answers, the bird and the frogs sing the last one together and the round ends.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'After three replies, the bird and the frogs sing a short song together; tap a frog to join in, then the round ends.',
     },
     {
       from: 3,
@@ -113,6 +123,11 @@ export const HOW_TO: GameHowTo = {
       from: 11,
       to: 11,
       text: 'Any rhythm that is not a copy of the knocks is an answer, on one frog or two. A copy, or a single note, is gently asked again and never counted. The music-note button sings a sample answer and is not a hint.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'The reply stays pictured, so nothing needs remembering. A long pause in the middle starts it again and is never a miss. Two misses make the next frog glow, and the help button plays it for her.',
     },
     {
       from: 5,

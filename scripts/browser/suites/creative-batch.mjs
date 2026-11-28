@@ -830,9 +830,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
       }
     if (!only || only === 'rhythm')
-      for (let level = fromLevel; level <= 11; level++) {
+      for (let level = fromLevel; level <= 12; level++) {
         await launch('rhythm-neighbors', level);
-        if (level === 6 || level === 7 || level === 9 || level === 10 || level === 11) {
+        if (level === 6 || level === 7 || level === 9 || level === 10 || level === 11 || level === 12) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);
         }
@@ -1011,7 +1011,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.plan.timing) {
             // A thinking pause in the middle of a reply empties it with no miss.
             kit.tapOn(g.frogs[g.phrases[0].voices[0]]);
-            await kit.sleep(3000);
+            // The game's own clock can run slow on a busy machine, so wait for the reply to empty rather than for 3 real seconds.
+            await kit.until(() => g.taps.length === 0, 9000);
             if (g.taps.length !== 0 || g.misses !== 0)
               throw new Error(`Rhythm pause ${g.taps.length}/${g.misses}`);
           }

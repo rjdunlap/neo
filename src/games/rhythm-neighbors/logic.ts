@@ -23,6 +23,8 @@ export interface NeighborPlan {
   call?: boolean;
   pairs?: boolean;
   own?: boolean;
+  /** Level 12: the bird calls three or four knocks and the pictured reply is four notes on two frogs. */
+  long?: boolean;
 }
 export const PLANS: Record<number, NeighborPlan> = {
   1: { free: true, voices: 1, timing: false, name: 'Tap a woodpecker and hear a frog answer' },
@@ -76,6 +78,13 @@ export const PLANS: Record<number, NeighborPlan> = {
     own: true,
     name: 'Your own answer: play the frogs in any rhythm that is not an echo of the bird',
   },
+  12: {
+    free: false,
+    voices: 2,
+    timing: true,
+    long: true,
+    name: 'Longer calls: answer three or four bird knocks with a pictured reply of four frog notes',
+  },
 };
 
 export const LEVELS: BandLevels = {
@@ -83,7 +92,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 9, order: [2, 8, 9, 3] },
   preschool: { min: 3, max: 9, order: [9, 3, 4] },
   prek: { min: 4, max: 10, order: [4, 5, 6, 10] },
-  school: { min: 5, max: 11, order: [5, 6, 10, 11] },
+  school: { min: 5, max: 12, order: [5, 6, 10, 11, 12] },
 };
 export const LEVEL_IDS = Object.keys(PLANS).map(Number);
 export const planFor = (l: number) =>
@@ -229,6 +238,32 @@ export function makeOwn(rng: Rng): Phrase[] {
     });
 }
 
+/** Level 12: exchanges that finish the round. */
+export const LONG_ROUNDS = 3;
+/** Level 12: every reply is four notes (three gaps), so the picture is longer but never needs remembering. */
+export const LONG_REPLIES: Gap[][] = REPLIES.filter((r) => r.length === 3);
+/**
+ * Level 12: three different four-note replies, each after a call of three or four knocks whose shape is never the reply's,
+ * on two frogs that alternate from a seeded first.
+ */
+export function makeLong(rng: Rng): Phrase[] {
+  const first = rng.int(0, 1);
+  return rng
+    .shuffle([...LONG_REPLIES])
+    .slice(0, LONG_ROUNDS)
+    .map((gaps) => {
+      const call = pick(
+        rng,
+        PAIR_CALLS.filter((c) => shapeOf(c) !== shapeOf(gaps)),
+      );
+      return {
+        call: [...call],
+        gaps: [...gaps],
+        voices: Array.from({ length: gaps.length + 1 }, (_, j) => (first + j) % 2),
+      };
+    });
+}
+
 /** Free play finishes by itself after this many frog taps. */
 export const FREE_TAPS = 8;
 /** Seconds without a touch before the idle invitation at the free levels (a frog wiggles; at level 7 the tree knocks). */
@@ -248,6 +283,7 @@ export function makePhrases(level: number, rng: Rng): Phrase[] {
   const p = planFor(level);
   if (p.knock || p.call) return [];
   if (p.own) return makeOwn(rng);
+  if (p.long) return makeLong(rng);
   if (p.pairs) return makePairs(rng); // Level 9's phrases are her calls, added as she knocks them.
   // Level 8: three different calls of two or three knocks, each answered by one frog tap (a reply of a single note, so no gaps).
   if (p.turn)
