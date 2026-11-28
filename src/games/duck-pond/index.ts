@@ -1251,7 +1251,7 @@ class DuckPond implements Game {
         await this.roundWon(0, false);
         return;
       } else if (this.plan.mode === 'peek') {
-        // She counted them herself: every duck waves, and the rings go.
+        // She counted them herself: the rings go and the hiding places fold away (the chorus in `roundWon` has every duck wave).
         for (const d of this.swimmers) d.markCounted(false);
         this.clearPeek();
       } else {
@@ -1459,12 +1459,17 @@ class DuckPond implements Game {
   /** A tap rings a duck and counts it; a ringed duck just quacks, so none is counted twice. Never a miss. */
   private tapPeeker(d: Duck) {
     const peek = this.peek;
-    if (!peek || this.finished || !peek.guessed) return;
+    if (!peek || this.finished) return;
     const i = this.swimmers.indexOf(d);
     if (i < 0) return;
+    d.cheer();
+    // Before the guess, or while the pet is counting the rings aloud, a duck just waves and quacks: it is not counted yet.
+    if (!peek.guessed || this.busy) {
+      sfx.animal('quack');
+      return;
+    }
     const { rung, say } = ringDuck(peek.rung, i);
     peek.rung = rung;
-    d.cheer();
     if (say === null) {
       sfx.animal('quack');
       return;
