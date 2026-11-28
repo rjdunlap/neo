@@ -49,4 +49,13 @@ export const VOICE = {
   'duck.wayFirst': ['Send some of the {n} across first!'],
   'duck.wayHint': ['Try this duck. {n} in all.'],
   'duck.wayAll': ["That's every way! {n} ducks, {ways} ways!"],
+  // Level 17, Count the peekers. A prefix outside the rendered clip list, so these stay on device speech (no clip to render).
+  'duckpeek.guess': ['Ducks are peeking out! Are there a few, or lots?'],
+  'duckpeek.few': ["A few? Let's count and see!"],
+  'duckpeek.lots': ["Lots? Let's count and see!"],
+  'duckpeek.ask': ['How many ducks are peeking? Tap each one as you count.'],
+  'duckpeek.rings': ["Let's count the rings!"],
+  'duckpeek.tapEach': ['Tap each duck as you count it!'],
+  'duckpeek.more': ['{n} counted. Who is still peeking?'],
+  'duckpeek.allRung': ['{n} rings, so {n} ducks!'],
 } satisfies Record<string, string[]>;

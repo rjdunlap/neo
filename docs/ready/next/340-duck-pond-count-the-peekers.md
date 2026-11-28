@@ -1,1 +1,0 @@
-**`duck-pond`, *Count the peekers*** (new-levels tier): the next free stable ID (currently 17), preschool and pre-K between 6 and 7 with `order` and `entryLevels`; ducks peek from reeds and pads, each tap waves and rings so none is counted twice, an unscored "a few, or lots?" first. [Dive ladder and slice 10](../../deep-dives/duck-pond.md#build-slices-in-order).
