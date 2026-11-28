@@ -15,6 +15,7 @@ import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  DRIVE_LEVEL,
   boardFor,
   DIRECTIONS,
   expand,
@@ -41,6 +42,7 @@ import { arrow } from './art';
 import { courseBoards, courseMinimum, isRobotCourse } from './course';
 import { endRoutineVisit } from './routine';
 import { RoutineRound } from './routine-scene';
+import { DriveRobot } from './drive-scene';
 
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
@@ -689,24 +691,27 @@ export const robotPath: GameModule = {
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [DRIVE_LEVEL],
   describeLevel: (l) =>
-    l === 11
-      ? 'Where will it stop?'
-      : l === 12
-        ? 'Fix the program'
-        : l === 13
-          ? 'Pick up the apple on the way'
-          : l === 14
-            ? 'Mend the loop'
-            : l === 15
-              ? 'A routine: use the same steps twice'
-              : l === 1
-                ? 'One or two steps straight to the star'
-                : l === 2
-                  ? 'A short program with a turn'
-                  : l === 3
-                    ? 'Plan across a bigger grid'
-                    : planFor(l).name,
+    l === DRIVE_LEVEL
+      ? 'Drive the robot: each arrow moves it one step'
+      : l === 11
+        ? 'Where will it stop?'
+        : l === 12
+          ? 'Fix the program'
+          : l === 13
+            ? 'Pick up the apple on the way'
+            : l === 14
+              ? 'Mend the loop'
+              : l === 15
+                ? 'A routine: use the same steps twice'
+                : l === 1
+                  ? 'One or two steps straight to the star'
+                  : l === 2
+                    ? 'A short program with a turn'
+                    : l === 3
+                      ? 'Plan across a bigger grid'
+                      : planFor(l).name,
   music: STYLES.jelly,
   offScreen:
     'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
@@ -715,6 +720,7 @@ export const robotPath: GameModule = {
   upright: true,
   sticker: () => robotArt(150),
   create: (ctx) => {
+    if (ctx.level === DRIVE_LEVEL) return new DriveRobot(ctx);
     if (ctx.level === 15) return new RoutineRound(ctx);
     endRoutineVisit();
     return new RobotPath(ctx);

@@ -4,6 +4,12 @@ import {
   allowed,
   boardFor,
   compress,
+  DIRECTIONS,
+  DRIVE_LEVEL,
+  DRIVE_PLANS,
+  driveNext,
+  driveStep,
+  LEVELS,
   expand,
   FIX_PLANS,
   MEND_PLANS,
@@ -17,6 +23,7 @@ import {
   runPath,
   shortestPath,
   slotOfStep,
+  type Cell,
   type Direction,
   type RepairPlan,
   type Slot,
@@ -411,5 +418,63 @@ describe('level 14: mend the loop', () => {
     expect(repairPress(slotted, slotted.broken, slotted.brokenLoop, slotted.fixSlot as number)).toEqual({
       arrow: slotted.solution.slots[slotted.fixSlot as number].dir,
     });
+  });
+});
+
+describe('Drive the robot (level 16)', () => {
+  it('is the preschool entry, played first without renumbering any level', () => {
+    expect(LEVELS.preschool!.order).toEqual([DRIVE_LEVEL, 1, 2]);
+    expect(LEVELS.prek!.max).toBeLessThan(DRIVE_LEVEL);
+    expect(LEVELS.school!.max).toBeLessThan(DRIVE_LEVEL);
+  });
+
+  it('puts a reachable star two steps away on a small board with one rock', () => {
+    for (const plan of DRIVE_PLANS) {
+      expect(plan.size).toBe(3);
+      expect(plan.rocks).toHaveLength(1);
+      expect(allowed(plan.goal, plan)).toBe(true);
+      expect(shortestPath(plan)).toHaveLength(2);
+    }
+  });
+
+  it('keeps the robot on the board and off the rocks whatever she taps, and only the star ends it', () => {
+    const rng = new Rng(16);
+    for (const plan of DRIVE_PLANS)
+      for (let run = 0; run < 200; run++) {
+        let at: Cell = [0, 0];
+        for (let tap = 0; tap < 12; tap++) {
+          const move = driveStep(plan, at, rng.pick([...DIRECTIONS]));
+          expect(allowed(move.cell, plan)).toBe(true);
+          if (move.stop !== 'step') expect(move.cell).toEqual(at);
+          expect(move.star).toBe(move.cell[0] === plan.goal[0] && move.cell[1] === plan.goal[1]);
+          at = move.cell;
+          if (move.star) break;
+        }
+      }
+  });
+
+  it('stops gently at a rock and at the edge', () => {
+    const plan = DRIVE_PLANS[0];
+    expect(driveStep(plan, [0, 0], 'up')).toEqual({ cell: [0, 0], stop: 'edge', star: false });
+    expect(driveStep(plan, [1, 0], 'down')).toEqual({ cell: [1, 0], stop: 'rock', star: false });
+  });
+
+  it('has a bot that reaches the star by a shortest route from anywhere it can stand', () => {
+    for (const plan of DRIVE_PLANS)
+      for (let y = 0; y < plan.size; y++)
+        for (let x = 0; x < plan.size; x++) {
+          let at: Cell = [x, y];
+          if (!allowed(at, plan)) continue;
+          const best = shortestPath(plan, at).length;
+          let taps = 0;
+          for (let dir = driveNext(plan, at); dir; dir = driveNext(plan, at)) {
+            const move = driveStep(plan, at, dir);
+            expect(move.stop).toBe('step');
+            at = move.cell;
+            taps++;
+          }
+          expect(at).toEqual(plan.goal);
+          expect(taps).toBe(best);
+        }
   });
 });

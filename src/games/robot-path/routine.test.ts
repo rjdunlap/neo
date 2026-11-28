@@ -121,7 +121,8 @@ describe('Level 15 rules', () => {
   it('adds level 15 to school alone', () => {
     expect(LEVELS.school!.max).toBe(15);
     expect(LEVELS.prek!.max).toBe(6);
-    expect(LEVELS.preschool!.max).toBe(2);
+    // Preschool's top ID is the Drive the robot entry (16), played before 1 and 2; level 15 is not in its order.
+    expect(LEVELS.preschool!.order).not.toContain(15);
   });
 });
 

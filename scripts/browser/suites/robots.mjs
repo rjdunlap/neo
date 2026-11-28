@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function robots() {
+    if (process.env.DRIVE_ONLY) return drive();
     for (
       let level = Number(process.env.FROM_LEVEL || 1);
       level <= Number(process.env.TO_LEVEL || 15);
@@ -268,6 +269,66 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         `Robot Path level ${level}: collisions, hint, ${level > 6 ? 'counted steps and loops, step-through playback, ' : ''}and reward passed`,
       );
     }
+  }
+
+  /** Level 16, Drive the robot, on a phone held upright: a rock and the edge stop it gently, then the arrows reach the star. */
+  async function drive() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('robot-path', 16);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (!g.plan || g.arrows.length !== 4) throw new Error('Drive the robot did not start');
+      if ('play' in g || 'queue' in g) throw new Error('Drive the robot has a program or play button');
+      const tap = async (dir) => {
+        kit.tapOn(g.arrows.find((a) => a.dir === dir).button);
+        await kit.sleep(450);
+        await kit.until(() => !g.moving, 3000);
+      };
+      // The top edge: the robot stays put.
+      const before = g.robot.position.y;
+      await tap('up');
+      if (g.at[0] !== 0 || g.at[1] !== 0 || Math.abs(g.robot.position.y - before) > 1)
+        throw new Error('The edge moved the robot');
+    });
+    await screenshot('robot-path-16-start');
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const tap = async (dir) => {
+        kit.tapOn(g.arrows.find((a) => a.dir === dir).button);
+        await kit.sleep(450);
+        await kit.until(() => !g.moving, 3000);
+      };
+      // Walk next to the rock and push into it, then drive the shortest way home.
+      const [rx, ry] = g.plan.rocks[0];
+      const besides = [
+        [rx - 1, ry, 'right'],
+        [rx, ry - 1, 'down'],
+      ].find(([x, y]) => x >= 0 && y >= 0 && !(x === g.plan.goal[0] && y === g.plan.goal[1]));
+      if (besides) {
+        const [bx, by, into] = besides;
+        for (let k = 0; k < bx; k++) await tap('right');
+        for (let k = 0; k < by; k++) await tap('down');
+        const at = g.at.join();
+        await tap(into);
+        if (g.at.join() !== at) throw new Error('The rock let the robot through');
+      }
+      // The how-to finger's next arrow is the bot's shortest route.
+      for (let k = 0; k < 8 && !g.done; k++) {
+        const next = g.autotouch();
+        if (!next) throw new Error(`No next arrow at ${g.at}`);
+        kit.tapOn(next.tap.on);
+        await kit.sleep(450);
+        await kit.until(() => !g.moving, 3000);
+      }
+      if (!(await kit.until(() => g.done, 6000)))
+        throw new Error(
+          `The robot did not reach the star: at ${g.at} goal ${g.plan.goal} rock ${g.plan.rocks[0]} moving ${g.moving}`,
+        );
+    });
+    await finished('robot-path');
+    log(
+      'Robot Path level 16: edge and rock stop gently, the arrows drive it to the star, no program or play button',
+    );
   }
 
   return { robots };
