@@ -41,6 +41,8 @@ Every new line goes under the game's `hop.` prefix, which is not a rendered pref
 
 ## 16 *Hop along* (lap and toddler)
 
+*Built 2026-11-28 on `claude/frog-hop-hop-along` ([PR #2364](https://github.com/rjdunlap/neo/pull/2364)); see the [game page](../games/frog-hop.md) for what was built and the one departure (no pause-sheet hint).*
+
 **Fun action and purpose.** Five big lily pads in a row, numbered 1 to 5 with dots under each numeral (the existing `dotLayout`). The frog sits on a bank left of pad 1. She taps anywhere on the pond and the frog hops to the pad nearest her tap, pad by pad, saying each number it lands on and playing a rising note on each. Cause and effect, and the cue Siegler's line game teaches: further along is a bigger number, a higher note and more number names. There is no goal and nothing is wrong.
 
 **A round.** Six taps. Each tap hops the frog from where it is to the nearest pad (forward or back, one pad per hop, each said: "2… 3… 4"). A tap on the pad the frog is on is a croak and a splash, and counts as a tap. A tap on the bank sends the frog home ("Home!"). After the sixth tap's hops end, the frog does a big splash and the round finishes with `{ misses: 0, hints: 0 }` (a creative-play finish: one sticker, always happy). Taps during a hop are ignored, not queued, with the touch-down ripple still shown.
