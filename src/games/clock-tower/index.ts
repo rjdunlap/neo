@@ -1037,7 +1037,8 @@ class ClockTower implements Game {
         this.hops.text = worked.strip;
         this.hops.visible = true;
         void this.ctx.say('clock.how-long.help', { count: worked.count });
-      } else if (this.plan.mode === 'visit' && this.chosen === null) void this.ctx.say('clock.visit.hint');
+      } else if (this.plan.mode === 'visit' && this.chosen === null)
+        void this.ctx.say('clock.visit.hint', { start: spoken(this.task.time) });
       else void this.ctx.say(this.plan.mode === 'read' ? 'clock.hint.read' : 'clock.hint');
     }
     this.busy = false;

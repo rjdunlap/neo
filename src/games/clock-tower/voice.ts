@@ -42,7 +42,7 @@ export const VOICE = {
   'clock.visit.late': [
     "From {start}, a visit of {length} finishes at {finish}. That is after {close}, when our friend's free time ends. Try another time.",
   ],
-  'clock.visit.hint': ['The glowing time fits: the whole visit is inside the green free time.'],
+  'clock.visit.hint': ['The glowing time, {start}, fits: the whole visit is inside the green free time.'],
   'clock.visit.fits': ['Yes! From {start}, the visit finishes at {finish}. That fits.'],
   'clock.visit.set': ['Now set the big clock to {start}, then ring the bell!'],
   'clock.visit.set.wrong': ['The clock says {now}. The visit starts at {start}.'],
