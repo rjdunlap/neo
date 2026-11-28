@@ -14,6 +14,9 @@ import type { LandId, LandLayout } from '../../content/lands';
 import { ENTRY_NAMES, entryArt, fittedBack } from '../../ui/origin-art';
 import { ink } from '../../art/palette';
 import { voice } from '../../audio/voice';
+import { sfx } from '../../audio/sfx';
+import { palmOnGlass } from '../../engine/input';
+import { GROUND_TAPS, tapSound } from '../../content/location-taps';
 import type { BackdropStyle } from '../../art/scenery';
 import type { View } from '../../engine/view';
 import type { App } from '../App';
@@ -92,6 +95,7 @@ export class LocationScene extends LandScene {
   private prop: { spec: PropSpec; node: Container; moving: Graphics } | null = null;
   private propTime = 0;
   private notes = 0;
+  private taps = 0;
   private readonly pad = new Container();
   /** Opened at the root (with a Back to Places), where a visit is remembered for Explore's postcard. */
   private readonly opensAtRoot: boolean;
@@ -164,11 +168,20 @@ export class LocationScene extends LandScene {
 
   init() {
     super.init();
+    // The place's own ground does something when tapped (2026-11-28): a pad under everything catches the touches that miss
+    // the games, the resident and the buttons, which arrive at the root as their own target.
+    this.pad.eventMode = 'static';
+    this.content.addChildAt(this.pad, 0);
+    this.root.eventMode = 'static';
+    let last = -Infinity;
+    this.root.on('pointerdown', (e: FederatedPointerEvent) => {
+      if (e.target !== this.root && e.target !== this.pad) return;
+      if (e.timeStamp - last < 180 || palmOnGlass()) return;
+      last = e.timeStamp;
+      this.groundTap(this.content.toLocal(e.global));
+    });
     if (this.wanderer) {
-      // Any touch on the screen turns the resident toward it: a pad under everything catches the ones that miss.
-      this.pad.eventMode = 'static';
-      this.content.addChildAt(this.pad, 0);
-      this.root.eventMode = 'static';
+      // Any touch on the screen turns the resident toward it.
       this.root.on('pointerdown', (e: FederatedPointerEvent) =>
         this.wanderer?.look(this.field.toLocal(e.global).x),
       );
@@ -178,6 +191,22 @@ export class LocationScene extends LandScene {
     if (this.opensAtRoot) store.visitPlace(this.id);
     // Her friend is the resident here: one of her, not two.
     if (this.atHome) this.pip.visible = false;
+  }
+
+  /** A burst of the place's own stuff where its ground was tapped, and its sound (`GROUND_TAPS`). */
+  groundTap(at: { x: number; y: number }) {
+    if (this.leaving) return;
+    const tap = GROUND_TAPS[this.id];
+    const { call, arg } = tapSound(tap.sound, this.taps++);
+    (sfx as unknown as Record<string, (a?: number | string) => void>)[call](arg);
+    this.particles.burst(at.x, at.y, {
+      kind: tap.kind,
+      colors: [...tap.colors],
+      count: tap.count,
+      speed: tap.gravity < 0 ? [40, 110] : [120, 260],
+      gravity: tap.gravity,
+      ...(tap.fan ? { spread: 1.3 } : {}),
+    });
   }
 
   resize(v: View) {

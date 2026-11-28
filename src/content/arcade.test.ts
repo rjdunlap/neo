@@ -66,7 +66,9 @@ describe('the Arcade lists (docs/rework/ARCADE.md)', () => {
   });
 
   it('splits All games into the subjects with nothing lost or doubled', () => {
-    const subjects = arcadeFilters(GAMES).filter((f) => f !== 'mine' && f !== 'all' && f !== 'played');
+    const subjects = arcadeFilters(GAMES).filter(
+      (f) => f !== 'mine' && f !== 'all' && f !== 'played' && f !== 'hearts',
+    );
     expect(subjects.length).toBeGreaterThan(0);
     for (const band of BANDS.map((b) => b.id)) {
       const all = arcadeList('all', band, GAMES, LANDS, {}).map((g) => g.id);
@@ -137,5 +139,14 @@ describe('the Arcade lists (docs/rework/ARCADE.md)', () => {
     arcadeMemory.spotlight = GAMES[0].id;
     forgetArcade();
     expect(arcadeMemory).toEqual({ filter: 'mine', spotlight: null });
+  });
+});
+
+describe("the Arcade's Favourites filter (Home's yard, 2026-11-28)", () => {
+  it('lists her hearted games newest first, of every age, and nothing else', () => {
+    const [a, b] = [GAMES[0].id, GAMES[5].id];
+    expect(arcadeList('hearts', 'toddler', GAMES, LANDS, {}, [a, b]).map((g) => g.id)).toEqual([b, a]);
+    expect(arcadeList('hearts', 'toddler', GAMES, LANDS, {}, ['no-such-game'])).toEqual([]);
+    expect(arcadeFilters(GAMES)).toContain('hearts');
   });
 });

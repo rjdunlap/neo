@@ -6,9 +6,7 @@ The few calls that are the developer's alone: their money or accounts, the child
 
 ## Still waiting
 
-| Step | What happens next | Written in |
-| --- | --- | --- |
-| **Say go on the RW08 cutover** | Deleting `classic/` is approved (2026-10-23) and irreversible for the deployed island, so it starts only when the developer says so. It was to follow an iPad look at the new Explore and library at the root; with no iPad yet, a look in a computer browser serves if the developer wants (a phone shows only Today's six). No routine picks it up | [RW08 slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12) |
+Nothing at the moment. The RW08 cutover went ahead on 2026-11-28, when the developer asked for the island games to be folded into one main flow ([RW08 slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12)).
 
 Answered by playing, not by a decision: the developer and their wife now play [Today's six](definitions/todays-six.md#open-decisions) daily on their phones, so whether the six should be shared or per profile, how many grown-up games it blends in, and whether it should avoid recently played games are settled by their [playtest notes](OBSERVATIONS.md). The proposals in the definition stand until a note says otherwise.
 

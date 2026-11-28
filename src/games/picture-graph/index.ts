@@ -321,6 +321,11 @@ class PictureGraph implements Game {
    * The ghost finger: add a block above a short bar (quick taps, they belong together), press the check, then answer
    * each question by its column or its number.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // The finger answers after hearing the question, as she would.
     if (this.busy || this.finished || !this.graph || this.unasked) return null;

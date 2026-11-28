@@ -885,6 +885,11 @@ class LookItUp implements Game {
   }
 
   /** The ghost finger: turn to the visitor's page, touch the asked row at level 3, then carry the right picture to the visitor. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || this.asking > 0 || this.index < 0) return null;
     const move = lookTouch(this.round, {

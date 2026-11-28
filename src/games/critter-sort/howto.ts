@@ -20,6 +20,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Sort all six critters into the two separate hoops or onto the leaf mat. Then tap critters to count each part aloud; a ring marks each counted critter. Tap a part’s picture below to choose which has more.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'Tap two of the three signs to put them on the hoops (tap a sign on a hoop to take it back before sorting). Then drag each critter to the hoop its sign fits, the middle for both, or the leaf mat for neither.',
+    },
+    {
       from: 9,
       to: 9,
       text: 'The hoop has two pictures: fit the first, but not the crossed-out second picture. Drag matching critters into the one hoop; put every other critter on the leaf mat.',
@@ -85,6 +90,11 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Sort every critter into the hoop or onto the leaf mat in both diagrams for one sticker.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'Sort all six critters by your own two signs, in both rounds, for one sticker. Choosing signs is never wrong.',
+    },
     { from: 8, to: 8, text: 'Finish both sorts of the same six critters for one sticker.' },
     { from: 7, to: 7, text: 'Place the newcomer correctly in each of three diagrams to finish.' },
     {
@@ -113,7 +123,7 @@ export const HOW_TO: GameHowTo = {
     { from: 4, to: 4, text: 'Two wrong guesses make the correct rule picture larger.' },
     {
       from: 5,
-      to: 9,
+      to: 10,
       text: 'Putting a critter back on bare grass is a free try. Two wrong drops glow a useful place and critter.',
     },
     {

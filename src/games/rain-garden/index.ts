@@ -555,6 +555,11 @@ class RainGarden implements Game {
     } else if (this.leaf.visible && this.saidEnough) ring(this.leaf, LEAF, LEAF, swatch.yellow.fill);
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const s = this.s;

@@ -590,6 +590,11 @@ class DownWeGo implements Game {
     this.drag?.destroy();
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.moving) return null;
     if (this.predicting) {

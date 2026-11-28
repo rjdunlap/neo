@@ -34,6 +34,8 @@ import {
   pieceName,
   pieceShape,
   wantedChoice,
+  ADD_CARS,
+  countOn,
 } from './logic';
 import { SCRIPT } from '../../content/voice-script';
 
@@ -92,7 +94,7 @@ describe('Pattern Train', () => {
       for (let seed = 1; seed <= 100; seed++) {
         const { sequence, targets } = buildTrain(plan, new Rng(seed));
         if (plan.numberSteps) {
-          expect(sequence).toHaveLength(plan.startAnywhere ? START_CARS : NUMBER_CARS);
+          expect(sequence).toHaveLength(plan.startAnywhere || plan.addRule ? START_CARS : NUMBER_CARS);
           expect(targets[0]).toBeGreaterThanOrEqual(plan.startAnywhere ? 1 : 2);
           continue;
         }
@@ -616,11 +618,10 @@ describe('Pattern Train Start anywhere (level 20)', () => {
   const plan = patternPlan(20);
   const rounds = Array.from({ length: 400 }, (_, i) => buildTrain(plan, new Rng(i + 1)));
 
-  it('is the last school level, a numbered train that is not the level 12 one', () => {
+  it('is a school level, a numbered train that is not the level 12 one', () => {
     expect(plan.startAnywhere).toBe(true);
     expect(plan.kind).toBe('number');
-    expect(PATTERN_PLANS).toHaveLength(20);
-    expect(LEVELS.school).toEqual({ min: 8, max: 20 });
+    expect(LEVELS.school?.max).toBeGreaterThanOrEqual(20);
     expect(patternPlan(12).startAnywhere).toBeUndefined();
   });
 
@@ -677,5 +678,101 @@ describe('Pattern Train Start anywhere (level 20)', () => {
     const said = patternSaid(plan, { sequence, targets });
     expect(said.key).toBe('pattern.whyNumber');
     expect(said.vars.step).toBe(sequence[1] - sequence[0]);
+  });
+});
+
+describe('Pattern Train Add three, add four (level 21)', () => {
+  const plan = patternPlan(21);
+  const rounds = Array.from({ length: 400 }, (_, i) => buildTrain(plan, new Rng(i + 1)));
+
+  it('is the top school level, and the only level that asks for the rule', () => {
+    expect(plan.addRule).toBe(true);
+    expect(PATTERN_PLANS).toHaveLength(21);
+    expect(LEVELS.school).toEqual({ min: 8, max: 21 });
+    for (const r of rounds) expect(r.rule).toBeDefined();
+    for (let level = 1; level <= 20; level++) {
+      const p = patternPlan(level);
+      if (p.make || p.match) continue; // their own rounds, never through buildTrain
+      for (let seed = 1; seed <= 40; seed++)
+        expect(buildTrain(p, new Rng(seed)).rule, p.name).toBeUndefined();
+    }
+  });
+
+  it('counts exactly by 3 or 4 from a start of 1 to 20, the last car empty, every car 1 to 40', () => {
+    const steps = new Set<number>();
+    for (const { sequence, targets, rule } of rounds) {
+      expect(sequence).toHaveLength(ADD_CARS);
+      expect(targets).toEqual([ADD_CARS - 1]);
+      const step = rule!.step;
+      steps.add(step);
+      sequence.forEach((n, i) => i > 0 && expect(n - sequence[i - 1]).toBe(step));
+      expect(sequence[0]).toBeGreaterThanOrEqual(1);
+      expect(sequence[0]).toBeLessThanOrEqual(20);
+      expect(Math.max(...sequence)).toBeLessThanOrEqual(40);
+    }
+    expect([...steps].sort()).toEqual([3, 4]);
+  });
+
+  it('always offers +3 and +4, a third chip of 2 or 5, and the right chip in every place', () => {
+    const thirds = new Set<number>();
+    const places = new Set<number>();
+    for (const { rule } of rounds) {
+      const { choices, step } = rule!;
+      expect(choices).toHaveLength(3);
+      expect(choices).toContain(3);
+      expect(choices).toContain(4);
+      const third = choices.find((c) => c !== 3 && c !== 4)!;
+      expect([2, 5]).toContain(third);
+      thirds.add(third);
+      places.add(choices.indexOf(step));
+    }
+    expect([...thirds].sort()).toEqual([2, 5]);
+    expect([...places].sort()).toEqual([0, 1, 2]);
+  });
+
+  it('offers three distinct numbers: the answer once, the wrong-step slip always, the answer in every order', () => {
+    let smallest = 0;
+    let middle = 0;
+    let largest = 0;
+    for (const { sequence, choices, rule } of rounds) {
+      const [c] = choices;
+      const answer = sequence[ADD_CARS - 1];
+      const last = sequence[ADD_CARS - 2];
+      expect(c).toHaveLength(CHOICES);
+      expect(new Set(c).size).toBe(CHOICES);
+      expect(c.filter((n) => n === answer)).toHaveLength(1);
+      expect(c).toContain(last + (7 - rule!.step));
+      expect(Math.min(...c)).toBeGreaterThan(0);
+      const sorted = [...c].sort((a, b) => a - b);
+      if (sorted[0] === answer) smallest++;
+      else if (sorted[1] === answer) middle++;
+      else largest++;
+    }
+    expect(smallest).toBeGreaterThan(0);
+    expect(middle).toBeGreaterThan(0);
+    expect(largest).toBeGreaterThan(0);
+  });
+
+  it('gives hints that lead somewhere and says the rule back with its slots', () => {
+    for (const { sequence, targets, choices, rule } of rounds.slice(0, 100)) {
+      const list = countOn(sequence[0], rule!.step);
+      expect(list).toHaveLength(rule!.step);
+      expect(list[list.length - 1]).toBe(sequence[1]);
+      expect(choices[0][wantedChoice(sequence, targets, choices, 0)]).toBe(sequence[ADD_CARS - 1]);
+      const said = patternSaid(plan, { sequence, targets });
+      expect(said.key).toBe('pattern.whyAdd');
+      expect(said.vars.step).toBe(rule!.step);
+      expect(said.vars.list).toBe(sequence.join(', '));
+    }
+    expect(SCRIPT['pattern.whyAdd'][0]).toContain('{step}');
+    expect(SCRIPT['pattern.whyAdd'][0]).toContain('{list}');
+    for (const slot of ['from', 'list', 'step']) expect(SCRIPT['pattern.ruleHint'][0]).toContain(`{${slot}}`);
+    expect(SCRIPT['pattern.addWrong'][0]).toContain('{last}');
+    expect(SCRIPT['pattern.ruleRight'][0]).toContain('{step}');
+    expect(SCRIPT['pattern.rule'][0]).toContain('{name}');
+  });
+
+  it('describes level 21 by its plan name', () => {
+    expect(plan.name).toBe('Add three, add four: find the rule, then the next number');
   });
 });

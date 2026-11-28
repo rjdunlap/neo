@@ -564,6 +564,11 @@ class PileMatch implements Game {
   }
 
   /** The ghost finger: tap the hint's target each step, a piece or a tray piece to put back. It never shows a refused tap. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const key = `${this.mask}:${this.trayOrder.join(',')}`;

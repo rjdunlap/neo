@@ -2,6 +2,7 @@ import { Graphics } from 'pixi.js';
 import { ink, swatch, type ColorName } from '../../art/palette';
 import { flower, shapePath } from '../../art/shapes';
 import {
+  POND,
   SCENES,
   stampLine,
   traceShape,
@@ -885,7 +886,8 @@ export function sceneArt(id: SceneId, w: number, h: number) {
         .moveTo(w * gx + 8, h * gy)
         .lineTo(w * gx + 12, h * gy - 11)
         .stroke({ width: 2.5, color: swatch.green.line, alpha: 0.45, cap: 'round' });
-    const [px, py, rx, ry] = [w * 0.72, h * 0.76, w * 0.18, h * 0.13];
+    // The pond Where does it go? (level 12) names as the water.
+    const [px, py, rx, ry] = [w * POND.x, h * POND.y, w * POND.rx, h * POND.ry];
     g.ellipse(px, py, rx, ry)
       .fill(swatch.blue.light)
       .stroke({ width: 3, color: swatch.blue.line, alpha: 0.55 });

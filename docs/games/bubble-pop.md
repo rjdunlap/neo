@@ -12,7 +12,7 @@
 | toddler | 1, 2, 3, 16, 4, 5, 6 |
 | preschool | 4, 5, 6, 17, 7, 18, 8, 9 |
 | pre-K | 6–12 |
-| school | 10–14 |
+| school | 10, 11, 12, 13, 14, 20 |
 
 | Level | Plays like |
 | --- | --- |
@@ -35,14 +35,17 @@
 | 17 | Pop the bubble with the number of dots asked for, 1 to 4, no numerals (6 asks; preschool plays it between levels 6 and 7) |
 | 18 | Match dots to numerals, 1 to 4: tap one, then its partner (6 pairs; preschool plays it between levels 7 and 8) |
 | 19 | Swipe a finger across the screen to blow bubbles, then pop them, 8 pops (lap plays it after level 1) |
+| 20 | Pop two bubbles that make 20 together (5 pairs) |
 
 <!-- end generated -->
 
 **Starts as:** pop anything (or tap anywhere to pop the nearest)
 
-**Grows into:** blowing the bubbles first (level 19), then pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10; toddlers also pop the big or the little bubbles (level 16), and preschoolers pop the bubble with the asked number of dots (level 17)
+**Grows into:** blowing the bubbles first (level 19), then pop one color, then numbers in order, then pairs of bubbles that make 5 and 10 (a sign at the top shows the number), then counting from a start number, back to 1, and by tens and fives, then pairs that make 20 (level 20, school), on the shore, in the bath, at night or under the sea; countable dots support levels 7, 8 and 10; toddlers also pop the big or the little bubbles (level 16), and preschoolers pop the bubble with the asked number of dots (level 17)
 
 ## Design notes
+
+**Level 20, *Make 20* (built 2026-11-28, [PR #2363](https://github.com/rjdunlap/neo/pull/2363), [definition](../definitions/bubble-pop-make-20.md)).** At the top of the school ladder after 14 (`order` `[10, 11, 12, 13, 14, 20]`): five distinct pairs in 1 to 19 that make 20 (ten bubbles, no dots, sign at 20, same pace as level 11). On the second miss in a row, the first bubble of her last try and its partner glow, and the pet speaks `bubble.ten20` ("{small} and {ones} make 10, so {small} and {big} make 20", or `bubble.made` for 10 + 10) instead of `bubble.notmade`. Both `bubble.mode.20` (with `{pet}`) and `bubble.ten20` stay on device speech until the next voice pass renders clips.
 
 **One word in European Portuguese (WL2, 2026-11-22).** With the setting on, the pet adds the friend's word in the free modes and the colour's word after the first colour instruction (the pet's replay stays English); the other levels add none. The word table is `src/content/words/pt-PT.ts`; the setting is *A word in another language* on the grown-ups' page, per profile, off by default, and only a local pt-PT voice speaks it. See [the definition](../definitions/additional-languages.md#as-built-2026-11-22).
 

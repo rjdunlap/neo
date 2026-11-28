@@ -18,12 +18,14 @@ import {
   LEVELS,
   ANIMAL_TRIOS,
   buildTrain,
+  countOn,
   patternPlan,
   patternSaid,
   pieceColor,
   pieceShape,
   TUNNEL_SIZE,
   wantedChoice,
+  type AddRule,
   type PairLook,
   type PatternPlan,
 } from './logic';
@@ -48,6 +50,19 @@ function trainSymbol(
   return pieceArt(kind, family, value, size);
 }
 
+/** A level-21 jump chip: "+3" under a small hop arc, the same label style as the numbers. */
+function chipArt(step: number): Container {
+  const chip = new Container();
+  const arc = new Graphics()
+    .moveTo(-30, -14)
+    .quadraticCurveTo(0, -48, 30, -14)
+    .stroke({ width: 5, color: swatch.orange.line });
+  const text = label(`+${step}`, 42, swatch.purple.line);
+  text.y = 14;
+  chip.addChild(arc, text);
+  return chip;
+}
+
 /** `buildTrain`, with `shown` always set: what the cars show is the train unless a car shows a wrong piece. */
 function buildTrainShown(plan: PatternPlan, rng: Parameters<typeof buildTrain>[1]) {
   const train = buildTrain(plan, rng);
@@ -67,8 +82,15 @@ class PatternTrain implements Game {
   readonly family?: number;
   /** What the cars show, when a car shows the wrong piece (the swap level); otherwise the same as `sequence`. */
   readonly shown: number[];
-  /** The spot-the-mistake levels first ask her to find the wrong car; then, on the swap level, which piece belongs. */
-  private phase: 'find' | 'fill';
+  /** Level 21: the step the cars add and the jump chips on offer; she names it before the number. */
+  readonly rule?: AddRule;
+  /** The spot-the-mistake levels first ask her to find the wrong car; then, on the swap level, which piece belongs. Level 21 first asks for the rule. */
+  private phase: 'find' | 'rule' | 'fill';
+  /** Level 21's hop arcs between the cars, marked with the rule: the first gap after the rule hint, every gap once the rule is found. */
+  private readonly hops = new Graphics();
+  private readonly hopLabels = new Container();
+  private ruleFound = false;
+  private ruleHinted = false;
   private view: View | null = null;
   private readonly tunnel = new Container();
   private target = 0;
@@ -109,10 +131,11 @@ class PatternTrain implements Game {
       hidden: this.hidden,
       family: this.family,
       shown: this.shown,
+      rule: this.rule,
     } = buildTrainShown(this.plan, ctx.rng));
-    this.phase = this.plan.odd ? 'find' : 'fill';
+    this.phase = this.plan.odd ? 'find' : this.rule ? 'rule' : 'fill';
     ctx.stage.addChild(this.background, this.tracks, this.scene);
-    this.scene.addChild(this.glow, this.hintsGlow, this.selection);
+    this.scene.addChild(this.glow, this.hintsGlow, this.selection, this.hops, this.hopLabels);
     this.sequence.forEach((_value, i) => {
       const car = new Container();
       car.addChild(tile(100, 108, 'white'));
@@ -130,11 +153,14 @@ class PatternTrain implements Game {
       const choice = new Container();
       choice.addChild(
         tile(120, 120, 'white'),
-        trainSymbol(this.plan.kind, this.choiceValues[0][i], 36, this.look, this.family),
+        this.rule
+          ? chipArt(this.rule.choices[i])
+          : trainSymbol(this.plan.kind, this.choiceValues[0][i], 36, this.look, this.family),
       );
       onTap(choice, () => {
         if (this.done) return;
-        if (this.plan.kind === 'bell') {
+        if (this.phase === 'rule') this.chooseRule(i);
+        else if (this.plan.kind === 'bell') {
           this.selected = i;
           sfx.bell(4 + i * 3, 0.45);
           this.layoutGlow();
@@ -201,24 +227,26 @@ class PatternTrain implements Game {
     void this.ctx.instruct(
       this.plan.kind === 'bell'
         ? 'pattern.sound'
-        : this.plan.kind === 'number'
-          ? 'pattern.number'
-          : this.plan.kind === 'stack'
-            ? this.plan.stackSteps
-              ? 'pattern.steps'
-              : 'pattern.stairs'
-            : this.plan.kind === 'pair'
-              ? 'pattern.pair'
-              : this.hidden !== undefined
-                ? 'pattern.tunnel'
-                : this.plan.odd === 'extra'
-                  ? 'pattern.odd'
-                  : this.plan.odd === 'swap'
-                    ? 'pattern.swap'
-                    : 'pattern.start',
+        : this.rule
+          ? 'pattern.rule'
+          : this.plan.kind === 'number'
+            ? 'pattern.number'
+            : this.plan.kind === 'stack'
+              ? this.plan.stackSteps
+                ? 'pattern.steps'
+                : 'pattern.stairs'
+              : this.plan.kind === 'pair'
+                ? 'pattern.pair'
+                : this.hidden !== undefined
+                  ? 'pattern.tunnel'
+                  : this.plan.odd === 'extra'
+                    ? 'pattern.odd'
+                    : this.plan.odd === 'swap'
+                      ? 'pattern.swap'
+                      : 'pattern.start',
       this.hidden !== undefined
         ? { n: this.hidden }
-        : this.plan.stairs
+        : this.plan.stairs || this.rule
           ? { name: this.ctx.childName }
           : undefined,
     );
@@ -280,7 +308,7 @@ class PatternTrain implements Game {
 
   private tapCar(i: number) {
     if (this.done) return;
-    if (this.phase === 'fill') {
+    if (this.phase !== 'find') {
       if (!this.openCars().includes(i)) this.sound(this.shown[i], 0.35);
       return;
     }
@@ -329,6 +357,83 @@ class PatternTrain implements Game {
     this.layoutGlow();
   }
 
+  /**
+   * Level 21's first question: which jump is each car? A wrong chip is a miss with a counting hint; after two, the right
+   * chip glows and the first hop arc counts on across the first gap. The right chip draws every hop and asks for the number.
+   */
+  private chooseRule(i: number) {
+    const rule = this.rule;
+    if (this.done || !rule) return;
+    if (rule.choices[i] !== rule.step) {
+      this.misses++;
+      this.wrong++;
+      sfx.boing();
+      void this.ctx.say('pattern.ruleWrong', { name: this.ctx.childName });
+      if (this.wrong === 2) {
+        this.hints++;
+        this.ruleHinted = true;
+        const from = this.sequence[0];
+        void this.ctx.say('pattern.ruleHint', {
+          from,
+          list: countOn(from, rule.step).join(', '),
+          step: rule.step,
+        });
+      }
+      this.layoutHops();
+      this.layoutGlow();
+      return;
+    }
+    sfx.bell(10, 0.4);
+    this.phase = 'fill';
+    this.ruleFound = true;
+    this.wrong = 0;
+    this.focus = 0;
+    this.choices.forEach((c, n) => {
+      c.removeChildAt(1).destroy({ children: true });
+      c.addChildAt(trainSymbol(this.plan.kind, this.choiceValues[0][n], 36, this.look, this.family), 1);
+      c.alpha = 0;
+      void this.ctx.tw.to(c, { alpha: 1 }, { duration: 0.35 });
+    });
+    void this.ctx.instruct('pattern.ruleRight', { step: rule.step });
+    this.layoutHops();
+    this.layoutGlow();
+  }
+
+  /** Level 21's hop arcs above the cars, each marked "+step"; the arc onto the empty car is dashed. */
+  private layoutHops() {
+    this.hops.clear();
+    for (const old of this.hopLabels.removeChildren()) old.destroy();
+    const rule = this.rule;
+    if (!rule) return;
+    const gaps = this.ruleFound ? this.cars.length - 1 : this.ruleHinted ? 1 : 0;
+    for (let g = 0; g < gaps; g++) {
+      const a = this.cars[g],
+        b = this.cars[g + 1];
+      const y = a.y - 62,
+        mid = (a.x + b.x) / 2,
+        top = y - 46;
+      const dashed = g === this.cars.length - 2;
+      const color = swatch.orange.line;
+      if (!dashed) this.hops.moveTo(a.x + 8, y).quadraticCurveTo(mid, top, b.x - 8, y);
+      else {
+        // A dashed arc: every other short piece of the same curve.
+        const at = (t: number) => ({
+          x: (1 - t) ** 2 * (a.x + 8) + 2 * (1 - t) * t * mid + t ** 2 * (b.x - 8),
+          y: (1 - t) ** 2 * y + 2 * (1 - t) * t * top + t ** 2 * y,
+        });
+        for (let k = 0; k < 10; k += 2) {
+          const p = at(k / 10),
+            q = at((k + 1) / 10);
+          this.hops.moveTo(p.x, p.y).lineTo(q.x, q.y);
+        }
+      }
+      this.hops.stroke({ width: 5, color });
+      const text = label(`+${rule.step}`, 26, swatch.orange.line);
+      text.position.set(mid, top - 4);
+      this.hopLabels.addChild(text);
+    }
+  }
+
   /** The answer that ends the round says the rule back (TotoLogic P7): once, here, never after every car. */
   private async sayWhy() {
     const { key, vars } = patternSaid(this.plan, this);
@@ -359,14 +464,17 @@ class PatternTrain implements Game {
       sfx.boing();
       const picked = this.choiceValues[this.target][value],
         answer = this.sequence[index];
-      // A color-and-shape train says which part was right.
-      void this.ctx.say(
-        this.look && pieceColor(picked) === pieceColor(answer)
-          ? 'pattern.colorRight'
-          : this.look && pieceShape(picked) === pieceShape(answer)
-            ? 'pattern.shapeRight'
-            : 'pattern.wrong',
-      );
+      // A color-and-shape train says which part was right; level 21 says to add her rule to the last car.
+      if (this.rule)
+        void this.ctx.say('pattern.addWrong', { step: this.rule.step, last: this.sequence[index - 1] });
+      else
+        void this.ctx.say(
+          this.look && pieceColor(picked) === pieceColor(answer)
+            ? 'pattern.colorRight'
+            : this.look && pieceShape(picked) === pieceShape(answer)
+              ? 'pattern.shapeRight'
+              : 'pattern.wrong',
+        );
       if (this.wrong === 2) {
         this.hints++;
         void this.ctx.say('pattern.hint');
@@ -428,6 +536,7 @@ class PatternTrain implements Game {
     );
     this.replay.position.set(v.w - 70, 70);
     this.confirm.position.set(v.w - 90, v.h * 0.76);
+    this.layoutHops();
     this.layoutGlow();
   }
 
@@ -447,7 +556,7 @@ class PatternTrain implements Game {
     }
     this.glow.roundRect(car.x - 60, car.y - 64, 120, 130, 22).stroke({ width: 7, color: swatch.yellow.line });
     if (this.wrong >= 2) {
-      const c = this.choices[wantedChoice(this.sequence, this.targets, this.choiceValues, this.target)];
+      const c = this.choices[this.wantedTile()];
       this.hintsGlow
         .roundRect(c.x - 68, c.y - 68, 136, 136, 24)
         .stroke({ width: 8, color: swatch.green.fill });
@@ -459,11 +568,17 @@ class PatternTrain implements Game {
         .stroke({ width: 5, color: swatch.purple.fill });
     }
   }
+  /** The tile that answers the question being asked: the rule chip in the rule phase, else the choice that fits. */
+  private wantedTile(): number {
+    if (this.phase === 'rule' && this.rule) return this.rule.choices.indexOf(this.rule.step);
+    return wantedChoice(this.sequence, this.targets, this.choiceValues, this.target);
+  }
+
   update(dt: number) {
     this.clock += dt;
     this.glow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3);
     const ring = this.ring.clear();
-    const choice = this.couchOn && !this.done && this.phase === 'fill' ? this.choices[this.focus] : undefined;
+    const choice = this.couchOn && !this.done && this.phase !== 'find' ? this.choices[this.focus] : undefined;
     if (choice)
       ring
         .roundRect(choice.x - 76, choice.y - 76, 152, 152, 28)
@@ -485,7 +600,7 @@ class PatternTrain implements Game {
     if (this.phase === 'find') return { tap: { on: this.cars[this.targets[0]] } };
     const bell = this.plan.kind === 'bell';
     if (bell && (!this.played || this.playing)) return null;
-    const want = wantedChoice(this.sequence, this.targets, this.choiceValues, this.target);
+    const want = this.wantedTile();
     if (bell && this.selected === want) return { tap: { on: this.confirm } };
     return { tap: { on: this.choices[want] } };
   }
@@ -504,7 +619,10 @@ class PatternTrain implements Game {
       if (p.direction === 0) this.focus = Math.min(this.choices.length - 1, this.focus + 1);
       else if (p.direction === 2) this.focus = Math.max(0, this.focus - 1);
       if (this.focus !== was && this.plan.kind === 'bell') sfx.bell(4 + this.focus * 3, 0.45);
-      if (p.action) this.choose(this.focus);
+      if (p.action) {
+        if (this.phase === 'rule') this.chooseRule(this.focus);
+        else this.choose(this.focus);
+      }
     }
   }
 
@@ -514,7 +632,7 @@ class PatternTrain implements Game {
     out.players[0].active = true;
     this.botWait -= dt;
     if (this.done || this.phase === 'find' || this.botWait > 0) return out;
-    const want = wantedChoice(this.sequence, this.targets, this.choiceValues, this.target);
+    const want = this.wantedTile();
     if (want === this.focus) {
       out.players[0].action = true;
       this.botWait = 1;
@@ -538,7 +656,7 @@ export const patternTrain: GameModule = {
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => patternPlan(l).name,
   music: STYLES.jelly,
-  uprightLevels: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+  uprightLevels: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
   offScreen: 'Make a clap–tap pattern together, then leave a beat for your child to fill.',
   hubIcon: () => new WigglyIcon(trainArt()),
   touchDemo: true,

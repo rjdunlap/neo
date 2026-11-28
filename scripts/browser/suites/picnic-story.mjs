@@ -17,7 +17,7 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot, 
     });
     const before = await stickers();
     // The picnic stands on the island map, open to every age like the places.
-    await page.evaluate(() => neo.go.hub());
+    await page.evaluate(() => neo.go.explore('places'));
     await scene('MapScene');
     await tap('neo.scene.picnic');
     await picnic();
@@ -54,7 +54,7 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot, 
     // Left halfway: a reload resumes with the blanket down and the other two to do.
     await page.reload();
     await ready();
-    await page.evaluate(() => neo.go.hub());
+    await page.evaluate(() => neo.go.explore('places'));
     await scene('MapScene');
     await tap('neo.scene.picnic');
     await picnic();

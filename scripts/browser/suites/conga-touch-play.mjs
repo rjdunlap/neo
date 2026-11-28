@@ -484,7 +484,7 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot, 
     await scene('LandScene');
     await page.waitForTimeout(700);
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.deepEqual(errors, []);
     log(
       'Pond Conga touch: first and last level, a touch to set off, swipes, one bump, one hint, start over, one sticker each, portrait and leaving mid-round passed',

@@ -14,7 +14,7 @@ This is a shell and save change, not a game. It adds no game, level, how-to card
 
 | Place | Today after a card is tapped | With *Opens with: Today's six* |
 | --- | --- | --- |
-| The root on a phone (`App.phoneOnly`) | The six (the six is the whole root on a phone) | Unchanged: the six. The setting has nothing to change here |
+| The root on a phone | The six (the six was the whole root on a phone) | Since 2026-11-28 a phone has Home like any device, so the setting applies there too |
 | A guest (play-first) | A first round, then the six | Unchanged |
 | The root on a tablet or computer | `HomeScene` | `DailyScene`, once |
 | `classic/` | `MapScene` | `DailyScene`, once |

@@ -396,7 +396,7 @@ describe('Trace Prints (levels 8–9)', () => {
   const leaf = planFor(8).trace!,
     feet = planFor(9).trace!;
   it('appends two levels and leaves levels 1–7 as they were', () => {
-    expect(PLANS).toHaveLength(11);
+    expect(PLANS).toHaveLength(13);
     expect(PLANS.slice(0, 7).map((p) => [p.prompt, p.kinds, p.name, 'trace' in p])).toEqual([
       ['stars', ['star'], 'Press one kind of stamp onto a picture', false],
       ['friends', ['cat', 'fish'], 'Make a picture with two kinds of stamps', false],
@@ -427,9 +427,10 @@ describe('Trace Prints (levels 8–9)', () => {
   it('puts level 8 in lap and level 9 first in toddler; a carried trace level starts another band at its easiest', () => {
     expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 10, order: [7, 8, 1, 10, 2] });
     expect(stampStudio.levels!('toddler')).toEqual({ min: 2, max: 11, order: [9, 10, 2, 11, 3] });
-    expect(stampStudio.levels!('preschool')).toEqual({ min: 3, max: 5 });
-    expect(stampStudio.levels!('prek')).toEqual({ min: 4, max: 6 });
-    expect(stampStudio.levels!('school')).toEqual({ min: 5, max: 6 });
+    // Level 12 (Where does it go?) tops the older ladders; the trace levels stay out of them.
+    expect(stampStudio.levels!('preschool')).toEqual({ min: 3, max: 12, order: [3, 4, 5, 6, 12] });
+    expect(stampStudio.levels!('prek')).toEqual({ min: 4, max: 13, order: [4, 5, 6, 12, 13] });
+    expect(stampStudio.levels!('school')).toEqual({ min: 5, max: 13, order: [5, 6, 12, 13] });
     expect(stampStudio.entryLevels).toEqual([7, 8, 9, 10, 11]);
     for (const l of [8, 9])
       expect(landing(l, stampStudio.levels!('preschool'), stampStudio.entryLevels)).toBe(3);

@@ -26,7 +26,10 @@ export type HopMode =
   | 'your-way'
   | 'tens'
   | 'hops'
-  | 'estimate';
+  | 'estimate'
+  | 'along'
+  | 'dots'
+  | 'missing';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -36,7 +39,8 @@ export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-m
 export const countsHops = (mode: HopMode) => mode === 'gap' || mode === 'count-up';
 
 /** The levels drawn by a scene of their own, with no lily pads: Big hops and little hops, and Where does it go?. */
-export const ownScene = (mode: HopMode) => mode === 'hops' || mode === 'estimate';
+export const ownScene = (mode: HopMode) =>
+  mode === 'hops' || mode === 'estimate' || mode === 'along' || mode === 'dots';
 
 export const splitsAtTen = (mode: HopMode) => mode === 'make-ten' || mode === 'back-ten';
 
@@ -132,16 +136,47 @@ export const PLANS: HopPlan[] = [
     questions: 4,
     name: 'Where does it go?: guess where a number sits on a line from 0 to 100, then place one on a line marked in tens',
   },
+  {
+    mode: 'along',
+    top: 5,
+    questions: 6,
+    name: 'Hop along: tap the pond and the frog hops pad by pad, 1 to 5, saying each number',
+  },
+  {
+    mode: 'dots',
+    top: 5,
+    questions: 5,
+    name: 'Hop to the dots: the sign shows dots, she taps the pad with that many, 1 to 5',
+  },
+  {
+    mode: 'missing',
+    top: 9,
+    questions: 5,
+    name: 'Which pad lost its number?: a leaf hides one numeral on a short run; choose its number card',
+  },
 ];
 
 /** The number a pad shows and the frog says: its place on the line times the plan's stride. */
 export const padValue = (plan: HopPlan, n: number) => n * (plan.stride ?? 1);
 
+/** Hop along (level 16): an entry below level 1, for lap and toddler. */
+export const ALONG_LEVEL = 16;
+/** Hop to the dots (level 17): the toddler's second entry, after Hop along. */
+export const DOTS_LEVEL = 17;
+/** Which pad lost its number? (level 18): pre-K's entry between levels 2 and 3. */
+export const MISSING_LEVEL = 18;
+
 export const LEVELS: BandLevels = {
+  lap: { min: ALONG_LEVEL, max: ALONG_LEVEL },
+  toddler: { min: ALONG_LEVEL, max: DOTS_LEVEL },
   preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 4 },
-  school: { min: 3, max: PLANS.length },
+  prek: { min: 1, max: MISSING_LEVEL, order: [1, 2, MISSING_LEVEL, 3, 4] },
+  // School holds the school ladder only: 16 to 18 are the younger bands', so the ceiling is a literal, not `PLANS.length`.
+  school: { min: 3, max: 15 },
 };
+
+/** The easy levels with high IDs, appended above the ladder (`GameModule.entryLevels`). */
+export const ENTRY_LEVELS = [ALONG_LEVEL, DOTS_LEVEL, MISSING_LEVEL] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -174,6 +209,9 @@ export interface HopQuestion {
   smalls?: number;
   /** Where does it go?: an unscored guess on a bare line, or the counted placement on a line marked in tens. */
   place?: 'guess' | 'ticks';
+  /** Which pad lost its number?: how many pads the run shows (from `start`), and the three number cards in their order. */
+  run?: number;
+  cards?: number[];
 }
 
 /** The answer a child gives: a pad, for 'gap' the number of hops, for Fraction Match the hops of the second size. */
@@ -189,6 +227,7 @@ export const GAP_CARDS = [1, 2, 3, 4, 5, 6];
  * answer is not on screen.
  */
 export function answerSlot(mode: HopMode, q: HopQuestion, lo: number, secondStage = false): number {
+  if (mode === 'missing') return q.cards!.indexOf(q.target);
   const card = countsHops(mode) || (mode === 'frac-match' && secondStage);
   const slot = card ? GAP_CARDS.indexOf(answerOf(mode, q)) : q.target - lo;
   return slot >= 0 && slot < (card ? GAP_CARDS.length : WINDOW) ? slot : -1;
@@ -295,6 +334,10 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   if (plan.mode === 'tens') return tensQuestions(plan, rng);
   if (plan.mode === 'hops') return hopsQuestions(plan, rng);
   if (plan.mode === 'estimate') return estimateQuestions(plan, rng);
+  // Hop along asks nothing: six free taps.
+  if (plan.mode === 'along') return [];
+  if (plan.mode === 'dots') return dotsQuestions(plan, rng);
+  if (plan.mode === 'missing') return missingQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -620,7 +663,7 @@ export function dotLayout(n: number): { x: number; y: number }[] {
  * Never on 0, the dot levels or the fraction line, where a pad is a quarter tick.
  */
 export const flowerOn = (mode: HopMode, n: number) =>
-  !showsDots(mode) && !isFrac(mode) && !ownScene(mode) && n > 0 && n % 5 === 0;
+  !showsDots(mode) && !isFrac(mode) && !ownScene(mode) && mode !== 'missing' && n > 0 && n % 5 === 0;
 
 /**
  * Scenes (dive slice 6): each round draws one place for the line. The lily pond, stepping stones in a brook, a flower path
@@ -673,9 +716,11 @@ export function hopLayout(
   view: { w: number; h: number; upright?: true },
   mode: HopMode,
   corner = 200,
+  run = 0,
 ): HopLayout {
-  const usesCards = countsHops(mode) || splitsAtTen(mode) || mode === 'frac-match';
-  const n = usesCards ? GAP_CARDS.length : 0;
+  const usesCards = countsHops(mode) || splitsAtTen(mode) || mode === 'frac-match' || mode === 'missing';
+  const n = mode === 'missing' ? MISSING_CARDS : usesCards ? GAP_CARDS.length : 0;
+  if (mode === 'missing' && run > 0) return missingLayout(view, corner, run);
   if (view.upright && view.h > view.w * 1.1) {
     const cardsTop = view.h - (usesCards ? 248 : corner);
     const rowB = cardsTop - 24 - PAD_HIT.h / 2;
@@ -760,4 +805,236 @@ export function estimateLayout(view: { w: number; h: number; upright?: true }) {
     band: { x: x0 - 40, y: y - 110, w: x1 - x0 + 80, h: 190 },
     sign: { x: view.w / 2, y: upright ? 150 : 110 },
   };
+}
+
+// Hop along (level 16, entries slice 16): lap and toddler ----------------------------------------------
+
+/** Five pads, 1 to 5, and the bank (pad 0) left of pad 1. */
+export const ALONG_PADS = 5;
+/** Taps in a round: the sixth tap's hops end it. */
+export const ALONG_TAPS = 6;
+/** Pads sit this far apart, and every pad's own tap box is at least this square (bigger than the 100 floor on purpose). */
+export const ALONG_PITCH = 150;
+export const ALONG_HIT = 120;
+/** Upright, the second row (pads 4 and 5) sits this far below the first. */
+export const ALONG_ROW_GAP = 200;
+/** The pads the ghost finger taps, in order. */
+export const ALONG_BOT = [1, 3, 5, 2, 4, 5] as const;
+
+export interface AlongLayout {
+  /** The bank's centre (the frog's home), then pads 1 to 5: `spots[k]` is pad `k`. */
+  spots: { x: number; y: number }[];
+  /** The bank's own tap box, which takes a touch before the pond does. */
+  bank: Box;
+  /** The whole pond: a touch anywhere here goes to the nearest pad. */
+  pond: Box;
+}
+
+/**
+ * Where the bank and the five pads sit. In one row if the bank and five pads fit at the 150 pitch with a margin; otherwise
+ * (an upright phone, 768 wide) two rows reading like text: the bank and pads 1–3, then pads 4–5 under 1 and 2. The rows
+ * hang clear of the guide's bottom-left corner (`corner`).
+ */
+export function alongLayout(view: { w: number; h: number }, corner = 200, count = ALONG_PADS): AlongLayout {
+  const oneRow = view.w >= (count + 1) * ALONG_PITCH + 120;
+  const half = ALONG_PITCH / 2;
+  let spots: { x: number; y: number }[];
+  if (oneRow) {
+    const x0 = (view.w - count * ALONG_PITCH) / 2;
+    const y = view.h * 0.6;
+    spots = Array.from({ length: count + 1 }, (_, k) => ({ x: x0 + k * ALONG_PITCH, y }));
+  } else {
+    const x0 = (view.w - 3 * ALONG_PITCH) / 2;
+    const yB = Math.min(view.h * 0.5 + ALONG_ROW_GAP, view.h - corner - half);
+    const yA = yB - ALONG_ROW_GAP;
+    spots = Array.from({ length: count + 1 }, (_, k) =>
+      k <= 3 ? { x: x0 + k * ALONG_PITCH, y: yA } : { x: x0 + (k - 3) * ALONG_PITCH, y: yB },
+    );
+  }
+  const bank = { x: spots[0].x - half, y: spots[0].y - 90, w: ALONG_PITCH, h: 180 };
+  const top = Math.min(...spots.map((s) => s.y)) - 130;
+  const bottom = Math.max(...spots.map((s) => s.y)) + 130;
+  const pond = { x: 0, y: Math.max(0, top), w: view.w, h: Math.min(view.h, bottom) - Math.max(0, top) };
+  return { spots, bank, pond };
+}
+
+/** The five pads' centres, pad 1 first. */
+export const alongPads = (view: { w: number; h: number }) => alongLayout(view).spots.slice(1);
+
+/** The pad (1 to 5) nearest a touch; a tie goes to the lower pad, so every point has exactly one. */
+export function nearestPad(
+  point: { x: number; y: number },
+  pads: readonly { x: number; y: number }[],
+): number {
+  let best = 0;
+  let bestD = Infinity;
+  pads.forEach((p, i) => {
+    const d = (p.x - point.x) ** 2 + (p.y - point.y) ** 2;
+    if (d < bestD) {
+      best = i;
+      bestD = d;
+    }
+  });
+  return best + 1;
+}
+
+/** The pads a trip crosses, one hop each, in order, ending on `to` and never saying the start (0 is the bank). */
+export function alongRoute(from: number, to: number): number[] {
+  return landingNumbers(from, to);
+}
+
+/** The note a landing plays: `sfx.pop`'s step, rising with the pad; the bank (0) is the lowest. */
+export const alongNote = (pad: number) => 5 + pad;
+
+// Hop to the dots (level 17, entries slice 17): toddler ----------------------------------------------
+
+/** Questions 1 and 2 use the short line, pads 1 to 3; the rest use all five. */
+export const DOTS_SHORT = 2;
+export const DOTS_SHORT_PADS = 3;
+/** Each dot on the sign is this wide (the definition's floor is 36), and this far from the next, centre to centre. */
+export const SIGN_DOT_R = 20;
+export const SIGN_DOT_GAP = 52;
+
+/** How many pads question `i` (0-based) shows. */
+export const dotsPadsFor = (i: number) => (i < DOTS_SHORT ? DOTS_SHORT_PADS : ALONG_PADS);
+
+/**
+ * Five targets: 1 to 3 on the short line, then 1 to 5, never the previous question's number, and at least one 4 or 5 on
+ * the long line. The frog starts on the bank (0) every question.
+ */
+export function dotsQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  for (;;) {
+    const out: HopQuestion[] = [];
+    let last = 0;
+    for (let i = 0; i < plan.questions; i++) {
+      let target: number;
+      do target = rng.int(1, dotsPadsFor(i));
+      while (target === last);
+      last = target;
+      out.push({ start: 0, target, hops: target, lo: 0 });
+    }
+    if (out.slice(DOTS_SHORT).some((q) => q.target >= 4)) return out;
+  }
+}
+
+/** The sign's dots for `n`, in the pads' five-frame grouping (`dotLayout`) scaled up, relative to the sign's centre. */
+export const signDots = (n: number) =>
+  dotLayout(n).map((d) => ({ x: (d.x / DOT_GAP) * SIGN_DOT_GAP, y: (d.y / DOT_GAP) * SIGN_DOT_GAP }));
+
+/** The sign's box for the dot levels: centred at the top, clear of the pause button. */
+export function dotsSign(view: { w: number; h: number }) {
+  const w = 5 * SIGN_DOT_GAP + 60;
+  const h = 2 * SIGN_DOT_R + 48;
+  const y = view.h > view.w * 1.1 ? 150 : 110;
+  return { x: view.w / 2 - w / 2, y: y - h / 2, w, h };
+}
+
+/** The pads' own dots on the dot level: bigger than the main line's (radius about 10), on a row this far below a pad's centre. */
+export const PAD_DOT_SCALE = 1.6;
+export const PAD_DOT_Y = 100;
+/** Each pad's tap box: 140 wide, from 70 above its centre to 120 below, so it covers the pad, its numeral and its dots. */
+export const DOTS_HIT_W = 140;
+export const DOTS_HIT_UP = 70;
+export const DOTS_HIT_DOWN = 120;
+/** The water panel reaches this far below the lowest pad's centre, so the dot row sits inside it. */
+export const DOTS_PANEL_DOWN = 140;
+
+/** A pad's tap box on screen. */
+export const dotsPadBox = (s: { x: number; y: number }): Box => ({
+  x: s.x - DOTS_HIT_W / 2,
+  y: s.y - DOTS_HIT_UP,
+  w: DOTS_HIT_W,
+  h: DOTS_HIT_UP + DOTS_HIT_DOWN,
+});
+
+/** Where a pad's dots sit on screen: `dotLayout` scaled by `PAD_DOT_SCALE`, centred under the pad. */
+export const padDots = (n: number, s: { x: number; y: number }) =>
+  dotLayout(n).map((d) => ({ x: s.x + d.x * PAD_DOT_SCALE, y: s.y + PAD_DOT_Y + d.y * PAD_DOT_SCALE }));
+
+/** The water panel for the dot level: the pond's, reaching deeper under the lowest row. */
+export function dotsPanel(L: AlongLayout): Box {
+  const top = L.pond.y + 20;
+  const bottom = Math.max(...L.spots.map((s) => s.y)) + DOTS_PANEL_DOWN;
+  return { x: L.pond.x + 20, y: top, w: L.pond.w - 40, h: bottom - top };
+}
+
+/** A wrong pad on the dot level: the target is further along (forward) or back this way. */
+export const dotsMissLine = (target: number, tapped: number) =>
+  target > tapped ? 'hop.wrong.dots-forward' : 'hop.wrong.dots-back';
+
+// Which pad lost its number? (level 18, entries slice 18): pre-K ---------------------------------------
+
+/** The run's length, and the three number cards under it. */
+export const MISSING_RUN = { min: 4, max: 6 } as const;
+export const MISSING_CARDS = 3;
+
+/** The numbers a question's run shows, the hidden one included. */
+export const runNumbers = (q: Pick<HopQuestion, 'start' | 'run'>) =>
+  Array.from({ length: q.run! }, (_, i) => q.start + i);
+
+/** The numbers she can see on the run: every one but the number under the leaf. */
+export const shownOnRun = (q: HopQuestion) => runNumbers(q).filter((n) => n !== q.target);
+
+/**
+ * Five questions: a run of 4 to 6 pads starting at 0 to 4 and ending at most 9, one interior numeral hidden. Never the
+ * same run twice running, and the five hidden numbers are distinct. The cards are the answer, one of its two neighbours
+ * (both are on the run, so "the number next to it" is a real slip) and one other number 0 to 9 that is not an end of the
+ * run, shuffled.
+ */
+export function missingQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  const out: HopQuestion[] = [];
+  const hidden = new Set<number>();
+  for (let i = 0; i < plan.questions; i++) {
+    for (;;) {
+      const run = rng.int(MISSING_RUN.min, MISSING_RUN.max);
+      const start = rng.int(0, Math.min(4, plan.top - run + 1));
+      const target = start + rng.int(1, run - 2);
+      const prev = out[i - 1];
+      if (hidden.has(target) || (prev && prev.start === start && prev.run === run)) continue;
+      const neighbour = target + (rng.chance(0.5) ? 1 : -1);
+      const ends = [start, start + run - 1];
+      const others = Array.from({ length: 10 }, (_, k) => k).filter(
+        (k) => k !== target && k !== neighbour && !ends.includes(k),
+      );
+      const cards = rng.shuffle([target, neighbour, rng.pick(others)]);
+      out.push({ start, target, hops: target - start, lo: start, run, cards });
+      hidden.add(target);
+      break;
+    }
+  }
+  return out;
+}
+
+/**
+ * The run of pads centred in the view, the sign above it and the three cards below, clear of the guide's corner. Sideways
+ * the run is one row; upright a run of up to five is one row and a run of six folds into two rows of three.
+ */
+export function missingLayout(
+  view: { w: number; h: number; upright?: true },
+  corner: number,
+  run: number,
+): HopLayout {
+  const upright = view.h > view.w * 1.1;
+  const left = corner + 16 + CARD_HIT.w / 2;
+  const right = view.w - 24 - CARD_HIT.w / 2;
+  const mid = (left + right) / 2;
+  const cardY = view.h - (upright ? 150 : 90);
+  const cards = Array.from({ length: MISSING_CARDS }, (_, i) => ({ x: mid + (i - 1) * 124, y: cardY }));
+  const rows = upright && run > UPRIGHT_PAD_ROW ? [Math.ceil(run / 2), Math.floor(run / 2)] : [run];
+  const pitch = upright ? UPRIGHT_PAD_PITCH : PAD_STEP;
+  // The lower row's numerals (y + 44 on the pad) keep well clear of the cards.
+  const lowY = cardY - CARD_HIT.h / 2 - 40 - PAD_HIT.h / 2;
+  const rowGap = 200;
+  const pads: { x: number; y: number }[] = [];
+  rows.forEach((count, r) => {
+    const y = lowY - (rows.length - 1 - r) * rowGap;
+    const x0 = view.w / 2 - ((count - 1) * pitch) / 2;
+    for (let k = 0; k < count; k++) pads.push({ x: x0 + k * pitch, y });
+  });
+  // Hidden slots past the run sit on its last pad, so a stray position never lands off screen.
+  while (pads.length < WINDOW) pads.push({ ...pads[pads.length - 1] });
+  const topY = Math.min(...pads.map((p) => p.y));
+  const signY = Math.min(upright ? 150 : SIGN.y, topY - PAD_HIT.h / 2 - 130) - SIGN.h / 2;
+  const sign = { x: view.w / 2 - SIGN.w / 2, y: Math.max(16, signY), w: SIGN.w, h: SIGN.h };
+  return { pads, sign, cards };
 }

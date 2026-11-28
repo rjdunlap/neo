@@ -22,11 +22,23 @@ export const HOW_TO: GameHowTo = {
       to: 12,
       text: 'Turn a card and listen to its time. Find the numbered clock face and digital time that show the same hour or half hour.',
     },
+    {
+      from: 13,
+      to: 13,
+      text: 'A card with two groups of dots matches the number they make together. Count across both groups.',
+    },
+    {
+      from: 14,
+      to: 14,
+      text: 'Two pictures of the same rectangle match when they shade the same share, even cut into different numbers of equal pieces.',
+    },
   ],
   finish: [
     { from: 1, to: 1, text: 'Find both picture pairs to finish.' },
     { from: 2, to: 11, text: 'The round ends when every pair is found.' },
     { from: 12, to: 12, text: 'Find all three analog and digital clock pairs to finish.' },
+    { from: 13, to: 13, text: 'Find all three groups-and-number pairs to finish.' },
+    { from: 14, to: 14, text: 'Find all three same-share pairs to finish.' },
   ],
   note: 'A nonmatching pair counts as a miss only when the first card’s partner was already seen. After two misses, one known partner glows until a match clears it.',
 };

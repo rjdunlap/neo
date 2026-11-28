@@ -219,7 +219,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     const before = await page.evaluate(() => kit.store.data.stickers.length);
     await tap('neo.scene.game.showButton');
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.waitForTimeout(1800);
     assert.equal(
       await page.evaluate(() => kit.store.data.stickers.length),

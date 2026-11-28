@@ -838,16 +838,14 @@ export class GameScene extends Scene {
     const home = new RoundButton(icon, swatch.blue, 66, () =>
       this.leaveSaying(this.backLine(), () => this.goHome()),
     );
-    // On a phone Home is Today's six, where Back from a daily round already goes: one way out, no house.
-    const house =
-      from && !(this.app.phoneOnly && this.origin && 'daily' in this.origin)
-        ? new RoundButton(houseIcon(), swatch.white, 50, () =>
-            this.leaveSaying(
-              () => voice.say('nav.home'),
-              () => this.app.go.hub(),
-            ),
-          ).means('home')
-        : null;
+    const house = from
+      ? new RoundButton(houseIcon(), swatch.white, 50, () =>
+          this.leaveSaying(
+            () => voice.say('nav.home'),
+            () => this.app.go.hub(),
+          ),
+        ).means('home')
+      : null;
     if (root) home.means('back');
     return { home, house };
   }
@@ -1330,7 +1328,7 @@ export class GameScene extends Scene {
     if (!this.dailyRound || this.mixRound || !this.resultLayer) return null;
     const day = dayKey(new Date());
     const played = (id: string) => playedOn(store.data.games[id]?.history, day);
-    const picks = todaysSix(day, this.app.uprightPhone(), this.app.phoneOnly);
+    const picks = todaysSix(day, this.app.uprightPhone(), this.app.onPhone);
     const live = () => this.liveResult() && !this.navigating && this.resultReady && !this.dailySheet;
     const next = nextOfSix(picks, this.mod.id, played);
     if (next) {
@@ -1712,7 +1710,7 @@ export class GameScene extends Scene {
   }
 
   private layoutDaily(view: View) {
-    const at = dailySpots(view);
+    const at = dailySpots(view, !!this.after?.house);
     this.dailyNext?.position.set(at.next.x, at.next.y);
     this.dailyNote?.position.set(at.note.x, at.note.y);
   }
@@ -1724,7 +1722,9 @@ export class GameScene extends Scene {
    */
   private placeTip(card: Container) {
     const v = this.view;
-    card.scale.set(textBoost(v.scale)); // small text stays readable on a phone
+    // Small text stays readable on a phone, and the card never runs off the sides of an upright one.
+    card.scale.set(1);
+    card.scale.set(Math.min(textBoost(v.scale), (v.w - 24) / card.width));
     card.position.set(v.w / 2, v.w / 2 - card.width / 2 < 124 ? 220 : 16);
   }
 
@@ -1739,22 +1739,24 @@ export class GameScene extends Scene {
         fontWeight: '500',
         align: 'center',
         wordWrap: true,
-        wordWrapWidth: 520,
+        // Narrower on an upright phone, so the boosted card still fits across it.
+        wordWrapWidth: Math.max(260, Math.min(520, (this.view.w - 24) / textBoost(this.view.scale) - 40)),
       },
     });
     const head = new Text({
       text: 'GROWN-UP TIP',
-      style: { fontFamily: FONT, fontSize: 12, fill: 0x6b6b7b, fontWeight: '600', letterSpacing: 1.5 },
+      // 16 so the label still reads at about 11 px once a phone scales the card down.
+      style: { fontFamily: FONT, fontSize: 16, fill: 0x6b6b7b, fontWeight: '600', letterSpacing: 1.5 },
     });
     head.anchor.set(0.5, 0);
     body.anchor.set(0.5, 0);
     head.y = 12;
-    body.y = 32;
+    body.y = 35;
     const w = Math.max(body.width, head.width) + 40;
     const card = new Container();
     card.addChild(
       new Graphics()
-        .roundRect(-w / 2, 0, w, body.height + 46, 18)
+        .roundRect(-w / 2, 0, w, body.height + 49, 18)
         .fill({ color: 0xffffff, alpha: 0.94 })
         .stroke({ width: 2, color: 0xeadfcd }),
       head,

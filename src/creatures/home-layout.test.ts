@@ -36,6 +36,9 @@ import {
   TUNE_COMPARE,
   tuneCompareLayout,
   type Floor,
+  YARD_SIZE,
+  yardLayout,
+  type YardSpot,
 } from './home-layout';
 
 /** An iPad sideways and upright, a phone sideways, one with a notch, and a wide laptop. */
@@ -437,6 +440,67 @@ describe('the welcome ending layout (RW07 slice 3)', () => {
       const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
       for (const t of targets.slice(3))
         expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
+    }
+  });
+});
+
+describe("Home's yard (2026-11-28)", () => {
+  type Rect = { x0: number; x1: number; y0: number; y1: number };
+  const boxOf = (at: YardSpot, size: { w: number; h: number }): Rect => ({
+    x0: at.x - (size.w * at.scale) / 2,
+    x1: at.x + (size.w * at.scale) / 2,
+    y0: at.y - size.h * at.scale,
+    y1: at.y + 44,
+  });
+  const overlap = (a: Rect, b: Rect) =>
+    Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) *
+    Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
+  const area = (a: Rect) => (a.x1 - a.x0) * (a.y1 - a.y0);
+
+  it('stands every way out on screen, at least 100 units to touch, clear of the corners and mostly clear of each other', () => {
+    for (const v of [
+      ...WITH_UPRIGHT,
+      computeView(768, 1024, { top: 0, right: 0, bottom: 0, left: 0 }, true),
+    ]) {
+      for (const [young, project] of [
+        [true, false],
+        [false, false],
+        [false, true],
+      ]) {
+        const l = yardLayout(v, young, project);
+        const ways = (
+          [
+            ['board', l.board],
+            ['arcade', l.arcade],
+            ['signpost', l.signpost],
+            ['blanket', l.blanket],
+            ['basket', l.basket],
+            ['lodge', l.lodge],
+            ['kite', l.kite],
+          ] as const
+        )
+          .filter((w): w is [(typeof w)[0], YardSpot] => !!w[1])
+          .map(([k, at]) => ({ k, box: boxOf(at, YARD_SIZE[k]) }));
+        const tree = boxOf(l.treehouse, YARD_SIZE.treehouse);
+        expect(tree.x0 + (tree.x1 - tree.x0) / 2, 'treehouse centre').toBeGreaterThan(0);
+        if (young) expect(l.blanket).toBeNull();
+        for (const { k, box } of ways) {
+          const at = `${k} at ${v.w}x${v.h}`;
+          expect(Math.min(box.x1 - box.x0, box.y1 - box.y0), at).toBeGreaterThanOrEqual(100);
+          expect(box.x0, at).toBeGreaterThanOrEqual(-1);
+          expect(box.x1, at).toBeLessThanOrEqual(v.w + 1);
+          expect(box.y1, at).toBeLessThanOrEqual(v.h + 1);
+          // Who's playing (top left) and the gear (top right) keep their corners.
+          expect(overlap(box, { x0: 0, y0: 0, x1: 2 * BACK.x + 20, y1: 2 * BACK.y + 40 }), at).toBe(0);
+          expect(overlap(box, { x0: v.w - GEAR_CORNER.w, y0: 0, x1: v.w, y1: GEAR_CORNER.h }), at).toBe(0);
+          for (const other of ways)
+            if (other.k !== k)
+              expect(
+                overlap(box, other.box) / Math.min(area(box), area(other.box)),
+                `${at} vs ${other.k}`,
+              ).toBeLessThan(0.25);
+        }
+      }
     }
   });
 });

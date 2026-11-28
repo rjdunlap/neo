@@ -926,6 +926,178 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Level 18, Which pad lost its number? (pre-K): a leaf hides one numeral; a wrong card already on the run, a second for
+    // the lifted leaf and the glowing card, then the answers.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [18]).includes(18)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 18);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.missing');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.missingSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.missingSaid.push([String(id), vars?.m ?? vars?.n]), say(id, vars));
+      });
+      const tapCard = async (n) => {
+        await page.evaluate((n) => kit.tapOn(neo.scene.game.cards.find((c) => c.n === n).node), n);
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      const q = await page.evaluate(() => {
+        const { start, run, target, cards } = neo.scene.game.q;
+        return { start, run, target, cards };
+      });
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.pads.filter((p) => p.visible).length),
+        q.run,
+        'only the run is shown',
+      );
+      // The neighbour card is always on the run: "the number next to it".
+      const wrong = q.cards.find((c) => Math.abs(c - q.target) === 1);
+      await tapCard(wrong);
+      const said = await page.evaluate(() => missingSaid.map(([id, v]) => `${id}:${v}`));
+      assert.ok(said.includes(`hop.wrong.missing:${wrong}`), said.join(' '));
+      assert.ok(said.includes(`hop.missing.here:${wrong}`), said.join(' '));
+      await tapCard(wrong);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.glowing?.children[1]?.text),
+        String(q.target),
+        'two misses glow the answer card',
+      );
+      await screenshot('frog-hop-18-phone-hint');
+      await tapCard(q.target);
+      const counted = await page.evaluate(() =>
+        missingSaid.filter(([id]) => id === 'count').map(([, n]) => n),
+      );
+      assert.deepEqual(
+        counted,
+        Array.from({ length: q.run }, (_, i) => q.start + i),
+        'the frog says every number on the run',
+      );
+      for (let i = 1; i < 5; i++) await tapCard(await page.evaluate(() => neo.scene.game.q.target));
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 18: a run with one leaf, a wrong neighbour card named and "already here", two misses lift the leaf and glow the card, the run counted aloud, 2 misses 1 hint saved, phone screenshot',
+      );
+    }
+
+    // Level 17, Hop to the dots (toddler): the sign shows dots; one wrong pad, a second for the glow, then the supported finish.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [17]).includes(17)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 17);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.dots');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.dotsSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.dotsSaid.push([String(id), vars?.m, vars?.n]), say(id, vars));
+      });
+      const tapPad = async (k) => {
+        await page.evaluate((k) => kit.tapOn(neo.scene.game.pads[k - 1]), k);
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.pads.filter((p) => p.visible).length),
+        3,
+        'the first question shows pads 1 to 3',
+      );
+      const n = await page.evaluate(() => neo.scene.game.q.target);
+      const wrong = n === 1 ? 2 : 1;
+      await tapPad(wrong);
+      const miss = await page.evaluate(() => dotsSaid.find(([id]) => id.startsWith('hop.wrong.dots')));
+      assert.deepEqual(miss, [n > wrong ? 'hop.wrong.dots-forward' : 'hop.wrong.dots-back', wrong, n]);
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 0, 'a wrong pad leaps home');
+      await tapPad(wrong);
+      assert.equal(await page.evaluate(() => neo.scene.game.glowing), n, 'two misses glow the target');
+      await screenshot('frog-hop-17-phone-glow');
+      await tapPad(wrong);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.qi),
+        1,
+        'with the glow on the next tap finishes the question',
+      );
+      for (let i = 1; i < 5; i++) await tapPad(await page.evaluate(() => neo.scene.game.q.target));
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 17: dots-only sign, three pads then five, a wrong pad names itself and the way and leaps home, two misses glow, the third tap finishes, 2 misses 1 hint saved, phone screenshot',
+      );
+    }
+
+    // Level 16, Hop along (lap and toddler): six free taps on the pond, one on the bank; nothing is wrong.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [16]).includes(16)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 16);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.along');
+      const said = await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.alongSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.alongSaid.push([String(id), vars?.n]), say(id, vars));
+        return true;
+      });
+      assert.ok(said);
+      // A real tap at a place in the pond (near a pad, not on it), or on the bank.
+      const tapPad = async (k, dy = 0) => {
+        await page.evaluate(
+          ({ k, dy }) => {
+            const g = neo.scene.game;
+            const s = g.L.spots[k];
+            const p = g.pond.toGlobal({ x: s.x, y: s.y + dy });
+            kit.tap(p.x, p.y);
+          },
+          { k, dy },
+        );
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      await tapPad(3, 50);
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 3, 'a tap near pad 3 hops there');
+      assert.deepEqual(
+        await page.evaluate(() => alongSaid.filter(([id]) => id === 'count').map(([, n]) => n)),
+        [1, 2, 3],
+        'each landing says its number',
+      );
+      await screenshot('frog-hop-16-phone');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        const b = g.L.bank;
+        const p = g.bank.toGlobal({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
+        kit.tap(p.x, p.y);
+      });
+      await page.waitForTimeout(250);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 0, 'the bank sends the frog home');
+      assert.ok(await page.evaluate(() => alongSaid.some(([id, n]) => id === 'hop.along.home' && n === 3)));
+      await tapPad(5);
+      await tapPad(5);
+      await tapPad(2, -40);
+      assert.equal(await page.evaluate(() => neo.scene.finished), false, 'five taps do not end the round');
+      await tapPad(1);
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 16: pond taps hop pad by pad saying each number, the bank sends it home, the sixth tap ends with no misses, phone screenshot, saved sticker passed',
+      );
+    }
+
     // Level 15, Where does it go?: three unscored guesses on a bare 0–100 line, then a ten placed on the line marked in tens.
     if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [15]).includes(15)) {
       await page.setViewportSize({ width: 390, height: 844 });
@@ -1484,6 +1656,57 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           assert.deepEqual(await score('market-stall'), [2, 1]);
           log(
             `Market Stall ${level} (purse): a coin heard, the coin-count and near cards missed, the counted hint, saved score and sticker passed`,
+          );
+          continue;
+        }
+        if (plan.mode === 'more') {
+          // Which costs more? (dive slice 9, level 15): no bell, coins or slate; the cheaper fruit twice (a miss that lays the
+          // dots side by side, then the hint that lights the dearer one), then the dearer; later orders straight away.
+          const good = (i) => `neo.scene.game.shelf[${i}].node`;
+          const settle = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const dear = await page.evaluate(() => {
+              const [a, b] = neo.scene.game.order.prices;
+              return a > b ? 0 : 1;
+            });
+            if (n === 0) {
+              assert.deepEqual(
+                await page.evaluate(() => [
+                  neo.scene.game.bell.visible,
+                  neo.scene.game.purse.length,
+                  neo.scene.game.shelf.length,
+                ]),
+                [false, 0, 2],
+                'no bell or coins; two things on the shelf',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await screenshot('market-stall-15-upright');
+              await tap(good(1 - dear));
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'the cheaper one is a miss');
+              assert.ok(await page.evaluate(() => !!neo.scene.game.compare), 'the dots lie side by side');
+              await screenshot('market-stall-15-dots-upright');
+              await tap(good(1 - dear));
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss is the hint');
+              assert.ok(
+                await page.evaluate(() => neo.scene.game.shelfGlow.bounds.width > 0),
+                'the dearer one glows',
+              );
+              await screenshot('market-stall-15-hint-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
+            await tap(good(dear));
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          log(
+            'Market Stall 15 (Which costs more?): no bell, two misses, the dots and the glow, saved score and sticker',
           );
           continue;
         }
@@ -3011,7 +3234,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= Math.min(10, Number(process.env.TO_LEVEL || 10)); level++) {
+      for (let level = fromLevel; level <= Math.min(11, Number(process.env.TO_LEVEL || 11)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -3232,6 +3455,59 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           );
           assert.deepEqual(await counts(), [0, 0]);
           for (let k = 1; k < 6; k++) await tapSnack();
+        } else if (mode === 'diet') {
+          // Level 11, Plants, meat or both?: one animal at a time, three mats; two wrong mats glow the right one.
+          const right = async () =>
+            page.evaluate(async () => {
+              const L = await import('/src/games/animal-snack/logic.ts');
+              return L.MATS.indexOf(L.DIET[neo.scene.game.waiting.name].kind);
+            });
+          const tapMat = async (i) => {
+            await page.evaluate((i) => kit.tapOn(neo.scene.game.mats[i]), i);
+            await settle();
+          };
+          const total = await page.evaluate(() => neo.scene.game.round.animals.length);
+          assert.ok(total === 4 || total === 5, 'four or five animals to sort');
+          const first = await right();
+          const wrong = (first + 1) % 3;
+          await tapMat(wrong);
+          await tapMat(wrong);
+          assert.deepEqual(await counts(), [2, 1], 'two wrong mats: two misses, then a hint');
+          assert.ok(
+            await page.evaluate((i) => neo.scene.game.glowing === neo.scene.game.mats[i], first),
+            'the second miss glows the right mat',
+          );
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.sorted.length),
+            0,
+            'a wrong mat sorts nothing',
+          );
+          for (let k = 0; k < total; k++) {
+            await tapMat(await right());
+            if (k === 2) {
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              const ok = await page.evaluate(() => {
+                const g = neo.scene.game;
+                const b = g.mats.map((m) => m.getBounds());
+                const w = g.waiting?.node.getBounds();
+                return (
+                  b.every((r, i) => i === 0 || r.x >= b[i - 1].x + b[i - 1].width) &&
+                  b.every((r) => r.x >= 0 && r.x + r.width <= innerWidth && r.y + r.height <= innerHeight) &&
+                  (!w || w.y + w.height <= Math.min(...b.map((r) => r.y)) + 20)
+                );
+              });
+              assert.ok(ok, 'upright on a phone the mats sit apart on screen, under the waiting animal');
+              await screenshot('animal-snack-11-phone');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(300);
+            }
+          }
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.sorted.length),
+            total,
+            'every animal on a mat',
+          );
         } else if (mode === 'match') {
           const pairs = await page.evaluate(async () => {
             const L = await import('/src/games/animal-snack/logic.ts');
@@ -3783,9 +4059,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
 
     if (!only || only === 'bonds')
-      for (const level of [10, 11]) {
-        await launch('bubble-pop', level);
+      for (const level of [10, 11, 20].filter((l) => l >= fromLevel)) {
+        if (level === 20) {
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.waitForTimeout(300);
+        }
+        await launch('bubble-pop', level, 'Mia', level === 20 ? 'school' : undefined);
         await page.waitForTimeout(600);
+        if (level === 20) await screenshot('bubble-pop-20-portrait');
         // The total the pairs make is on a sign at the top, above where any bubble can drift, and takes no touches.
         assert.deepEqual(
           await page.evaluate(() => {
@@ -3808,18 +4089,48 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const live = () =>
           page.evaluate(() =>
             neo.scene.game.bubbles
-              .map((b, i) => ({ i, n: b.number, popped: b.popped, rainbow: b.rainbow }))
+              .map((b, i) => ({ i, n: b.number, popped: b.popped, rainbow: b.rainbow, glow: b.glow }))
               .filter((b) => !b.popped && !b.rainbow),
           );
         const sum = await page.evaluate(() => neo.scene.game.plan.sum);
+        if (level === 20) {
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            g._said = [];
+            const say = g.ctx.say.bind(g.ctx);
+            g.ctx.say = (id, vars) => {
+              g._said.push([id, vars]);
+              return say(id, vars);
+            };
+          });
+        }
+        let hintFirst = null;
         for (let k = 0; k < 2; k++) {
           const bs = await live();
           const a = bs[0];
           const b = bs.find((x) => x.i !== a.i && x.n + a.n !== sum);
+          hintFirst = a;
           await pop(a.i);
           await pop(b.i);
         }
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1]);
+        if (level === 20) {
+          const after = await live();
+          const glowing = after.filter((x) => x.glow > 0);
+          assert.equal(glowing.length, 2, 'Make 20 hint lights the tried bubble and its partner');
+          assert.ok(
+            glowing.some((x) => x.i === hintFirst.i) &&
+              glowing.some((x) => x.i !== hintFirst.i && x.n + hintFirst.n === 20),
+            'Make 20 hint lights the first bubble of her last try and its partner',
+          );
+          const said = await page.evaluate(() => neo.scene.game._said);
+          const hintLine = said.at(-1);
+          assert.equal(
+            hintLine[0],
+            hintFirst.n === 10 ? 'bubble.made' : 'bubble.ten20',
+            'Make 20 hint speaks ten20 (or made for 10+10) instead of notmade',
+          );
+        }
         await screenshot(`bubble-pop-${level}-hint`);
         for (let k = 0; k < 12; k++) {
           const bs = await live();
@@ -3838,6 +4149,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await page.evaluate(() => kit.tapOn(neo.scene.game.bubbles.find((b) => b.rainbow)));
         await finished('bubble-pop');
         assert.deepEqual(await score('bubble-pop'), [2, 1]);
+        if (level === 20) {
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(300);
+        }
         log(
           `Bubble Pop ${level}: pairs that make ${sum} popped together, wrong pairs as misses, glowing pair hint, rainbow bubble, saved score and sticker passed`,
         );
@@ -4699,6 +5014,48 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             }
             await tap(`neo.scene.game.comparisons.find(o => o.place === '${data.right}').node`);
             await settle();
+            continue;
+          }
+          if (level === 10) {
+            const offered = await page.evaluate(() => neo.scene.game.round.options);
+            assert.equal(offered.length, 3);
+            assert.equal(await page.evaluate(() => neo.scene.game.phase), 'choose');
+            if (n === 0) await screenshot('critter-sort-10-choose');
+            const tapSign = async (rule) => {
+              await tap(`neo.scene.game.options.find((x) => x.rule === '${rule}').node`);
+              await page.waitForTimeout(450);
+            };
+            const state = () => page.evaluate(() => [neo.scene.game.phase, [...neo.scene.game.chosen]]);
+            await tapSign(offered[0]);
+            await tapSign(offered[1]);
+            assert.deepEqual(await state(), ['sort', [offered[0], offered[1]]]);
+            // Taking a sign back before the first drop is free and reopens the choice.
+            await tapSign(offered[0]);
+            assert.deepEqual(await state(), ['choose', [null, offered[1]]]);
+            await tapSign(offered[2]);
+            assert.deepEqual(await state(), ['sort', [offered[2], offered[1]]]);
+            assert.deepEqual(await counts(), n === 0 ? [0, 0] : [2, 1]);
+            await settle();
+            const places = await page.evaluate(async () => {
+              const L = await import('/src/games/critter-sort/logic.ts');
+              const g = neo.scene.game;
+              return g.sorters.map((s) => L.placeOf(s.c, g.round.rules));
+            });
+            if (n === 0) {
+              const wrong = places[0] === 'left' ? 'right' : 'left';
+              await dropTo(0, wrong);
+              // Her signs lock at the first drop.
+              await tapSign(offered[1]);
+              assert.deepEqual(await state(), ['sort', [offered[2], offered[1]]]);
+              await dropTo(0, wrong);
+              assert.deepEqual(await counts(), [2, 1]);
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.hinting === neo.scene.game.sorters[0]),
+                true,
+              );
+              await screenshot('critter-sort-10-hint');
+            }
+            for (const [i, place] of places.entries()) await dropTo(i, place);
             continue;
           }
           if (level === 9) {

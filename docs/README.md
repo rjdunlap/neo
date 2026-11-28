@@ -25,6 +25,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [IDEAS.md](IDEAS.md) | The idea notebook: proposals, not a mandate |
 | [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md) | Only before work that depends on a call the developer alone can make |
 | [DEVICE-CHECKS.md](DEVICE-CHECKS.md) | The parked device and child checks, and what a phone playtest can answer |
+| [device-checks/](device-checks/ROTATION.md) | The twice-weekly phone and controller check: its rotation of games and one dated report per run |
 
 ## What exists and how it works
 
@@ -43,6 +44,10 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | --- | --- |
 | [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md); RW11 packet: [forms and talents](rework/FORMS-AND-TALENTS.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [Critter Crossing: Be the gate](definitions/critter-crossing-be-the-gate.md) | Critter Crossing level 9: pick one of four pictured rules and act as the gatekeeper (`Cross` or `Wait`), swapping seats in round 2 with **Two of us** or letting the pet deduce your rule in **Just me**; school |
+| [Duckling Parade: Keep it going](definitions/duckling-parade-keep-it-going.md) | Duckling Parade level 12: a two-unit duck pattern on the card, four colorless slots to continue it, a one-slot reveal counted as help; school 9–12 |
+| [Pattern Train: Add three, add four](definitions/pattern-train-add-three-add-four.md) | Pattern Train level 21: name the rule of a +3 or +4 numbered train with a jump chip, then fill the last car; two questions, one hint each; school |
+| [Critter Sort: Pick the signs](definitions/critter-sort-pick-the-signs.md) | Critter Sort level 10: tap two of three picture signs onto overlapping hoops, then sort six critters by her own rules; choosing is never a miss, nothing is kept; school |
 | [Progression loop](definitions/progression-loop.md) | Neopets-style earn, spend and collect by age band: shells, a shop for her friend, stamps; grown-ups first, never lap or toddler |
 | [Playdate Workshop 4–6](definitions/playdate-workshop-4-6.md) | Social-emotional slice 6, Playdate Workshop levels 4–6: the smudged banner (two repairs), a new idea mid-round (revise the plan) and Ask first (an unspoken request); school 3–6, no misses |
 | [Wave Ribbon](definitions/wave-ribbon.md) | Energy and waves E6, levels 1–3: send a finite pulse along an elastic ribbon, watch a bead move locally while the wave travels, compare Small and Tall amplitudes, and test equal arrival times; analytic solver in `logic.ts`, `upright: true`, Tinker Lab |
@@ -80,9 +85,13 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Last Pebble](definitions/last-pebble.md) | Strategy-games SG3, levels 1–2: lay one or two stones across a stream in turn to reach the far bank, finding stepping stones back from the end; school (about 10 and up) and grown-up, Puzzle Peaks |
 | [Sum Crates](definitions/sum-crates.md) | Puzzle-pages PP5, levels 1–3: crossing rows and columns of fruit crates that add to their signs, no repeat in a line; school 1–2, grown-up 3 |
 | [Garden Rows level 11](definitions/garden-rows-bee.md) | Puzzle-pages PP4, The bee counts tall flowers: a 3×3 bed with visibility clues viewed from each gate |
+| [Garden Rows level 12](definitions/garden-rows-two-flower-beds.md) | Two-flower beds: a 4×4 bed with two packets, two of each flower in every row and column; school 11–12 |
 | [Campsite](definitions/campsite.md) | Puzzle-pages PP6, school level 1: pitch three tents using row and column counts and one shared-edge pairing per tree |
 | [Bunny Patches](definitions/bunny-patches.md) | Puzzle-pages PP3, levels 1–3: one bunny in every row, column and patch, none touching; pre-K 4×4 to school 6×6 |
 | [Market Stall levels 12–13](definitions/market-stall-12-13.md) | Can I buy it? (does a purse cover a price, then spend it on two things) and Trade up (swap small coins for a bigger one); school, built after levels 8–11 |
+| [Market Stall sell stall and bakery](definitions/market-stall-sell-and-bakery.md) | *Is it enough?* (she keeps the stall, counts a customer's shells, then sells or asks for more; school, after level 8) and the bakery, a fourth stall skin with four new props |
+| [Bubble Pop Make 20](definitions/bubble-pop-make-20.md) | Level 20, *Make 20* (school, after 14): the bonds play of *Make 10* with the sign at 20; the hint glows her held bubble's partner and says how making 10 gets there |
+| [Animal Snack level 11](definitions/animal-snack-diet-sort.md) | *Plants, meat or both?* (school, after 10): one animal at a time, tap its mat; a cited diet table for all eleven animals, only the cat eats meat alone |
 | [Block Tower level 7](definitions/block-tower-mend.md) | Mend the leaning tower: move the top block under ropes, release, and see whether it stands; school, a repair interaction |
 | [Egg Catch level 13](definitions/egg-catch-sorting-gate.md) | Sorting gate: place a shell-reading sorter at one junction and turn it so four mixed eggs reach their baskets; school, a placement interaction |
 | [Swing Pals level 9](definitions/swing-pals-paint-the-beat.md) | Paint the beat: a paint pot on the swing paints wiggles on a rolling paper strip; the painting is kept only on request; preschool to school |

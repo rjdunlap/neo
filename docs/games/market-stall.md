@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 1, 2, 14 |
-| pre-K | 2, 14, 3, 4 |
+| pre-K | 2, 14, 15, 3, 4 |
 | school | 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12 |
 
 | Level | Plays like |
@@ -28,12 +28,13 @@
 | 12 | Can I buy it? A purse of 6 to 14 shells against three prices, then spend it all on two things |
 | 13 | Trade up: swap small coins for a bigger one until 6 to 12 shells are the fewest coins |
 | 14 | Which coin? Give the shopkeeper the one, two or five-shell coin asked for |
+| 15 | Which costs more? Tap the one of two things whose tag says the bigger number |
 
 <!-- end generated -->
 
 **Starts as:** count out shell coins at fruit, flower or balloon stalls
 
-**Grows into:** naming the one, two and five-shell coins (level 14, between levels 2 and 3), ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells, telling how much is in a purse (level 8), paying 11 to 20 with a ten-shell coin (level 9), adding two prices past ten (level 10), making change from 20, deciding what a purse can buy and trading small coins for larger ones without changing their total
+**Grows into:** naming the one, two and five-shell coins (level 14, between levels 2 and 3), telling which of two prices costs more (level 15, between levels 14 and 3), ones and twos, fives, adding two prices, paying two different ways, giving change from 10 by counting up, paying with the fewest shells, telling how much is in a purse (level 8), paying 11 to 20 with a ten-shell coin (level 9), adding two prices past ten (level 10), making change from 20, deciding what a purse can buy and trading small coins for larger ones without changing their total
 
 ## Design notes
 
@@ -57,4 +58,8 @@ Level 6 counts up the change: each change coin says its value, then the shopkeep
 
 **Level 14, Which coin? (2026-11-27).** A `which` plan with coins 1, 2 and 5, played between levels 2 and 3 (preschool 1, 2, 14; pre-K 2, 14, 3, 4; not in the school ladder, and `entryLevels: [14]` starts a school player carried there at level 3). Four orders ask for each coin once in a shuffled order, then one more that is not the last asked (`makeWhichOrders`). Each order shows one good whose tag is the asked worth, so a muted round still shows which coin, and the shopkeeper says "Give me the five-shell coin!" (`shop.which`). The coins carry pips as at levels 1–3 (`hasPips`). No bell and no slate: one tap on the asked coin hands it over, the shopkeeper counts its pips aloud ("1, 2, 3, 4, 5", `pipCount`) and takes it. Another coin is a boing and a miss that says what that coin is worth and stays in the purse; the second miss of an order glows the asked coin (one hint per order, `coinGlow`, which follows the coin when the phone turns). The coin's first-tap naming of levels 2, 3 and 9 does not apply here.
 
+**Level 15, Which costs more? (2026-11-28).** A `more` plan placed pre-K only by `order` [2, 14, 15, 3, 4] (preschool and school unchanged; `entryLevels: [14, 15]`). Each of four orders puts two goods (fruit, flowers or balloons) on the stall; each tag shows a numeral 1–10 and one dot per shell. Prices differ by 1–6 and never repeat the same pair twice running; the dearer one is on the left in exactly half of the four orders. She taps the one that costs more (`shop.more*`, all slotted). Nothing is bought: no coins and no bell. A wrong tap is a miss, wobbles that tag and lays both prices' dots in two rows side by side on the counter mat, one to one, so the longer row shows. The second miss of an order also glows the dearer one and charges one hint per order.
+
 **Upright on a phone (2026-11-19).** `stallLayout` in `logic.ts` places the stall, and `purseFor`, `AWNING`, `COIN_HIT`, `BELL_HIT` and `MAT_BOX` live there too, tested over every level of every band and five upright views (plus 360 × 800) in `upright.test.ts`. Held upright the whole stall moves down the tall screen instead of sitting at the top over an empty lower half: the awning starts at 220 or lower (clear of Home), the counter sits at the larger of 580 and 45% of the height, capped so its front stays above the purse, and the awning is drawn from `awningTop`. Sideways keeps the old layout.
+
+**Defined next (2026-11-28, [definition](../definitions/market-stall-sell-and-bakery.md)).** *Is it enough?*, the sell stall, at the next free ID in the school ladder after level 8: a customer pays two to six shells for one good, exact or one to five short; she sells (taps the good) or taps *More, please* and the customer counts on to the price; no total is shown until the two-miss hint. The bakery, a fourth stall skin (orange awning, dog keeper; loaf, bun, cupcake, cookie as new props), with the sticker recipe unchanged and a tested article so the pair levels stop saying "A orange".

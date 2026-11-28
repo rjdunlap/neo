@@ -1,6 +1,6 @@
 # Animal Snack deep dive
 
-*ID `animal-snack` · bands lap, toddler, preschool, pre-K · levels 1–6 (level 6 built 2026-11-14) · first written 2026-10-10 · session `claude/roadmap-item-14-game-content-fno5j7` ([PR 99](https://github.com/rjdunlap/neo/pull/99))*
+*ID `animal-snack` · bands lap, toddler, preschool, pre-K, school · levels 1–10 (levels 7–10 built 2026-11-15 and 2026-11-16; "The game today" below is the 1–6 snapshot, and the [game page](../games/animal-snack.md) is current) · first written 2026-10-10 · session `claude/roadmap-item-14-game-content-fno5j7` ([PR 99](https://github.com/rjdunlap/neo/pull/99))*
 
 ## The game today
 
@@ -106,7 +106,7 @@ With today's seven animals Who eats it too? had only two foods that work, so it 
 
 Windows (lean): lap 1–2, toddler 2–4 and preschool 3–5 unchanged; **pre-K 5–8 and school 8–10** are new windows (lower bounds new, so no saved level moves). A five-year-old starts at the count level and reaches 6 within two smooth rounds, and a seven-year-old starts at 8 and moves up. Alternative: leave pre-K at 5–7 and put 8 in school only.
 
-Sketches, not levels: **the diet sort** (plant eaters, meat eaters, both) needs a curated table of true diets and the developer's view of accuracy for the omnivores (decision 5); **thank-you gifts** (the cow gives milk, the hen an egg, the sheep wool: a cause-and-effect chain after eating); **wild friends** (monkey and banana, squirrel and acorn, giraffe and leaves, from the IDEAS row) need tail, hand and neck parts in `critter.ts` and a new scene; **a week of snacks** where an animal eats one more each day (a growing pattern; Pattern Train holds those).
+Sketches, not levels: **the diet sort** (plant eaters, meat eaters, both) is **defined 2026-11-28** as level 11, *Plants, meat or both?* ([definition](../definitions/animal-snack-diet-sort.md)), with a cited diet table for all eleven animals; **thank-you gifts** (the cow gives milk, the hen an egg, the sheep wool: a cause-and-effect chain after eating); **wild friends** (monkey and banana, squirrel and acorn, giraffe and leaves, from the IDEAS row) need tail, hand and neck parts in `critter.ts` and a new scene; **a week of snacks** where an animal eats one more each day (a growing pattern; Pattern Train holds those).
 
 ### Younger-band openings
 
@@ -142,7 +142,7 @@ These are easier than levels that exist, or fall between them, so they are place
 6. **Printed food words on levels 9–10.** Optional reading-lite, with the voice always available and a free replay. Lean: yes, with no phonics claim until device speech has been checked. The words are hay, bone, fish, seeds, apple, honey, corn, oats, cheese and grass.
 7. **Person checks to add:** the counted speech (gap 1) on a device; whether a one-year-old drags a snack to a mouth or only taps (Open wide); whether the half-second a tap is ignored while eating feels slow to a three-year-old. The existing check on whether Animal Snack holds a one-year-old's attention is in the [roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device) and is not repeated.
 
-**Decided 2026-10-23 (on the developer's delegation):** replace the planned 6–7 with 6 Who says moo?, 7 Who eats it too? (the set of answers, moved ahead so the ladder does not dip) and 8 Their own snacks, plus 9–10 the menu board, in pre-K 5–8 and school 8–10; share the four new animals (journal to twenty-nine), with seeds and grain rather than cheese for the mouse. The `EATS` table ships after the building session checks it against cited sources (no grown-up sign-off); the diet sort stays a sketch; printed food words are optional reading-lite. Counted speech goes to the device checks.
+**Decided 2026-10-23 (on the developer's delegation):** replace the planned 6–7 with 6 Who says moo?, 7 Who eats it too? (the set of answers, moved ahead so the ladder does not dip) and 8 Their own snacks, plus 9–10 the menu board, in pre-K 5–8 and school 8–10; share the four new animals (journal to twenty-nine), with seeds and grain rather than cheese for the mouse. The `EATS` table ships after the building session checks it against cited sources (no grown-up sign-off); the diet sort stays a sketch; (superseded 2026-11-28: READY queued its definition with every diet cited, and it is [defined](../definitions/animal-snack-diet-sort.md) as level 11); printed food words are optional reading-lite. Counted speech goes to the device checks.
 
 ## Build slices, in order
 
@@ -158,7 +158,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 8. **Levels 9–10, The menu board and The long menu** (built 2026-11-16, [PR #1704](https://github.com/rjdunlap/neo/pull/1704); see [the game page](../games/animal-snack.md#design-notes)). They open the school window (`school` 8–10, `school` in `bands`); a chalkboard of lines, each an animal, a printed numeral and a food word, a free speaker per line. Tier: new levels on an existing interaction: rule tests, one browser play of levels 9 and 10 and `fingerdemo` at them.
 9. **The pet's turn** (built 2026-11-17, PR #1775) and the **below-level-1 entries** (they wait on decision 3; Open wide first, Taste test second).
 10. **Level 1, one big animal** (built 2026-11-12, [PR #1592](https://github.com/rjdunlap/neo/pull/1592), in place; see [the game page](../games/animal-snack.md#design-notes)). Lap-only level 1 now opens with one big animal and a touch anywhere feeds it; Open wide below stays a sketch for a drag.
-11. **Sketches:** the diet sort (its definition is queued in [READY](../READY.md) 2026-11-28, with every diet checked against cited sources as the `EATS` table was), thank-you gifts, wild friends, a week of snacks.
+11. **Sketches:** the diet sort (**built 2026-11-28** as level 11, school after 10: [definition](../definitions/animal-snack-diet-sort.md), [PR #2365](https://github.com/rjdunlap/neo/pull/2365); see [the game page](../games/animal-snack.md#design-notes)), thank-you gifts, wild friends, a week of snacks.
 
 ## What was built in this session
 

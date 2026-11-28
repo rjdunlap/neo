@@ -125,7 +125,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
     await page.waitForTimeout(500);
     await screenshot('land-cozy-village-portrait');
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.waitForTimeout(800);
     await screenshot('map-portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
@@ -278,7 +278,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
       const { landFor, visibleIn } = await import('/src/content/lands.ts');
       const { GAMES } = await import('/src/games/registry.ts');
       for (const g of visibleIn(landFor('barnyard'), 'school', GAMES)) kit.store.stats(g.id).plays = 1;
-      neo.go.hub();
+      neo.go.explore('places');
     });
     await scene('MapScene');
     const twinkles = await page.evaluate(() =>

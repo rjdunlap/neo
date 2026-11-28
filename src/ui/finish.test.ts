@@ -82,15 +82,29 @@ describe('buttons and cards with a finish (RW14 slice 7)', () => {
     b.destroy();
   });
 
-  it("Home's exits keep their touch circles at every band", () => {
+  it("Home's yard things are at least 100 units to touch at every band, and the youngest's treehouse has no name", () => {
     for (const band of ['toddler', 'preschool'] as const) {
       store.data.profile.band = band;
       const s = new HomeScene(fakeApp() as never);
       expect(circle(s.who).radius).toBe(CORNER_RADIUS + 14);
-      for (const b of [s.play, s.explore]) if (b) expect(circle(b).radius).toBe(ACTION_RADIUS + 14);
-      expect(s.explore.children[1]).toBeDefined();
-      // Each carries its name (U1) after its picture, so the picture keeps its place.
-      for (const b of [s.who, s.play, s.explore, s.daily]) if (b) expect(b.children.length).toBe(3);
+      for (const t of [
+        s.treehouse,
+        s.board,
+        s.arcade,
+        s.signpost,
+        s.bush,
+        s.flowers,
+        ...(s.blanket ? [s.blanket] : []),
+      ]) {
+        const h = t.hitArea as Rectangle;
+        expect(h).toBeInstanceOf(Rectangle);
+        expect(Math.min(h.width, h.height)).toBeGreaterThanOrEqual(100);
+      }
+      // A way out carries a name pill after its picture; the youngest's treehouse is only a toy.
+      for (const t of [s.board, s.arcade, s.signpost]) expect(t.children.length).toBe(2);
+      // Family play is grown-up couch play: the youngest have no blanket.
+      expect(!!s.blanket).toBe(band !== 'toddler');
+      expect(s.treehouse.children.length).toBe(band === 'toddler' ? 1 : 2);
     }
   });
 

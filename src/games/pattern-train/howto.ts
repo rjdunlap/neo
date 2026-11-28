@@ -71,6 +71,11 @@ export const HOW_TO: GameHowTo = {
       to: 20,
       text: 'The numbers do not start at the step: look at how far it is from one car to the next, then tap the number for the glowing car. It can be anywhere after the first car.',
     },
+    {
+      from: 21,
+      to: 21,
+      text: 'Look at how much more each car is than the one before. Tap that jump, then tap the number for the last car.',
+    },
   ],
   finish: [
     {
@@ -80,5 +85,6 @@ export const HOW_TO: GameHowTo = {
     { from: 17, to: 17, text: 'The round ends when the train has run her pattern round three times.' },
     { from: 18, to: 19, text: 'The round ends when the stack that comes next is chosen.' },
     { from: 20, to: 20, text: 'The round ends when the number for the glowing car is chosen.' },
+    { from: 21, to: 21, text: 'The round ends when the number for the last car is chosen.' },
   ],
 };

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, ready, scene, tap, screenshot, launch, finished, next }) {
   async function expansion() {
     const only = process.env.EXPANSION_ONLY;
-    if (only !== undefined) selectValue(only, ['size', 'bug', 'story'], 'EXPANSION_ONLY');
+    if (only !== undefined) selectValue(only, ['size', 'bug', 'story', 'storygrow'], 'EXPANSION_ONLY');
     // Both the smallest supported band and the upper ladder are exercised through real pointer events.
     const sizeLevels = (process.env.SIZE_LEVELS || '1,2,3,4,5,6,7,8,10,11,17').split(',').map(Number);
     for (const level of sizeLevels.filter(() => !only || only === 'size')) {
@@ -536,6 +536,37 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.setViewportSize({ width: 1024, height: 768 });
       log(`Bug Builder ${level}: drag, copy/symmetry, mistakes, hint, saved round and sticker passed`);
     }
+    // Story Steps 15, One picture grows, on a touch phone: a lap still tap places the only card, then a toddler drop far from the space.
+    if (only === 'storygrow') {
+      await page.setViewportSize({ width: 390, height: 844 });
+      for (const [band, how] of [
+        ['lap', 'tap'],
+        ['toddler', 'far drop'],
+      ]) {
+        await launch('story-steps', 15, 'Mia', band);
+        await page.evaluate(async (how) => {
+          const g = neo.scene.game;
+          if (g.choices.length !== 1 || g.slots.length !== 2)
+            throw new Error('One picture grows is not two cards with one choice');
+          const card = g.choices[0].node;
+          if (how === 'tap') kit.tapOn(card);
+          else {
+            const p = card.getGlobalPosition();
+            await kit.drag(kit.line([p.x, p.y], [p.x + 30, p.y - 120]));
+          }
+          if (!(await kit.until(() => g.done, 3000))) throw new Error(`A ${how} did not place the picture`);
+        }, how);
+        if (band === 'lap') {
+          await page.waitForTimeout(350);
+          await screenshot('story-steps-15-grow');
+        }
+        await finished('story-steps');
+        const r = await page.evaluate(() => kit.store.stats('story-steps').history.at(-1));
+        assert.deepEqual([r.level, r.misses, r.hints], [15, 0, 0]);
+        log(`Story Steps 15 (${band}): a ${how} places the only picture, it grows, no miss, sticker`);
+      }
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
     for (
       let level = Number(process.env.FROM_LEVEL || 1);
       level <= Number(process.env.TO_LEVEL || 11) && (!only || only === 'story');
@@ -786,34 +817,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       ),
       progress,
     );
-    // Toddler Daisy Meadow holds all three; the arrows bring an off-screen one into view.
-    await page.evaluate(() => neo.go.place('toddler'));
-    await scene('PlaceScene');
-    for (const id of ['size-parade', 'bug-builder', 'story-steps'])
-      assert.ok(await page.evaluate((id) => neo.scene.landmarks.some((l) => l.mod.id === id), id), id);
-    const onScreen = () =>
-      page.evaluate(() => {
-        const x = neo.scene.landmarks.find((l) => l.mod.id === 'size-parade').node.getGlobalPosition().x;
-        return x > 120 && x < innerWidth - 120;
-      });
-    for (let i = 0; i < 6 && !(await onScreen()); i++) {
-      await tap('neo.scene.next');
-      await page.waitForTimeout(600);
-    }
-    assert.ok(await onScreen(), 'Size Parade scrolled into view');
-    await screenshot('place-toddler-scrolled');
-    await page.evaluate(() =>
-      kit.tapOn(neo.scene.landmarks.find((l) => l.mod.id === 'size-parade').node, 0, -60),
-    );
-    await scene('GameScene');
-    assert.equal(await page.evaluate(() => neo.scene.mod.id), 'size-parade');
-    // Coming home lands where the meadow was scrolled to, not back at the start.
-    await page.mouse.move(62, 62);
-    await page.mouse.down();
-    await scene('PlaceScene');
-    await page.mouse.up();
-    assert.ok(await onScreen(), 'place kept its scroll');
-    log('Expansion save reload, arrow scrolling, and returning to a scrolled place passed');
+    // Explore's All games (the age places retired with classic/) holds all three for a toddler.
+    const toddler = await page.evaluate(async (band) => {
+      const { allGames } = await import('/src/content/explore.ts');
+      const { GAMES } = await import('/src/games/registry.ts');
+      const { LANDS } = await import('/src/content/lands.ts');
+      return allGames(band, GAMES, LANDS).map((g) => g.id);
+    }, 'toddler');
+    for (const id of ['size-parade', 'bug-builder', 'story-steps']) assert.ok(toddler.includes(id), id);
+    log('Expansion save reload, and Explore holding the three for a toddler, passed');
   }
 
   return { expansion };

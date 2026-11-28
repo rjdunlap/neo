@@ -10,8 +10,8 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
   async function startView() {
     const base = process.env.GAME_URL || 'http://127.0.0.1:5173';
     for (const [path, explore] of [
+      // `classic/` (the map) retired at RW08's cutover, 2026-11-28.
       ['/', 'HomeScene'],
-      ['/classic/', 'MapScene'],
     ]) {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.goto(new URL(path, base).href);
@@ -214,19 +214,16 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     await cards(1);
     assert.deepEqual(await names(), ['Mia']);
 
-    // A tap opens the island map as that person, with the home spot their age gives.
+    // A tap opens Home as that person, at their age.
     await pickFirst();
-    await scene('MapScene');
-    assert.deepEqual(await page.evaluate(() => [kit.store.data.profile.band, neo.scene.homeBand]), [
-      'lap',
-      'lap',
-    ]);
+    await scene('HomeScene');
+    assert.equal(await page.evaluate(() => kit.store.data.profile.band), 'lap');
 
     // The map's "Who's playing?" button is the way back.
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.waitForTimeout(800);
-    await page.evaluate(() => kit.tapOn(neo.scene.players));
+    await page.evaluate(() => kit.tapOn(neo.scene.who));
     await cards(1);
 
     // A click with no `detail` (Enter, a screen reader) opens the island too: no card leads to couch play.
@@ -235,7 +232,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
         .querySelector('.chooser__play')
         .dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })),
     );
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.evaluate(() => neo.go.start());
     await cards(1);
 
@@ -271,7 +268,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     await page.keyboard.down('Enter');
     await page.waitForTimeout(150);
     await page.keyboard.up('Enter');
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.equal((await storeNow()).id, firstId);
     await page.evaluate(() => neo.go.start());
     await cards(2);
@@ -291,7 +288,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
 
     // The grown-ups' page edits whoever is picked at the top, and puts back whoever was playing.
     await page.locator('.chooser__play').nth(0).click();
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.evaluate(() => neo.go.start());
     await cards(2);
     await openGrownUps();

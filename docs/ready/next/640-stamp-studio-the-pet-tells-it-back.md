@@ -1,0 +1,1 @@
+**`stamp-studio`, *The pet tells it back*** (existing-game tier: rule tests that every sentence is true of its picture, one scripted play; decision 6 settled 2026-10-23). [Dive slice 9](../../deep-dives/stamp-studio.md#build-slices-in-order).

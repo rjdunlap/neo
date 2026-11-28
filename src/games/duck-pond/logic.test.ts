@@ -3,6 +3,16 @@ import { Rng } from '../../engine/random';
 import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import { duckPond } from './index';
 import {
+  COMPARE_FIRST,
+  COMPARE_PER_ROW,
+  COMPARE_ROWS,
+  COMPARE_SCATTER_FROM,
+  compareAnswer,
+  compareMove,
+  comparePairs,
+  compareRounds,
+  compareSide,
+  compareStart,
   PEEK_HIT_R,
   PEEK_JITTER,
   PEEK_POND_RY,
@@ -988,7 +998,7 @@ describe('Count the peekers (level 17)', () => {
   it('is a peek plan on the preschool and pre-K ladders only, between 6 and 7', () => {
     expect(plan.mode).toBe('peek');
     expect(LEVELS.preschool?.order).toEqual([3, 4, 5, 6, 17, 7]);
-    expect(LEVELS.prek?.order).toEqual([5, 6, 17, 7, 8, 9]);
+    expect(LEVELS.prek?.order).toEqual([5, 6, 17, 7, 18, 8, 9]);
     for (const band of ['preschool', 'prek'] as const) {
       const o = LEVELS[band]!.order!;
       expect(o.indexOf(17)).toBe(o.indexOf(6) + 1);
@@ -1113,5 +1123,121 @@ describe('Count the peekers (level 17)', () => {
           expect(v).toBeLessThanOrEqual(10);
         }
       }
+  });
+});
+
+describe('Which side has more? (level 18)', () => {
+  const plan = PLANS[17];
+  const seeds = Array.from({ length: 400 }, (_, i) => i);
+
+  it('is a compare plan on the pre-K ladder only, between 7 and 8', () => {
+    expect(plan.mode).toBe('compare');
+    expect(planFor(18)).toBe(plan);
+    const o = LEVELS.prek!.order!;
+    expect(o.indexOf(18)).toBe(o.indexOf(7) + 1);
+    expect(o.indexOf(8)).toBe(o.indexOf(18) + 1);
+    for (const band of ['lap', 'toddler', 'preschool', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(18);
+    // A school save of 18 lands on school's first level rather than staying on a pre-K level.
+    expect(duckPond.entryLevels).toContain(18);
+  });
+
+  it('deals sides of 1-10 that differ by one to four, or are the same', () => {
+    for (const seed of seeds)
+      for (const r of compareRounds(new Rng(seed), plan)) {
+        for (const n of [r.left, r.right]) {
+          expect(n).toBeGreaterThanOrEqual(1);
+          expect(n).toBeLessThanOrEqual(10);
+        }
+        const d = Math.abs(r.left - r.right);
+        expect(d === 0 || (d >= 1 && d <= 4), `${r.left} and ${r.right}`).toBe(true);
+      }
+  });
+
+  it('"the same" comes at most once in five, never first, and sometimes', () => {
+    let withSame = 0;
+    for (const seed of seeds) {
+      const rounds = compareRounds(new Rng(seed), plan);
+      expect(rounds).toHaveLength(5);
+      const same = rounds.filter((r) => compareAnswer(r) === 'same');
+      expect(same.length).toBeLessThanOrEqual(1);
+      expect(compareAnswer(rounds[0])).not.toBe('same');
+      if (same.length) withSame++;
+    }
+    expect(withSame).toBeGreaterThan(seeds.length * 0.3);
+    expect(withSame).toBeLessThan(seeds.length);
+  });
+
+  it('starts gently with four against six, lined up, and scatters from the third round', () => {
+    for (const seed of seeds) {
+      const rounds = compareRounds(new Rng(seed), plan);
+      expect([rounds[0].left, rounds[0].right].sort()).toEqual([...COMPARE_FIRST].sort());
+      rounds.forEach((r, i) => expect(r.scatter).toBe(i >= COMPARE_SCATTER_FROM));
+    }
+  });
+
+  it('never has three of the same answer running, and both sides get to be the one with more', () => {
+    let leftMore = 0;
+    let rightMore = 0;
+    for (const seed of seeds) {
+      const a = compareRounds(new Rng(seed), plan).map(compareAnswer);
+      for (let i = 2; i < a.length; i++) expect(a[i] === a[i - 1] && a[i] === a[i - 2], a.join()).toBe(false);
+      leftMore += a.filter((x) => x === 'left').length;
+      rightMore += a.filter((x) => x === 'right').length;
+    }
+    expect(leftMore).toBeGreaterThan(seeds.length);
+    expect(rightMore).toBeGreaterThan(seeds.length);
+  });
+
+  it('pairing leaves exactly the difference unpaired, on the side with more', () => {
+    for (let l = 1; l <= 10; l++)
+      for (let r = 1; r <= 10; r++) {
+        const { pairs, spare } = comparePairs(l, r);
+        expect(pairs).toBe(Math.min(l, r));
+        expect(spare?.seats.length ?? 0).toBe(Math.abs(l - r));
+        if (spare) {
+          expect(spare.side).toBe(compareAnswer({ left: l, right: r }));
+          // The spare ducks are the seats past the last pair, so each pair is a seat and its mirror.
+          expect(spare.seats[0]).toBe(pairs);
+        }
+      }
+  });
+
+  it('seats a side as the mirror of the other, every seat its own and clear of the bridge', () => {
+    expect(COMPARE_PER_ROW * COMPARE_ROWS.length).toBeGreaterThanOrEqual(plan.max);
+    for (let n = 1; n <= plan.max; n++) {
+      const left = compareSide(n, -1);
+      const right = compareSide(n, 1);
+      expect(left).toHaveLength(n);
+      left.forEach(([x, y], i) => {
+        expect(right[i]).toEqual([-x, y]);
+        expect(x).toBeLessThan(-40);
+        for (const [x2, y2] of left.slice(i + 1))
+          expect(Math.hypot(x - x2, y - y2)).toBeGreaterThanOrEqual(60);
+      });
+    }
+  });
+
+  it('a scattered side has the right number of ducks, each near a seat of its own', () => {
+    for (const seed of seeds.slice(0, 100)) {
+      const rng = new Rng(seed);
+      for (let n = 1; n <= 10; n++) {
+        const at = compareStart(rng, n, 1, true);
+        expect(at).toHaveLength(n);
+        for (const [i, [x, y]] of at.entries())
+          for (const [x2, y2] of at.slice(i + 1)) expect(Math.hypot(x - x2, y - y2)).toBeGreaterThan(40);
+      }
+      expect(compareStart(rng, 4, -1, false)).toEqual(compareSide(4, -1));
+    }
+  });
+
+  it('the bot taps the right answer', () => {
+    expect(compareMove({ left: 6, right: 4 })).toBe('left');
+    expect(compareMove({ left: 2, right: 5 })).toBe('right');
+    expect(compareMove({ left: 7, right: 7 })).toBe('same');
+  });
+
+  it('describes the level for grown-ups', () => {
+    expect(duckPond.describeLevel(18)).toMatch(/more/);
   });
 });

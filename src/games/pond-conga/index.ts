@@ -1072,6 +1072,11 @@ class PondConga implements Game {
    * step or so ahead and presses when the swipe will end between the step before the turn and the turn itself (`when`). Turns
    * on neighbouring steps are one stroke.
    */
+  /** Guided first play: a step-by-step pond only; on a paced pond a swipe has to land on a beat, which a hand in the air cannot show. */
+  showMove(): TouchIntent | null {
+    return this.paced ? null : this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.pond || !this.touch || this.queue.length) return null;
     const period = 1 / this.pace(),

@@ -83,9 +83,10 @@ describe('off-screen lines per band', () => {
     const scoop = byId('scoop-shop');
     expect(offScreenFor(scoop, 'school', SAMPLE_NAME)).toBe((scoop.offScreen as OffScreenLines).all);
     expect(offScreenFor(scoop, 'lap', SAMPLE_NAME)).not.toContain('pom-pom');
-    // Story Steps starts at toddler: a lap profile plays it there and gets the toddler line.
+    // Story Steps has its own lap line (One picture grows) and a toddler line.
     const story = byId('story-steps');
-    expect(offScreenFor(story, 'lap', SAMPLE_NAME)).toBe((story.offScreen as OffScreenLines).toddler);
+    expect(offScreenFor(story, 'lap', SAMPLE_NAME)).toBe((story.offScreen as OffScreenLines).lap);
+    expect(offScreenFor(story, 'toddler', SAMPLE_NAME)).toBe((story.offScreen as OffScreenLines).toddler);
     // A plain string serves every band unchanged.
     const plain = GAMES.find((g) => typeof g.offScreen === 'string')!;
     for (const band of ALL_BANDS) expect(offScreenFor(plain, band, SAMPLE_NAME)).toBe(plain.offScreen);

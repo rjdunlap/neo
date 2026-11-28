@@ -30,8 +30,12 @@ import {
   hintFor,
   MAT_RX,
   MAT_RY,
+  makePickRound,
   makeRound,
   nextToSort,
+  offerKey,
+  overlaps,
+  pickOrder,
   sortPlaceAt,
   placeOf,
   planFor,
@@ -51,6 +55,9 @@ import {
 } from '../../learning/sorting/rules';
 
 import { CRITTER_HIT, CRITTER_SCALE, PLANT_HIT, sortLayout } from './layout';
+/** A chosen Pick the signs tile at this scale covers its 104 x 92 board and keeps a 118 x 102 touch area. */
+const BOARD_SCALE = 0.8;
+
 interface Sorter {
   c: SortCritter;
   node: Critter | PlantNode;
@@ -75,6 +82,15 @@ class CritterSort implements Game {
   readonly comparisons: { place: CountPart; node: Container }[] = [];
   private readonly badges = new Container();
   private comparisonHint = false;
+  /** Pick the signs: choosing until both boards hold a sign, then sorting by them. */
+  phase: 'choose' | 'sort' = 'sort';
+  /** The signs on the left and right boards, in board order (Pick the signs). */
+  readonly chosen: (Rule | null)[] = [null, null];
+  private offer?: string;
+  private botPick: [Rule, Rule] | null = null;
+  /** Set by the first drop on a part of the diagram: from then on her signs stay. */
+  locked = false;
+  private choosingSaid = -Infinity;
 
   private readonly backdrop: Backdrop;
   private readonly hoops = new Graphics();
@@ -136,7 +152,7 @@ class CritterSort implements Game {
     const layout = (this.layout = sortLayout(
       v,
       this.plan.mode,
-      this.plan.mode === 'butnot' ? 1 : this.round.rules.length,
+      this.plan.mode === 'butnot' ? 1 : this.plan.mode === 'pick' ? 2 : this.round.rules.length,
       loose.length,
       outside,
     ));
@@ -175,7 +191,9 @@ class CritterSort implements Game {
           .stroke({ width: 6, color: colors[i].fill }),
       );
       if (this.plan.mode === 'guess') sign.addChild(label('?', 64, ink));
-      else {
+      else if (this.plan.mode === 'pick') {
+        // A blank board: the sign she picks sits on it as its own tappable tile.
+      } else {
         sign.addChild(ruleIcon(this.round.rules[i]));
         if (this.plan.mode === 'not')
           sign.addChild(
@@ -235,7 +253,70 @@ class CritterSort implements Game {
       this.comparisons.forEach((o, i) => o.node.position.copyFrom(layout.compares[i]));
       this.drawBadges();
     }
-    this.options.forEach((o, i) => o.node.position.copyFrom(layout.guesses[i]));
+    if (this.plan.mode === 'pick') this.options.forEach((o, i) => this.placeSign(o, i));
+    else this.options.forEach((o, i) => o.node.position.copyFrom(layout.guesses[i]));
+  }
+
+  /** A Pick the signs tile sits on its board once chosen, or in its tray place across the empty hoops. */
+  private placeSign(o: { rule: Rule; node: Container }, i: number, glide = false) {
+    const slot = this.chosen.indexOf(o.rule);
+    const to = slot >= 0 ? this.layout.signs[slot] : this.layout.picks[i];
+    const scale = slot >= 0 ? BOARD_SCALE : 1;
+    this.ctx.tw.kill(o.node);
+    this.ctx.tw.kill(o.node.scale);
+    if (!glide) {
+      o.node.position.copyFrom(to);
+      o.node.scale.set(scale);
+      return;
+    }
+    void this.ctx.tw.to(o.node, { x: to.x, y: to.y }, { duration: 0.22 });
+    void this.ctx.tw.to(o.node.scale, { x: scale, y: scale }, { duration: 0.22 });
+  }
+
+  /** Tap an offered sign onto the next empty board, or tap a board's sign to take it back before sorting starts. */
+  private pickSign(rule: Rule) {
+    if (this.busy || this.finished || this.plan.mode !== 'pick') return;
+    // The signs lock at the first drop.
+    if (this.locked) return;
+    const index = this.index;
+    sfx.tick();
+    const slot = this.chosen.indexOf(rule);
+    if (slot >= 0) {
+      this.chosen[slot] = null;
+      if (this.phase === 'sort') {
+        this.phase = 'choose';
+        this.round.rules = [];
+        for (const s of this.sorters) if (s.drag) s.drag.enabled = false;
+        // Bring back only the faded tile; a chosen tile may still be gliding to its board.
+        for (const o of this.options) {
+          if (this.chosen.includes(o.rule) || o.rule === rule) continue;
+          this.ctx.tw.kill(o.node);
+          o.node.visible = true;
+          o.node.alpha = 1;
+          o.node.eventMode = 'static';
+        }
+      }
+      this.options.forEach((o, i) => o.rule === rule && this.placeSign(o, i, true));
+      return;
+    }
+    const free = this.chosen.indexOf(null);
+    if (free < 0) return;
+    this.chosen[free] = rule;
+    this.options.forEach((o, i) => o.rule === rule && this.placeSign(o, i, true));
+    if (this.chosen.includes(null)) return;
+    this.phase = 'sort';
+    this.round.rules = [...(this.chosen as Rule[])];
+    this.hinting = null;
+    this.wrongs = 0;
+    for (const o of this.options) {
+      if (this.chosen.includes(o.rule)) continue;
+      o.node.eventMode = 'none';
+      void this.ctx.tw.to(o.node, { alpha: 0 }, { duration: 0.25 }).then(() => {
+        if (this.index === index && !this.chosen.includes(o.rule)) o.node.visible = false;
+      });
+    }
+    for (const s of this.sorters) if (s.drag) s.drag.enabled = true;
+    void this.instruct();
   }
 
   update(dt: number) {
@@ -259,6 +340,11 @@ class CritterSort implements Game {
   }
 
   /** The ghost finger carries critters to hoops and the leaf mat, or taps the picture of the rule. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
     if (this.counting) {
@@ -269,6 +355,11 @@ class CritterSort implements Game {
     }
     if (this.plan.mode === 'guess') {
       const option = this.options.find((o) => o.rule === ruleToTap(this.round));
+      return option ? { tap: { on: option.node } } : null;
+    }
+    if (this.phase === 'choose') {
+      const want = this.botPick?.find((r) => !this.chosen.includes(r));
+      const option = this.options.find((o) => o.rule === want);
       return option ? { tap: { on: option.node } } : null;
     }
     const next = nextToSort(
@@ -310,9 +401,20 @@ class CritterSort implements Game {
       s.node.destroy({ children: true });
     }
     for (const o of this.options.splice(0)) o.node.destroy({ children: true });
-    this.round = this.plan.cast
-      ? makePlantRound(this.plan, this.ctx.rng, this.round?.rules.join())
-      : makeRound(this.plan, this.ctx.rng, this.round?.rules.join());
+    this.phase = 'sort';
+    this.chosen.fill(null);
+    this.botPick = null;
+    this.locked = false;
+    if (this.plan.mode === 'pick') {
+      this.round = makePickRound(this.plan, this.ctx.rng, this.offer);
+      this.offer = offerKey(this.round.options!);
+      this.phase = 'choose';
+      // Its own seeded stream, so the ghost finger's choice never shifts the game's dealing.
+      this.botPick = pickOrder(this.round, new Rng(1000 + this.index));
+    } else
+      this.round = this.plan.cast
+        ? makePlantRound(this.plan, this.ctx.rng, this.round?.rules.join())
+        : makeRound(this.plan, this.ctx.rng, this.round?.rules.join());
     this.bigPlant.removeChildren().forEach((c) => c.destroy({ children: true }));
     if (this.round.parent) {
       const { parent, petalColor } = this.round;
@@ -322,7 +424,7 @@ class CritterSort implements Game {
         pot: 5,
         big: true,
       });
-      big.scale.set(this.plan.mode === 'venn' ? 0.95 : 1.15);
+      big.scale.set(overlaps(this.plan.mode) ? 0.95 : 1.15);
       this.bigPlant.addChild(big);
     }
     for (const [i, c] of this.round.critters.entries()) {
@@ -343,11 +445,23 @@ class CritterSort implements Game {
         // The sorted diagram is a reference, leaving only the newcomer movable.
         node.eventMode = 'none';
         s.placed = placeOf(c, this.round.rules);
-      } else
+      } else {
         s.drag = draggable(node, this.ctx.tw, {
           onPick: () => sfx.tick(),
           onDrop: (x, y) => this.drop(s, x, y),
         });
+        if (this.phase === 'choose') {
+          // Critters wait while she chooses; touching one repeats the choosing line.
+          s.drag.enabled = false;
+          node.on('pointerdown', () => {
+            if (this.phase !== 'choose' || this.busy || this.finished) return;
+            // A drumming finger hears the choosing line once, not restarted on every touch.
+            if (this.clock - this.choosingSaid < 3) return;
+            this.choosingSaid = this.clock;
+            void this.instruct();
+          });
+        }
+      }
       this.sorters.push(s);
     }
     // A worked example: one critter already sits in its place in each hoop (the middle when they overlap).
@@ -356,7 +470,7 @@ class CritterSort implements Game {
       done.placed = placeOf(done.c, this.round.rules, this.ruleMode);
       if (done.drag) done.drag.enabled = false;
     }
-    if (this.plan.mode === 'guess') {
+    if (this.plan.mode === 'guess' || this.plan.mode === 'pick') {
       for (const rule of this.round.options!) {
         const node = new Container();
         node.addChild(
@@ -367,7 +481,9 @@ class CritterSort implements Game {
           ruleIcon(rule),
         );
         node.hitArea = new Rectangle(-74, -64, 148, 128);
-        onTap(node, () => void this.guess(rule), { cooldown: 350 });
+        onTap(node, () => (this.plan.mode === 'pick' ? this.pickSign(rule) : void this.guess(rule)), {
+          cooldown: 350,
+        });
         this.options.push({ rule, node });
         this.ctx.stage.addChild(node);
       }
@@ -389,6 +505,10 @@ class CritterSort implements Game {
     if (this.plan.cast)
       return this.ctx.instruct(this.plan.mode === 'venn' ? 'sort.plant.venn' : 'sort.plant.one', { a, b });
     if (this.plan.count) return this.ctx.instruct('sort.howmany.sort', { a, b });
+    if (this.plan.mode === 'pick')
+      return this.phase === 'choose'
+        ? this.ctx.instruct('sortpick.choose')
+        : this.ctx.instruct('sortpick.go', { a, b });
     if (this.plan.mode === 'butnot') return this.ctx.instruct('sort.butnot', { a, b });
     if (this.plan.newcomer) return this.ctx.instruct('sort.newcomer', { a, b });
     if (this.plan.mode === 'resort') return this.ctx.instruct(this.pass ? 'sort.again' : 'sort.first', { a });
@@ -400,10 +520,14 @@ class CritterSort implements Game {
   }
 
   private drop(s: Sorter, x: number, y: number): boolean {
-    if (this.busy || this.finished) return false;
+    if (this.busy || this.finished || this.phase === 'choose') return false;
     const at = sortPlaceAt(this.layout.centers, this.plan.mode, x, y);
     // Back on the grass: just put down again, never a mistake.
     if (at === null) return false;
+    if (!this.locked && this.plan.mode === 'pick')
+      // Her signs stay from the first drop on, so they no longer look tappable.
+      for (const o of this.options) o.node.eventMode = 'none';
+    this.locked = true;
     const right = placeOf(s.c, this.round.rules, this.ruleMode);
     if (at === right) {
       s.placed = at;
@@ -622,6 +746,15 @@ class CritterSort implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     for (const s of this.sorters) if (s.placed && s.placed !== 'out') s.node.cheer();
+    if (this.plan.mode === 'pick') {
+      const index = this.index;
+      const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
+      if (!this.sorters.some((s) => s.placed === 'both')) await this.ctx.say('sortpick.nomiddle');
+      if (this.index !== index || this.finished) return;
+      await this.ctx.say('sortpick.yay', { a, b });
+      await this.ctx.tw.wait(0.5);
+      return this.next();
+    }
     await this.ctx.say(
       this.plan.cast ? 'sort.plant.family' : this.plan.mode === 'guess' ? 'sort.guessyay' : 'sort.yay',
       { rule: RULE_WORDS[this.round.rules[0]] },

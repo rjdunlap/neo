@@ -273,6 +273,15 @@ class WordGlue implements Game {
     for (const c of this.cards) c.handle?.destroy();
   }
 
+  /** Guided first play: its demonstration tries the other card once, so the hand shows the right one. The bot's own flags are put back. */
+  showMove(): TouchIntent | null {
+    const demoTouched = this.demoTouched;
+    this.demoTouched = true;
+    const move = this.autotouch();
+    this.demoTouched = demoTouched;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     // Level 4: the ghost finger touches the grass beside the big picture, since anywhere joins it.
     if (this.big)

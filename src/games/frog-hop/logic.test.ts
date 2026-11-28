@@ -4,6 +4,7 @@ import { frogHop } from './index';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { levelsInOrder } from '../../progress/difficulty';
 import { GUIDE_CORNER } from '../../creatures/home-layout';
 import {
   ownScene,
@@ -62,9 +63,11 @@ import {
   type HopQuestion,
 } from './logic';
 
+/** The plans drawn on the nine-pad line with its own layout (level 18 lays out its short run; see missing.test.ts). */
+const LINE_PLANS = PLANS.filter((p) => !ownScene(p.mode) && p.mode !== 'missing');
 describe('Frog Hop', () => {
   it('asks questions whose start and answer are both on the pads in view', () => {
-    for (const plan of PLANS.filter((p) => !ownScene(p.mode))) {
+    for (const plan of LINE_PLANS) {
       for (let seed = 1; seed <= 300; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
         expect(qs).toHaveLength(plan.questions);
@@ -131,7 +134,7 @@ describe('Frog Hop', () => {
   });
 
   it('always has an answer on the screen for the ghost finger to tap, and it is the right one', () => {
-    for (const plan of PLANS.filter((p) => !ownScene(p.mode))) {
+    for (const plan of LINE_PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           const slot = answerSlot(plan.mode, q, q.lo);
@@ -183,7 +186,7 @@ describe('Frog Hop support', () => {
   });
 
   it('covers the whole ladder in school and rejects nonexistent descriptions', () => {
-    expect(frogHop.levels('school')).toEqual({ min: 3, max: PLANS.length });
+    expect(frogHop.levels('school')).toEqual({ min: 3, max: 15 });
     expect(frogHop.describeLevel(0)).toBeUndefined();
     expect(frogHop.describeLevel(PLANS.length + 1)).toBeUndefined();
     expect(SCRIPT['hop.ten'][0]).toContain('{k}');
@@ -329,7 +332,7 @@ describe('Frog Hop, Fraction Landings', () => {
     const fl = 10;
     expect(at('frac-match')).toBe(PLANS[fl - 1]);
     expect(at('frac-hop')).toBe(PLANS[fl - 2]);
-    expect(frogHop.levels('prek').max).toBeLessThan(fl - 1);
+    expect(levelsInOrder(frogHop.levels('prek'))).not.toContain(fl - 1);
     for (const n of ['{where}', '{hops}']) expect(SCRIPT['hop.frac'][0]).toContain(n);
     expect(SCRIPT['hop.frac.second'][0]).toContain('{size}');
     for (const n of ['{first}', '{second}', '{name}']) expect(SCRIPT['hop.frac.same'][0]).toContain(n);
@@ -376,7 +379,8 @@ describe('Frog Hop, Fraction Landings', () => {
         const flowers = Array.from({ length: plan.top + 1 }, (_, n) => n).filter((n) =>
           flowerOn(plan.mode, n),
         );
-        if (i < 2 || isFrac(plan.mode) || ownScene(plan.mode)) expect(flowers).toEqual([]);
+        if (i < 2 || isFrac(plan.mode) || ownScene(plan.mode) || plan.mode === 'missing')
+          expect(flowers).toEqual([]);
         else expect(flowers).toEqual([5, 10, 15, 20].filter((n) => n <= plan.top));
       });
     });
@@ -450,7 +454,7 @@ describe('Frog Hop, Fraction Landings', () => {
       expect(PLANS.indexOf(plan) + 1).toBe(12);
       expect(PLANS[10].mode).toBe('count-up');
       expect(frogHop.levels('school').min).toBe(3);
-      expect(frogHop.levels('prek')).toEqual({ min: 1, max: 4 });
+      expect(levelsInOrder(frogHop.levels('prek'))).toEqual([1, 2, 18, 3, 4]);
       expect(frogHop.describeLevel(12)).toContain('your way');
       // No number cards: she taps pads, and the stop at 10 is optional rather than a stage.
       expect(countsHops('your-way')).toBe(false);
@@ -643,7 +647,7 @@ describe('Scenes (slice 6)', () => {
       h: GUIDE_CORNER.h,
     });
     for (const v of [...VIEWS, ...UPRIGHT_VIEWS])
-      for (const plan of PLANS) {
+      for (const plan of LINE_PLANS) {
         // The layout takes no scene: a pad's place and hit area are the same in all four.
         const l = hopLayout(v, plan.mode, GUIDE_CORNER.w);
         const pads = l.pads.map((p) => hit(p, PAD_HIT));
@@ -677,7 +681,7 @@ describe('Scenes (slice 6)', () => {
 
   it('folds the line into two rows upright, hung up from the bottom edge, in order, with the sign and bracket clear', () => {
     for (const v of UPRIGHT_VIEWS)
-      for (const plan of PLANS) {
+      for (const plan of LINE_PLANS) {
         const l = hopLayout(v, plan.mode, GUIDE_CORNER.w);
         const what = `${plan.mode} at ${Math.round(v.w)}×${Math.round(v.h)} upright`;
         const a = l.pads.slice(0, UPRIGHT_PAD_ROW);
@@ -703,7 +707,7 @@ describe('Scenes (slice 6)', () => {
       }
     // A 768 × 1024 view has room for the sign under the shell buttons.
     const v = UPRIGHT_VIEWS[0];
-    for (const plan of PLANS)
+    for (const plan of LINE_PLANS)
       expect(hopLayout(v, plan.mode, GUIDE_CORNER.w).sign.y, plan.mode).toBeGreaterThanOrEqual(130);
   });
 });

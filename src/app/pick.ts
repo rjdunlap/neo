@@ -27,7 +27,7 @@ import type { Band } from '../progress/bands';
 import { store } from '../progress/store';
 import { RoundButton } from '../ui/buttons';
 import { PickSheet, type PickChip } from '../ui/pick-sheet';
-import type { App } from './App';
+import type { App, Origin } from './App';
 import { launchDiscovery, pickMemory } from './discovery';
 import { titleOf, type MixHost } from './mix';
 
@@ -65,7 +65,7 @@ const keyToScope = (key: string): PickScope => {
 };
 
 /**
- * Pick for me (D7a) on a home spot: the Pick button, the chooser sheet and the pick card over the place. It reads the save and
+ * Pick for me (D7a), opened from Home's lucky dip (2026-11-28; the home spots it began on retired with classic/): the Pick button, the chooser sheet and the pick card over the place. It reads the save and
  * writes nothing; the scope she chose and the game last opened from a pick live in `pickMemory`. Play opens the game exactly as
  * the Next game tile does (`launchDiscovery`), so its own card is the introduction and Back there returns here.
  */
@@ -85,6 +85,8 @@ export class PickHost {
     private readonly leave: (go: () => void) => void,
     /** The home spot's mix (D7b): present only where Little surprises is, so Shuffle appears only there. */
     private readonly mix: MixHost | null = null,
+    /** Where the picked game's Back and Home return: Home's yard, where the lucky dip stands (2026-11-28). */
+    private readonly origin: Origin = { home: true },
   ) {
     this.button = new RoundButton(pickIcon(), swatch.white, 50, () => this.open());
     this.button.visible = this.sources().length > 0;
@@ -238,7 +240,7 @@ export class PickHost {
     this.launching = true;
     pickMemory.played(store.data, mod.id);
     voice.stop();
-    this.leave(() => launchDiscovery(this.app.go, mod.id, this.band, { place: this.band }));
+    this.leave(() => launchDiscovery(this.app.go, mod.id, this.band, this.origin));
   }
 
   resize(v: View) {

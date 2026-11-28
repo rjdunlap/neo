@@ -22,7 +22,6 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
         kit.store.entry.startBand = 'lap';
         kit.store.data.profile.band = 'lap';
         kit.store.data.settings.howToCards = true;
-        kit.store.data.settings.placeLayout = 'path';
         neo.go.place('lap');
       });
     // Scrolled to the start first, and a frame later read where the spot was drawn (hit tests use the last rendered frame).
@@ -32,12 +31,14 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       });
       await page.waitForTimeout(120);
       return page.evaluate(() => {
-        const p = neo.scene.mixSpot.node.toGlobal({ x: 0, y: -70 });
+        const p = (({ x, y, width, height }) => ({ x: x + width / 2, y: y + height / 2 }))(
+          neo.scene.mixSpot.node.getBounds(),
+        );
         return [p.x, p.y];
       });
     };
     const holdSpot = async () => {
-      await scene('PlaceScene');
+      await scene('ExploreScene');
       await page.waitForTimeout(300);
       const [x, y] = await spot();
       const ev = (type) =>
@@ -180,7 +181,7 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       const c = neo.scene.helpCard.body.children[0];
       kit.tapOn(c.children.find((b) => b.radius === 52));
     });
-    await scene('PlaceScene');
+    await scene('ExploreScene');
     assert.equal(await live(), null);
     await page.waitForTimeout(300);
     {
@@ -197,10 +198,9 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       await selectPlayer(first);
       kit.store.data.profile.band = 'lap';
       kit.store.data.settings.howToCards = true;
-      kit.store.data.settings.placeLayout = 'path';
       neo.go.place('lap');
     });
-    await scene('PlaceScene');
+    await scene('ExploreScene');
     await page.waitForTimeout(300);
     {
       const [x, y] = await spot();

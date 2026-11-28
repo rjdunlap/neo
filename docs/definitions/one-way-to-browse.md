@@ -6,7 +6,7 @@
 
 From the [adversarial UX review](../reviews/UX-REVIEW-2026-11-09.md#5-five-ways-to-browse-one-catalog-and-their-names-disagree), finding 5 and recommendation U6: Explore offers five ways into one catalog and their names disagree. The review asked to fold the All games card into the Arcade, add a "for my age" topic that opens first, show the page count, and say on an empty Favorites how the heart works. This page settles where that fold meets what All games does today.
 
-**Where it shows.** Only on tablets and computers. On a phone the root is Today's six (`App.phoneOnly`), Explore and the Arcade are not reached, and the six's All games button is not drawn ([phone-portrait](phone-portrait.md)). So this is not phone work, and it sits after the phone and playtest lines in READY.
+**Where it shows.** Only on tablets and computers. On a phone the root was Today's six (until 2026-11-28, when a phone gained Home), Explore and the Arcade are not reached, and the six's All games button is not drawn ([phone-portrait](phone-portrait.md)). So this is not phone work, and it sits after the phone and playtest lines in READY.
 
 ## What is there today (`origin/main` at `6f5cae0e`)
 

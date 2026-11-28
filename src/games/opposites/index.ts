@@ -907,6 +907,11 @@ class Opposites implements Game {
    * The ghost finger on the how-to card: tap the picture (it flips), the one named, the opposite, or each pair in turn. At
    * level 6 it touches the grass beside the big card, since anywhere flips it.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
     if (this.plan.big)

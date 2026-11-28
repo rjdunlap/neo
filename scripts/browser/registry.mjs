@@ -137,7 +137,6 @@ import { createSuite as createArcadeHome } from './suites/home-arcade.mjs';
 import { createSuite as create55 } from './suites/welcome-flow.mjs';
 import { createSuite as create56 } from './suites/hatching-and-map.mjs';
 import { createSuite as create57 } from './suites/grown-ups.mjs';
-import { createSuite as create58 } from './suites/subject-places.mjs';
 import { createSuite as create59 } from './suites/patterns.mjs';
 import { createSuite as create60 } from './suites/memory.mjs';
 import { createSuite as create61 } from './suites/trace-round.mjs';
@@ -197,7 +196,6 @@ import { createSuite as create113 } from './suites/look-it-up-play.mjs';
 import { createSuite as create114 } from './suites/finger-demos.mjs';
 import { createSuite as create115 } from './suites/conga-touch-play.mjs';
 import { createSuite as create116 } from './suites/room-play.mjs';
-import { createSuite as create117 } from './suites/island-shelf.mjs';
 import { createSuite as create118 } from './suites/creations-room.mjs';
 import { createSuite as create119 } from './suites/lands-tour.mjs';
 import { createSuite as create120 } from './suites/journal-play.mjs';
@@ -215,7 +213,6 @@ import { createSuite as create131 } from './suites/discovery-my-mix.mjs';
 import { createSuite as create132 } from './suites/discovery-mix.mjs';
 import { createSuite as create133 } from './suites/picnic-pantry-play.mjs';
 import { createSuite as createDailyMix } from './suites/discovery-daily-mix.mjs';
-import { createSuite as createDiscoveryPick } from './suites/discovery-pick.mjs';
 import { createSuite as create134 } from './suites/word-code-play.mjs';
 import { createSuite as createMarketDays } from './suites/market-days-play.mjs';
 import { createSuite as createTwoTablets } from './suites/two-tablets-play.mjs';
@@ -353,6 +350,7 @@ export const SUITES = [
   'athome',
   'talkcards',
   'critternot',
+  'crittergate',
   'feelpoke',
   'smoke',
   'phone',
@@ -457,7 +455,6 @@ export const SUITES = [
   'fingerdemo',
   'room',
   'lands',
-  'island',
   'creations',
   'journal',
   'clap',
@@ -671,7 +668,6 @@ export const ALL_SUITES = [
   'fingerdemo',
   'room',
   'lands',
-  'island',
   'creations',
   'journal',
   'clap',
@@ -698,6 +694,7 @@ export function createChecks(fixture) {
     'ribbonPlay',
     'feelingsPoke',
     'critterNotEntry',
+    'critterBeTheGate',
     'marbleJumpPlay',
     'logRollPlay',
     'snowballMergePlay',
@@ -767,7 +764,6 @@ export function createChecks(fixture) {
     'grownUps',
     'atHome',
     'talkCards',
-    'subjectPlaces',
     'patterns',
     'memory',
     'traceRound',
@@ -842,7 +838,6 @@ export function createChecks(fixture) {
     'fingerDemos',
     'congaTouchPlay',
     'roomPlay',
-    'islandShelf',
     'creationsRoom',
     'landsTour',
     'journalPlay',
@@ -859,7 +854,6 @@ export function createChecks(fixture) {
     'discoveryMyMix',
     'discoveryMix',
     'discoveryDailyMix',
-    'discoveryPick',
   ])
     shared[name] = (...args) => checks[name](...args);
   install(create0(shared));
@@ -922,7 +916,6 @@ export function createChecks(fixture) {
   install(create55(shared));
   install(create56(shared));
   install(create57(shared));
-  install(create58(shared));
   install(create59(shared));
   install(create60(shared));
   install(create61(shared));
@@ -985,7 +978,6 @@ export function createChecks(fixture) {
   install(create114(shared));
   install(create115(shared));
   install(create116(shared));
-  install(create117(shared));
   install(create118(shared));
   install(create119(shared));
   install(create120(shared));
@@ -1003,7 +995,6 @@ export function createChecks(fixture) {
   install(create132(shared));
   install(create133(shared));
   install(createDailyMix(shared));
-  install(createDiscoveryPick(shared));
   install(create134(shared));
   install(createMarketDays(shared));
   install(createTwoTablets(shared));
@@ -1098,11 +1089,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'clap' && process.env.CLAP_LEVELS !== undefined)
     selectValue(process.env.CLAP_LEVELS, ['6', '8', '9'], 'CLAP_LEVELS');
   if (suite === 'discovery' && process.env.DISCOVERY_ONLY !== undefined)
-    selectValue(
-      process.env.DISCOVERY_ONLY,
-      ['direct-next', 'mix', 'my-mix', 'daily', 'pick'],
-      'DISCOVERY_ONLY',
-    );
+    selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix', 'daily'], 'DISCOVERY_ONLY');
   const completed = [];
   const { page, errors, ready, pickFirst, scene } = fixture;
   const {
@@ -1114,6 +1101,7 @@ export async function runSuite(suite, fixture) {
     ribbonPlay,
     feelingsPoke,
     critterNotEntry,
+    critterBeTheGate,
     marbleJumpPlay,
     logRollPlay,
     snowballMergePlay,
@@ -1183,7 +1171,6 @@ export async function runSuite(suite, fixture) {
     grownUps,
     atHome,
     talkCards,
-    subjectPlaces,
     patterns,
     memory,
     traceRound,
@@ -1272,7 +1259,6 @@ export async function runSuite(suite, fixture) {
     fingerDemos,
     congaTouchPlay,
     roomPlay,
-    islandShelf,
     creationsRoom,
     landsTour,
     journalPlay,
@@ -1289,7 +1275,6 @@ export async function runSuite(suite, fixture) {
     discoveryMyMix,
     discoveryMix,
     discoveryDailyMix,
-    discoveryPick,
     storyWeaverPlay,
     meltFreezePlay,
     stirSeePlay,
@@ -1365,7 +1350,6 @@ export async function runSuite(suite, fixture) {
 
   if (suite === 'all' || suite === 'world') {
     await hatchingAndMap();
-    await subjectPlaces();
   } else if (suite === 'friends') await friendsFlow();
   else if (suite === 'dress') await dressFlow();
   else if (suite === 'home') await homeFlow();
@@ -1384,13 +1368,15 @@ export async function runSuite(suite, fixture) {
       neo.go.start();
     });
     await pickFirst();
-    await scene('MapScene');
+    // Since the cutover (#2336) the hub is Home's yard, or the day's six first on a phone (`src/rework.ts`).
+    await page.waitForFunction(
+      () => ['HomeScene', 'DailyScene'].includes(neo.scene.constructor.name) && !neo.switching,
+    );
   }
   if (suite === 'discovery')
     await (
-      { mix: discoveryMix, 'my-mix': discoveryMyMix, daily: discoveryDailyMix, pick: discoveryPick }[
-        process.env.DISCOVERY_ONLY
-      ] ?? discoveryDirectNext
+      { mix: discoveryMix, 'my-mix': discoveryMyMix, daily: discoveryDailyMix }[process.env.DISCOVERY_ONLY] ??
+      discoveryDirectNext
     )();
   if (suite === 'all' || suite === 'buddies') await buddiesPlay();
   if (suite === 'all' || suite === 'singalong') await singBarnPlay();
@@ -1526,6 +1512,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'grownups' || suite === 'athome') await atHome();
   if (suite === 'all' || suite === 'grownups' || suite === 'talkcards') await talkCards();
   if (suite === 'critternot') await critterNotEntry();
+  if (suite === 'crittergate') await critterBeTheGate();
   if (suite === 'feelpoke') await feelingsPoke();
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
@@ -1644,7 +1631,6 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'fingerdemo') await fingerDemos();
   if (suite === 'all' || suite === 'room') await roomPlay();
   if (suite === 'all' || suite === 'lands') await landsTour();
-  if (suite === 'all' || suite === 'island') await islandShelf();
   if (suite === 'all' || suite === 'creations') await creationsRoom();
   if (suite === 'all' || suite === 'journal') await journalPlay();
   if (suite === 'all' || (suite === 'clap' && !process.env.CLAP_LEVELS)) await clapPlay();

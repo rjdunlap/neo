@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CRITTERS } from '../art/critter';
-import { computeView } from '../engine/view';
+import { computeView, NO_INSETS } from '../engine/view';
 import { GAMES } from '../games/registry';
 import { UPRIGHT_SCREENS } from '../games/upright-check';
 import { BANDS, bandRank, lowestBand, playBand, type Band } from '../progress/bands';
@@ -18,6 +18,7 @@ import {
   MAP_RADIUS,
   mapButtons,
   mapLayout,
+  mapSpotScale,
   olderIn,
   overlaps,
   petCorner,
@@ -271,5 +272,23 @@ describe('the map', () => {
           );
       }
     }
+  });
+
+  it('in the main app held upright, five rows whose spots grow on a tall phone and still never meet (2026-11-28)', () => {
+    for (const view of [...Object.values(UPRIGHT_SCREENS), computeView(768, 1024, NO_INSETS, true)]) {
+      const k = mapSpotScale(view, true);
+      expect(k).toBeLessThanOrEqual(1.2);
+      const spots = Object.entries(mapLayout(view, true));
+      expect(spots.map(([id]) => id).sort()).toEqual([...LAND_IDS, 'home', 'picnic'].sort());
+      for (const [i, [id, s]] of spots.entries()) {
+        expect(s.x - 92 * k >= -1 && s.x + 92 * k <= view.w + 1, `${id} on screen`).toBe(true);
+        for (const [other, t] of spots.slice(i + 1))
+          expect(Math.hypot(s.x - t.x, s.y - t.y), `${id} ${other}`).toBeGreaterThanOrEqual(
+            2 * MAP_RADIUS * k,
+          );
+      }
+    }
+    expect(mapSpotScale({ w: 1024, h: 768 }, true)).toBe(1);
+    expect(mapSpotScale({ w: 768, h: 1600 }, false)).toBe(1);
   });
 });

@@ -587,6 +587,30 @@ class Roundup implements Game {
     this.autoSpot.position.set(p.x, p.y);
   }
 
+  /**
+   * Guided first play: in tap mode the animal to tap; when steering, a stroke from the animal toward its pen's gate (the bot
+   * steers a moving spot instead, which only makes sense in its own loop); then the bell.
+   */
+  showMove(): TouchIntent | null {
+    if (this.busy || this.finished) return null;
+    const animal = this.animals.find((a) => a.state === 'loose' && this.needs(a) >= 0);
+    if (animal && this.plan.mode === 'tap') return { tap: { on: animal.critter, y: -120 } };
+    if (animal && animal.critter.parent) {
+      const r = this.pens[this.needs(animal)].rect;
+      return {
+        trace: { on: animal.critter },
+        via: [{ on: animal.critter.parent, x: r.x, y: r.y + r.h / 2 }],
+        receiver: this.touch,
+      };
+    }
+    if (
+      usesBell(this.plan) &&
+      (this.bellRight() || (this.herd.fair && !this.animals.some((a) => a.state === 'loose')))
+    )
+      return { tap: { on: this.bell } };
+    return null;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     // Start with the animal nearest its gate so the finger does not sweep a nearer spare in first.

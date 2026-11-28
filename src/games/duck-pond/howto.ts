@@ -61,6 +61,11 @@ export const HOW_TO: GameHowTo = {
       to: 17,
       text: 'Ducks peek out from reeds and lily leaves all over the pond. First tap "a few" (two dots) or "lots" (many dots); either is fine. Then tap each duck as you count: it waves, gets a ring and the number is said. Tap the lily pad with how many there are.',
     },
+    {
+      from: 18,
+      to: 18,
+      text: 'The bridge splits the pond into two sides. Tap the side with more ducks, or the button with two matching sets of dots if both sides have the same. In the first round the ducks pair up across the bridge before the question, to show how.',
+    },
   ],
   finish: [
     { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
@@ -74,10 +79,15 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
     { from: 14, to: 15, text: 'The round ends when the answer is right.' },
-    { from: 17, to: 17, text: 'The round ends when the answer is right.' },
+    { from: 17, to: 18, text: 'The round ends when the answer is right.' },
     { from: 16, to: 16, text: 'The round ends when every way to share the ducks has a card.' },
   ],
   note: [
+    {
+      from: 18,
+      to: 18,
+      text: 'She compares by matching one to one, not by counting: on a wrong answer the ducks line up in pairs across the bridge, each pair gets a ring, and the ducks with no partner hop and glow. After two misses the right side (or the same button) glows. From the third question the ducks start scattered, so a longer-looking side is not always the bigger one.',
+    },
     {
       from: 17,
       to: 17,

@@ -29,11 +29,20 @@ export interface PatternPlan {
   stairs?: boolean;
   /** Level 19, "Up and down": the steps a stair train may take (positive up, negative down), so stacks may go down and by two. */
   stackSteps?: readonly number[];
+  /** Level 21, *Add three, add four*: she names the step first (`rule`), then fills the last car. */
+  addRule?: boolean;
   name: string;
 }
 
 /** Level 20's steps: the amounts the numbered cars count by when the first car is any number. */
 const START_STEPS = [2, 3, 4, 5, 10] as const;
+
+/** Level 21's steps: the rule is "add 3" or "add 4". */
+export const ADD_STEPS = [3, 4] as const;
+/** Level 21's third rule chip: a near miss beside 3 and 4. */
+export const ADD_NEAR = [2, 5] as const;
+/** Level 21's starts: any number from 1 to 20, so the cars stay under 41. */
+export const ADD_START = { min: 1, max: 20 } as const;
 
 /** Level 19's steps: one or two, up or down. */
 const STACK_STEPS = [-2, -1, 1, 2] as const;
@@ -76,6 +85,13 @@ export const PATTERN_PLANS: PatternPlan[] = [
     numberSteps: START_STEPS,
     startAnywhere: true,
     name: 'Start anywhere: numbered cars that do not start at the step',
+  },
+  {
+    pattern: [],
+    kind: 'number',
+    numberSteps: ADD_STEPS,
+    addRule: true,
+    name: 'Add three, add four: find the rule, then the next number',
   },
 ];
 
@@ -135,6 +151,7 @@ export interface PatternSaid {
     | 'pattern.whyStack'
     | 'pattern.whyStep'
     | 'pattern.whyNumber'
+    | 'pattern.whyAdd'
     | 'pattern.whyPair'
     | 'pattern.oddWhy';
   vars: Record<string, string | number>;
@@ -156,6 +173,8 @@ export function patternSaid(
     const step = sequence[1] - sequence[0];
     return { key: 'pattern.whyStep', vars: { how: stepWords(step), list: sequence.join(', ') } };
   }
+  if (plan.addRule)
+    return { key: 'pattern.whyAdd', vars: { step: sequence[1] - sequence[0], list: sequence.join(', ') } };
   if (plan.kind === 'number') {
     return {
       key: 'pattern.whyNumber',
@@ -278,6 +297,41 @@ function startAnywhereTrain(
   return { sequence, targets: [target], choices: [rng.shuffle([answer, ...wrong])] };
 }
 
+/** Level 21's train: six cars, the same as level 20, so the numbers stay large on a phone. */
+export const ADD_CARS = 6;
+
+/** Level 21's rule question: the step the cars add, and the three jump chips on offer (+3 and +4 always among them). */
+export interface AddRule {
+  step: number;
+  choices: number[];
+}
+
+/**
+ * Level 21: six numbered cars that add 3 or 4 each time from a start of 1 to 20, the last car empty. Before the number,
+ * she names the rule on one of three jump chips: 3 and 4 are always offered (so the chips never give it away) and the
+ * third is 2 or 5. With steps of 3 and 4, "the last car plus the other step" is always the answer one off, so it is
+ * always a wrong number on offer; the second is the car before, one step too far, or one off the other way.
+ */
+function addRuleTrain(
+  steps: readonly number[],
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][]; rule: AddRule } {
+  const step = rng.pick(steps);
+  const start = rng.int(ADD_START.min, ADD_START.max);
+  const sequence = Array.from({ length: ADD_CARS }, (_, i) => start + step * i);
+  const answer = sequence[ADD_CARS - 1];
+  const last = sequence[ADD_CARS - 2];
+  const otherStep = ADD_STEPS[0] + ADD_STEPS[1] - step;
+  const wrongStep = last + otherStep;
+  const second = rng.pick([last, answer + step, 2 * answer - wrongStep]);
+  const rule = { step, choices: rng.shuffle([ADD_STEPS[0], ADD_STEPS[1], rng.pick(ADD_NEAR)]) };
+  return { sequence, targets: [ADD_CARS - 1], choices: [rng.shuffle([answer, wrongStep, second])], rule };
+}
+
+/** The rule hint counts on across the first gap: from the first car, each number up to the second ("5, 6, 7"). */
+export const countOn = (from: number, step: number): number[] =>
+  Array.from({ length: step }, (_, i) => from + i + 1);
+
 /** A color-and-shape train offers all four pieces of its two colors and two shapes. */
 export const PAIR_CHOICES = 4;
 /** A color-and-shape train's cars: two full repeats of four and the car to fill. */
@@ -378,7 +432,9 @@ export function buildTrain(
   hidden?: number;
   family?: number;
   shown?: number[];
+  rule?: AddRule;
 } {
+  if (plan.addRule && plan.numberSteps) return addRuleTrain(plan.numberSteps, rng);
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng, plan.startAnywhere);
   if (plan.stairs) return stairsTrain(rng, plan.stackSteps);
   if (plan.kind === 'pair') return pairTrain(rng);

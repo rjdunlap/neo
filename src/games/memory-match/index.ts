@@ -10,11 +10,18 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clockFace, fractionFace, pictureFace } from './art';
+import { clockFace, fractionFace, pictureFace, shareFace, shareSplit, totalFace } from './art';
 import {
   selectFractionSquares,
   type FractionSquare,
   selectTimes,
+  selectSums,
+  countAcross,
+  groupsLabel,
+  type TotalSum,
+  compareShares,
+  shareOf,
+  SHARES,
   DOT_RADIUS,
   selectDotLayouts,
   selectPictures,
@@ -37,7 +44,7 @@ import {
 import { rangeFor } from '../../progress/difficulty';
 import { courseBest, courseMinimum, courseTables, isMemoryCourse, type Table } from './course';
 
-type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
+type CardView = { node: Container; front: Container; back: Graphics; matched: boolean; split?: Graphics };
 class MemoryMatch implements Game {
   cards: MemoryCard[];
   readonly views: CardView[] = [];
@@ -48,6 +55,7 @@ class MemoryMatch implements Game {
   readonly dots: readonly DotSpot[][];
   readonly squares: readonly FractionSquare[];
   readonly times: readonly number[];
+  readonly sums: readonly TotalSum[];
   // A couch challenge course: fixed tables played in a row, scored by cards turned over (docs/DESIGN.md "Adding a challenge course").
   private readonly course: { tables: Table[]; par: number[]; minimum: number } | null = null;
   private index = 0;
@@ -110,6 +118,7 @@ class MemoryMatch implements Game {
     }
     this.dots = this.plan.mode === 'numbers' ? selectDotLayouts(this.plan.pairs, ctx.rng) : [];
     this.squares = this.plan.mode === 'fractions' ? selectFractionSquares(ctx.rng) : [];
+    this.sums = this.plan.mode === 'totals' ? selectSums(ctx.rng) : [];
     this.remaining = this.plan.pairs;
     ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
     this.ring.eventMode = 'none';
@@ -125,6 +134,12 @@ class MemoryMatch implements Game {
       const node = new Container();
       const front = new Container();
       front.addChild(tile(140, 140, 'white'), this.face(card));
+      // Level 14: the first card of each pair carries a hidden overlay cutting its pieces into its partner's.
+      const split = this.plan.mode === 'shares' && card.side === 0 ? shareSplit(card.pair) : undefined;
+      if (split) {
+        split.visible = false;
+        front.addChild(split);
+      }
       front.visible = false;
       const back = tile(140, 140, 'purple');
       back.poly(starPoints(30, 14)).fill(swatch.purple.light);
@@ -132,12 +147,14 @@ class MemoryMatch implements Game {
       node.hitArea = new Rectangle(-70, -70, 140, 140);
       onTap(node, () => void this.choose(i), { cooldown: 180 });
       this.ctx.stage.addChild(node);
-      this.views.push({ node, front, back, matched: false });
+      this.views.push({ node, front, back, matched: false, split });
     });
   }
 
   private face(card: MemoryCard): Container {
     if (this.plan.mode === 'clocks') return clockFace(this.times[card.pair], card.side);
+    if (this.plan.mode === 'totals') return totalFace(this.sums[card.pair], card.side);
+    if (this.plan.mode === 'shares') return shareFace(shareOf(card));
     if (this.plan.mode === 'pictures') return pictureFace(this.pictures[card.pair]);
     if (this.plan.mode === 'fractions') {
       const amount = fraction(card.pair)!;
@@ -171,6 +188,50 @@ class MemoryMatch implements Game {
     return shapePath(new Graphics(), shape, 43)
       .fill(swatch[color].fill)
       .stroke({ width: 4, color: swatch[color].line });
+  }
+
+  private labelOf(i: number): string {
+    return cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures, this.times, this.sums);
+  }
+
+  /**
+   * Level 13's nonmatch speech, the same for exploring and a known miss (only the boing differs): a groups card names
+   * its two groups and their total, so a groups card and the wrong number say "two and three make five, not seven".
+   * Two numbers fall back to the ordinary line. False when this is not level 13 or both cards are numbers.
+   */
+  private explainTotals(first: number, second: number): boolean {
+    if (this.plan.mode !== 'totals') return false;
+    const [a, b] = [this.cards[first], this.cards[second]];
+    if (a.side && b.side) return false;
+    const word = (n: number) => numberWord(n - 1);
+    const [groups, other] = a.side ? [b, a] : [a, b];
+    const sum = this.sums[groups.pair],
+      that = this.sums[other.pair];
+    if (other.side)
+      void this.ctx.say('memory.total-mix', {
+        groups: groupsLabel(sum),
+        total: word(sum.total),
+        other: word(that.total),
+      });
+    else
+      void this.ctx.say('memory.total-two', {
+        groups: groupsLabel(sum),
+        total: word(sum.total),
+        others: groupsLabel(that),
+        other: word(that.total),
+      });
+    return true;
+  }
+
+  /**
+   * Level 14's overlay: shown on a matched pair's first card (so a half stays visibly two quarters) and on the hinted
+   * pair's first card while its glow lasts. It sits on the card's face, so it shows the next time that card is turned.
+   */
+  private drawSplits() {
+    const hinted = this.hintAt === null ? -1 : this.cards[this.hintAt].pair;
+    this.views.forEach((v, i) => {
+      if (v.split) v.split.visible = v.matched || this.cards[i].pair === hinted;
+    });
   }
 
   /** Done with the round: for a course, only after its last table (between tables the cards are dealt again). */
@@ -243,6 +304,12 @@ class MemoryMatch implements Game {
   }
 
   start() {
+    // Level 13's instruction names its pair count, so it stays on device speech and needs no rendered clip.
+    if (this.plan.mode === 'totals')
+      return void this.ctx.instruct('memory.total', { count: numberWord(this.plan.pairs - 1) });
+    // Level 14's lines all carry slots too, so it also stays on device speech.
+    if (this.plan.mode === 'shares')
+      return void this.ctx.instruct('memory.share', { count: numberWord(this.plan.pairs - 1) });
     if (this.course) {
       this.report();
       void this.ctx.instruct('memory.start');
@@ -266,7 +333,7 @@ class MemoryMatch implements Game {
   private async choose(i: number) {
     const view = this.views[i];
     if (this.locked || view.matched || this.remaining === 0) return;
-    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures, this.times);
+    const contents = this.labelOf(i);
     if (this.first === i) {
       void this.ctx.say('memory.card', { card: contents });
       return;
@@ -301,9 +368,19 @@ class MemoryMatch implements Game {
         this.drawBoard();
       }
       sfx.sparkle();
-      void this.ctx.say(this.plan.mode === 'clocks' ? 'memory.clock-pair' : 'memory.pair-card', {
-        card: contents,
-      });
+      this.drawSplits();
+      if (this.plan.mode === 'shares')
+        void this.ctx.say('memory.share-pair', { first: this.labelOf(first), second: contents });
+      else if (this.plan.mode === 'totals') {
+        const sum = this.sums[this.cards[i].pair];
+        void this.ctx.say('memory.total-pair', {
+          groups: groupsLabel(sum),
+          total: numberWord(sum.total - 1),
+        });
+      } else
+        void this.ctx.say(this.plan.mode === 'clocks' ? 'memory.clock-pair' : 'memory.pair-card', {
+          card: contents,
+        });
       await this.ctx.tw.wait(0.35);
     } else {
       const known = knownMismatch(this.cards, first, i, this.seen);
@@ -312,10 +389,19 @@ class MemoryMatch implements Game {
         this.wrong++;
         sfx.boing();
       }
-      void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
-        first: cardLabel(this.plan.mode, this.cards[first], this.letters, this.pictures, this.times),
-        second: contents,
-      });
+      if (this.plan.mode === 'shares') {
+        // The same line for exploring and a known miss (only the boing differs): which of the two shades more.
+        const more = compareShares(shareOf(this.cards[first]), shareOf(this.cards[i])) > 0 ? first : i;
+        void this.ctx.say('memory.share-mix', {
+          first: this.labelOf(first),
+          second: contents,
+          bigger: this.labelOf(more),
+        });
+      } else if (!this.explainTotals(first, i))
+        void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
+          first: this.labelOf(first),
+          second: contents,
+        });
       await this.ctx.tw.wait(1.2);
       a.front.visible = view.front.visible = false;
       a.back.visible = view.back.visible = true;
@@ -342,8 +428,24 @@ class MemoryMatch implements Game {
                   ? `on ${Math.floor(time / 60) || 12}`
                   : `halfway between ${Math.floor(time / 60) || 12} and ${(Math.floor(time / 60) % 12) + 1}`,
             });
+          } else if (this.plan.mode === 'totals') {
+            // Both cards of a pair share its sum: count across its two groups to reach the number.
+            const sum = this.sums[this.cards[partner].pair];
+            void this.ctx.say('memory.total-hint', {
+              groups: groupsLabel(sum),
+              count: countAcross(sum.total),
+              total: numberWord(sum.total - 1),
+            });
+          } else if (this.plan.mode === 'shares') {
+            const [coarse, fine] = SHARES[this.cards[partner].pair];
+            void this.ctx.say('memory.share-hint', {
+              card: this.labelOf(partner),
+              coarse: coarse.name,
+              fine: fine.name,
+            });
           } else void this.ctx.say('memory.hint');
           this.drawHint();
+          this.drawSplits();
         }
       }
     }

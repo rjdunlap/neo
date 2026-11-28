@@ -1,8 +1,8 @@
 import { createTestContext } from '../test-browser.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
-// The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
-const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', url).href : url);
+// One page since RW08's cutover (2026-11-28): every suite drives the root. (`classic/` used to be the island game.)
+const islandUrl = (url) => url;
 
 export async function createFixture(browser, suite) {
   const output = `test-results/browser/${suite}`;
@@ -48,7 +48,10 @@ export async function createFixture(browser, suite) {
     (suite === 'villageplanner' && process.env.VILLAGE_PLANNER_PHONE === '1') ||
     (suite === 'fourth' && process.env.FOURTH_ONLY === 'song14') ||
     (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY)) ||
-    (suite === 'robot' && process.env.DRIVE_ONLY === '1')
+    (suite === 'robot' && ['1', '17'].includes(process.env.DRIVE_ONLY)) ||
+    (suite === 'expansion' && process.env.EXPANSION_ONLY === 'storygrow') ||
+    // A touch phone, so an upright-ready level lays out on the upright 768 × 1024 area.
+    (suite === 'woods' && process.env.WOODS_TOUCH === '1')
       ? { hasTouch: true, isMobile: true }
       : {}),
   });
@@ -72,8 +75,18 @@ export async function createFixture(browser, suite) {
       });
       await frame();
     };
+    /** Waits for a scene by class name; a subclass counts (at the root a land is a `LocationScene`, which is a `LandScene`). */
     const scene = async (name) => {
-      await page.waitForFunction((name) => neo.scene.constructor.name === name && !neo.switching, name);
+      await page.waitForFunction((name) => {
+        if (neo.switching) return false;
+        for (
+          let p = Object.getPrototypeOf(neo.scene);
+          p && p !== Object.prototype;
+          p = Object.getPrototypeOf(p)
+        )
+          if (p.constructor.name === name) return true;
+        return false;
+      }, name);
       await frame();
     };
     /** The first card on "Who's playing?": a tap opens the island as that person. */

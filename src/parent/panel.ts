@@ -25,7 +25,6 @@ import {
   ageCopy,
   bandSmall,
   bandWhere,
-  findingCopy,
   friendHeading,
   startCopy,
   playingCopy,
@@ -77,7 +76,6 @@ export function openParentPanel(
 ) {
   if (current) return;
   const playing = playingCopy(app);
-  const finding = findingCopy(app);
   const start = startCopy(app);
   const openedFor = store.activeId;
   const root = document.createElement('div');
@@ -160,16 +158,6 @@ export function openParentPanel(
         <select id="p-start"><option value="explore">${esc(start.explore)}</option><option value="six">${esc(start.six)}</option></select>
       </div>
       <p class="muted">${esc(start.note)}</p>
-${
-  finding
-    ? `
-      <div class="parent__row">
-        <label for="p-layout">${esc(finding.label)}</label>
-        <select id="p-layout"><option value="path">Swiping path (original)</option><option value="subjects">Subject cards (try on iPad)</option></select>
-      </div>
-      <p class="muted">${esc(finding.note)}</p>`
-    : ''
-}
 
       <h2>Sound</h2>
       <p class="muted">Kept for each player.</p>
@@ -237,7 +225,6 @@ ${
   const brief = $<HTMLInputElement>('#p-brief');
   const intro = $<HTMLInputElement>('#p-intro');
   const words = $<HTMLInputElement>('#p-words');
-  const layout = root.querySelector<HTMLSelectElement>('#p-layout');
   const startView = $<HTMLSelectElement>('#p-start');
   const volume = $<HTMLInputElement>('#p-volume');
   const speechBox = $<HTMLInputElement>('#p-speech');
@@ -288,7 +275,6 @@ ${
     year.value = birth ? String(birth.year) : '';
     $('[data-age]').textContent = ageNote();
     $('[data-follow]').toggleAttribute('hidden', startBand === null);
-    if (layout) layout.value = d.settings.placeLayout;
     startView.value = d.settings.startView;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
@@ -432,10 +418,6 @@ ${
   });
   startView.addEventListener('change', () => {
     store.data.settings.startView = startView.value === 'six' ? 'six' : 'explore';
-    store.save();
-  });
-  layout?.addEventListener('change', () => {
-    store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path';
     store.save();
   });
   volume.addEventListener('input', () => {

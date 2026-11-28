@@ -33,6 +33,11 @@ export const VOICE = {
   ],
   'tangram.home': ['Finish the {picture}! One shape is missing. Move it onto its shadow.'],
   'tangram.home-help': ['The glowing shadow finishes the {picture}. Move the shape onto it.'],
+  'tangram.pick': ['Finish the {picture}! One shape is missing. Which one fits its shadow? Move it there.'],
+  'tangram.pick-try': [
+    "That shape does not fit the {picture}. Look at the shadow's edges and try the other one.",
+  ],
+  'tangram.pick-help': ['This shape finishes the {picture}. Move it onto the glowing shadow.'],
   'tangram.try': ['Try another shape or turn. Look at the edges of the shadow.'],
   'tangram.help': ['I turned this shape for you. Move it onto the glowing place.'],
   'tangram.done': ['Your {picture} is ready!'],

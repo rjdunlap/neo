@@ -711,23 +711,16 @@ html.turning .playtest {
   -webkit-user-select: text;
 }
 
-/* The root page's way to the island game at classic/ (src/rework.ts), plain HTML over the canvas. */
-.classic-link {
-  position: fixed;
-  /* Below Home's grown-ups' gear (52px at 12px from the top) until RW08's cutover removes the link. */
-  top: calc(var(--safe-top) + 76px);
-  right: calc(var(--safe-right) + 12px);
-  /* A picture door (RW14 slice 7), not a text pill: it squashes on touch-down like the canvas buttons. */
-  display: block;
-  line-height: 0;
-  transform-origin: 50% 100%;
-  transition: transform 0.18s cubic-bezier(0.3, 1.8, 0.5, 1);
-  -webkit-tap-highlight-color: transparent;
-}
-.classic-link[hidden] {
-  display: none;
-}
-.classic-link:active {
-  transform: scale(1.07, 0.86);
-  transition-duration: 0.05s;
+/* A plain-HTML piece the PaperSkin (src/ui/paper-dom.ts) has drawn as paper: the picture is its background, shadow and
+   outline, so the CSS ones give way while sizes stay as they were. */
+html body .is-paper {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  /* The picture is drawn at the whole box's size, border included. */
+  background-origin: border-box !important;
+  background-clip: border-box !important;
 }

@@ -22,6 +22,10 @@ export interface CrossLayout {
   panelTop: number;
   left: (i: number) => Point;
   right: (i: number) => Point;
+  /** Be the gate: the Two of us and Just me buttons, alone mid-screen before the round. */
+  seats: [Point, Point];
+  /** Be the gate: the Cross and Wait buttons, in the clear sky above the critters and the sign. */
+  judge: [Point, Point];
 }
 
 /**
@@ -51,9 +55,18 @@ export function crossLayout(v: Pick<View, 'w' | 'h' | 'upright'>): CrossLayout {
       panelTop: 130,
       left: slot(0.2),
       right: slot(0.68),
+      seats: [
+        { x: v.w / 2 - 80, y: v.h * 0.45 },
+        { x: v.w / 2 + 80, y: v.h * 0.45 },
+      ],
+      judge: [
+        { x: v.w * 0.68 - 70, y: 110 },
+        { x: v.w * 0.68 + 70, y: 110 },
+      ],
     };
   }
   const row = (r: number) => v.h - 230 - 140 * (2 - r);
+  const panelTop = Math.max(130, v.h - 890);
   const col =
     (x0: number) =>
     (i: number): Point => ({ x: x0 + 120 * (i % 2), y: row(Math.floor(i / 2) % 3) });
@@ -66,8 +79,16 @@ export function crossLayout(v: Pick<View, 'w' | 'h' | 'upright'>): CrossLayout {
     bulb: { x: 250, y: v.h - 80 },
     dots: { x: 250, y: v.h - 182 },
     shelf: { x: v.w - 24, y: v.h - 20 },
-    panelTop: Math.max(130, v.h - 890),
+    panelTop,
     left: col(120),
     right: col(525),
+    seats: [
+      { x: v.w / 2 - 80, y: v.h * 0.45 },
+      { x: v.w / 2 + 80, y: v.h * 0.45 },
+    ],
+    judge: [
+      { x: v.w / 2 - 80, y: panelTop + 20 },
+      { x: v.w / 2 + 80, y: panelTop + 20 },
+    ],
   };
 }

@@ -529,6 +529,14 @@ class FluffySalon implements Game {
    * The ghost finger: in free play a stroke through the fur with each tool in turn, then the mirror; with a request, the tool for what still
    * needs doing and strokes (each the other way from the last) until it is done, and the mirror only once nothing is left to do.
    */
+  /** Guided first play: the bot's next stroke or tool; its count of strokes (which way the next one goes) is put back. */
+  showMove(): TouchIntent | null {
+    const sweeps = this.sweeps;
+    const move = this.autotouch();
+    this.sweeps = sweeps;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     const move = salonMove({
@@ -1224,6 +1232,14 @@ class SalonPair implements Game {
         );
     }
   }
+  /** Guided first play: the bot's next stroke or tool; its count of strokes (which way the next one goes) is put back. */
+  showMove(): TouchIntent | null {
+    const sweeps = this.sweeps;
+    const move = this.autotouch();
+    this.sweeps = sweeps;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.seat.done) return null;
     const move = salonMove({

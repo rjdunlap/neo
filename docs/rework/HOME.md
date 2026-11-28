@@ -80,6 +80,24 @@ Both RW05 slice 2 and RW06 slice 1 edit `companion.ts`. **Do not build them in p
 - **Who's playing**, a person picture at the top left (Home has no Back), which opens the chooser (`go.start()`).
 - **Voice**: `home.hello` ("{pet} is home!"), spoken on arrival once per visit; `home.play`, `home.explore` and `home.who` on each picture's touch. No reading is needed.
 
+### The yard
+
+**Built 2026-11-28 (the developer: "rather than having Explore on the treehouse main page, you should just be able to click things and things should happen", like a point-and-click adventure or JumpStart).** Home is a yard to tap around, replacing the pictured action buttons above. Every way out is a thing in the picture (`src/art/home/yard.ts`), placed by `yardLayout` (`src/creatures/home-layout.ts`) for the wide area and the upright 768-wide area of a phone held upright, with a cream name pill under each for grown-ups. It reaches every device, phone included (a phone opens on Today's six and the six's Back comes here).
+
+| Thing | Does | Says |
+| --- | --- | --- |
+| The treehouse | Creature play (Play with {pet}), preschool and older; for lap and toddler its window lights up | `home.play` |
+| The notice board of six cards | Today's six | `daily.go` |
+| The arcade cabinet | The Arcade (every game; its Favourites filter holds her hearted games) | `explore.all` |
+| The signpost | Out to the island map (`MapScene` with `atRoot`: Places at the root is the map, upright and sideways; its home spot is this yard, the sea splashes and a fish jumps, the grass sprouts hearts, a boat toots) | `yard.island` |
+| Lantern Lodge, on the hill | The grown-ups' lodge (`go.lodge()`, progression slice 7), only for bands that earn shells | `yard.lodge` |
+| The picnic blanket | Family play (couch play), with a `{ home: true }` origin so leaving comes back here; not for lap and toddler | `explore.family` |
+| Welcome a New Friend's basket | Continue, while the project is open (RW07) | `home.continue` |
+| The kite, in the sky | Pick for me (D7a, `PickHost` in `src/app/pick.ts`): the kite swoops and the chooser sheet opens over the yard, every band; a picked game carries a `{ home: true }` origin, so its Back and Home come here | `pick.offer` |
+| A bush, a patch of flowers, the sun, the clouds, the pond | Only do something: a bird pops out and flies off, the flowers spin, sparkles, a puff, a splash | — |
+
+Who's playing (top left) and the grown-ups' gear (top right) stay buttons. The ball stays for lap and toddler. Every way-out box is at least 100 units, stands on screen and keeps out of the two corners (`home-layout.test.ts`). The Explore entries page is still a route but no longer reached from Home.
+
 ### Creature play (`PlayScene`)
 
 - **The toy: a ball.** Tapping the ball (a 120-unit target, squashing on touch-down) sends it bouncing to a new spot on the floor. The companion goes after it (a walk, or a flight for the glider, with hops), noses it, plays its chirp and is `happy` for a moment. The ball is then free to tap again. It repeats as often as she likes, with no count, score, sticker or end. A tap while the ball is moving redirects it rather than queueing. Tapping the companion pokes it. The ball's flight is drawn with `ctx`-style scene tweens. Every tween and timer is scene-owned, so leaving mid-bounce stops it.

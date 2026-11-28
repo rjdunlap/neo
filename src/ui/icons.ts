@@ -1,6 +1,7 @@
 import { Graphics } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../art/palette';
 import { shapePath, starPoints } from '../art/shapes';
+import { keepFlat } from '../art/paperize';
 
 export function islandIcon(): Graphics {
   return new Graphics()
@@ -146,11 +147,17 @@ export function collectionBookIcon(): Graphics {
     .fill(swatch.white.fill);
 }
 
+/**
+ * A solid arrowhead (Back, page turns, Robot Path's directions). Kept flat: the paper pass rounds a small three-point shape
+ * into a dot and drops its thick outline, so on a phone the arrows no longer showed which way they point.
+ */
 export function arrowIcon(dir: 1 | -1, color = ink): Graphics {
-  return new Graphics()
-    .poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22])
-    .fill(color)
-    .stroke(line(6, color));
+  return keepFlat(
+    new Graphics()
+      .poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22])
+      .fill(color)
+      .stroke(line(6, color)),
+  );
 }
 
 export function playIcon(color = 0xffffff): Graphics {

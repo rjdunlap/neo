@@ -1288,6 +1288,11 @@ class SudokuGarden implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   /** The ghost finger on the how-to card: tap the square the easy steps can fill, then its number in the tray. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle || !this.touch) return null;
     if (!this.botPick || this.grid[this.botPick.cell]) this.botPick = this.pickNext();

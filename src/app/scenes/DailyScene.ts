@@ -63,11 +63,11 @@ export class DailyScene extends Scene {
   upright = true;
   uprightArea = true;
   private readonly backdrop = homeBackdrop();
-  /** Back goes Home; on a phone, where the six are the whole app (`App.phoneOnly`), and for a guest, to "Who's playing?". */
+  /** Back goes Home; for a guest, who has only the six, to "Who's playing?". */
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
     this.leave(
       this.back,
-      () => (this.app.phoneOnly || store.entry.guest ? this.app.go.start() : this.app.go.hub()),
+      () => (store.entry.guest ? this.app.go.start() : this.app.go.hub()),
       () => voice.say('nav.back'),
     ),
   ).means('back');
@@ -140,7 +140,7 @@ export class DailyScene extends Scene {
   }
 
   private pickSix(): DailyPick[] {
-    return todaysSix(this.day, this.uprightPhone, this.app.phoneOnly);
+    return todaysSix(this.day, this.uprightPhone, this.app.onPhone);
   }
 
   private played(id: string): boolean {
@@ -232,9 +232,8 @@ export class DailyScene extends Scene {
     if (this.notes) this.ui.addChild(this.notes);
     if (this.stamps) this.ui.addChild(this.stamps);
     if (this.lodge) this.ui.addChild(this.lodge);
-    // On a phone the six are the whole app: there is no All games to open.
     // A guest (play-first slice 2) has the six and their rounds only: no Arcade until Add me.
-    this.all.visible = !this.app.phoneOnly && !store.entry.guest;
+    this.all.visible = !store.entry.guest;
     this.buildCards();
     this.place();
   }
@@ -331,7 +330,7 @@ export class DailyScene extends Scene {
     const upright = this.app.uprightPhone();
     if (upright !== this.uprightPhone && !this.leaving) {
       this.uprightPhone = upright;
-      if (!this.app.phoneOnly) this.picks = this.pickSix();
+      if (!this.app.onPhone) this.picks = this.pickSix();
       this.buildCards();
     }
     this.place();
@@ -592,8 +591,6 @@ export class DailyScene extends Scene {
   }
 
   enter() {
-    const link = document.querySelector<HTMLElement>('.classic-link');
-    if (link) link.hidden = true;
     music.play(STYLES.hub);
     voice.stop();
     if (this.live()) return this.resumeMix();
