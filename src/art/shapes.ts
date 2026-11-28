@@ -130,8 +130,26 @@ export function puffs(
   line: number,
   width = 6,
 ): Graphics {
-  for (const [x, y, r] of circles) g.circle(x, y, r + width / 2);
+  for (const [x, y, r] of circles) g.poly(scallop(x, y, r + width / 2));
   g.fill(line);
-  for (const [x, y, r] of circles) g.circle(x, y, r - width / 2);
+  for (const [x, y, r] of circles) g.poly(scallop(x, y, r - width / 2));
   return g.fill(fill);
+}
+
+/**
+ * A circle cut with scissors in short scallops (notched where two snips meet), so a bush, tree top or cloud built
+ * from puffs reads as cut paper rather than a stack of perfect circles. The phase comes from the centre, so a
+ * drawing never shimmers between redraws.
+ */
+function scallop(x: number, y: number, r: number): number[] {
+  const bumps = Math.max(6, Math.round(r / 7));
+  const phase = ((Math.abs(Math.round(x * 7 + y * 13)) % 97) / 97) * Math.PI;
+  const n = bumps * 6;
+  const pts: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const k = 0.94 + 0.06 * Math.abs(Math.sin((a * bumps) / 2 + phase));
+    pts.push(x + Math.cos(a) * r * k, y + Math.sin(a) * r * k);
+  }
+  return pts;
 }

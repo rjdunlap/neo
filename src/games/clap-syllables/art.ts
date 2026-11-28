@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { ink, swatch, type ColorName } from '../../art/palette';
+import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { prop } from '../../art/props';
 import { picture } from '../rhyme-time/pictures';
 
@@ -134,18 +134,26 @@ export function wordPicture(word: string): Container {
       for (const x of [-24, -8, 9, 25]) g.ellipse(x, 0, 2.5, 5).fill(ink);
       break;
     case 'helicopter':
-      g.roundRect(-42, -8, 78, 45, 22).fill(swatch.blue.fill).stroke(line(swatch.blue.line, 5));
-      g.moveTo(30, 12).lineTo(60, -4).lineTo(63, 4).lineTo(37, 22).stroke(line(swatch.blue.line, 8));
-      g.moveTo(-12, -10).lineTo(-12, -30).moveTo(-44, -31).lineTo(20, -31).stroke(line(swatch.brown.line, 5));
-      g.moveTo(-30, -38).lineTo(8, -38).stroke(line(swatch.brown.line, 4));
-      g.moveTo(-30, 40)
-        .lineTo(32, 40)
-        .moveTo(-18, 34)
-        .lineTo(-25, 42)
-        .moveTo(18, 34)
-        .lineTo(25, 42)
-        .stroke(line(swatch.brown.line, 5));
-      g.ellipse(-6, 4, 20, 14).fill(swatch.white.fill).stroke(line(swatch.blue.line, 3));
+      // A round cab with a big window, a tapering tail with its little rotor, skids and a long rotor on a mast.
+      g.moveTo(30, 0)
+        .lineTo(64, -12)
+        .lineTo(66, -2)
+        .lineTo(34, 18)
+        .closePath()
+        .fill(swatch.orange.fill)
+        .stroke(line(swatch.orange.line, 4));
+      g.circle(64, -8, 11).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+      g.moveTo(-30, 30).lineTo(-36, 44).moveTo(22, 30).lineTo(28, 44).stroke(line(swatch.brown.line, 5));
+      g.moveTo(-50, 44).quadraticCurveTo(-4, 48, 42, 44).stroke(line(swatch.brown.line, 6));
+      g.ellipse(-6, 8, 44, 32).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 5));
+      g.moveTo(-20, -18)
+        .quadraticCurveTo(-46, -14, -46, 8)
+        .lineTo(-14, 8)
+        .closePath()
+        .fill(swatch.blue.light)
+        .stroke(line(swatch.blue.line, 3));
+      g.roundRect(-12, -36, 12, 14, 3).fill(swatch.brown.line);
+      g.roundRect(-58, -42, 104, 8, 4).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 3));
       break;
     case 'pizza':
       g.moveTo(-52, -36)
@@ -182,9 +190,20 @@ export function wordPicture(word: string): Container {
       g.moveTo(-5, 52).lineTo(0, 62).lineTo(5, 52).closePath().fill(ink);
       break;
     case 'window':
-      g.roundRect(-50, -50, 100, 100, 8).fill(swatch.blue.fill).stroke(line(swatch.brown.line, 8));
-      g.moveTo(0, -50).lineTo(0, 50).moveTo(-50, 0).lineTo(50, 0).stroke(line(swatch.brown.line, 6));
-      g.moveTo(-34, -30).lineTo(-20, -44).stroke(line(0xffffff, 5));
+      // Sky through four panes, curtains tied back at the sides and a sill below.
+      g.roundRect(-46, -50, 92, 92, 6).fill(swatch.blue.light).stroke(line(wood.line, 4));
+      g.circle(18, -26, 12).fill(swatch.yellow.fill);
+      g.moveTo(-46, -4).lineTo(46, -4).moveTo(0, -50).lineTo(0, 42).stroke(line(wood.line, 6));
+      for (const dir of [-1, 1])
+        g.moveTo(dir * 52, -56)
+          .lineTo(dir * 28, -56)
+          .quadraticCurveTo(dir * 26, -14, dir * 40, 6)
+          .quadraticCurveTo(dir * 30, 24, dir * 40, 40)
+          .lineTo(dir * 52, 40)
+          .closePath()
+          .fill(swatch.red.fill)
+          .stroke(line(swatch.red.line, 4));
+      g.roundRect(-60, 40, 120, 14, 4).fill(wood.fill).stroke(line(wood.line, 4));
       break;
     case 'spider':
       for (const dir of [-1, 1])
@@ -250,13 +269,28 @@ export function wordPicture(word: string): Container {
           .stroke(line(swatch.green.line, 7));
       break;
     case 'caterpillar':
-      for (let i = 0; i < 4; i++)
-        g.circle(-54 + i * 34, 10 - (i % 2) * 8, 20)
-          .fill(swatch.green.fill)
+      // Five segments humping along, a shade apart, each on two little feet; the head last so it sits in front.
+      for (let i = 4; i >= 1; i--) {
+        const x = -54 + i * 28,
+          y = 14 - Math.sin(i * 1.1) * 10;
+        g.moveTo(x - 6, y + 16)
+          .lineTo(x - 8, y + 26)
+          .moveTo(x + 6, y + 16)
+          .lineTo(x + 8, y + 26)
+          .stroke(line(swatch.green.line, 4));
+        g.circle(x, y, 19)
+          .fill(i % 2 ? swatch.green.fill : swatch.green.light)
           .stroke(line(swatch.green.line));
-      g.circle(-54, 10, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
-      g.circle(-60, 4, 4).circle(-48, 4, 4).fill(ink);
-      g.moveTo(-60, -10).lineTo(-66, -26).moveTo(-48, -10).lineTo(-42, -26).stroke(line(ink, 3));
+      }
+      g.circle(-54, 6, 22).fill(swatch.green.fill).stroke(line(swatch.green.line));
+      g.moveTo(-60, -14)
+        .quadraticCurveTo(-66, -28, -72, -30)
+        .moveTo(-46, -14)
+        .quadraticCurveTo(-42, -28, -34, -30)
+        .stroke(line(ink, 3));
+      g.circle(-72, -30, 3.5).circle(-34, -30, 3.5).fill(swatch.orange.fill);
+      g.circle(-62, 2, 4).circle(-46, 2, 4).fill(ink);
+      g.moveTo(-60, 14).quadraticCurveTo(-54, 19, -48, 14).stroke(line(ink, 3));
       break;
     default:
       return picture(word);
