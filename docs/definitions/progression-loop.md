@@ -43,7 +43,7 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 
 1. **Rules** (this file and the rule wording). Docs only. Built.
 2. **Shells for grown-ups.** Defined below. Built.
-3. **Stamps** (from option A): three to five named goals per grown-up game (reach a level, a level with no hint, the top level, one trick of the game's own), each written beforehand, earned once and paying a one-time shell bonus. A stamp page per land, and Lantern Lake shows one lit paper lantern per stamp, so the lake fills up as the total grows.
+3. **Stamps** (from option A; defined below, built): three to five named goals per grown-up game (reach a level, a level with no hint, the top level, one trick of the game's own), each written beforehand, earned once and paying a one-time shell bonus. A stamp page per land, and Lantern Lake shows one lit paper lantern per stamp, so the lake fills up as the total grows.
 4. **The friend's page and shop**: colours and wearables for the player's own friend at shown prices, on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
 5. **Today's six extras** (from option C): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
 6. **Seasons** (from option C): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
@@ -60,3 +60,14 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 - **Shown.** The round's result screen says "+5 shells" under the sticker for a grown-up (nothing when the cap is reached: no "0"). Today's six shows the balance as a small shell and number beside the date. No other screen changes.
 - **Not in this slice.** Spending, stamps, bonuses, a daily gift, the school band.
 - **Checks.** Unit tests for `shells.ts` and the save repair; typecheck, lint, the build; one phone-size browser look at the six page and a result screen.
+
+### Slice 3: stamps
+
+**Built 2026-11-28.** Goals come from each grown-up game's own ladder, so every game listing `grownup` has them now and a new game or level brings its own; game-specific tricks can be added later.
+
+- **Goals.** `goalsFor(range)` on the game's `grownup` ladder (in its band order): *first* (finish any round, 10 shells), *middle* (finish the middle level or a harder one, 20), *top* (finish the top level, 30), *clean* (the top level with no misses and no hints, 40). A ladder of two has no middle; a ladder of one has first and clean. Help counts for all but clean.
+- **Earning.** `GameScene.finish` calls `store.earnStamps` for a game listing `grownup`, on a `grownup` profile, after the round's shells; a round can earn several at once. Each is earned once and pays its bonus once, outside the daily cap. Rounds finished before this slice never count.
+- **Save.** `SaveData.stamps: { id: '<game>:<kind>', at }[]`, repaired by `cleanStamps` (known kinds, one each, at most 600).
+- **Shown.** The result adds the bonus to "+N shells" and a lantern pill under it: "New stamp: Top level" (one or two named, three or more counted). A lantern button on Today's six (above the notes in a wide view, beside them upright) opens the stamps page: plain HTML, every grown-up game with its goals as a row of paper lanterns, lit and dated when held, each saying what it asks, games under way first, and the balance.
+- **Later.** Lantern Lake's own lanterns on the island map (the phone has no island), and school games' stamps once the school band earns.
+

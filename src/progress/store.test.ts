@@ -1162,3 +1162,23 @@ describe('shells (the progression loop)', () => {
     expect(again.data.shells.balance).toBe(5);
   });
 });
+
+describe('stamps (the progression loop)', () => {
+  it('a grown-up earns a stamp once, with its bonus shells', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    const range = { min: 1, max: 5 };
+    expect(store.earnStamps('tile-pairs', range, { level: 5, misses: 0, hints: 0 })).toEqual({
+      kinds: ['first', 'middle', 'top', 'clean'],
+      bonus: 100,
+    });
+    expect(store.data.shells.balance).toBe(100);
+    expect(store.earnStamps('tile-pairs', range, { level: 5, misses: 0, hints: 0 })).toEqual({
+      kinds: [],
+      bonus: 0,
+    });
+    store.setBand('school');
+    expect(store.earnStamps('word-code', range, { level: 1, misses: 0, hints: 0 }).kinds).toEqual([]);
+  });
+});

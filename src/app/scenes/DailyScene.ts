@@ -23,7 +23,8 @@ import { arrowIcon, checkIcon, playIcon, tilesIcon } from '../../ui/icons';
 import { openPlaytestSheet, type PlaytestSheet } from '../../ui/playtest-sheet';
 import { fitArt } from '../../ui/origin-art';
 import { FONT } from '../../ui/text';
-import { shellTag } from '../../ui/shells';
+import { lantern, shellTag } from '../../ui/shells';
+import { openStampsSheet, type StampsSheet } from '../../ui/stamps-sheet';
 import { earnsShells } from '../../content/shells';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -76,6 +77,9 @@ export class DailyScene extends Scene {
   /** A grown-up's playtest notes on today's six (plain HTML, `src/ui/playtest-sheet.ts`); never drawn for a child. */
   readonly notes: RoundButton | null;
   private notesSheet: PlaytestSheet | null = null;
+  /** A grown-up's stamps (the progression loop): a lantern button beside the notes; null for a band that does not earn. */
+  readonly stamps: RoundButton | null;
+  private stampsSheet: StampsSheet | null = null;
   readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () =>
     this.leave(
       this.all,
@@ -116,6 +120,9 @@ export class DailyScene extends Scene {
     this.picks = this.pickSix();
     this.notes = this.grownUp
       ? new RoundButton(pencilIcon(), swatch.white, CORNER_RADIUS, () => this.openNotes())
+      : null;
+    this.stamps = earnsShells(store.data.profile.band)
+      ? new RoundButton(lanternIcon(), swatch.white, CORNER_RADIUS, () => this.openStamps())
       : null;
     this.date.text = new Date().toLocaleDateString(undefined, {
       weekday: 'long',
@@ -159,8 +166,14 @@ export class DailyScene extends Scene {
     return this.out.leaving;
   }
 
+  private openStamps() {
+    if (this.stampsSheet || this.notesSheet || this.sheet || this.leaving) return;
+    voice.stop();
+    this.stampsSheet = openStampsSheet(() => (this.stampsSheet = null));
+  }
+
   private openNotes() {
-    if (this.notesSheet || this.sheet || this.leaving) return;
+    if (this.notesSheet || this.stampsSheet || this.sheet || this.leaving) return;
     voice.stop();
     this.notesSheet = openPlaytestSheet({
       day: this.day,
@@ -191,6 +204,7 @@ export class DailyScene extends Scene {
       this.track(this.pip),
     );
     if (this.notes) this.ui.addChild(this.notes);
+    if (this.stamps) this.ui.addChild(this.stamps);
     // On a phone the six are the whole app: there is no All games to open.
     // A guest (play-first slice 2) has the six and their rounds only: no Arcade until Add me.
     this.all.visible = !this.app.phoneOnly && !store.entry.guest;
@@ -274,7 +288,14 @@ export class DailyScene extends Scene {
    * after the squash's beat rather than after the line; a second tap while leaving does nothing.
    */
   private leave(node: Container, go: () => void, say?: () => Promise<void>) {
-    const others = [this.back, this.all, this.playAll, this.notes, ...this.cards.map((c) => c.node)];
+    const others = [
+      this.back,
+      this.all,
+      this.playAll,
+      this.notes,
+      this.stamps,
+      ...this.cards.map((c) => c.node),
+    ];
     return this.out.take(node, others, go, say);
   }
 
@@ -331,6 +352,11 @@ export class DailyScene extends Scene {
     const textW = Math.max(size, pitchX - 44);
     this.playAll.position.set(v.w - BACK.x, BACK.y);
     this.notes?.position.set(v.w - BACK.x, v.h - BACK.y);
+    // Stamps sit above the notes in a wide view (the right margin is clear of cards), beside them in a tall one (the strip
+    // under the cards is clear).
+    const step = CORNER_RADIUS * 2 + 20;
+    if (wide) this.stamps?.position.set(v.w - BACK.x, v.h - BACK.y - step);
+    else this.stamps?.position.set(v.w - BACK.x - step, v.h - BACK.y);
     this.cards.forEach((c, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
@@ -393,6 +419,7 @@ export class DailyScene extends Scene {
 
   destroy() {
     this.notesSheet?.close();
+    this.stampsSheet?.close();
     super.destroy();
   }
 
@@ -415,7 +442,7 @@ export class DailyScene extends Scene {
 
   /** The six as the page dealt them, frozen with their bands and levels; ticked ones start played. */
   private startPlayAll() {
-    if (this.leaving || this.sheet || this.notesSheet || this.picks.length === 0) return;
+    if (this.leaving || this.sheet || this.notesSheet || this.stampsSheet || this.picks.length === 0) return;
     const stops = dailyStops(this.picks);
     mixMemory.startDaily(
       store.data,
@@ -562,6 +589,13 @@ export class DailyScene extends Scene {
 }
 
 /** A pencil, for the grown-up's notes button. */
+/** The stamps button: a lit paper lantern. */
+function lanternIcon(): Graphics {
+  const g = new Graphics();
+  lantern(g, 0, 0, 1.4);
+  return g;
+}
+
 function pencilIcon(): Graphics {
   const g = new Graphics()
     .poly([-20, 20, -14, 2, 10, -22, 22, -10, -2, 14])
