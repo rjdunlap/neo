@@ -22,6 +22,7 @@ import { cleanForms, cleanLookForm, type FormId } from '../creatures/forms';
 
 import { isLandId, type LandId } from '../content/lands';
 import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
+import { cleanShells, emptyShells, type ShellsSave } from '../content/shells';
 
 /** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
 export type Language2 = 'none' | 'pt-PT';
@@ -157,6 +158,8 @@ export interface SaveData {
   explore: { last: LandId | null };
   /** A grown-up's playtest notes on Today's six rounds (`src/content/playtest.ts`): one per game and day, bounded. */
   playtest: PlaytestNote[];
+  /** The progression loop's shells (`src/content/shells.ts`): earned by grown-ups' finished rounds, capped per game per day. */
+  shells: ShellsSave;
 }
 
 export const HISTORY_LENGTH = 10;
@@ -196,6 +199,7 @@ export function defaults(): SaveData {
     journal: emptyJournal(),
     explore: { last: null },
     playtest: [],
+    shells: emptyShells(),
   };
 }
 
@@ -409,6 +413,7 @@ export function migrate(raw: unknown): SaveData {
     journal: cleanJournal(raw.journal),
     explore: { last: isObj(raw.explore) && isLandId(raw.explore.last) ? raw.explore.last : null },
     playtest: cleanPlaytest(raw.playtest),
+    shells: cleanShells(raw.shells),
   };
 }
 

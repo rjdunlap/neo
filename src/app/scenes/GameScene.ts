@@ -67,6 +67,7 @@ import {
   treehouseIcon,
 } from '../../ui/icons';
 import { FONT } from '../../ui/text';
+import { shellTag } from '../../ui/shells';
 import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
@@ -146,6 +147,8 @@ export class GameScene extends Scene {
   private resultStar: ReturnType<typeof makeCompanion> | null = null;
   private resultSticker: Container | null = null;
   private resultPill: Container | null = null;
+  /** Shells this round earned (the progression loop): 0 for a band that does not earn them, or at the day's cap. */
+  private shellsEarned = 0;
   private resultReady = false;
   private navigating = false;
   private returningTouch = false;
@@ -867,11 +870,27 @@ export class GameScene extends Scene {
     else if (this.story) store.completeStep(this.story.step, this.story.story ?? 'picnic');
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
+    this.shellsEarned = store.earnShells(this.mod.id, dayKey(new Date()));
     // A mix stop is settled once, by its first completed round; the round itself is settled above, as always.
     if (this.mixRound) mixMemory.finish(this.mixRound, store.data, seed);
     // Save the round and its sticker now: a write that only starts as the page closes can be lost.
     store.flush();
     void this.celebrate(seed);
+  }
+
+  /**
+   * A grown-up's shells ride under the result's sticker (the progression loop), so they move with it; nothing is drawn at
+   * the day's cap or for a band that does not earn. Under it, unless a journal card will need that room (a short, wide
+   * view): then beside it.
+   */
+  private addShellTag(sticker: Container) {
+    if (this.shellsEarned <= 0) return;
+    const tag = shellTag(`+${this.shellsEarned} shells`, 26, true);
+    const short = this.view.h * (0.555 - 0.33) < 220;
+    if (this.discovered.length && short) tag.x = 110 + 24 + tag.width / 2;
+    else tag.y = 142;
+    tag.rotation = 0.08; // level, against the sticker's tilt
+    sticker.addChild(tag);
   }
 
   /** Happy pet, confetti, a sticker, then "again?". */
@@ -940,6 +959,7 @@ export class GameScene extends Scene {
       sticker.position.set(this.view.w / 2, this.view.h * 0.33);
       sticker.scale.set(0);
       sticker.rotation = -0.08;
+      this.addShellTag(sticker);
       layer.addChild(sticker);
       void this.tw.to(sticker.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
       sfx.sparkle();
@@ -976,6 +996,7 @@ export class GameScene extends Scene {
       sticker.position.set(this.view.w / 2, this.view.h * 0.33);
       sticker.scale.set(0);
       sticker.rotation = -0.08;
+      this.addShellTag(sticker);
       layer.addChild(sticker);
       void this.tw.to(sticker.scale, { x: 1, y: 1 }, { duration: 0.55, ease: ease.outBack });
       sfx.sparkle();

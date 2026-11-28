@@ -23,6 +23,8 @@ import { arrowIcon, checkIcon, playIcon, tilesIcon } from '../../ui/icons';
 import { openPlaytestSheet, type PlaytestSheet } from '../../ui/playtest-sheet';
 import { fitArt } from '../../ui/origin-art';
 import { FONT } from '../../ui/text';
+import { shellTag } from '../../ui/shells';
+import { earnsShells } from '../../content/shells';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 import { WayOut } from '../leave';
@@ -51,7 +53,8 @@ export interface DailyCard {
  * Today's six (D10, docs/definitions/todays-six.md): six picture cards chosen for the day from her band (`dailySix`), each
  * at a preset level from its ladder shown as a row of dots (a grown-up's card also names it), a tick on the ones she has
  * played today, and one tap to play. Reached from Home's button or `?daily`; Back goes to the hub (Home at the root); the
- * tiles button opens All games, so nothing outside the six is out of reach. Nothing is owed: no streak, no count across days.
+ * tiles button opens All games, so nothing outside the six is out of reach. Nothing is owed: no streak. A grown-up's shells
+ * (the progression loop) show beside the date; they are earned by rounds, never by visits.
  */
 export class DailyScene extends Scene {
   /** Laid out for a phone held upright as well (chunk 31). */
@@ -89,6 +92,10 @@ export class DailyScene extends Scene {
     style: { fontFamily: FONT, fontSize: 20, fill: MUTED, fontWeight: '500' },
   });
   private readonly plate = new Graphics();
+  /** A grown-up's shells (the progression loop), beside the date; null for a band that does not earn them. */
+  readonly purse = earnsShells(store.data.profile.band)
+    ? shellTag(String(store.data.shells.balance), 20)
+    : null;
   /** The pet in the bottom-left corner the cards keep clear of: a poke repeats the page's line, and it cheers when all six are done. */
   readonly pip = makeCompanion();
   readonly day = dayKey(new Date());
@@ -177,6 +184,7 @@ export class DailyScene extends Scene {
       this.plate,
       this.title,
       this.date,
+      ...(this.purse ? [this.purse] : []),
       this.back,
       this.all,
       this.playAll,
@@ -299,8 +307,11 @@ export class DailyScene extends Scene {
     // The title sits in the top bar when there is room beside the corner buttons, else under them.
     const titleY = v.w >= 760 ? BACK.y - 8 : BACK.y + CORNER_RADIUS + 40;
     this.title.position.set(v.w / 2, titleY);
-    this.date.position.set(v.w / 2, titleY + 36);
-    const pw = Math.max(this.title.width, this.date.width) + 40;
+    // The shells sit after the date on the same line, the pair centred together.
+    const purseW = this.purse ? this.purse.width + 18 : 0;
+    this.date.position.set(v.w / 2 - purseW / 2, titleY + 36);
+    this.purse?.position.set(this.date.x + this.date.width / 2 + purseW - this.purse.width / 2, titleY + 36);
+    const pw = Math.max(this.title.width, this.date.width + purseW) + 40;
     this.plate
       .clear()
       .roundRect(v.w / 2 - pw / 2, titleY - 30, pw, 92, 22)

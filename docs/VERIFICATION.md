@@ -260,7 +260,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | Unit and type checks | 2026-11-26 · [Word Monsters level 16 Blend it](verification/2026-11-26-word-monsters-level-16-blend-it.md) | Typecheck, focused tests, batch play and `fingerdemo` at level 16 |
 | Unit and type checks | 2026-11-26 · [Word Monsters level 17 The magic e](verification/2026-11-26-word-monsters-level-17-the-magic-e.md) | Typecheck, focused tests, batch play at level 17 |
 | Unit and type checks | 2026-11-26 · [Word Monsters level 18 Change one sound](verification/2026-11-26-word-monsters-level-18-change-one-sound.md) | Typecheck, 125 focused tests, batch play and `fingerdemo` at level 18 |
-| Full unit suite and production build | 2026-11-23 · [Rain Garden level 5, three beds downhill](verification/2026-11-23-rain-garden-level-5-three-beds-downhill.md) | Full units and production build |
+| Full unit suite and production build | 2026-11-25 · [Progression loop slice 2: shells for grown-ups](verification/2026-11-25-progression-loop-slice-2-shells-for-grown-ups.md) | Full units (19,148 passed) and production build |
 | Formatting and lint | 2026-11-24 · [Bounce Back idle paddle](verification/2026-11-24-bounce-back-idle-paddle.md) | Scoped format and lint |
 | Test infrastructure | 2026-10-24 · [Quiet automated tests](archive/VERIFICATION-2026-10-24.md#2026-10-24--quiet-automated-tests) | Quiet unit and browser fixtures |
 | New-game scaffold tooling | 2026-11-20 · [Scaffold starts a grown-up game upright](verification/2026-11-20-scaffold-starts-a-grown-up-game-upright.md) | Grown-up upright scaffold and focused tests |

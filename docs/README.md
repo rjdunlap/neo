@@ -43,6 +43,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | --- | --- |
 | [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md); RW11 packet: [forms and talents](rework/FORMS-AND-TALENTS.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [Progression loop](definitions/progression-loop.md) | Neopets-style earn, spend and collect by age band: shells, a shop for her friend, stamps; grown-ups first, never lap or toddler |
 | [Playdate Workshop 4–6](definitions/playdate-workshop-4-6.md) | Social-emotional slice 6, Playdate Workshop levels 4–6: the smudged banner (two repairs), a new idea mid-round (revise the plan) and Ask first (an unspoken request); school 3–6, no misses |
 | [Wave Ribbon](definitions/wave-ribbon.md) | Energy and waves E6, levels 1–3: send a finite pulse along an elastic ribbon, watch a bead move locally while the wave travels, compare Small and Tall amplitudes, and test equal arrival times; analytic solver in `logic.ts`, `upright: true`, Tinker Lab |
 | [Pond Merge](definitions/pond-merge.md) | Physics chunk 27, levels 1–3: drop pond friends so two the same merge into the next size (egg to swan); a fixed-step circle-pile solver in `logic.ts`, no fail line (a full pond lifts), free take-back, `upright: true` |
