@@ -47,7 +47,7 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 4. **The friend's page and shop** (defined below, built): colours and wearables for the player's own friend at shown prices, on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
 5. **Today's six extras** (from option C; defined below, built): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
 6. **Seasons** (from option C; defined below, built): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
-7. **Lantern Lodge** (from option B): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
+7. **Lantern Lodge** (from option B; defined below, built): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
 8. **A daily gift** for grown-ups (never stacking or shown as missed), then the `school` band with the prices grown-up play has set.
 
 ### Slice 2: shells for grown-ups
@@ -105,3 +105,14 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 - **Ending.** A new season starts its rounds, games and payments again from nothing; all-six days and stamps count in the season they are dated in. A season that ends unfinished simply ends: nothing is lost, nothing is shown missed, and keepsakes stay.
 - **Shown.** The Lanterns sheet has "This season" with its dates after the calendar: each goal with its count ("8 of 10"), its shells, and a lantern lit once met, then the keepsakes (each season's dates).
 - **Save.** `SaveData.seasons: { season, rounds, games, paid, keepsakes }`, repaired by `cleanSeasons`. A band that does not earn shells counts nothing.
+
+### Slice 7: Lantern Lodge
+
+**Built 2026-11-28.** The island-games thread, the same day: keep the name (classic's age place that used it is retiring); Home will get a lodge to tap for grown-ups once this route (`app.go.lodge()`) is on main.
+
+- **Way in.** A house button on Today's six for a band that earns shells: left of the lantern button upright, above it sideways. Back returns to the six.
+- **The picture.** A 1200 × 800 scene by a lake (`src/art/lodge.ts`), drawn in code and turned to paper by the paper pass: sky, hills, meadow and lake are always there. Each built piece stands in its place. Each piece that can be built next shows faintly with its price on a shell pill; a tap offers it by name with Build, or "N more shells to go".
+- **Pieces** (`src/content/lodge.ts`), fifteen, 1,890 shells in all: stone footing 80; log walls 150 (on the footing); front door 80, lit windows 120 and roof 200 (on the walls); chimney 100 and porch lanterns 150 (on the roof); stepping stones 60 (from the door); flower bed 80, garden bench 120, garden fence 90, lantern tree 250; dock 120; dock lantern 90 and rowing boat 200 (on the dock).
+- **Never taken away.** Built once, kept for good; no upkeep, no decay, no chance, and it opens no game or level.
+- **Save.** `SaveData.lodge: { built: LodgePiece[] }`, repaired by `cleanLodge` (known pieces, once, each kept only with its chain of supports). `store.buildLodge(id)` refuses a child band, an unknown or built piece, a piece whose support is not built, or a short balance, changing nothing.
+- **Later.** More pieces, and moving pieces around, once grown-ups have used it.

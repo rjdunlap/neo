@@ -1238,3 +1238,22 @@ describe("Today's six extras (the progression loop)", () => {
     expect(again.data.sixes.days).toEqual(['2026-11-28']);
   });
 });
+
+describe('Lantern Lodge (the progression loop)', () => {
+  it('a grown-up builds with shells and keeps it; a child profile cannot build', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    store.data.shells.balance = 100;
+    expect(store.buildLodge('walls')).toBe('needs');
+    expect(store.buildLodge('foundation')).toBe(true);
+    expect(store.data.shells.balance).toBe(20);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.lodge.built).toEqual(['foundation']);
+    again.setBand('toddler');
+    again.data.shells.balance = 500;
+    expect(again.buildLodge('dock')).toBe('band');
+  });
+});
