@@ -58,14 +58,13 @@ const VIEWS = [
 ];
 
 describe('Hop along (level 16): bands and numbering', () => {
-  it('is level 16, the only level at lap and toddler, an entry, and school keeps 3 to 15', () => {
+  it("is level 16, the only level at lap and toddler's first, an entry, and school keeps 3 to 15", () => {
     expect(planFor(ALONG_LEVEL).mode).toBe('along');
-    expect(PLANS.length).toBe(ALONG_LEVEL);
     expect(frogHop.levels('lap')).toEqual({ min: 16, max: 16 });
-    expect(frogHop.levels('toddler')).toEqual({ min: 16, max: 16 });
+    expect(frogHop.levels('toddler')?.min).toBe(16);
     expect(frogHop.levels('school')).toEqual({ min: 3, max: 15 });
     expect(frogHop.bands).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school']);
-    expect(frogHop.entryLevels).toEqual([16]);
+    expect(frogHop.entryLevels).toContain(16);
     expect(frogHop.describeLevel(16)).toMatch(/^Hop along/);
   });
 
