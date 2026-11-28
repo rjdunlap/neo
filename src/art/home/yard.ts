@@ -207,3 +207,25 @@ export function yardSun(): Container {
   c.addChild(rays, new Graphics().circle(0, 0, 54).fill(0xffd54a));
   return c;
 }
+
+/** Lantern Lodge up on the hill: a log cabin with a lantern each side, the grown-ups' place to build (about 170 × 150). */
+export function yardLodge(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-70, -80, 140, 80, 6).fill(0xa86f43);
+  for (let y = -66; y < 0; y += 16) g.moveTo(-70, y).lineTo(70, y);
+  g.stroke({ width: 4, color: 0x8f5a37 });
+  g.poly([-86, -76, 0, -138, 86, -76]).fill(0x3f6e8c);
+  g.roundRect(-16, -48, 32, 48, 10).fill(0x6b4329);
+  g.rect(28, -60, 26, 22).fill(0xffe27a);
+  c.addChild(g);
+  for (const x of [-60, 60]) {
+    const lantern = new Graphics();
+    lantern.moveTo(0, -42).lineTo(0, -30).stroke({ width: 3, color: 0x2b2440 });
+    lantern.roundRect(-9, -30, 18, 22, 6).fill(0xffc94d);
+    lantern.position.set(x * 1.35, 0);
+    lantern.label = 'lantern';
+    c.addChild(lantern);
+  }
+  return c;
+}

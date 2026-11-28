@@ -430,6 +430,8 @@ export interface YardLayout {
   /** Family play is grown-up couch play: no blanket for lap and toddler, whose ball takes its corner. */
   blanket: YardSpot | null;
   basket: YardSpot | null;
+  /** Lantern Lodge on the hill, for the bands that earn shells (`earnsShells`, grown-ups): placed always, drawn only for them. */
+  lodge: YardSpot;
   bush: YardSpot;
   flowers: YardSpot;
   /** The upright area's own sun (the backdrop's stands off to the right, out of an upright phone's view). */
@@ -447,6 +449,7 @@ export const YARD_SIZE = {
   signpost: { w: 220, h: 215 },
   blanket: { w: 220, h: 100 },
   basket: { w: 140, h: 120 },
+  lodge: { w: 190, h: 150 },
   bush: { w: 180, h: 110 },
   flowers: { w: 130, h: 120 },
 } as const;
@@ -479,6 +482,7 @@ export function yardLayout(v: { w: number; h: number }, young: boolean, project 
       basket: project && !young ? { x: 265, y: Math.round(g + 120 * k), scale: 0.85 } : null,
       bush: { x: 60, y: Math.round(g + 150 * k), scale: 0.7 * k },
       flowers: { x: 205, y: Math.round(g + 170 * k), scale: 0.8 },
+      lodge: { x: 640, y: Math.round(g - 270 * k), scale: 0.75 * k },
       sun: { x: 600, y: Math.round(Math.max(260, g - 520 * k)), scale: k },
       ball,
       floor: { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: v.w - 200, y0: v.h - 160, y1: v.h - BALL_RADIUS - 20 },
@@ -505,6 +509,7 @@ export function yardLayout(v: { w: number; h: number }, young: boolean, project 
     bush: { x: v.w - 90, y: g + 5, scale: 0.8 },
     flowers: { x: Math.round(v.w * 0.77), y: v.h - 25, scale: 0.8 },
     sun: null,
+    lodge: { x: Math.round(v.w * 0.8), y: g - 90, scale: 0.8 * s },
     ball,
     floor: {
       x0: GUIDE_CORNER.w + BALL_RADIUS,

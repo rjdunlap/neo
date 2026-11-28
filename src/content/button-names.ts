@@ -19,6 +19,7 @@ export const YARD_NAMES = {
   signpost: 'The island',
   blanket: 'Family play',
   basket: 'New friend',
+  lodge: 'Lantern Lodge',
 } as const;
 
 /** The result's buttons at the root (`GameScene.showResult`). The way out is Back at the root, the house Home. */

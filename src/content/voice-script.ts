@@ -427,6 +427,7 @@ export const SHARED = {
   'home.who': ['Who’s playing?'],
   'home.continue': ['Let’s get ready for our new friend!'],
   'yard.island': ['Off to the island!', 'Let’s walk to the island!'],
+  'yard.lodge': ['Lantern Lodge!', 'Up to Lantern Lodge!'],
   // Welcome a New Friend (RW07, docs/rework/WELCOME-ADVENTURE.md#the-steps).
   'welcome.invite': ['Someone new is coming to live with us! Let’s get ready.'],
   'welcome.ask.pretty': ['Our new friend needs something pretty over their bed. Make them a picture!'],

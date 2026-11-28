@@ -9,6 +9,7 @@ import {
   projectBasket,
   signpost,
   yardBush,
+  yardLodge,
   yardSun,
   yardTreehouse,
 } from '../../art/home/yard';
@@ -34,6 +35,7 @@ import { openParentPanel } from '../../parent/panel';
 import { birthdayDue, settleWorldBand } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { showsContinue } from '../../content/welcome';
+import { earnsShells } from '../../content/shells';
 import { RoundButton, squash, spring } from '../../ui/buttons';
 import { gearButton } from '../../ui/grownups';
 import { peopleIcon } from '../../ui/icons';
@@ -46,7 +48,7 @@ import { BallPlay } from './ball-play';
 /** Lap and toddler get the ball right here; preschool and older get Play with {pet}, which opens creature play. */
 export const youngHome = () => store.data.profile.band === 'lap' || store.data.profile.band === 'toddler';
 
-type YardThing = 'treehouse' | 'board' | 'arcade' | 'signpost' | 'blanket' | 'basket';
+type YardThing = 'treehouse' | 'board' | 'arcade' | 'signpost' | 'blanket' | 'basket' | 'lodge';
 
 /** A way out of the yard: the thing, the line it says, where it goes. */
 interface Way {
@@ -113,6 +115,10 @@ export class HomeScene extends Scene {
     !this.young && showsContinue(store.welcome, store.data.profile.band)
       ? new Thing(projectBasket(), YARD_SIZE.basket, YARD_NAMES.basket)
       : null;
+  /** Lantern Lodge (progression slice 7) on the hill, for the bands that earn shells (grown-ups). */
+  readonly lodge: Thing | null = earnsShells(store.data.profile.band)
+    ? new Thing(yardLodge(), YARD_SIZE.lodge, YARD_NAMES.lodge)
+    : null;
   readonly bush = new Thing(yardBush(), YARD_SIZE.bush, null);
   readonly flowers = new Thing(flowerPatch(), YARD_SIZE.flowers, null);
   /** The upright yard's own sun (the backdrop's is out of view there). */
@@ -180,6 +186,7 @@ export class HomeScene extends Scene {
       this.basket
         ? { id: 'basket', thing: this.basket, line: 'home.continue', go: () => go.project() }
         : null,
+      this.lodge ? { id: 'lodge', thing: this.lodge, line: 'yard.lodge', go: () => go.lodge() } : null,
     ];
     return all.filter((w): w is Way => !!w);
   }
@@ -195,6 +202,7 @@ export class HomeScene extends Scene {
       this.signpost,
       this.blanket,
       this.basket,
+      this.lodge,
       this.bush,
       this.flowers,
       this.sun,
@@ -401,12 +409,21 @@ export class HomeScene extends Scene {
     put(this.signpost, l.signpost);
     put(this.blanket, l.blanket);
     put(this.basket, l.basket);
+    put(this.lodge, l.lodge);
     put(this.bush, l.bush);
     put(this.flowers, l.flowers);
     this.sun.visible = !!l.sun;
     put(this.sun, l.sun);
     // A name pill stays its own size, whatever the thing's scale.
-    for (const t of [this.treehouse, this.board, this.arcade, this.signpost, this.blanket, this.basket])
+    for (const t of [
+      this.treehouse,
+      this.board,
+      this.arcade,
+      this.signpost,
+      this.blanket,
+      this.basket,
+      this.lodge,
+    ])
       t?.children[1]?.scale.set(1 / t.scale.x);
     if (!this.toy?.chasing) this.pet.position.set(l.stage.x, l.stage.y);
     this.pet.scale.set(l.stage.scale * Math.sign(this.pet.scale.x || 1), l.stage.scale);

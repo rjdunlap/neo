@@ -16,6 +16,7 @@ import { ArcadeScene } from './app/scenes/ArcadeScene';
 import { DailyScene } from './app/scenes/DailyScene';
 import { ExploreScene } from './app/scenes/ExploreScene';
 import { HomeScene } from './app/scenes/HomeScene';
+import { MapScene } from './app/scenes/MapScene';
 import { LibraryScene } from './app/scenes/LibraryScene';
 import { PlayScene } from './app/scenes/PlayScene';
 import { BookScene } from './app/scenes/BookScene';
@@ -114,11 +115,15 @@ async function boot() {
       project: (from, origin) => void app.show(new ProjectScene(app, from, origin)),
       // The Arcade is an Explore entry with its own scene (docs/rework/ARCADE.md); Family play has no page of its own
       // (U6b), so couch play's Back to it opens the entries.
+      // Places is the island map (2026-11-28): the yard's signpost, a location's Back and a `{ explore: 'places' }`
+      // origin all land on it.
       explore: (entry, page, filter) =>
         void app.show(
           entry === 'arcade'
             ? new ArcadeScene(app, page ?? 0, filter)
-            : new ExploreScene(app, entry === 'family' ? null : (entry ?? null), page ?? 0),
+            : entry === 'places'
+              ? new MapScene(app, true)
+              : new ExploreScene(app, entry === 'family' ? null : (entry ?? null), page ?? 0),
         ),
       land: atRoot,
       // No age places at the root (RW08 slice 2): Little surprises' stops, its Explore and a game with no origin come back to Explore's entries (U6b).

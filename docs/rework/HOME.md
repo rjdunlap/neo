@@ -89,7 +89,8 @@ Both RW05 slice 2 and RW06 slice 1 edit `companion.ts`. **Do not build them in p
 | The treehouse | Creature play (Play with {pet}), preschool and older; for lap and toddler its window lights up | `home.play` |
 | The notice board of six cards | Today's six | `daily.go` |
 | The arcade cabinet | The Arcade (every game; its Favourites filter holds her hearted games) | `explore.all` |
-| The signpost | Out to the island's places (Places today; the island map once it moves to the root) | `yard.island` |
+| The signpost | Out to the island map (`MapScene` with `atRoot`: Places at the root is the map, upright and sideways; its home spot is this yard, the sea splashes and a fish jumps, the grass sprouts hearts, a boat toots) | `yard.island` |
+| Lantern Lodge, on the hill | The grown-ups' lodge (`go.lodge()`, progression slice 7), only for bands that earn shells | `yard.lodge` |
 | The picnic blanket | Family play (couch play), with a `{ home: true }` origin so leaving comes back here; not for lap and toddler | `explore.family` |
 | Welcome a New Friend's basket | Continue, while the project is open (RW07) | `home.continue` |
 | A bush, a patch of flowers, the sun, the clouds, the pond | Only do something: a bird pops out and flies off, the flowers spin, sparkles, a puff, a splash | — |
