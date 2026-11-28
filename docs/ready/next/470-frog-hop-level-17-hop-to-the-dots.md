@@ -1,0 +1,1 @@
+**`frog-hop`, level 17 *Hop to the dots*** (new-levels tier): after level 16 merges; build its section of the [definition](../../definitions/frog-hop-entries-and-g1.md#17-hop-to-the-dots-toddler) (toddler 16–17). [Dive slice 9](../../deep-dives/frog-hop.md#build-slices-in-order).
