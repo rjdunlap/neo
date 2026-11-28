@@ -683,6 +683,11 @@ class CircuitGarden implements Game {
   }
 
   /** The ghost finger: carry a connector to the next gap, or flip the switch to what she has not seen, Check, then Done. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.pendingLook || !this.started) return null;
     const move = nextMove(this.plan, this.state, this.seen, this.checked);

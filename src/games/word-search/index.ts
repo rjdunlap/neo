@@ -1283,6 +1283,11 @@ class WordSearch implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   /** The ghost finger on the how-to card: tap a word's first letter and its last, sliding the grid first when a letter is out of view. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.grid || !this.touch) return null;
     const i = this.grid.words.findIndex((_, k) => !this.found.has(k));

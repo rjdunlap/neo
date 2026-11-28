@@ -524,6 +524,11 @@ class Round implements Game {
 
   // ---- The ghost finger ----
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.run || this.busy || this.done || this.grab !== null) return null;
     const p = this.puzzle;
