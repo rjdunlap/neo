@@ -1257,3 +1257,20 @@ describe('Lantern Lodge (the progression loop)', () => {
     expect(again.buildLodge('dock')).toBe('band');
   });
 });
+
+describe('the daily gift (the progression loop)', () => {
+  it('a grown-up gets it once a day and keeps it; a child gets none', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    expect(store.claimGift('2026-11-28')).toBe(10);
+    expect(store.claimGift('2026-11-28')).toBe(0);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.gift.day).toBe('2026-11-28');
+    expect(again.data.shells.balance).toBe(10);
+    again.setBand('school');
+    expect(again.claimGift('2026-11-29')).toBe(0);
+  });
+});

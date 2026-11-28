@@ -28,6 +28,7 @@ import { earnShells as earnedFor } from '../content/shells';
 import { awardStamps, newStamps, type StampKind } from '../content/stamps';
 import { buy as buyLook, colorId, type BuyRefusal } from '../content/shop';
 import { build as buildPiece, type BuildRefusal } from '../content/lodge';
+import { claimGift } from '../content/gift';
 import { keyOf, recordAllSix as recordSix } from '../content/sixes';
 import { countRound, seasonOf, settle, type SeasonGoal } from '../content/seasons';
 import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
@@ -335,6 +336,17 @@ export class Store {
     this.save();
     this.flush();
     return true;
+  }
+
+  /** Today's gift for a band that earns shells (the progression loop, slice 8), once a day; returns the shells (0 if not). */
+  claimGift(day: string): number {
+    const r = claimGift(this.data.gift, this.data.shells, day, this.data.profile.band);
+    if (r.amount === 0) return 0;
+    this.data.gift = r.gift;
+    this.data.shells = r.shells;
+    this.save();
+    this.flush();
+    return r.amount;
   }
 
   /** Whether no round of this game has been finished yet (in any place). */

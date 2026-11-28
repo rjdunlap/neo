@@ -595,6 +595,9 @@ export class DailyScene extends Scene {
     voice.stop();
     if (this.live()) return this.resumeMix();
     mixMemory.live(store.data)?.stops && mixMemory.end();
+    // A grown-up's gift for the day arrives by itself the first time the six open that day (the progression loop, slice 8).
+    const gift = this.purse ? store.claimGift(this.day) : 0;
+    if (gift > 0) this.showBonus(`+${gift} shells · today's gift`);
     if (this.allPlayed) void this.flourish();
     else void voice.say('daily.open');
   }
@@ -607,7 +610,7 @@ export class DailyScene extends Scene {
     void voice.say('daily.done');
     // A grown-up's day gets its lantern, and the first time today a small bonus (the progression loop, slice 5).
     const bonus = this.purse ? store.recordAllSix(this.day) : 0;
-    if (bonus > 0 && this.purse) this.showSixBonus(bonus);
+    if (bonus > 0 && this.purse) this.showBonus(`+${bonus} shells · all six`);
     await this.tw.wait(0.4);
     sfx.sparkle();
     this.pip.cheer();
@@ -624,15 +627,18 @@ export class DailyScene extends Scene {
     }
   }
 
-  /** The new balance beside the date, and "+25 shells · all six" on a pill under the title for a moment. */
-  private showSixBonus(bonus: number) {
+  /** Pills showing now, so a second one (the gift, then all six) sits under the first. */
+  private pills = 0;
+
+  /** The new balance beside the date, and the words ("+25 shells · all six") on a pill under the title for a moment. */
+  private showBonus(words: string) {
     const old = this.purse!;
     this.purse = shellTag(String(store.data.shells.balance), 20);
     this.ui.addChildAt(this.purse, this.ui.getChildIndex(old));
     old.destroy({ children: true });
     this.place();
-    const pill = shellTag(`+${bonus} shells · all six`, 24, true);
-    pill.position.set(this.view.w / 2, this.date.y + 72);
+    const pill = shellTag(words, 24, true);
+    pill.position.set(this.view.w / 2, this.date.y + 72 + 50 * this.pills++);
     pill.alpha = 0;
     this.ui.addChild(pill);
     void (async () => {
@@ -641,6 +647,7 @@ export class DailyScene extends Scene {
       if (pill.destroyed) return;
       await this.tw.to(pill, { alpha: 0 }, { duration: 0.5 });
       pill.destroy({ children: true });
+      this.pills--;
     })();
   }
 }
