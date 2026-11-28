@@ -32,6 +32,7 @@ export const COUCH_IDS = [
   'treasure-map',
   'garden-rows',
   'pond-typing',
+  'jelly-drums',
 ] as const;
 export type CouchId = (typeof COUCH_IDS)[number];
 export const STOPS = 6;
@@ -142,6 +143,7 @@ export const UNLOCK_TIERS: readonly (readonly CouchId[])[] = [
   ['treasure-map'],
   ['garden-rows'],
   ['pond-typing'],
+  ['jelly-drums'],
 ];
 const completed = (trips: number) => (Number.isFinite(trips) ? Math.max(0, Math.floor(trips)) : 0);
 export const unlockedIds = (trips: number, tiers = UNLOCK_TIERS): CouchId[] =>

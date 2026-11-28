@@ -80,7 +80,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Jelly Drums
 
-*lap–school* · [Jelly Drums](games/jelly-drums.md)
+*lap–grown-up* · [Jelly Drums](games/jelly-drums.md)
 
 ### Song Maker
 

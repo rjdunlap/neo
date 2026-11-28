@@ -20,6 +20,15 @@ import {
   planFor as bridgePlan,
   touchLayout as bridgeLayout,
 } from './island-bridges/logic';
+import {
+  AGAIN_RADIUS as JELLY_AGAIN_R,
+  CHOICE_RADIUS as JELLY_CHOICE_R,
+  HALF_WIDTHS as JELLY_HW,
+  jellyHit,
+  jellyLayout,
+  ORDER_HW as JELLY_ORDER_HW,
+  orderJellyHit,
+} from './jelly-drums/layout';
 import { pondLayout } from './lantern-lights';
 import { LEVELS as lanternLevels, planFor as lanternPlan } from './lantern-lights/logic';
 import { BUTTON_SIZE, DIRECTION_SIZE, logRollLayout } from './log-roll';
@@ -179,6 +188,16 @@ const MEASURE: Record<string, () => Size[]> = {
         ...fit.slots.map((s): Size => ['button', side(s)]),
       ] as Size[];
     }),
+  'jelly-drums': () => {
+    // The grown-up band's levels: the five jellies (every level), the listen-again and same/different buttons, and level 13's line-up.
+    const l = jellyLayout(v);
+    return [
+      ...JELLY_HW.map((_, i): Size => ['jelly', side(jellyHit(l, i))]),
+      ...l.orderRow.map((p, i): Size => ['line-up jelly', side(orderJellyHit(l, i, JELLY_ORDER_HW, p))]),
+      ['listen-again button', 2 * JELLY_AGAIN_R],
+      ['same or different button', 2 * JELLY_CHOICE_R],
+    ];
+  },
   'lantern-lights': () => [
     ...grown(lanternLevels.grownup!).map((level): Size => [
       'lantern',
@@ -441,6 +460,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'jar-clues': { px: 37.6, what: 'number cell' },
   'key-it-out': { px: 44.7, what: 'branch end and name plate' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
+  'jelly-drums': { px: 56.9, what: 'listen-again button' },
   'lantern-lights': { px: 50.8, what: 'button' },
   'last-pebble': { px: 65, what: 'stepping spot' },
   'log-roll': { px: 50.8, what: 'direction button' },
