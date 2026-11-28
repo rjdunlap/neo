@@ -81,6 +81,8 @@ import { HeldLines } from '../held-line';
 import { LEAVE_BEAT } from '../leave';
 import { CaptionBand, speakerIcon } from '../../ui/caption-band';
 import { captionPlace, captionShows, type CaptionPlace } from '../../ui/caption-layout';
+import { MovePointer } from '../../ui/move-pointer';
+import { RoundGuide } from '../round-guide';
 
 /**
  * Hosts one round of a minigame and owns everything around it:
@@ -104,6 +106,8 @@ export class GameScene extends Scene {
    */
   private readonly hearAgain = new RoundButton(speakerIcon(), swatch.white, 38, () => this.repeat());
   private helpCard: HowToPanel | null = null;
+  /** Guided first play: when to show the round's next move, and the hand that shows it (null for a game with no `showMove`). */
+  private guide: { when: RoundGuide; hand: MovePointer } | null = null;
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   /** The question written out for a reader (TotoLogic P3): `grownup` rounds, and `school` ones with the sound off. */
@@ -184,6 +188,11 @@ export class GameScene extends Scene {
   /** A key or button has been pressed since the round began (or since the last touch): the Enter that pressed Play does not count. */
   private keyed = false;
   private readonly touchDown = (e: PointerEvent) => {
+    // Any touch takes the shown move away; one on the board (a pad pointer's press included) starts the quiet over.
+    if (this.guide) {
+      this.guide.hand.stop();
+      if (!this.onShellButton(e)) this.guide.when.touched();
+    }
     const pad = e.pointerId === PAD_POINTER;
     if (this.game && !this.finished && !this.helpCard && !this.navigating && !this.onShellButton(e))
       this.held.down(soundCount.n);
@@ -390,9 +399,39 @@ export class GameScene extends Scene {
   private begin() {
     music.play(this.mod.music);
     this.game?.start();
+    this.startGuide();
     const early = this.band === 'lap' || this.band === 'toddler';
     const tip = early ? tipFor(this.mod, this.band) : undefined;
     if (store.data.settings.coplayHints && tip) this.showTip(tip);
+  }
+
+  /**
+   * Guided first play (`src/app/round-guide.ts`): a game that can name its next move has it shown on the board on her first
+   * round, and when the board has sat untouched. Off with the how-to cards, as both are a grown-up's choice about explaining.
+   */
+  private startGuide() {
+    const game = this.game;
+    if (!game?.showMove || !store.data.settings.howToCards || this.guide) return;
+    const firstPlay = (store.data.games[this.mod.id]?.plays ?? 0) === 0;
+    const hand = new MovePointer(pointerKind());
+    this.ui.addChildAt(hand, 0);
+    this.guide = { when: new RoundGuide(this.band, firstPlay), hand };
+  }
+
+  /** One frame of guided first play: the hand moves on, and a new showing starts when one is due and the game has a move. */
+  private stepGuide(dt: number) {
+    const guide = this.guide;
+    const game = this.game;
+    if (!guide || !game?.showMove) return;
+    // A controller player is not shown a finger.
+    if (this.inputInUse.kind === 'controller') {
+      guide.hand.stop();
+      return;
+    }
+    guide.hand.update(dt);
+    if (!guide.when.due({ dt, talking: this.held.talking, showing: guide.hand.showing })) return;
+    const move = game.showMove();
+    if (move && guide.hand.show(move)) guide.when.showed();
   }
 
   /** The guide, or the caption, was tapped: the waiting ask if the game has one, otherwise the instruction again. */
@@ -494,6 +533,7 @@ export class GameScene extends Scene {
     if (this.finished) return;
     this.seconds += dt;
     this.game?.update(dt);
+    this.stepGuide(dt);
   }
 
   /**
@@ -634,8 +674,9 @@ export class GameScene extends Scene {
     if (this.helpCard || this.finished) return;
     const info = howToFor(this.mod, this.level);
     if (!info) return;
-    // The card covers the round: a piece held by a tap goes back first.
+    // The card covers the round: a piece held by a tap goes back first, and a move being shown goes.
     cancelHeld();
+    this.guide?.hand.stop();
     const card = new HowToPanel(info, () => this.closeHelp());
     card.layout(this.view);
     this.helpCard = card;
@@ -857,6 +898,9 @@ export class GameScene extends Scene {
   private finish(result: RoundResult) {
     if (this.finished || !this.liveResult() || this.navigating) return;
     this.finished = true;
+    this.guide?.hand.stop();
+    // A move shown on a quiet board is a hint (at most one a round); the shown first play is not (`round-guide.ts`).
+    const hints = result.hints + (this.guide?.when.hints ?? 0);
     this.made = cleanCreation(result.creation);
     this.discovered = store
       .discover(result.discoveries)
@@ -874,7 +918,7 @@ export class GameScene extends Scene {
       {
         level: this.level,
         misses: result.misses,
-        hints: result.hints,
+        hints,
         seconds: Math.round(this.seconds),
         at: Date.now(),
       },
@@ -889,7 +933,7 @@ export class GameScene extends Scene {
     if (this.story && 'project' in this.story)
       store.completeWelcomeStep(this.story.step, this.made, {
         misses: result.misses,
-        hints: result.hints,
+        hints,
         level: this.level,
       });
     else if (this.story) store.completeStep(this.story.step, this.story.story ?? 'picnic');
@@ -901,7 +945,7 @@ export class GameScene extends Scene {
       const won = store.earnStamps(this.mod.id, this.mod.levels('grownup'), {
         level: this.level,
         misses: result.misses,
-        hints: result.hints,
+        hints,
       });
       this.stampsEarned = won.kinds;
       this.shellsEarned += won.bonus;

@@ -55,6 +55,11 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'Tap coins that make a bigger coin, then Trade. Undo takes a trade back. Ring the bell when the coins are as few as can be.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'The shopkeeper asks for one coin: the one, two or five-shell coin. Tap that coin in the purse; the shopkeeper counts its dots.',
+    },
   ],
   note: [
     { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
@@ -117,6 +122,11 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'Trade keeps the same shell total. The second early bell lights a helpful group or Undo. Help counts once per heap.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'Played between levels 2 and 3, before she pays with fives. Each coin shows its worth as dots, and the tag shows the asked worth too. A wrong coin says what it is worth; two misses light the asked coin. Help counts once per order.',
+    },
   ],
   finish: [
     { to: 5, text: 'The round ends when the right amount has been paid.' },
@@ -128,5 +138,6 @@ export const HOW_TO: GameHowTo = {
     { from: 11, to: 11, text: 'The round ends when the right change has been given three times.' },
     { from: 12, to: 12, text: 'The round ends after two choices and two purses spent on two things.' },
     { from: 13, to: 13, text: 'The round ends after the bell confirms three heaps with the fewest coins.' },
+    { from: 14, to: 14, text: 'The round ends when four coins have been handed over.' },
   ],
 };

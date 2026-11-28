@@ -2,7 +2,18 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type DuckMode =
-  'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends' | 'double' | 'teen' | 'every';
+  | 'along'
+  | 'make'
+  | 'howmany'
+  | 'add'
+  | 'ten'
+  | 'hide'
+  | 'bye'
+  | 'friends'
+  | 'double'
+  | 'teen'
+  | 'every'
+  | 'peek';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -87,13 +98,17 @@ export const PLANS: DuckPlan[] = [
   { mode: 'teen', rounds: 5, min: 1, max: 9, padMax: 19 },
   // School (dive slice 9, appended as 16): send ducks across the bridge and find every way to share 3, 4, 5, then 6; `rounds` counts totals.
   { mode: 'every', rounds: 4, min: 3, max: 6, split: true },
+  // Preschool and pre-K (dive slice 10, appended as 17, played between 6 and 7): 4–10 ducks peek from reeds and lily leaves
+  // all over a crowded pond; each tap rings a duck once and counts it, then a dotted pad says how many. "A few, or lots?" first, unscored.
+  { mode: 'peek', rounds: 4, min: 4, max: 10, padDots: true },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 13, order: [13, 12, 1, 2] },
   toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
-  preschool: { min: 3, max: 7 },
-  prek: { min: 5, max: 9 },
+  // Count the peekers (17) plays between 6 and 7.
+  preschool: { min: 3, max: 17, order: [3, 4, 5, 6, 17, 7] },
+  prek: { min: 5, max: 17, order: [5, 6, 17, 7, 8, 9] },
   // Doubles (14), Ten and some more (15) and Every way (16) go on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
   school: { min: 8, max: 16, order: [8, 9, 10, 11, 14, 15, 16] },
 };
@@ -258,6 +273,99 @@ export const firstFreeSeat = (taken: readonly number[]) => {
   while (taken.includes(i)) i++;
   return i;
 };
+
+/**
+ * Level 17's hiding places, relative to the pond's middle (a duck's feet): three rows, the middle one of five, every two at least
+ * 123 apart (130 across a row, 65 across and 105 down between rows), so a jitter of `PEEK_JITTER` keeps ducks over `DUCK_GAP`
+ * apart. Each holds a reed clump or a standing lily leaf; a duck may peek out from behind it.
+ */
+export const PEEK_SPOTS: [number, number][] = [
+  [-195, -90],
+  [-65, -90],
+  [65, -90],
+  [195, -90],
+  [-260, 15],
+  [-130, 15],
+  [0, 15],
+  [130, 15],
+  [260, 15],
+  [-195, 120],
+  [-65, 120],
+  [65, 120],
+  [195, 120],
+];
+export const PEEK_JITTER = 5;
+/** Level 17's pond is drawn taller, so its three rows of hiding places sit inside it. */
+export const PEEK_POND_RY = 186;
+/** A peeking duck's tap area: half the closest two ducks can be, so each stays its own (and over 100 across). */
+export const PEEK_HIT_R = 54;
+
+export type PeekCover = 'reeds' | 'leaf';
+
+/** A round of level 17: every hiding place, the ones a duck peeks from (in counting order), and what hides each. */
+export interface PeekPond {
+  /** All hiding places, jittered, with what stands there. */
+  spots: { at: [number, number]; cover: PeekCover }[];
+  /** Where the ducks peek from, in counting order (back row first, left to right). */
+  ducks: [number, number][];
+}
+
+/** Level 17's counts: `min` to `max`, never the same twice running; the first is at most six, a gentle start. */
+export function peekCounts(rng: Rng, plan: DuckPlan): number[] {
+  const out: number[] = [];
+  while (out.length < plan.rounds) {
+    const n = rng.int(plan.min, out.length ? plan.max : Math.min(plan.max, 6));
+    if (n !== out.at(-1)) out.push(n);
+  }
+  return out;
+}
+
+/** Deal a level 17 pond of `n` peekers (at most one per hiding place). */
+export function peekPond(rng: Rng, n: number): PeekPond {
+  const count = Math.max(0, Math.min(PEEK_SPOTS.length, Math.floor(n)));
+  const spots = PEEK_SPOTS.map(([x, y]) => ({
+    at: [x + rng.int(-PEEK_JITTER, PEEK_JITTER), y + rng.int(-PEEK_JITTER, PEEK_JITTER)] as [number, number],
+    cover: (rng.chance(0.5) ? 'reeds' : 'leaf') as PeekCover,
+  }));
+  const taken = rng.shuffle(spots.map((_, i) => i)).slice(0, count);
+  return { spots, ducks: countingOrder(taken.map((i) => spots[i].at)) };
+}
+
+/** "A few, or lots?": only a prompt to look before counting; either choice is welcome, and the bot picks the nearer. */
+export type PeekGuess = 'few' | 'lots';
+export const peekGuessFor = (n: number): PeekGuess => (n <= 5 ? 'few' : 'lots');
+
+/**
+ * Level 17: she taps duck `i`. A duck not yet ringed is ringed and the voice says the new ring count; a ringed one is never
+ * counted twice (`say` null). The ring count is always the number said last.
+ */
+export function ringDuck(rung: readonly number[], i: number): { rung: number[]; say: number | null } {
+  if (rung.includes(i)) return { rung: [...rung], say: null };
+  const next = [...rung, i];
+  return { rung: next, say: next.length };
+}
+
+/** Level 17: the ducks still to count (indexes in counting order), which glow after two misses. */
+export const unringed = (total: number, rung: readonly number[]) =>
+  Array.from({ length: total }, (_, i) => i).filter((i) => !rung.includes(i));
+
+/**
+ * What a capable child touches next at level 17: the guess first (the nearer one), then each duck not yet ringed in counting
+ * order, then the pad with the answer.
+ */
+export function peekMove(
+  total: number,
+  guessed: boolean,
+  rung: readonly number[],
+  pads: readonly number[],
+  answer: number,
+): { guess: PeekGuess } | { duck: number } | { pad: number } | null {
+  if (!guessed) return { guess: peekGuessFor(total) };
+  const next = unringed(total, rung)[0];
+  if (next !== undefined) return { duck: next };
+  const pad = pads.indexOf(answer);
+  return pad >= 0 ? { pad } : null;
+}
 
 /** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
 export function tenStarts(rng: Rng, plan: DuckPlan): number[] {

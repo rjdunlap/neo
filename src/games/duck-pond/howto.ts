@@ -56,6 +56,11 @@ export const HOW_TO: GameHowTo = {
       to: 16,
       text: 'The ducks start on one side of the bridge. Tap a duck to send it across (tap it again to bring it back), then tap the green check to keep the split. Every new way earns a card in the row below: "3 and 2", "2 and 3", and so on.',
     },
+    {
+      from: 17,
+      to: 17,
+      text: 'Ducks peek out from reeds and lily leaves all over the pond. First tap "a few" (two dots) or "lots" (many dots); either is fine. Then tap each duck as you count: it waves, gets a ring and the number is said. Tap the lily pad with how many there are.',
+    },
   ],
   finish: [
     { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
@@ -69,9 +74,15 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
     { from: 14, to: 15, text: 'The round ends when the answer is right.' },
+    { from: 17, to: 17, text: 'The round ends when the answer is right.' },
     { from: 16, to: 16, text: 'The round ends when every way to share the ducks has a card.' },
   ],
   note: [
+    {
+      from: 17,
+      to: 17,
+      text: 'A ringed duck is never counted twice: tapping it again just quacks. A wrong pad counts the rings aloud and says whether ducks are still peeking; after two, the uncounted ducks glow.',
+    },
     {
       from: 13,
       to: 13,

@@ -395,6 +395,11 @@ class JarSort implements Game {
   }
 
   /** The ghost finger: tap the jar the solver moves from, then the jar it moves to. It never shows a refused move. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.jars.length) return null;
     const key = render(this.board);

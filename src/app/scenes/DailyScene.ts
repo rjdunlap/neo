@@ -25,6 +25,7 @@ import { fitArt } from '../../ui/origin-art';
 import { FONT, namePill } from '../../ui/text';
 import { lantern, shellTag } from '../../ui/shells';
 import { openStampsSheet, type StampsSheet } from '../../ui/stamps-sheet';
+import { resultOn } from '../../content/sixes';
 import { earnsShells } from '../../content/shells';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -97,9 +98,7 @@ export class DailyScene extends Scene {
   });
   private readonly plate = new Graphics();
   /** A grown-up's shells (the progression loop), beside the date; null for a band that does not earn them. */
-  readonly purse = earnsShells(store.data.profile.band)
-    ? shellTag(String(store.data.shells.balance), 20)
-    : null;
+  purse = earnsShells(store.data.profile.band) ? shellTag(String(store.data.shells.balance), 20) : null;
   /** The pet in the bottom-left corner the cards keep clear of: a poke repeats the page's line, and it cheers when all six are done. */
   readonly pip = makeCompanion();
   /** Over the friend for a band that earns shells: a tap on either opens the friend's own page and shop. */
@@ -178,7 +177,11 @@ export class DailyScene extends Scene {
   private openStamps() {
     if (this.stampsSheet || this.notesSheet || this.sheet || this.leaving) return;
     voice.stop();
-    this.stampsSheet = openStampsSheet(() => (this.stampsSheet = null));
+    this.stampsSheet = openStampsSheet(() => (this.stampsSheet = null), {
+      day: this.day,
+      dateWords: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      results: this.picks.map((p) => resultOn(store.data.games[p.mod.id]?.history, this.day)),
+    });
   }
 
   private openNotes() {
@@ -587,6 +590,9 @@ export class DailyScene extends Scene {
    */
   private async flourish() {
     void voice.say('daily.done');
+    // A grown-up's day gets its lantern, and the first time today a small bonus (the progression loop, slice 5).
+    const bonus = this.purse ? store.recordAllSix(this.day) : 0;
+    if (bonus > 0 && this.purse) this.showSixBonus(bonus);
     await this.tw.wait(0.4);
     sfx.sparkle();
     this.pip.cheer();
@@ -602,9 +608,28 @@ export class DailyScene extends Scene {
       });
     }
   }
+
+  /** The new balance beside the date, and "+25 shells · all six" on a pill under the title for a moment. */
+  private showSixBonus(bonus: number) {
+    const old = this.purse!;
+    this.purse = shellTag(String(store.data.shells.balance), 20);
+    this.ui.addChildAt(this.purse, this.ui.getChildIndex(old));
+    old.destroy({ children: true });
+    this.place();
+    const pill = shellTag(`+${bonus} shells · all six`, 24, true);
+    pill.position.set(this.view.w / 2, this.date.y + 72);
+    pill.alpha = 0;
+    this.ui.addChild(pill);
+    void (async () => {
+      await this.tw.to(pill, { alpha: 1 }, { duration: 0.3 });
+      await this.tw.wait(2.6);
+      if (pill.destroyed) return;
+      await this.tw.to(pill, { alpha: 0 }, { duration: 0.5 });
+      pill.destroy({ children: true });
+    })();
+  }
 }
 
-/** A pencil, for the grown-up's notes button. */
 /** The stamps button: a lit paper lantern. */
 function lanternIcon(): Graphics {
   const g = new Graphics();
@@ -612,6 +637,7 @@ function lanternIcon(): Graphics {
   return g;
 }
 
+/** A pencil, for the grown-up's notes button. */
 function pencilIcon(): Graphics {
   const g = new Graphics()
     .poly([-20, 20, -14, 2, 10, -22, 22, -10, -2, 14])
