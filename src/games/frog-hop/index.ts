@@ -51,7 +51,6 @@ import {
   hopLayout,
   sceneFor,
   CARD_HIT,
-  MISSING_CARDS,
   runNumbers,
   shownOnRun,
   type HopScene,
@@ -240,7 +239,7 @@ class FrogHop implements Game {
       missing
     ) {
       // The missing-number cards change every question; the others always read 1 to 6.
-      for (const n of missing ? Array.from({ length: MISSING_CARDS }, () => 0) : GAP_CARDS) {
+      for (const n of missing ? this.questions[0].cards! : GAP_CARDS) {
         const node = new Container();
         const text = label(String(n), 52, ink);
         node.addChild(tile(104, 110, 'white'), text);
@@ -254,6 +253,8 @@ class FrogHop implements Game {
     // Last, so the ring sits over the cards as well as the pads.
     this.ring.eventMode = 'none';
     ctx.stage.addChild(this.ring);
+    // The first run fades in with its question, so the nine-pad line is never seen behind the how-to card.
+    if (missing) for (const node of [this.row, this.frog, ...this.cards.map((c) => c.node)]) node.alpha = 0;
   }
 
   get q() {
@@ -603,10 +604,11 @@ class FrogHop implements Game {
   private async askMissing(line?: Promise<unknown>) {
     const q = this.q;
     const fade = (alpha: number) =>
-      Promise.all([
-        this.ctx.tw.to(this.row, { alpha }, { duration: 0.2 }),
-        this.ctx.tw.to(this.frog, { alpha }, { duration: 0.2 }),
-      ]);
+      Promise.all(
+        [this.row, this.frog, ...this.cards.map((c) => c.node)].map((node) =>
+          this.ctx.tw.to(node, { alpha }, { duration: 0.2 }),
+        ),
+      );
     await fade(0);
     this.lo = q.lo;
     this.at = q.start;
