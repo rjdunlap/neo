@@ -14,6 +14,23 @@ export const VOICE = {
   'song.home.hear': [
     'Hear how this one sounds finished, {name}? It ends on the home jelly. Change your last jelly to try it!',
   ],
+  'song.change.higher': ['Here is my song, {name}. Change one thing: make the end go higher!'],
+  'song.change.match': [
+    'Here is my song, {name}. Change one thing: make beat four sound just like beat one!',
+  ],
+  'song.change.down': ['Here is my song, {name}. Change one thing: make it go down at the very end!'],
+  'song.change.quiet': ['Here is my song, {name}. Change one thing: give it a quiet beat, with no jelly!'],
+  'song.change.higher.again': [
+    'Listen to the end, {name}. Is it higher than my song? Move the last jelly up!',
+  ],
+  'song.change.match.again': [
+    'Beat four does not sound like beat one yet, {name}. Put them on the same row!',
+  ],
+  'song.change.down.again': [
+    'It does not go down at the end yet, {name}. Make the last jelly lower than the one before!',
+  ],
+  'song.change.quiet.again': ['Every beat still has a jelly, {name}. Tap one to make that beat quiet!'],
+  'song.change.ready': ['Is that the change, {name}? Press the check to hear our song once more!'],
   'song.finish': ['Listen to my start, {name}! Now finish it: tap one jelly in each of the last two beats.'],
   'song.finish.ready': ['Is that a good ending, {name}? Press the check to hear our song once more!'],
   'song.copy': ['Tap the shadow jellies to make the song!'],
