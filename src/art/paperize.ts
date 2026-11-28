@@ -305,35 +305,49 @@ export function bakePaper(node: Container, view: { scale: number }) {
   node.cacheAsTexture({ resolution: Math.min(2, Math.max(0.5, resolution)), antialias: true });
 }
 
-let pass = 0;
+/**
+ * Still paper pieces are kept as one ready-made picture each (`cacheAsTexture`), so a phone paints a single layer for a
+ * piece instead of its shadow, fill, fibre and two crayon lines (and a few thousand fewer triangles). A piece is baked
+ * once it has held still for `STILL` passes, at the sharpness it is shown at; it goes back to live drawing while it is
+ * redrawn often or grows or shrinks a lot (a pop, a zoom), and is baked again once it settles.
+ */
+const STILL_MS = 400;
+const STILL_PASSES = 3;
+/** At most this many pieces are baked (or re-baked) in one pass, so a new scene does not stall a phone's first frame. */
+const BAKES_PER_PASS = 12;
+/** A picture bigger than this many pixels is left live (a full-screen backdrop is one cheap layer anyway). */
+const MAX_PIXELS = 1024 * 1024;
+interface Baked {
+  /** The pass in which the drawing last changed or moved in size, and the time then. */
+  since: number;
+  sinceMs: number;
+  /** The world scale it was last seen at. */
+  scale: number;
+  /** The world scale it is baked at, or 0 while it is drawn live. */
+  baked: number;
+  /** The drawing and its version it was baked from. */
+  ctx: GraphicsContext;
+  version: number;
+}
+const bakes = new WeakMap<Graphics, Baked>();
+const versions = new WeakMap<GraphicsContext, number>();
+const hasPaper = (ctx: GraphicsContext) => ctx.instructions.some((i) => papered.has(i));
 
-/** Dev only: how often and how long the pass rewrote drawings (`window.__paperStats`), to tune it for phones. */
-const stats = { rewrites: 0, ms: 0, passMs: 0, passes: 0 };
-if (import.meta.env.DEV && typeof window !== 'undefined')
-  (window as unknown as { __paperStats: typeof stats }).__paperStats = stats;
+/** `?nobake` leaves every paper piece drawn live, to compare. */
+const AUTO_BAKE = typeof location === 'undefined' || !new URLSearchParams(location.search).has('nobake');
 
-function track(ctx: GraphicsContext): Seen {
-  const known = seen.get(ctx);
-  if (known) return known;
-  const state: Seen = { hits: [], writing: false, stale: true };
-  ctx.on('update', () => {
-    if (state.writing) return;
-    // Every fill and stroke of one redraw fires an update; only the first of a pass counts.
-    if (state.hits[state.hits.length - 1] !== pass) {
-      state.hits.push(pass);
-      if (state.hits.length > ANIMATED) state.hits.shift();
-    }
-    state.stale = true;
-  });
-  seen.set(ctx, state);
-  return state;
+function unbake(g: Graphics, b: Baked) {
+  if (b.baked) g.cacheAsTexture(false);
+  b.baked = 0;
 }
 
 /** Walks a subtree and turns every flat drawing it has not seen (or that was redrawn) into paper. */
-export function paperPass(root: Container) {
+export function paperPass(root: Container, resolution = 1) {
   pass++;
   const t0 = import.meta.env.DEV ? performance.now() : 0;
-  const walk = (node: Container) => {
+  let budget = BAKES_PER_PASS;
+  const now = performance.now();
+  const walk = (node: Container, inBaked: boolean) => {
     if (flat.has(node) || !node.visible) return;
     if (node instanceof Graphics) {
       const ctx = node.context;
@@ -348,12 +362,102 @@ export function paperPass(root: Container) {
           s.writing = false;
         }
       }
+      if (AUTO_BAKE) budget = bakeStill(node, s, busy, inBaked, resolution, budget, now);
     }
-    for (const child of node.children) walk(child as Container);
+    const baked = inBaked || node.isCachedAsTexture;
+    for (const child of node.children) walk(child as Container, baked);
   };
-  walk(root);
+  walk(root, false);
   if (import.meta.env.DEV) {
     stats.passes++;
     stats.passMs += performance.now() - t0;
   }
+}
+
+function bakeStill(
+  g: Graphics,
+  s: Seen,
+  busy: boolean,
+  inBaked: boolean,
+  resolution: number,
+  budget: number,
+  now: number,
+) {
+  const ctx = g.context;
+  const version = versions.get(ctx) ?? 0;
+  const m = g.worldTransform;
+  const scale = Math.max(Math.hypot(m.a, m.b), Math.hypot(m.c, m.d));
+  let b = bakes.get(g);
+  if (!b) {
+    // A drawing this pass did not bake (bakePaper's scenery, a game's own cache) is left as it is.
+    if (g.isRenderGroup) return budget;
+    b = { since: pass, sinceMs: now, scale, baked: 0, ctx, version };
+    bakes.set(g, b);
+  }
+  const changed = b.ctx !== ctx || b.version !== version;
+  b.ctx = ctx;
+  b.version = version;
+  // Measured from the size it had when it last settled, so a slow zoom counts as moving too.
+  const resized = Math.abs(scale - b.scale) > b.scale * 0.03;
+  if (changed || resized || busy || s.stale) {
+    b.since = pass;
+    b.sinceMs = now;
+    b.scale = scale;
+  }
+  const still = pass - b.since >= STILL_PASSES && now - b.sinceMs >= STILL_MS;
+  // Pieces with children, masks or filters, or under a baked parent, stay live: their picture could go stale unseen.
+  const unfit =
+    inBaked ||
+    busy ||
+    g.children.length > 0 ||
+    !g.includeInBuild ||
+    !g.measurable ||
+    !g.renderable ||
+    !!g.mask ||
+    !!g.filters?.length ||
+    scale < 0.01;
+  if (b.baked) {
+    const off = scale / b.baked;
+    if (unfit || off > 1.15 || off < 0.6) {
+      unbake(g, b);
+      return budget;
+    }
+    if (changed) g.updateCacheTexture();
+    // Settled at a size a little off the picture's: bake it again at the new sharpness.
+    if (Math.abs(off - 1) <= 0.05 || !still || budget <= 0) return budget;
+  } else if (unfit || !still || budget <= 0 || !hasPaper(ctx)) return budget;
+  const box = g.getLocalBounds();
+  const res = Math.min(4, Math.max(0.25, resolution * scale));
+  if (box.width <= 0 || box.width * box.height * res * res > MAX_PIXELS) {
+    unbake(g, b);
+    return budget;
+  }
+  b.baked = scale;
+  g.cacheAsTexture({ resolution: res, antialias: true });
+  return budget - 1;
+}
+
+let pass = 0;
+
+/** Dev only: how often and how long the pass rewrote drawings (`window.__paperStats`), to tune it for phones. */
+const stats = { rewrites: 0, ms: 0, passMs: 0, passes: 0 };
+if (import.meta.env.DEV && typeof window !== 'undefined')
+  (window as unknown as { __paperStats: typeof stats }).__paperStats = stats;
+
+function track(ctx: GraphicsContext): Seen {
+  const known = seen.get(ctx);
+  if (known) return known;
+  const state: Seen = { hits: [], writing: false, stale: true };
+  ctx.on('update', () => {
+    versions.set(ctx, (versions.get(ctx) ?? 0) + 1);
+    if (state.writing) return;
+    // Every fill and stroke of one redraw fires an update; only the first of a pass counts.
+    if (state.hits[state.hits.length - 1] !== pass) {
+      state.hits.push(pass);
+      if (state.hits.length > ANIMATED) state.hits.shift();
+    }
+    state.stale = true;
+  });
+  seen.set(ctx, state);
+  return state;
 }
