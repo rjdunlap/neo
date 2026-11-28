@@ -445,16 +445,17 @@ describe('the welcome ending layout (RW07 slice 3)', () => {
 });
 
 describe("Home's yard (2026-11-28)", () => {
-  const boxOf = (at: YardSpot, size: { w: number; h: number }) => ({
+  type Rect = { x0: number; x1: number; y0: number; y1: number };
+  const boxOf = (at: YardSpot, size: { w: number; h: number }): Rect => ({
     x0: at.x - (size.w * at.scale) / 2,
     x1: at.x + (size.w * at.scale) / 2,
     y0: at.y - size.h * at.scale,
     y1: at.y + 44,
   });
-  const overlap = (a: Box, b: Box) =>
+  const overlap = (a: Rect, b: Rect) =>
     Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) *
     Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
-  const area = (a: Box) => (a.x1 - a.x0) * (a.y1 - a.y0);
+  const area = (a: Rect) => (a.x1 - a.x0) * (a.y1 - a.y0);
 
   it('stands every way out on screen, at least 100 units to touch, clear of the corners and mostly clear of each other', () => {
     for (const v of [
