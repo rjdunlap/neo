@@ -21,6 +21,9 @@ import {
   barOf,
   beadToTap,
   composeReady,
+  endsHome,
+  finishedAtHome,
+  homeRow,
   key,
   makeSong,
   MOTIF_WINDOW,
@@ -153,6 +156,10 @@ class SongMaker implements Game {
   /** My song: beats played since her last change, and whether the check is awake. */
   beatsSinceChange = 0;
   checkAwake = false;
+  /** Bring it home: checks that missed home so far, whether the pet is playing the two versions, and whether she must change something before the check wakes again. */
+  private homeMisses = 0;
+  private explaining = false;
+  private needsChange = false;
   private cell = 100;
   private lay: SongLayout | null = null;
   private view: View | null = null;
@@ -231,7 +238,9 @@ class SongMaker implements Game {
         void this.ctx.instruct('song.compose');
         break;
       case 'answer':
-        void this.ctx.instruct(this.plan.cols === 4 ? 'song.finish' : 'song.answer');
+        void this.ctx.instruct(
+          this.plan.home ? 'song.home' : this.plan.cols === 4 ? 'song.finish' : 'song.answer',
+        );
         break;
       case 'ghost':
         void this.ctx.instruct('song.copy');
@@ -331,13 +340,14 @@ class SongMaker implements Game {
       size: [0.5, 0.8],
     });
     // Any change starts the check's wait again, so it only confirms the whole song she has just heard.
+    this.needsChange = false;
     this.beatsSinceChange = 0;
     this.syncCheck();
   }
 
   private tap(bead: Bead) {
     this.sing(bead);
-    if (this.done || bead.given) return;
+    if (this.done || bead.given || this.explaining) return;
     if (this.plan.mode === 'answer') {
       this.answerTap(bead);
       return;
@@ -430,7 +440,7 @@ class SongMaker implements Game {
     if (!check || this.done) return;
     const ready =
       this.plan.mode === 'answer'
-        ? answerReady(this.plan, this.answered(), this.beatsSinceChange)
+        ? answerReady(this.plan, this.answered(), this.beatsSinceChange) && !this.needsChange
         : composeReady(this.plan, this.litCount(), this.beatsSinceChange);
     if (ready === this.checkAwake) return;
     this.checkAwake = ready;
@@ -450,11 +460,63 @@ class SongMaker implements Game {
 
   /** My song: the check plays her song round once more, then finishes. Nothing was ever wrong, so nothing is counted. */
   private checkPressed() {
-    if (this.done || !this.checkAwake) return;
+    if (this.done || !this.checkAwake || this.explaining) return;
+    if (this.plan.home && !endsHome(this.plan, this.answerNotes())) {
+      void this.missedHome();
+      return;
+    }
     this.done = true;
     this.glow.clear();
     if (this.check) this.check.eventMode = 'none';
     void this.ctx.tw.wait((60 / (music.bpm() ?? FALLBACK_BPM)) * this.plan.cols).then(() => this.celebrate());
+  }
+
+  /** Answer levels: the whole board's notes as heard, the pet's given beats and her answer. */
+  private answerNotes() {
+    return this.beads.filter((b) => b.lit).map((b) => ({ ...b.note }));
+  }
+
+  /**
+   * Bring it home: the check found her answer ending away from home. That is a miss (the rule was spoken first), the
+   * pet sings her answer and then the same answer ending home, and the check sleeps until she changes something. After
+   * two misses the home jelly glows. Her jellies are never moved for her.
+   */
+  private async missedHome() {
+    this.misses++;
+    this.homeMisses++;
+    this.explaining = true;
+    this.needsChange = true;
+    this.checkAwake = false;
+    if (this.check) {
+      this.check.eventMode = 'none';
+      this.check.alpha = 0.35;
+    }
+    this.listening = true;
+    const beat = 60 / (music.bpm() ?? FALLBACK_BPM);
+    const hers = this.answerNotes();
+    const played = [hers, finishedAtHome(this.plan, hers)];
+    for (const [i, notes] of played.entries()) {
+      if (i === 1) await this.ctx.tw.wait(beat);
+      for (let col = 0; col < this.plan.cols; col++) {
+        this.drawPlayhead(col);
+        const n = notes.find((n) => n.col === col);
+        if (n) {
+          sfx.marimba(this.step(n.row), 0.5);
+          this.beads.find((b) => b.note.col === col && b.note.row === n.row)?.pop(0.6);
+        }
+        await this.ctx.tw.wait(beat);
+      }
+    }
+    this.col = -1;
+    this.listening = false;
+    this.explaining = false;
+    void this.ctx.say('song.home.hear');
+    if (this.homeMisses === 2) {
+      this.hints++;
+      void this.ctx.say('song.hint');
+    }
+    this.beatsSinceChange = 0;
+    this.drawGlow();
   }
 
   /** Plays the tune to copy, one beat per column, lighting each column as it goes. */
@@ -676,7 +738,17 @@ class SongMaker implements Game {
 
   private drawGlow() {
     const g = this.glow.clear();
-    if (this.wrong < 2 || this.done) return;
+    if (this.done) return;
+    // Bring it home: after two checks that missed, the home jelly in the last beat glows.
+    if (this.plan.home) {
+      const home = this.beads.find(
+        (b) => b.note.col === this.plan.cols - 1 && b.note.row === homeRow(this.plan),
+      );
+      if (home && this.homeMisses >= 2)
+        g.circle(home.x, home.y, home.cell * 0.48).stroke({ width: 7, color: swatch.yellow.line });
+      return;
+    }
+    if (this.wrong < 2) return;
     const next = this.remaining[0];
     const bead = next && this.beads.find((b) => b.note.col === next.col && b.note.row === next.row);
     if (bead) g.circle(bead.x, bead.y, bead.cell * 0.48).stroke({ width: 7, color: swatch.yellow.line });

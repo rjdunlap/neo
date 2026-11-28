@@ -13,6 +13,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           'song9',
           'song11',
           'song12',
+          'song13',
           'puzzle',
           'weather',
           'sink',
@@ -256,6 +257,55 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.waitForTimeout(400);
       log(
         'Song Maker 12: two shadows per beat, wrong shadow hint, solved beat clears other shadow, sticker passed',
+      );
+    }
+
+    // Song Maker 13, Bring it home: a check with beat 8 off home is a miss (the pet plays both versions); two glow the home jelly; ending home finishes.
+    if (!only || only === 'song' || only === 'song13') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('song-maker', 13, 'Mia', 'school');
+      await page.waitForTimeout(600);
+      await screenshot('song-maker-13-portrait');
+      const r13 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const at = (col, row) => g.beads.find((b) => b.note.col === col && b.note.row === row);
+        const startsHome = g.song.given[0].row === 3 && g.song.given[3].row !== 3;
+        for (const col of [4, 5, 6]) {
+          kit.tapOn(at(col, 1));
+          await kit.sleep(150);
+        }
+        kit.tapOn(at(7, 0));
+        await kit.sleep(150);
+        const woke1 = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        await kit.sleep(100);
+        const miss1 = g.misses === 1 && g.hints === 0 && g.explaining && !g.checkAwake && !g.done;
+        const explained1 = await kit.until(() => !g.explaining, 30000);
+        const asleepAfter1 = !g.checkAwake && g.check.eventMode === 'none';
+        kit.tapOn(at(7, 1));
+        await kit.sleep(150);
+        const woke2 = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        await kit.sleep(100);
+        const explained2 = await kit.until(() => !g.explaining, 30000);
+        const hintAfterTwo = g.misses === 2 && g.hints === 1;
+        kit.tapOn(at(7, 3));
+        await kit.sleep(150);
+        const woke3 = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        return { startsHome, woke1, miss1, explained1, asleepAfter1, woke2, explained2, hintAfterTwo, woke3 };
+      });
+      assert.ok(Object.values(r13).every(Boolean), `song 13 check ${JSON.stringify(r13)}`);
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [2, 1], 'song 13 score');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      log(
+        'Song Maker 13: off-home check is a miss with both versions played, glow after two, home ends, sticker passed',
       );
     }
 

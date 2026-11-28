@@ -12,7 +12,7 @@
 | toddler | 2–4 |
 | preschool | 4, 11, 5, 6, 9 |
 | pre-K | 5, 11, 6, 12, 7, 9 |
-| school | 6, 7, 9, 10 |
+| school | 6, 7, 9, 10, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,12 +28,13 @@
 | 10 | Answer the pet's 4-note question with a note on each of the next four beats |
 | 11 | Finish the pet's 2-note song with a note on each of the last two beats |
 | 12 | Listen, then pick each note of a 4-note tune from two shadows |
+| 13 | Answer the pet's 4-note question, ending your answer on the home jelly |
 
 <!-- end generated -->
 
 **Starts as:** at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat
 
-**Grows into:** copy authored songs with rests by shadows or a card, finish a two-note song start (level 11, preschool and pre-K), continue a pattern, pick each heard note from two shadows (level 12, pre-K) before finding a tune by ear, then make your own song (level 9) and answer the pet's question (level 10, school)
+**Grows into:** copy authored songs with rests by shadows or a card, finish a two-note song start (level 11, preschool and pre-K), continue a pattern, pick each heard note from two shadows (level 12, pre-K) before finding a tune by ear, then make your own song (level 9) and answer the pet's question (level 10, school) and then end the answer on the home jelly (level 13, school: a check that ends elsewhere is a miss, and the pet plays her answer and the same answer ending home)
 
 ## Design notes
 

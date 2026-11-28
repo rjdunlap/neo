@@ -4,6 +4,10 @@ import {
   ANSWER_FROM,
   OPENINGS,
   QUESTIONS,
+  HOME_QUESTIONS,
+  endsHome,
+  finishedAtHome,
+  homeRow,
   answerFrom,
   answerReady,
   answerTap,
@@ -285,7 +289,7 @@ describe('Song Maker songs', () => {
     const plan = songPlan(9);
 
     it('is an open 6×4 loop with no given or target notes, last in the preschool, pre-K and school orders', () => {
-      expect(SONG_PLANS).toHaveLength(12);
+      expect(SONG_PLANS).toHaveLength(13);
       expect(plan).toMatchObject({ mode: 'compose', cols: 6, rows: 4 });
       const song = makeSong(plan, new Rng(1));
       expect(song).toEqual({ notes: [], given: [] });
@@ -294,7 +298,7 @@ describe('Song Maker songs', () => {
       for (const band of ['preschool', 'prek'] as const) {
         expect(levelsInOrder(LEVELS[band]!)).not.toContain(8);
       }
-      expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10]);
+      expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 13]);
       for (const band of ['lap', 'toddler'] as const) expect(LEVELS[band]!.max).toBeLessThanOrEqual(8);
     });
 
@@ -546,6 +550,69 @@ describe('Song Maker songs', () => {
           placed.add(key(n));
         }
         expect(mine).toHaveLength(4);
+      }
+    });
+  });
+  describe('level 13, Bring it home', () => {
+    const plan = songPlan(13);
+
+    it('is level 10 with a home rule, in school only after level 10', () => {
+      expect(plan).toMatchObject({ mode: 'answer', cols: 8, rows: 4, notes: 4, home: true });
+      const school = levelsInOrder(LEVELS.school!);
+      expect(school[school.indexOf(10) + 1]).toBe(13);
+      for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+        expect(levelsInOrder(LEVELS[band]!)).not.toContain(13);
+      expect(SCRIPT['song.home']?.length).toBeGreaterThan(0);
+      expect(SCRIPT['song.home.hear']?.length).toBeGreaterThan(0);
+    });
+
+    it('asks questions that start on home and end away from it, with more than the last three skipped', () => {
+      expect(HOME_QUESTIONS.length).toBeGreaterThan(MOTIF_WINDOW + 1);
+      expect(new Set(HOME_QUESTIONS.map((q) => q.join())).size).toBe(HOME_QUESTIONS.length);
+      for (const q of HOME_QUESTIONS) {
+        expect(q).toHaveLength(4);
+        expect(q[0]).toBe(homeRow(plan));
+        expect(q[3]).not.toBe(homeRow(plan));
+        expect(new Set(q).size).toBeGreaterThan(1);
+      }
+      const recent: string[] = [];
+      for (let i = 0; i < 40; i++) {
+        const song = makeSong(plan, new Rng(i + 1), recent);
+        expect(recent.slice(-MOTIF_WINDOW)).not.toContain(song.motif);
+        expect(song.given.map((n) => n.row)).toEqual([...HOME_QUESTIONS[Number(song.motif!.slice(2))]]);
+        recent.push(song.motif!);
+      }
+    });
+
+    it('accepts an answer exactly when beat 8 is the home jelly, and all 64 such answers are reachable', () => {
+      let accepted = 0;
+      for (let a = 0; a < 256; a++) {
+        let l: Note[] = [];
+        for (let c = 0; c < 4; c++) l = answerTap(l, { col: 4 + c, row: (a >> (2 * c)) & 3 });
+        const ok = endsHome(plan, l);
+        expect(ok).toBe(l.find((n) => n.col === 7)!.row === 3);
+        if (ok) accepted++;
+        // The pet's "finished" version differs from hers only at beat 8, and is accepted.
+        const done = finishedAtHome(plan, l);
+        expect(endsHome(plan, done)).toBe(true);
+        const changed = done.filter((n) => !l.some((m) => key(m) === key(n)));
+        expect(changed.every((n) => n.col === 7)).toBe(true);
+        expect(done).toHaveLength(l.length);
+      }
+      expect(accepted).toBe(64);
+    });
+
+    it('has a bot that ends on home, so the first check passes', () => {
+      for (let seed = 1; seed <= 50; seed++) {
+        const song = makeSong(plan, new Rng(seed));
+        const placed = new Set(song.given.map(key));
+        const mine: Note[] = [];
+        for (let n = beadToTap(plan, song, placed); n; n = beadToTap(plan, song, placed)) {
+          mine.push(n);
+          placed.add(key(n));
+        }
+        expect(mine.map((n) => n.col)).toEqual([4, 5, 6, 7]);
+        expect(endsHome(plan, mine)).toBe(true);
       }
     });
   });
