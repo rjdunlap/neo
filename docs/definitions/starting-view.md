@@ -29,7 +29,7 @@ So the setting is read in exactly one place: the island-mode branch at the end o
 
 The preference changes **the chooser's exit, never the `hub` route.** `hub` is also Home and Back: `DailyScene`'s Back calls `go.hub()` off a phone, as do Explore, the lands, the sticker book, the treehouse and a game's Home. If `hub` honoured the preference, Back from the six would open the six again and Explore would become unreachable.
 
-The root's `?daily` query already works this way (consumed once, then `daily = false`), and D8 reuses the same idea without a flag: `begin` calls `go.daily()` instead of `go.hub()`. Every later `go.hub()` is the ordinary hub. Explore stays one tap away: the six's Back on a tablet or computer is Home, and Home's Explore is where it is today; at `classic/` the Back is the map.
+The root's `?daily` query already works this way (consumed once, then `daily = false`), and D8 reuses the same idea without a flag: `begin` calls `go.daily()` instead of `go.hub()`. Every later `go.hub()` is the ordinary hub. **The root's `?daily` flag is consumed by this branch too:** if `begin` took the six while the flag was still pending, the six's Back would call `hub`, which would open the six again. So at the root the six branch clears the flag (the build exports a small `takeDaily()` from `rework.ts`, or `begin` defers to `hub` while the flag is pending; either is fine, so long as the loop cannot happen). Explore stays one tap away: the six's Back on a tablet or computer is Home, and Home's Explore is where it is today; at `classic/` the Back is the map.
 
 ## What is saved
 
@@ -64,9 +64,10 @@ Plain HTML in `src/parent/panel.ts`, shown at the root and at `classic/`:
 
 ## Build slice (one session, save and navigation tier)
 
+0. **First, open the six at `classic/`.** Nothing opens it there today (every `go.daily()` caller is at the root). Its backdrop is drawn in code (`loadHomeBackdrop` is empty) and `classic/` already loads the collection art, so it is expected to work; if it does not, the build makes it work or drops `classic/` from the setting and says so here.
 1. `startView` in `SaveData.settings`: type, `defaults`, `migrate` repair, `save.test.ts` cases above.
 2. `ChooserScene.begin`: in island mode, for a player who owns a friend, `startView === 'six' ? go.daily() : go.hub()`. A unit-level check where the chooser's exit is testable (`chooser.ts`), otherwise the browser check below.
 3. The grown-ups' page row and its copy in `copy.ts`, with a `copy.test.ts` case for both apps.
-4. Checks: typecheck, unit tests, build; one filtered browser run that sets the setting, taps the card at the root (tablet viewport) and at `classic/`, sees the six, taps Back and sees Home or the map, then switches to a second player and sees Home. `world` is not needed: `hub` and every other route are unchanged. Offline only if the persistence code is touched beyond the new field.
+4. Checks: typecheck, unit tests, build; one filtered run of `BROWSER_SUITE=profiles` (a new filtered step, as the suite's other per-player steps) that sets the setting, taps the card at the root (tablet viewport) and at `classic/`, sees the six, taps Back and sees Home or the map, then switches to a second player and sees Home. `world` is not needed: `hub` and every other route are unchanged. Offline only if the persistence code is touched beyond the new field.
 
 **Exit evidence:** a player set to Today's six starts in the six and gets Home or the map on Back; a second player on the default starts where they always did; garbage in the field reads as Explore; a phone, a guest, a new player and a pad-chosen card behave exactly as before.
