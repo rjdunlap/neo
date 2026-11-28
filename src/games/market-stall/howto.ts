@@ -60,6 +60,11 @@ export const HOW_TO: GameHowTo = {
       to: 14,
       text: 'The shopkeeper asks for one coin: the one, two or five-shell coin. Tap that coin in the purse; the shopkeeper counts its dots.',
     },
+    {
+      from: 15,
+      to: 15,
+      text: 'Two things wear price tags. Tap the one that costs more. The dots on each tag show the price too.',
+    },
   ],
   note: [
     { text: 'The stall sells fruit, flowers or balloons; the shell coins work the same at each stall.' },
@@ -127,6 +132,11 @@ export const HOW_TO: GameHowTo = {
       to: 14,
       text: 'Played between levels 2 and 3, before she pays with fives. Each coin shows its worth as dots, and the tag shows the asked worth too. A wrong coin says what it is worth; two misses light the asked coin. Help counts once per order.',
     },
+    {
+      from: 15,
+      to: 15,
+      text: 'Played in pre-K between levels 2 and 3: which of two numerals up to 10 is more, 1 to 6 apart. A wrong tap lays both prices out as dots side by side on the counter, the extra dots in yellow; two misses light the dearer one. Help counts once per order.',
+    },
   ],
   finish: [
     { to: 5, text: 'The round ends when the right amount has been paid.' },
@@ -139,5 +149,6 @@ export const HOW_TO: GameHowTo = {
     { from: 12, to: 12, text: 'The round ends after two choices and two purses spent on two things.' },
     { from: 13, to: 13, text: 'The round ends after the bell confirms three heaps with the fewest coins.' },
     { from: 14, to: 14, text: 'The round ends when four coins have been handed over.' },
+    { from: 15, to: 15, text: 'The round ends after four pairs, each answered with the dearer thing.' },
   ],
 };

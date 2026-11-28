@@ -65,8 +65,10 @@ import {
   type AffordOrder,
 } from './logic';
 
-/** Every level where she pays; the purse level asks for a total instead, and the afford level asks what a purse can buy. */
-const PAYING = PLANS.filter((p) => p.mode !== 'purse' && p.mode !== 'afford' && p.mode !== 'trade');
+/** Every level where she pays; the purse level asks for a total instead, the afford level asks what a purse can buy, and Which costs more? only compares two prices. */
+const PAYING = PLANS.filter(
+  (p) => p.mode !== 'purse' && p.mode !== 'afford' && p.mode !== 'trade' && p.mode !== 'more',
+);
 
 describe('Market Stall', () => {
   it('seeds every stall reproducibly, with distinct awnings, keepers and enough named goods for paired orders', () => {
@@ -345,7 +347,7 @@ describe('Market Stall', () => {
   describe('a total she can see (TotoLogic P8)', () => {
     it('stays hidden on pair, change, purse and Which coin? levels', () => {
       expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([
-        4, 6, 8, 10, 11, 14,
+        4, 6, 8, 10, 11, 14, 15,
       ]);
       expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9, 12, 13]);
     });

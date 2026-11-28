@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 1, 2, 14 |
-| pre-K | 2, 14, 3, 4 |
+| pre-K | 2, 14, 15, 3, 4 |
 | school | 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12 |
 
 | Level | Plays like |
@@ -28,6 +28,7 @@
 | 12 | Can I buy it? A purse of 6 to 14 shells against three prices, then spend it all on two things |
 | 13 | Trade up: swap small coins for a bigger one until 6 to 12 shells are the fewest coins |
 | 14 | Which coin? Give the shopkeeper the one, two or five-shell coin asked for |
+| 15 | Which costs more? Tap the dearer of two tagged things, priced 1 to 10 |
 
 <!-- end generated -->
 

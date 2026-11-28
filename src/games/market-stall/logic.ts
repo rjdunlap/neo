@@ -10,10 +10,22 @@ import type { BandLevels } from '../../progress/difficulty';
  * mixed coins and tap the number card that says how much is in it, then pay prices from 11 to 20 with a ten-shell coin,
  * then give the change from a 20, counting up from the price, and at the top say whether a purse can buy each of three things
  * and spend a whole purse on two of them. Between levels 2 and 3, *Which coin?* (level 14) asks for the one, two or
- * five-shell coin by name, before she pays with fives.
+ * five-shell coin by name, before she pays with fives, and *Which costs more?* (level 15) asks which of two tagged goods
+ * costs more.
  */
 export type ShopMode =
-  'count' | 'twos' | 'mix' | 'pair' | 'ways' | 'change' | 'fewest' | 'purse' | 'afford' | 'trade' | 'which';
+  | 'count'
+  | 'twos'
+  | 'mix'
+  | 'pair'
+  | 'ways'
+  | 'change'
+  | 'fewest'
+  | 'purse'
+  | 'afford'
+  | 'trade'
+  | 'which'
+  | 'more';
 
 export interface ShopPlan {
   mode: ShopMode;
@@ -118,19 +130,30 @@ export const PLANS: ShopPlan[] = [
     orders: 4,
     name: 'Which coin? Give the shopkeeper the one, two or five-shell coin asked for',
   },
+  {
+    // Level 15, Which costs more? (dive slice 9): an entry between levels 2 and 3 for pre-K, placed by `order`. Two tagged
+    // goods priced 1 to 10; she taps the dearer one. Nothing is paid, so there are no coins.
+    mode: 'more',
+    coins: [],
+    price: [1, 10],
+    orders: 4,
+    name: 'Which costs more? Tap the dearer of two tagged things, priced 1 to 10',
+  },
 ];
 
 /** Which coin? (level 14): coin recognition between levels 2 and 3, an entry level placed by `order`. */
 export const WHICH_LEVEL = 14;
+/** Which costs more? (level 15): comparing two numerals up to 10, with dots to check, an entry level placed by `order`. */
+export const MORE_LEVEL = 15;
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: WHICH_LEVEL, order: [1, 2, WHICH_LEVEL] },
-  prek: { min: 2, max: WHICH_LEVEL, order: [2, WHICH_LEVEL, 3, 4] },
+  prek: { min: 2, max: MORE_LEVEL, order: [2, WHICH_LEVEL, MORE_LEVEL, 3, 4] },
   school: { min: 3, max: 13, order: [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12] },
 };
 
 /** Levels below the school ladder that an older band does not list; carried there, they start at its easiest level. */
-export const ENTRY_LEVELS = [WHICH_LEVEL] as const;
+export const ENTRY_LEVELS = [WHICH_LEVEL, MORE_LEVEL] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -154,6 +177,8 @@ export interface Order {
   afford?: { kind: 'choose' | 'spend'; purse: number };
   /** On the Which coin? level: the coin the shopkeeper asks for (the order's one price). */
   ask?: number;
+  /** On the Which costs more? level: two different prices, left and right; she taps the dearer good. */
+  compare?: true;
 }
 
 /** An order at the afford level: three prices on the shelf and a purse. */
@@ -163,6 +188,7 @@ export type AffordOrder = Order & { afford: { kind: 'choose' | 'spend'; purse: n
 export function target(plan: ShopPlan, o: Order): number {
   if (o.tradeAmount !== undefined) return o.tradeAmount;
   if (o.ask !== undefined) return o.ask;
+  if (o.compare) return Math.max(...o.prices);
   if (o.purse) return sum(o.purse);
   if (o.afford) return o.afford.purse;
   const total = o.prices.reduce((a, b) => a + b, 0);
@@ -185,8 +211,55 @@ export function makeWhichOrders(plan: ShopPlan, rng: Rng): Order[] {
   return asks.map((ask) => ({ prices: [ask], ask }));
 }
 
+/** The largest gap between the two prices on Which costs more? (the dive's 1 to 6). */
+export const MORE_GAP = 6;
+
+/**
+ * Which costs more? (level 15): two different prices from the plan's range, 1 to 6 apart, never the same pair twice running.
+ * The dearer good stands on the left in exactly half the orders, in a shuffled order, so always tapping one side never
+ * finishes a round without a miss.
+ */
+export function makeMoreOrders(plan: ShopPlan, rng: Rng): Order[] {
+  const sides = rng.shuffle(Array.from({ length: plan.orders }, (_, i) => i % 2));
+  const out: Order[] = [];
+  for (const side of sides) {
+    for (;;) {
+      const lo = rng.int(plan.price[0], plan.price[1] - 1);
+      const hi = rng.int(lo + 1, Math.min(plan.price[1], lo + MORE_GAP));
+      const prices = side === 0 ? [hi, lo] : [lo, hi];
+      if (out.length && sameWay(out.at(-1)!.prices, prices)) continue;
+      out.push({ prices, compare: true });
+      break;
+    }
+  }
+  return out;
+}
+
+/** The shelf index of the dearer good on a Which costs more? order. */
+export const dearer = (o: Order) => (o.prices[0] > o.prices[1] ? 0 : 1);
+
+/**
+ * The dots side by side that a wrong tap shows on the counter: one row per good, in shelf order, the dots lined up one under
+ * the other so the dearer row's extra dots stand out (`extra`), in the mat's own units.
+ */
+export const COMPARE_ROWS = { x: -170, step: 36, r: 13, y: [-34, 26], label: -215 };
+export function compareRows(prices: number[]): { y: number; dots: { x: number; extra: boolean }[] }[] {
+  const fewer = Math.min(...prices);
+  return prices.map((p, row) => ({
+    y: COMPARE_ROWS.y[row],
+    dots: Array.from({ length: p }, (_, i) => ({
+      x: COMPARE_ROWS.x + i * COMPARE_ROWS.step,
+      extra: i >= fewer,
+    })),
+  }));
+}
+
+/** Where the two goods stand on Which costs more?: the afford shelf's outer places, so the tap boxes are far apart. */
+export const MORE_SHELF = [0, 2] as const;
+
 export function makeOrders(plan: ShopPlan, rng: Rng): Order[] {
   if (plan.mode === 'afford') return makeAffordOrders(plan, rng);
+  if (plan.mode === 'more') return makeMoreOrders(plan, rng);
   if (plan.mode === 'which') return makeWhichOrders(plan, rng);
   if (plan.mode === 'trade') return makeTradeOrders(rng).map((tradeAmount) => ({ prices: [], tradeAmount }));
   const out: Order[] = [];
@@ -405,7 +478,7 @@ export const MAT_STEP = 80;
  * 88-wide ten-shell coin), when every coin on the mat shrinks together so the biggest just fits and their sizes still rank.
  */
 export const matCoinScale = (plan: ShopPlan) =>
-  Math.min(1, MAT_STEP / (2 * Math.max(...plan.coins.map((c) => COIN_R[c]))));
+  Math.min(1, MAT_STEP / (2 * Math.max(0, ...plan.coins.map((c) => COIN_R[c]))));
 
 /** Where the i-th coin sits on the mat, in the mat's own units. */
 export const matSlot = (i: number) => ({ x: -200 + (i % 6) * MAT_STEP, y: -32 + Math.floor(i / 6) * 64 });
@@ -478,7 +551,11 @@ export function purseFor(view: { w: number; h: number }, n: number): { x: number
  * reach. Not in pair or purse mode, where adding up is the puzzle, nor in change mode, where the ten strip counts up instead.
  */
 export const showsTotal = (plan: ShopPlan) =>
-  plan.mode !== 'pair' && plan.mode !== 'change' && plan.mode !== 'purse' && plan.mode !== 'which';
+  plan.mode !== 'pair' &&
+  plan.mode !== 'change' &&
+  plan.mode !== 'purse' &&
+  plan.mode !== 'which' &&
+  plan.mode !== 'more';
 
 /** The number on the counter's slate: the coins' sum, or null when the level keeps it back or the counter is empty. */
 export const totalShown = (plan: ShopPlan, coins: number[]): number | null =>
