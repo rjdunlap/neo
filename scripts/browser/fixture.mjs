@@ -47,7 +47,8 @@ export async function createFixture(browser, suite) {
       ['kind', 'reversed', 'name', 'doer', 'ending'].includes(process.env.WORDGLUE_ONLY)) ||
     (suite === 'villageplanner' && process.env.VILLAGE_PLANNER_PHONE === '1') ||
     (suite === 'fourth' && process.env.FOURTH_ONLY === 'song14') ||
-    (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY))
+    (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY)) ||
+    (suite === 'robot' && process.env.DRIVE_ONLY === '1')
       ? { hasTouch: true, isMobile: true }
       : {}),
   });
@@ -86,11 +87,12 @@ export async function createFixture(browser, suite) {
       await page.fill('#add-year', String(new Date().getFullYear() - 1));
       await page.locator('.parent button[type=submit]').click();
     };
-    /** Enter on the focused card is couch play. A new scene ignores input for 0.35 s, so wait that out first. */
+    /** Into couch play from "Who's playing?": Enter on the Family play tile. A new scene ignores input for 0.35 s, so wait that out first. */
     const chooserEnter = async () => {
       await scene('ChooserScene');
-      await page.locator('.chooser__play').first().waitFor();
+      await page.locator('.chooser__family').waitFor();
       await page.waitForTimeout(500);
+      await page.locator('.chooser__family').focus();
       await page.keyboard.down('Enter');
       await page.waitForTimeout(150);
       await page.keyboard.up('Enter');

@@ -1,6 +1,6 @@
 # Starting view: Explore or Today's six (definition D8)
 
-*Defined 2026-11-27 · docs only · chunk 19, [discovery action D8](../ROADMAP.md#discovery-actions) · its Play entrance is [Today's six](todays-six.md) (D10, built) · **built 2026-11-28** ([verification](../verification/2026-11-28-d8-the-starting-view.md)): step 0 held, the six opens at `classic/` as it is.* The source audit read `src/rework.ts` (the root's `hub`, `App.phoneOnly`, the one-shot `?daily` flag), `src/app/routes.ts` (`classic/`'s `hub` and `daily`), `ChooserScene.begin`, `beginGuest` and `create`, `src/app/chooser.ts` (`modeFor`), `src/app/players.ts` (`selectPlayer`, `playerChanged`), `DailyScene`'s Back, `HomeScene`'s exits, `src/progress/save.ts` (`settings`, `migrate`, `defaults`) and `src/parent/panel.ts` with `src/parent/copy.ts`.
+*Defined 2026-11-27 · docs only · chunk 19, [discovery action D8](../ROADMAP.md#discovery-actions) · its Play entrance is [Today's six](todays-six.md) (D10, built) · **built 2026-11-28** ([verification](../verification/2026-11-28-d8-the-starting-view.md)): step 0 held, the six opens at `classic/` as it is.* The source audit read `src/rework.ts` (the root's `hub`, `App.phoneOnly`, the one-shot `?daily` flag), `src/app/routes.ts` (`classic/`'s `hub` and `daily`), `ChooserScene.begin`, `beginGuest` and `create`, `src/app/chooser.ts`, `src/app/players.ts` (`selectPlayer`, `playerChanged`), `DailyScene`'s Back, `HomeScene`'s exits, `src/progress/save.ts` (`settings`, `migrate`, `defaults`) and `src/parent/panel.ts` with `src/parent/copy.ts`.
 
 This is a shell and save change, not a game. It adds no game, level, how-to card, voice line or bot.
 
@@ -18,10 +18,10 @@ This is a shell and save change, not a game. It adds no game, level, how-to card
 | A guest (play-first) | A first round, then the six | Unchanged |
 | The root on a tablet or computer | `HomeScene` | `DailyScene`, once |
 | `classic/` | `MapScene` | `DailyScene`, once |
-| A card chosen with keys or a pad (`modeFor` gives `couch`) | Couch play | Unchanged: couch play. Controller routes keep their meaning until controller migration exists |
+| A card chosen with keys or a pad | The same as a tap (since 2026-11-28; couch play is the separate Family play tile) | The same as a tap |
 | A new player (`create`) or a player with no friend yet | The hatch, which ends at `hub` | Unchanged: the hatch, then Home or the map |
 
-So the setting is read in exactly one place: the island-mode branch at the end of `ChooserScene.begin`, where today it calls `go.hub()` for a player who owns a friend.
+So the setting is read in exactly one place: the end of `ChooserScene.begin`, where today it calls `go.hub()` for a player who owns a friend.
 
 **Why Today's six is the Play entrance.** The roadmap row allows D2b's mix or D9's library. D9 is not built. D2b's Little surprises is for `lap` and `toddler` only and has no home spot at the root. Today's six works at every band, is on both route tables (`daily` in `routes.ts` and at the root), already has a Back to the hub off a phone, and is the entrance the phone playtests already use.
 

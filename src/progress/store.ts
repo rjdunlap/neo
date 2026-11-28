@@ -27,7 +27,8 @@ import { setNote, type PlaytestNote } from '../content/playtest';
 import { earnShells as earnedFor } from '../content/shells';
 import { awardStamps, newStamps, type StampKind } from '../content/stamps';
 import { buy as buyLook, colorId, type BuyRefusal } from '../content/shop';
-import { recordAllSix as recordSix } from '../content/sixes';
+import { keyOf, recordAllSix as recordSix } from '../content/sixes';
+import { countRound, seasonOf, settle, type SeasonGoal } from '../content/seasons';
 import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
 import { cleanForms, cleanLookForm, isForm, type FormId } from '../creatures/forms';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
@@ -275,9 +276,50 @@ export class Store {
     if (r.sixes === this.data.sixes) return 0;
     this.data.sixes = r.sixes;
     this.data.shells = r.shells;
+    // The day may meet the season's all-six goal (slice 6).
+    const season = settle(
+      this.data.seasons,
+      this.data.shells,
+      seasonOf(day),
+      r.sixes.days,
+      this.stampDays,
+      Date.now(),
+    );
+    this.data.seasons = season.seasons;
+    this.data.shells = season.shells;
     this.save();
     this.flush();
-    return r.bonus;
+    return r.bonus + season.bonus;
+  }
+
+  /** The local day each stamp was earned on, for the season's stamps goal. */
+  private get stampDays(): string[] {
+    return this.data.stamps.map((s) => {
+      const d = new Date(s.at);
+      return keyOf(d.getFullYear(), d.getMonth(), d.getDate());
+    });
+  }
+
+  /**
+   * A finished round counts toward its season (the progression loop, slice 6) on a band that earns shells: the season's
+   * goals now met pay once, and meeting all four adds the season's keepsake. Saved with the round; the caller flushes.
+   */
+  countSeasonRound(gameId: string, day: string): { goals: SeasonGoal[]; bonus: number; keepsake: boolean } {
+    const r = countRound(
+      this.data.seasons,
+      this.data.shells,
+      gameId,
+      this.data.profile.band,
+      day,
+      this.data.sixes.days,
+      this.stampDays,
+      Date.now(),
+    );
+    if (r.seasons === this.data.seasons) return { goals: [], bonus: 0, keepsake: false };
+    this.data.seasons = r.seasons;
+    this.data.shells = r.shells;
+    this.save();
+    return { goals: r.goals, bonus: r.bonus, keepsake: r.keepsake };
   }
 
   /** Whether no round of this game has been finished yet (in any place). */

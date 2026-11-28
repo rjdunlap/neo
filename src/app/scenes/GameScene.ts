@@ -69,6 +69,7 @@ import {
 import { FONT } from '../../ui/text';
 import { shellTag, stampTag } from '../../ui/shells';
 import { STAMP_SHORT, type StampKind } from '../../content/stamps';
+import { SEASON_SHORT, type SeasonGoal } from '../../content/seasons';
 import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
@@ -163,6 +164,8 @@ export class GameScene extends Scene {
   private resultPill: Container | null = null;
   /** Shells this round earned (the progression loop): 0 for a band that does not earn them, or at the day's cap. */
   private shellsEarned = 0;
+  /** Season goals this round met (the progression loop); their bonus is already in `shellsEarned`. */
+  private seasonGoals: SeasonGoal[] = [];
   /** Stamps this round earned (the progression loop), in goal order; their bonus is already in `shellsEarned`. */
   private stampsEarned: StampKind[] = [];
   private resultReady = false;
@@ -290,6 +293,9 @@ export class GameScene extends Scene {
     );
 
     this.pointer = new PadPointer(this.app.renderer.canvas, this.root, () => this.app.renderer.screen);
+    // A game's own places are in its stage's units; things are found where they are drawn.
+    this.pointer.extra = () =>
+      (this.game?.pointerSpots?.() ?? []).map((s) => (s instanceof Container ? s : this.stage.toGlobal(s)));
     this.root.addChild(this.pointer.layer);
 
     this.keys.peekEnabled = () => !!this.game?.togglePeek && !this.finished && !this.helpCard;
@@ -952,6 +958,10 @@ export class GameScene extends Scene {
       this.stampsEarned = won.kinds;
       this.shellsEarned += won.bonus;
     }
+    // The round counts toward the season (the progression loop, slice 6); a goal met pays here too.
+    const season = store.countSeasonRound(this.mod.id, dayKey(new Date()));
+    this.shellsEarned += season.bonus;
+    this.seasonGoals = season.goals;
     // A mix stop is settled once, by its first completed round; the round itself is settled above, as always.
     if (this.mixRound) mixMemory.finish(this.mixRound, store.data, seed);
     // Save the round and its sticker now: a write that only starts as the page closes can be lost.
@@ -967,7 +977,8 @@ export class GameScene extends Scene {
   private addShellTag(sticker: Container) {
     if (this.shellsEarned <= 0) return;
     const tag = shellTag(`+${this.shellsEarned} shells`, 26, true);
-    const short = this.view.h * (0.555 - 0.33) < 220 + (this.stampsEarned.length ? 46 : 0);
+    const lines = (this.stampsEarned.length ? 1 : 0) + (this.seasonGoals.length ? 1 : 0);
+    const short = this.view.h * (0.555 - 0.33) < 220 + lines * 46;
     if (this.discovered.length && short) tag.x = 110 + 24 + tag.width / 2;
     else tag.y = 142;
     tag.rotation = 0.08; // level, against the sticker's tilt
@@ -984,6 +995,14 @@ export class GameScene extends Scene {
       // Under the shells, or (beside the sticker) under them there.
       stamp.position.set(tag.x + (tag.x ? (stamp.width - tag.width) / 2 : 0), tag.y + 46);
       sticker.addChild(stamp);
+    }
+    if (this.seasonGoals.length) {
+      const n = this.seasonGoals.length;
+      const words = n > 1 ? `${n} season goals met` : `Season goal: ${SEASON_SHORT[this.seasonGoals[0]]}`;
+      const goal = stampTag(words, 22);
+      goal.rotation = 0.08;
+      goal.position.set(tag.x + (tag.x ? (goal.width - tag.width) / 2 : 0), tag.y + 46 * lines);
+      sticker.addChild(goal);
     }
   }
 

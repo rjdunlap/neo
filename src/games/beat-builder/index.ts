@@ -333,6 +333,11 @@ class BeatBuilder implements Game {
   }
 
   /** The ghost finger on the how-to card: make the beat (the faint, heard or half-given one, or boom-clap in free play), then press the check where one is asked for. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.playingTarget > 0 || this.previewIdx >= 0) return null;
     if (this.plan.mode === 'return') {

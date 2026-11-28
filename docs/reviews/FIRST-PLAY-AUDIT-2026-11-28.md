@@ -38,6 +38,8 @@ Scored from each game's how-to card: two points for each hidden gesture (three f
 
 **Batch 1 (with the shared piece):** Bolt Boards, Ferry Jam, Jar Sort, Tile Pairs, Marble Jump, Snowball Merge.
 
+**Batch 2:** Word Search, Stamp Studio, Shape Buddies, Pet Says, Letter Trails, Rainbow Fingers, Workshop Detective, Beat Builder, Toy Drawer, Circuit Garden, Cue Studio, Bubble Pop, Dream Cards, Swap Meet, Jar Clues, Animal Charades (its own `showMove`: the bot guesses wrong first on purpose), Shadow Play, Lost Layers, Day by Day, Number Trails, Quick Tricks, Hat Band, Trackway Tales, Sand Table, Draw a Ramp, Number Nook. Attic Finds waits for its own `showMove` (its bot also tries the wrong card first).
+
 | Rank | Game | Band read | Why it needs the card | Opt-in |
 | --- | --- | --- | --- | --- |
 | 1 | Word Search (`word-search`) | grownup | 4 rules on the card; a button to finish or check; a drag; a slide; two-step taps | bot reads only |
