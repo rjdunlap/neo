@@ -3,7 +3,6 @@ import { ink } from '../art/palette';
 import { FONT } from '../ui/text';
 import { drawHand } from '../engine/ghost';
 import type { CouchControls } from '../engine/controller';
-import { nextSpot } from '../couch/focus';
 
 /**
  * The pad pointer's pointer id. A real finger or mouse never has it, so the shell can tell its presses from a real touch
@@ -23,7 +22,7 @@ export type PointerAction = 'move' | 'down' | 'up';
 
 /** Seconds an arrow or the stick is held before the hand stops jumping between things and glides instead. */
 export const GLIDE_AFTER = 0.28;
-/** An arrow tap jumps to a touchable thing at most this far away (a share of the window's short side), or to one nearly straight ahead however far; otherwise it steps. */
+/** Within this share of the window's short side an arrow tap may jump well off to the side (`jumpTarget`); further, only nearly straight ahead. */
 export const REACH = 0.45;
 /** One arrow-tap step over open ground, or while something is held: a share of the window's short side. */
 export const STEP = 0.1;
@@ -112,15 +111,11 @@ export class PointerMotion {
       this.heldFor = 0;
       const short = Math.min(size.w, size.h);
       const all = this.down ? [] : spots();
-      const from = all.length;
-      const to = nextSpot([...all, { x: this.x, y: this.y }], from, dir);
-      if (
-        to !== from &&
-        (straight(all[to], this, dir) || Math.hypot(all[to].x - this.x, all[to].y - this.y) <= REACH * short)
-      ) {
-        this.x = all[to].x;
-        this.y = all[to].y;
-        this.follow = all[to].ref ?? null;
+      const to = jumpTarget(all, this, dir, short);
+      if (to) {
+        this.x = to.x;
+        this.y = to.y;
+        this.follow = to.ref ?? null;
       } else {
         this.follow = null;
         // Nothing to jump to close by that way (an open board, a row of places to put something), or a piece is held: a step.
@@ -162,14 +157,36 @@ const seen = (c: Container): boolean => {
   return true;
 };
 
-/** `to` lies nearly straight ahead of `from` toward `dir`: no further to the side than half its distance ahead. */
-const straight = (to: PointerSpot, from: PointerSpot, dir: number) => {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const along = dx * [1, 0, -1, 0][dir] + dy * [0, 1, 0, -1][dir];
-  const across = Math.abs(dx * [0, 1, 0, -1][dir] - dy * [1, 0, -1, 0][dir]);
-  return along > 0 && across <= along / 2;
-};
+/**
+ * Where an arrow tap jumps from `from` toward `dir`: among the things that way, the one nearest counting sideways distance
+ * twice. A near one may lie well off to the side (up to 2.5 times as far across as ahead); a far one must be within about
+ * 40 degrees of straight ahead, so a far corner button never steals a tap meant to step across an open board. Every thing
+ * stays reachable from every other this way, where the couch's ring rule (`nextSpot`) left some corners out.
+ */
+export function jumpTarget(
+  spots: readonly PointerSpot[],
+  from: { x: number; y: number },
+  dir: number,
+  short: number,
+): PointerSpot | null {
+  let best: PointerSpot | null = null;
+  let bestCost = Infinity;
+  for (const s of spots) {
+    const dx = s.x - from.x;
+    const dy = s.y - from.y;
+    const along = dx * [1, 0, -1, 0][dir] + dy * [0, 1, 0, -1][dir];
+    if (along <= 1) continue;
+    const across = Math.abs(dx * [0, 1, 0, -1][dir] - dy * [1, 0, -1, 0][dir]);
+    const dist = Math.hypot(dx, dy);
+    if (across > along * (dist <= REACH * short ? 2.5 : 0.8)) continue;
+    const cost = dist + across;
+    if (cost < bestCost) {
+      best = s;
+      bestCost = cost;
+    }
+  }
+  return best;
+}
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -188,6 +205,7 @@ export function touchSpots(
 ): PointerSpot[] {
   const out: PointerSpot[] = [];
   const big = screen.w * screen.h * 0.3;
+  const given = new Set(extra.filter((c): c is Container => c instanceof Container));
   for (const c of extra) {
     if (!(c instanceof Container)) {
       if (c.x >= 0 && c.y >= 0 && c.x <= screen.w && c.y <= screen.h) out.push(c);
@@ -200,7 +218,7 @@ export function touchSpots(
   const visit = (c: Container) => {
     if (c === skip || !c.visible || c.alpha <= 0.02 || c.eventMode === 'none' || c.destroyed) return;
     const live = c.eventMode === 'static' || c.eventMode === 'dynamic';
-    if (live && TOUCH_EVENTS.some((t) => c.listenerCount(t) > 0)) {
+    if (live && !given.has(c) && TOUCH_EVENTS.some((t) => c.listenerCount(t) > 0)) {
       const at = middle(c);
       if (at && at.area <= big && at.x >= 0 && at.y >= 0 && at.x <= screen.w && at.y <= screen.h)
         out.push({ x: at.x, y: at.y, ref: c });

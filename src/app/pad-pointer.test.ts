@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Container } from 'pixi.js';
 import { idle, type CouchControls, type PlayerControls } from '../engine/controller';
-import { GLIDE_AFTER, PointerMotion, STEP } from './pad-pointer';
+import { GLIDE_AFTER, jumpTarget, PointerMotion, STEP } from './pad-pointer';
 
 const size = { w: 1000, h: 800 };
 const frame = (p: Partial<PlayerControls> = {}): CouchControls => {
@@ -100,5 +100,33 @@ describe('the pad pointer', () => {
     // A step off it, or pressing it, lets it go.
     m.step(arrow(2), 0.016, () => [], size);
     expect(m.follow).toBe(null);
+  });
+
+  it('reaches every touchable thing by arrow jumps alone, corner buttons included (Clock Tower 10 at 1440 by 900)', () => {
+    const spots = [
+      [1015, 468],
+      [1056, 269],
+      [429, 585],
+      [781, 585],
+      [605, 708],
+      [73, 827],
+      [73, 73],
+      [73, 202],
+    ].map(([x, y]) => ({ x, y }));
+    const seen = new Set([spots[4]]);
+    const queue = [spots[4]];
+    while (queue.length) {
+      const at = queue.shift()!;
+      for (let dir = 0; dir < 4; dir++) {
+        const to = jumpTarget(spots, at, dir, 900);
+        if (to && !seen.has(to)) (seen.add(to), queue.push(to));
+      }
+    }
+    expect(seen.size).toBe(spots.length);
+  });
+
+  it('steps across an open board rather than jumping to a far button off to the side', () => {
+    // Village Planner at 1366 by 768: from a job tile, up is the empty steps above, not the far "?" button.
+    expect(jumpTarget([{ x: 360, y: 175 }], { x: 660, y: 490 }, 3, 768)).toBe(null);
   });
 });
