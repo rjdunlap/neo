@@ -350,6 +350,7 @@ export const SUITES = [
   'athome',
   'talkcards',
   'critternot',
+  'crittergate',
   'feelpoke',
   'smoke',
   'phone',
@@ -693,6 +694,7 @@ export function createChecks(fixture) {
     'ribbonPlay',
     'feelingsPoke',
     'critterNotEntry',
+    'critterBeTheGate',
     'marbleJumpPlay',
     'logRollPlay',
     'snowballMergePlay',
@@ -1099,6 +1101,7 @@ export async function runSuite(suite, fixture) {
     ribbonPlay,
     feelingsPoke,
     critterNotEntry,
+    critterBeTheGate,
     marbleJumpPlay,
     logRollPlay,
     snowballMergePlay,
@@ -1509,6 +1512,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'grownups' || suite === 'athome') await atHome();
   if (suite === 'all' || suite === 'grownups' || suite === 'talkcards') await talkCards();
   if (suite === 'critternot') await critterNotEntry();
+  if (suite === 'crittergate') await critterBeTheGate();
   if (suite === 'feelpoke') await feelingsPoke();
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
