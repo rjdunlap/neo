@@ -507,8 +507,8 @@ class CritterSort implements Game {
     if (this.plan.count) return this.ctx.instruct('sort.howmany.sort', { a, b });
     if (this.plan.mode === 'pick')
       return this.phase === 'choose'
-        ? this.ctx.instruct('sort.pick')
-        : this.ctx.instruct('sort.pick.go', { a, b });
+        ? this.ctx.instruct('sortpick.choose')
+        : this.ctx.instruct('sortpick.go', { a, b });
     if (this.plan.mode === 'butnot') return this.ctx.instruct('sort.butnot', { a, b });
     if (this.plan.newcomer) return this.ctx.instruct('sort.newcomer', { a, b });
     if (this.plan.mode === 'resort') return this.ctx.instruct(this.pass ? 'sort.again' : 'sort.first', { a });
@@ -749,9 +749,9 @@ class CritterSort implements Game {
     if (this.plan.mode === 'pick') {
       const index = this.index;
       const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
-      if (!this.sorters.some((s) => s.placed === 'both')) await this.ctx.say('sort.pick.nomiddle');
+      if (!this.sorters.some((s) => s.placed === 'both')) await this.ctx.say('sortpick.nomiddle');
       if (this.index !== index || this.finished) return;
-      await this.ctx.say('sort.pick.yay', { a, b });
+      await this.ctx.say('sortpick.yay', { a, b });
       await this.ctx.tw.wait(0.5);
       return this.next();
     }

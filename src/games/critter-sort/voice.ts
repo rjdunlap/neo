@@ -33,14 +33,14 @@ export const VOICE = {
   'sort.not': [
     'This hoop is for critters not {a}. The picture has a red line through it! Critters that fit the picture go on the leaf mat!',
   ],
-  'sort.pick': ['You choose the rules! Tap two signs to put on the hoops.'],
-  'sort.pick.go': [
+  'sortpick.choose': ['You choose the rules! Tap two signs to put on the hoops.'],
+  'sortpick.go': [
     'Your hoops! One is for critters {a}, the other for critters {b}. Critters that fit both go in the middle. Critters that fit neither go on the leaf mat.',
   ],
-  'sort.pick.nomiddle': [
+  'sortpick.nomiddle': [
     'No critter fits both of your signs, so the middle stays empty. That is a real answer!',
   ],
-  'sort.pick.yay': ['You made your own sort! Your hoops were critters {a} and critters {b}.'],
+  'sortpick.yay': ['You made your own sort! Your hoops were critters {a} and critters {b}.'],
   'sort.mat.yes': ['The {who} fits neither hoop. It belongs on the leaf mat!'],
   'sort.mat.not': ['The {who} is {rule}, so it belongs on the leaf mat outside the not hoop!'],
   'sort.mat.hoop': ['The {who} is {rule}. It belongs in that hoop, away from the leaf mat.'],

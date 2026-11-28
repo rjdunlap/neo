@@ -115,7 +115,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 13 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
 | [Animal Snack](docs/games/animal-snack.md) | lap–school | Barnyard | 11 | one big animal; a touch anywhere gives it a snack, and two friends walk in |
-| [Critter Sort](docs/games/critter-sort.md) | preschool–school | Barnyard | 12 | drag critters into a hoop: "wearing a hat" |
+| [Critter Sort](docs/games/critter-sort.md) | preschool–school | Barnyard | 13 | drag critters into a hoop: "wearing a hat" |
 | [Sing-Along Barn](docs/games/sing-along-barn.md) | lap–pre-K | Barnyard | 8 | tap anywhere to sing the next note of Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, Twinkle, Twinkle, Little Star or The Wheels on the Bus (one per round); a friend comes out for the verse and answers |
 | [Orchard Rows](docs/games/orchard-rows.md) | school | Barnyard | 9 | plant equal rows and count by groups |
 | [Bolt Boards](docs/games/bolt-boards.md) | lap–school | Barnyard | 10 | tap anywhere in the play area to turn one big bolt, drop the board and send the fruit into the basket |
