@@ -103,7 +103,7 @@ None are new. Under the 2026-10-23 standing rule S8, the identity, band and land
 2. **Batch garden-rows 2: levels 8–9 Hedge boxes** (new rule on the existing interaction, new drawing). Checks: typecheck; rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. **Built 2026-11-03 ([PR #1167](https://github.com/rjdunlap/neo/pull/1167)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-levels-8-9-hedge-boxes-garden-rows-2-2026-11-03).**
 3. **Batch garden-rows 3: level 10 One row (preschool opening)** (new band). Checks: typecheck; unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. **Built 2026-11-03 ([PR #1171](https://github.com/rjdunlap/neo/pull/1171)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-level-10-one-row-garden-rows-3-2026-11-03).**
 4. **PP4: level 11, The bee counts tall flowers** (school, new interaction). Built 2026-11-22 from the [3×3 sightline definition](../definitions/garden-rows-bee.md). [Game page](../games/garden-rows.md#design-notes) and [verification](../verification/2026-11-22-garden-rows-level-11-bee-sightlines.md).
-5. Later: Two-flower beds (4×4), to be defined with a new level ID (its definition is **queued in [READY](../READY.md) 2026-11-28**).
+5. Later: Two-flower beds (4×4), to be defined with a new level ID (its definition is **queued in [READY](../READY.md) 2026-11-28**; being defined in `claude/define-garden-rows-two-flower-beds`, 2026-11-28).
 
 ## What was built in this session
 
