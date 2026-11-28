@@ -37,6 +37,11 @@ import {
   PEEK_JITTER,
   signSpot,
   splitSeats,
+  COMPARE_JITTER,
+  COMPARE_POND_RY,
+  COMPARE_SCALE,
+  SPLIT_BRIDGE_HALF,
+  compareSide,
   type Seating,
 } from './logic';
 
@@ -169,6 +174,37 @@ describe.each(Object.entries(views))('Duck Pond upright on %s', (_, v) => {
           ripple(seats, `${l}+${r}`);
         },
       );
+    }
+
+    if (plan.mode === 'compare') {
+      it('seats up to ten a side on the taller pond, lined up or jittered, and the three answers apart', () => {
+        const j = COMPARE_JITTER;
+        for (const sign of [-1, 1] as const) {
+          const seats = compareSide(plan.max, sign);
+          ripple({ slots: seats, scale: COMPARE_SCALE, pondRy: COMPARE_POND_RY }, `side ${sign}`);
+          // A scattered duck strays at most the jitter from any of the side's twelve seats.
+          const all = compareSide(12, sign).flatMap(([x, y]): [number, number][] => [
+            [x - j, y - j],
+            [x + j, y + j],
+            [x - j, y + j],
+            [x + j, y - j],
+          ]);
+          ripple({ slots: all, scale: COMPARE_SCALE, pondRy: COMPARE_POND_RY }, `scattered side ${sign}`);
+        }
+        const w = pondDrawRx(v, POND_RX) - SPLIT_BRIDGE_HALF;
+        const sides: Target[] = [-1, 1].map((sign) => ({
+          what: sign < 0 ? 'left side' : 'right side',
+          x: c.x + sign * (SPLIT_BRIDGE_HALF + w / 2),
+          y: c.y,
+          w,
+          h: 2 * COMPARE_POND_RY,
+        }));
+        const at = padSpot(v, 0, 1);
+        const same: Target = { what: 'the same', x: at.x, y: at.y, w: 2 * (PAD_R + 14), h: 2 * (PAD_R + 14) };
+        expect(uprightProblems(v, [...sides, same])).toEqual([]);
+        // The pond's lower rim stays above "the same".
+        expect(c.y + COMPARE_POND_RY).toBeLessThan(at.y - PAD_R - 14);
+      });
     }
 
     if (plan.mode === 'peek') {
