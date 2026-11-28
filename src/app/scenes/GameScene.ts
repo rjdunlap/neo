@@ -293,6 +293,9 @@ export class GameScene extends Scene {
     );
 
     this.pointer = new PadPointer(this.app.renderer.canvas, this.root, () => this.app.renderer.screen);
+    // A game's own places are in its stage's units; things are found where they are drawn.
+    this.pointer.extra = () =>
+      (this.game?.pointerSpots?.() ?? []).map((s) => (s instanceof Container ? s : this.stage.toGlobal(s)));
     this.root.addChild(this.pointer.layer);
 
     this.keys.peekEnabled = () => !!this.game?.togglePeek && !this.finished && !this.helpCard;

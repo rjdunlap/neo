@@ -434,6 +434,11 @@ class Round implements Game {
     if (mark) anchorMark(g, a.x - 14, a.y - 14, sw.line);
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.crossed) return null;
     const hint = hintFor(this.board, this.placed, this.solutions);

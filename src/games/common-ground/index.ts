@@ -363,6 +363,17 @@ class Round implements Game {
   }
 
   /** The ghost finger: place what the hint says, sometimes add the plant, then press Visit. */
+  /** Guided first play: the next piece's place, then Go; the bot's optional plant (a random draw) is left out. */
+  showMove(): TouchIntent | null {
+    if (this.done || this.busy || !this.ctx.alive) return null;
+    if (this.pieces.some((p) => p.drag.dragging || p.drag.held)) return null;
+    const move = this.nextMove();
+    if (!move) return { tap: { on: this.go } };
+    const p = this.pieces.find((x) => x.piece === move.piece)!;
+    const at = this.layout.cells[move.cell];
+    return { drag: { on: p.node }, to: { on: this.ctx.stage, x: at.x, y: at.y } };
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done || this.busy || !this.ctx.alive) return null;
     if (this.pieces.some((p) => p.drag.dragging || p.drag.held)) return null;

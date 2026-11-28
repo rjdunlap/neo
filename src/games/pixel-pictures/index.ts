@@ -371,6 +371,15 @@ class PixelPictures implements Game {
     }
   }
 
+  /** For the pad pointer: every square of the board, which hears touches as one big area. */
+  pointerSpots() {
+    const spots: { x: number; y: number }[] = [];
+    for (let y = 0; y < this.n; y++)
+      for (let x = 0; x < this.n; x++)
+        spots.push(this.ctx.stage.toLocal(this.board.toGlobal({ x: (x + 0.5) * CELL, y: (y + 0.5) * CELL })));
+    return spots;
+  }
+
   private tapBoard(e: FederatedPointerEvent) {
     if (this.busy || this.finished) return;
     const p = this.board.toLocal(e.global);

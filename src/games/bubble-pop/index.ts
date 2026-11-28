@@ -287,6 +287,11 @@ class BubblePop implements Game {
     return pick ? { tap: { on: pick }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
   }
 
+  /** The bubbles on screen, for the pad pointer: a touch anywhere pops the nearest, so they have no listener of their own. */
+  pointerSpots() {
+    return this.bubbles.filter((b) => !b.popped);
+  }
+
   destroy() {
     this.catcher?.removeAllListeners();
     this.blower?.removeAllListeners();

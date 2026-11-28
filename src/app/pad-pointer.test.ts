@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Container } from 'pixi.js';
 import { idle, type CouchControls, type PlayerControls } from '../engine/controller';
 import { GLIDE_AFTER, PointerMotion, STEP } from './pad-pointer';
 
@@ -85,5 +86,19 @@ describe('the pad pointer', () => {
     expect(m.hide()).toBe(true);
     expect(m.shown).toBe(false);
     expect(m.hide()).toBe(false);
+  });
+
+  it('jumps to a thing straight ahead however far, and keeps hold of what it jumped to until moved off it', () => {
+    const m = new PointerMotion();
+    const ref = new Container();
+    const far = [{ x: 520, y: 790, ref }];
+    m.show({ x: 500, y: 10 });
+    m.step(arrow(1), 0.016, () => far, size);
+    expect(m).toMatchObject({ x: 520, y: 790 });
+    expect(m.follow).toBe(ref);
+    m.step(frame(), 0.016, () => far, size);
+    // A step off it, or pressing it, lets it go.
+    m.step(arrow(2), 0.016, () => [], size);
+    expect(m.follow).toBe(null);
   });
 });

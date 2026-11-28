@@ -229,23 +229,14 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     await page.evaluate(() => kit.tapOn(neo.scene.players));
     await cards(1);
 
-    // A touch browser may report a tap's click with no `detail`: with a pointer down first it is still a tap, and with none (Enter, a screen reader) it is couch play.
-    await page.evaluate(() => {
-      const b = document.querySelector('.chooser__play');
-      b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }));
-      b.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
-    });
-    await scene('MapScene');
-    await page.evaluate(() => neo.go.start());
-    await cards(1);
-    await page.waitForTimeout(1700); // longer than the window in which a pointer still counts
+    // A click with no `detail` (Enter, a screen reader) opens the island too: no card leads to couch play.
     await page.evaluate(() =>
       document
         .querySelector('.chooser__play')
         .dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })),
     );
-    await scene('CouchScene');
-    await backToStart();
+    await scene('MapScene');
+    await page.evaluate(() => neo.go.start());
     await cards(1);
 
     // Someone old enough chooses a friend with no egg, and starts at the top band.
@@ -264,7 +255,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     assert.deepEqual(await names(), ['Mia', 'Robert']);
     await screenshot('chooser-two');
 
-    // Enter on the focused card is couch play, with that person as Player 1. The active player's card starts focused.
+    // Enter on the focused card opens the island as that person, like a tap. The active player's card starts focused.
     await page.waitForTimeout(500);
     assert.equal(
       await page.evaluate(() => document.activeElement?.closest('.chooser__card')?.dataset.id),
@@ -280,24 +271,21 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     await page.keyboard.down('Enter');
     await page.waitForTimeout(150);
     await page.keyboard.up('Enter');
-    await scene('CouchScene');
-    assert.equal(
-      await page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1')).names[0]),
-      'Mia',
-      'Player 1 is the person whose card was picked',
-    );
+    await scene('MapScene');
     assert.equal((await storeNow()).id, firstId);
-
-    // The card's own couch button is the same for a mouse.
-    await backToStart();
+    await page.evaluate(() => neo.go.start());
     await cards(2);
-    await page.locator('.chooser__couch').nth(1).click();
+
+    // Couch play is not on anyone's card: Family play, below the cards, opens it and leaves its names as they were.
+    assert.equal(await page.locator('.chooser__card button').count(), 2, 'a card is one button');
+    await page.locator('.chooser__family').click();
     await scene('CouchScene');
-    assert.equal(
-      await page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1')).names[0]),
-      'Robert',
+    assert.notEqual(
+      await page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1') ?? 'null')?.names[0]),
+      'Mia',
+      'no card fills Player 1',
     );
-    assert.equal((await storeNow()).id, robertId);
+    assert.equal((await storeNow()).id, firstId, 'the island player stays who it was');
     await backToStart();
     await cards(2);
 
@@ -465,7 +453,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, []);
     log(
-      'Profiles: a new device, add-a-player (blank profile filled, no egg from 13, and with taps alone and no name on an upright phone), a tap for the island, Enter and the card button for couch play as Player 1, the map button back, the grown-ups page per player, remove, backup and restore of everyone, and a reload passed',
+      'Profiles: a new device, add-a-player (blank profile filled, no egg from 13, and with taps alone and no name on an upright phone), a tap or Enter on a card for the island, Family play for couch play, the map button back, the grown-ups page per player, remove, backup and restore of everyone, and a reload passed',
     );
   }
 

@@ -993,6 +993,15 @@ class SeaLift implements Game {
     return { tap: { on: this.tapLayer, x: b.x + b.w / 2, y: b.y + b.h / 2 }, pause: 0.8 };
   }
 
+  /** For the pad pointer: the request card, the number cards and every landing, all heard by one layer that picks the nearest. */
+  pointerSpots() {
+    const c = this.cardBox;
+    const spots: (Container | { x: number; y: number })[] = [{ x: c.x + c.w / 2, y: c.y + c.h / 2 }];
+    if (this.item?.kind === 'howfar') spots.push(...this.cards.map((k) => k.node));
+    for (const b of this.L.landings.values()) spots.push({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
+    return spots;
+  }
+
   destroy() {
     this.destroyed = true;
     this.gen++;

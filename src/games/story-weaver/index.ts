@@ -632,6 +632,11 @@ class StoryWeaver implements Game {
   }
 
   /** The ghost finger: the rule's next step, mapped to the tile, slot or button a finger would touch. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const step = botStep(this.round, this.seed);

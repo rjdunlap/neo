@@ -884,6 +884,11 @@ class IslandBridges implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   /** The ghost finger on the how-to card: tap the water for a plank the answer still needs (switching Take off on first for one that does not belong). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle || !this.touch) return null;
     const sol = this.puzzle.solution;

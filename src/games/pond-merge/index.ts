@@ -581,6 +581,11 @@ class PondMerge implements Game {
   }
 
   /** The ghost finger: put a finger on the friend at the top, slide to where the hint says, and let go. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finishing || this.done || this.grab !== null || this.queued !== null) return null;
     if (!canDrop(this.pond) || !this.pond.pieces.every(isStill)) return null;

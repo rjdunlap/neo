@@ -593,6 +593,11 @@ class PaintMixer implements Game {
     return this.buttons.get(g.at)!;
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // The finger pours after the ask is heard, as she would.
     if (this.busy || this.finished || this.pouring || this.unasked) return null;

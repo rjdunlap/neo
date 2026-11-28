@@ -578,6 +578,11 @@ class PuddleGobble implements Game {
     this.destinationAge = 1;
   };
 
+  /** For the pad pointer: the things still on the sand to steer the puddle to (the sand hears every touch as a place to go). */
+  pointerSpots() {
+    return this.items.filter((it) => it.where === 'sand').map((it) => it.node);
+  }
+
   private steer(e: FederatedPointerEvent, down: boolean) {
     if (this.destroyed || this.busy || this.finished) return;
     if (down) {

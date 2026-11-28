@@ -388,6 +388,11 @@ class GemSwap implements Game {
     if (this.dead) return;
     this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.presses - this.puzzle.par });
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.dead) return null;
     const to = botTarget(this.route, this.selected);

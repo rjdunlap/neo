@@ -503,6 +503,11 @@ class TwoTablets implements Game {
   }
 
   /** The ghost finger: tap each first-tablet sign, choose the right picture for every group, then Read it. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const def = this.round.def;
