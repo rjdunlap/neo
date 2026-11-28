@@ -26,6 +26,7 @@ import { cleanShells, emptyShells, type ShellsSave } from '../content/shells';
 import { cleanStamps, type Stamp } from '../content/stamps';
 import { cleanShop, emptyShop, type ShopSave } from '../content/shop';
 import { cleanSixes, emptySixes, type SixesSave } from '../content/sixes';
+import { cleanSeasons, emptySeasons, type SeasonsSave } from '../content/seasons';
 
 /** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
 export type Language2 = 'none' | 'pt-PT';
@@ -171,6 +172,8 @@ export interface SaveData {
   shop: ShopSave;
   /** The progression loop's six extras (`src/content/sixes.ts`): the days a grown-up finished all of Today's six. */
   sixes: SixesSave;
+  /** The progression loop's seasons (`src/content/seasons.ts`): this season's counts, goals paid and keepsakes. */
+  seasons: SeasonsSave;
 }
 
 export const HISTORY_LENGTH = 10;
@@ -218,6 +221,7 @@ export function defaults(): SaveData {
     stamps: [],
     shop: emptyShop(),
     sixes: emptySixes(),
+    seasons: emptySeasons(),
   };
 }
 
@@ -437,6 +441,7 @@ export function migrate(raw: unknown): SaveData {
     stamps: cleanStamps(raw.stamps),
     shop: cleanShop(raw.shop),
     sixes: cleanSixes(raw.sixes),
+    seasons: cleanSeasons(raw.seasons),
   };
 }
 

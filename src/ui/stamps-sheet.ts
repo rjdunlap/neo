@@ -1,5 +1,14 @@
 import { voice } from '../audio/voice';
 import { ALL_SIX_BONUS, keyOf, monthGrid, shareLine, type SixResult } from '../content/sixes';
+import {
+  GOAL_BONUS,
+  GOAL_TARGET,
+  goalWords,
+  progress,
+  SEASON_GOALS,
+  seasonDays,
+  seasonOf,
+} from '../content/seasons';
 import { goalsFor, stampId, stampLabel } from '../content/stamps';
 import { GAMES } from '../games/registry';
 import { store } from '../progress/store';
@@ -13,6 +22,48 @@ export interface SixToday {
   day: string;
   dateWords: string;
   results: SixResult[];
+}
+
+const shortDate = (day: string, year = false) =>
+  new Date(`${day}T12:00:00`).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    ...(year ? { year: 'numeric' } : {}),
+  });
+
+/**
+ * This season's four goals (the progression loop, slice 6), each with its count, its shells and a lantern lit once met,
+ * then the keepsakes of seasons whose four goals were all met. A season that ends unfinished simply ends.
+ */
+function seasonHtml(day: string): string {
+  const season = seasonOf(day);
+  const { first, last } = seasonDays(season);
+  const stampDays = store.data.stamps.map((s) => {
+    const d = new Date(s.at);
+    return keyOf(d.getFullYear(), d.getMonth(), d.getDate());
+  });
+  const counts = progress(store.data.seasons, season, store.data.sixes.days, stampDays);
+  const paid = store.data.seasons.season === season ? store.data.seasons.paid : [];
+  const goals = SEASON_GOALS.map((g) => {
+    const met = paid.includes(g);
+    const n = Math.min(counts[g], GOAL_TARGET[g]);
+    return `<li class="stamps__goal${met ? ' is-held' : ''}">${lanternSvg(met)}<span>${esc(goalWords(g))} <small>${
+      met ? 'done' : `${n} of ${GOAL_TARGET[g]}`
+    } · ${GOAL_BONUS[g]} shells</small></span></li>`;
+  }).join('');
+  const kept = store.data.seasons.keepsakes
+    .map((k) => {
+      const d = seasonDays(k.season);
+      return `<li class="stamps__goal is-held">${lanternSvg(true)}<span>${esc(
+        `${shortDate(d.first)} – ${shortDate(d.last, true)}`,
+      )}</span></li>`;
+    })
+    .join('');
+  return `<section class="stamps__game"><h2>This season <small>${esc(shortDate(first))} – ${esc(
+    shortDate(last),
+  )}</small></h2><ul>${goals}</ul>${
+    kept ? `<h2 class="stamps__head">Keepsakes</h2><ul>${kept}</ul>` : ''
+  }<p class="playtest__lead">Each goal pays once a season. All four make a keepsake. A season that ends unfinished simply ends.</p></section>`;
 }
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -91,6 +142,7 @@ export function openStampsSheet(onClose: () => void, today?: SixToday): StampsSh
       <h1 id="stamps-title">${today ? 'Lanterns' : 'Stamps'}</h1>
       ${today ? todayHtml : ''}
       ${today ? '<section class="sixes__cal" data-cal></section>' : ''}
+      ${today ? seasonHtml(today.day) : ''}
       <h2 class="stamps__head">Stamps</h2>
       <p class="playtest__lead">${got} of ${total} lanterns lit · ${store.data.shells.balance} shells. Each stamp pays shells once; help counts for all but the clean round.</p>
       ${rows}
