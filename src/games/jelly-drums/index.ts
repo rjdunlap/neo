@@ -137,6 +137,8 @@ class JellyDrums implements Game {
   private round: Tune[] = [];
   /** Couch play: a teal ring over the jelly the bottom button plays, moved one jelly at a time. */
   private cursor = 2;
+  /** Set when the round's last tune is done: couch play's bot and checks read it. */
+  finished = false;
   private couchOn = false;
   private readonly focus = new Graphics();
   private readonly held = new HeldDirection();
@@ -1289,6 +1291,7 @@ class JellyDrums implements Game {
   /** The song is done: a run up the scale, a big chord, and the crowd goes wild. */
   private async finale() {
     this.phase = 'done';
+    this.finished = true;
     this.drawOrderSlots();
     await this.ctx.tw.wait(0.4);
     if (this.dead) return;

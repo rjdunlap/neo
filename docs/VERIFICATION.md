@@ -48,7 +48,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `couchcodedoors` | 2026-11-05 · [Secret Code couch course The Code Doors (secret-code batch 6)](archive/VERIFICATION-2026-11-05.md#2026-11-05--secret-code-couch-course-the-code-doors-secret-code-batch-6) | — |
 | `couchconga` | 2026-10-08 · [Pond Conga, a sixth grown-up-only game and the first relaxing arcade game](archive/VERIFICATION-2026-10-07-13.md#pond-conga-a-sixth-grown-up-only-game-and-the-first-relaxing-arcade-game-2026-10-08) | Four-pond bot course |
 | `couchcourse` | 2026-10-15 · [Penguin Slide Frozen Ponds couch course](archive/VERIFICATION-2026-10-15.md#2026-10-15--penguin-slide-frozen-ponds-couch-course) | — |
-| `couchgames` | 2026-11-15 · [Frog Hop couch reaches levels 7–10](verification/2026-11-15-frog-hop-couch-reaches-levels-7-10.md) | `COUCH_ONLY=frog-hop` |
+| `couchgames` | 2026-11-27 · [Jelly Drums couch entry, Long tune](verification/2026-11-27-jelly-drums-couch-entry-long-tune.md) | `COUCH_ONLY=jelly-drums` |
 | `couchharbors` | 2026-10-08 · [Harbor Rush: Ferry Jam on the couch](archive/VERIFICATION-2026-10-07-13.md#harbor-rush-ferry-jam-on-the-couch-2026-10-08) | Five-harbor bot course |
 | `couchlanterns` | 2026-10-07 · [Lantern Lights, a second grown-up-only game](archive/VERIFICATION-2026-10-07-13.md#lantern-lights-a-second-grown-up-only-game-2026-10-07) | Lantern Lights bot course |
 | `couchnames` | 2026-10-08 · [Pond Conga, a sixth grown-up-only game and the first relaxing arcade game](archive/VERIFICATION-2026-10-07-13.md#pond-conga-a-sixth-grown-up-only-game-and-the-first-relaxing-arcade-game-2026-10-08) | Couch names |
