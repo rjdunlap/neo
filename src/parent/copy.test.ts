@@ -5,7 +5,6 @@ import {
   ageCopy,
   bandSmall,
   bandWhere,
-  findingCopy,
   startCopy,
   friendHeading,
   playingCopy,
@@ -16,7 +15,6 @@ import {
 /** Every word the page shows from these sections, for one app. */
 function allCopy(app: PanelApp): string {
   const playing = playingCopy(app);
-  const finding = findingCopy(app);
   const week = weekCopy(app);
   return [
     ageCopy(app),
@@ -24,7 +22,6 @@ function allCopy(app: PanelApp): string {
     friendHeading(app),
     ...playing.before,
     ...playing.after,
-    ...(finding ? [finding.label, finding.note] : []),
     ...Object.values(startCopy(app)),
     week.intro,
     week.older,
@@ -38,7 +35,6 @@ describe("the grown-ups' page's words (U8a)", () => {
     for (const word of ['map', 'home spot', 'picnic', 'signpost', 'swiping', 'development', 'island'])
       expect(root, word).not.toContain(word);
     for (const b of BANDS) expect(root).not.toContain(placeFor(b.id).name.toLowerCase());
-    expect(findingCopy('root')).toBeNull();
     expect(weekCopy('root').picnic).toBe(false);
   });
 
@@ -66,7 +62,6 @@ describe("the grown-ups' page's words (U8a)", () => {
     const classic = allCopy('classic');
     expect(classic).toContain('home spot');
     expect(classic).toContain('picnic blanket');
-    expect(findingCopy('classic')?.note).toMatch(/Subject cards/);
     expect(weekCopy('classic').older).toBe('A game for bigger kids, from a signpost');
     expect(weekCopy('classic').picnic).toBe(true);
     expect(friendHeading('classic')).toBe('Your island friend');
