@@ -142,6 +142,8 @@ class StampStudio implements Game {
   inviteIndex = 0;
   private elsewhereSaid = false;
   readonly placeGlow = new Graphics();
+  /** Keeps the glow on the paper: a ring beside an animal near the edge would otherwise spill onto the teal. */
+  private readonly placeGlowMask = new Graphics();
   private idleTime = 0;
   private readonly tally = newRequestTally();
   get misses() {
@@ -175,6 +177,7 @@ class StampStudio implements Game {
       this.sheet,
       this.backdrop,
       this.backdropMask,
+      this.placeGlowMask,
       this.placeGlow,
       this.glow,
       this.selection,
@@ -182,6 +185,7 @@ class StampStudio implements Game {
     );
     this.placeGlow.eventMode = 'none';
     this.placeGlow.visible = false;
+    this.placeGlow.mask = this.placeGlowMask;
     this.anchorShadows.eventMode = 'none';
     this.paper.addChild(this.anchorShadows);
     for (const [i, a] of this.anchors.entries()) {
@@ -646,20 +650,26 @@ class StampStudio implements Game {
   /** Next to, between, above: the zone that would meet the relation, with the animals themselves left clear. */
   private drawRelationGlow(g: Graphics, r: Relation, fill: { color: number; alpha: number }) {
     const pts = this.anchorPixels();
-    if (r.rel === 'next') g.circle(pts[r.anchor].x, pts[r.anchor].y, NEXT_TO).fill(fill);
-    else if (r.rel === 'between') {
+    if (r.rel === 'next') {
+      // A ring: the animal's own circle (wholly inside the glow) is left clear.
+      const a = pts[r.anchor];
+      g.circle(a.x, a.y, NEXT_TO).fill(fill).circle(a.x, a.y, ON_ANCHOR).cut();
+    } else if (r.rel === 'between') {
+      // The band along the line joining them, starting and ending clear of each animal.
       const [a, b] = pts;
       const len = Math.hypot(b.x - a.x, b.y - a.y);
-      const nx = (-(b.y - a.y) / len) * BETWEEN_REACH;
-      const ny = ((b.x - a.x) / len) * BETWEEN_REACH;
-      g.poly([a.x + nx, a.y + ny, b.x + nx, b.y + ny, b.x - nx, b.y - ny, a.x - nx, a.y - ny]).fill(fill);
+      const ux = (b.x - a.x) / len;
+      const uy = (b.y - a.y) / len;
+      const [nx, ny] = [-uy * BETWEEN_REACH, ux * BETWEEN_REACH];
+      const [sx, sy] = [a.x + ux * ON_ANCHOR, a.y + uy * ON_ANCHOR];
+      const [ex, ey] = [b.x - ux * ON_ANCHOR, b.y - uy * ON_ANCHOR];
+      g.poly([sx + nx, sy + ny, ex + nx, ey + ny, ex - nx, ey - ny, sx - nx, sy - ny]).fill(fill);
     } else {
       const a = pts[r.anchor];
       const top = r.rel === 'above' ? 4 : a.y + ON_ANCHOR;
       const bottom = r.rel === 'above' ? a.y - ON_ANCHOR : this.height - 4;
       g.rect(a.x - ABOVE_REACH, top, ABOVE_REACH * 2, bottom - top).fill(fill);
     }
-    for (const a of pts) g.circle(a.x, a.y, ON_ANCHOR).cut();
   }
   /** Lay the printed animals and their soft shadows out on this paper. */
   private layoutAnchors() {
@@ -762,6 +772,10 @@ class StampStudio implements Game {
       .stroke({ width: 7, color: swatch.brown.line });
     this.sheet.hitArea = new Rectangle(0, 0, this.width, this.height);
     this.backdropMask
+      .clear()
+      .roundRect(3.5, 3.5, this.width - 7, this.height - 7, 20.5)
+      .fill(0xffffff);
+    this.placeGlowMask
       .clear()
       .roundRect(3.5, 3.5, this.width - 7, this.height - 7, 20.5)
       .fill(0xffffff);

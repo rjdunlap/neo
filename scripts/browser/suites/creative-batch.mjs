@@ -317,6 +317,23 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.setViewportSize({ width: 390, height: 844 });
       await page.waitForTimeout(600);
       await screenshot('stamp-studio-13-portrait');
+      // Each relation's glow at phone portrait, kept on the paper, then the round as it was.
+      for (let i = 0; i < 3; i++) {
+        await page.evaluate((i) => {
+          const g = neo.scene.game;
+          g.inviteIndex = i;
+          g.drawPlaceGlow();
+          g.idleTime = 12.5;
+        }, i);
+        await page.waitForTimeout(250);
+        await screenshot(`stamp-studio-13-glow-${i}`);
+      }
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        g.inviteIndex = 2;
+        g.drawPlaceGlow();
+        g.idleTime = 0;
+      });
       const kept = await page.evaluate(async () => {
         const g = neo.scene.game;
         kit.tapOn(g.finish);
