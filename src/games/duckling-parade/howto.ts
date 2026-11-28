@@ -24,7 +24,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Follow the shown color pattern in order; leave the spare duckling in the meadow.',
     },
-    { from: 11, text: 'Repeat a group of one color followed by two matching colors of another.' },
+    { from: 11, to: 11, text: 'Repeat a group of one color followed by two matching colors of another.' },
+    {
+      from: 12,
+      text: 'Look at the duck pattern on the card and keep it going: bring the next four ducklings in order, then go to the pond. The spare ducklings can stay in the meadow.',
+    },
   ],
   finish: 'The round ends when the right ducklings reach the pond.',
 };

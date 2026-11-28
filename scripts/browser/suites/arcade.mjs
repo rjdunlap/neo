@@ -147,8 +147,8 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
     const only = process.env.ARCADE_ONLY;
     if (only !== undefined) selectValue(only, ['parade', 'scoop', 'roundup', 'launch'], 'ARCADE_ONLY');
     const paradeLevels =
-      process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 11 }, (_, i) => i + 1);
-    for (const level of paradeLevels.filter((n) => n >= 1 && n <= 11)) {
+      process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    for (const level of paradeLevels.filter((n) => n >= 1 && n <= 12)) {
       if (only && only !== 'parade') continue;
       await launch('duckling-parade', level, 'Mia', process.env.PARADE_BAND || undefined);
       await page.waitForTimeout(500);
@@ -161,6 +161,19 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
           (g.plan.mode === 'pattern'
             ? d.color === g.round.pattern[g.line.length]
             : !g.round.want || d.color === g.round.want);
+        // Keep it going: what the pet says, and whether the card's continuation slots keep their colors hidden.
+        const keep = g.round.reference;
+        const heard = [];
+        const { cardSlots } = await import('/src/games/duckling-parade/logic.ts');
+        const hidden = () =>
+          cardSlots(g.round, g.line.length, g.hinting)
+            .filter((s) => !s.reference && !s.filled && !(g.hinting && s.next))
+            .every((s) => s.color === null);
+        if (keep) {
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, values) => (heard.push({ id, values }), say(id, values));
+          if (!hidden()) throw new Error('Keep it going showed a continuation color before it was filled');
+        }
         if (neo.scene.level === 6) {
           // Separate the refusal approach from eligible pickups, so a random
           // meadow cannot collect part of the later partial-delivery fixture.
@@ -210,6 +223,17 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
               `Refusals: ${g.misses} misses, ${g.hints} hints, level ${neo.scene.level}, line ${g.line.map((d) => d.color)}, wrong ${wrong.color} ${wrong.state}, near ${g.ducklings.filter((d) => d !== wrong && Math.hypot(d.critter.x - wrong.critter.x, d.critter.y - wrong.critter.y) < 150).map((d) => d.color + d.state)}`,
             );
           if (!g.ducklings.some((d) => d.glow.visible)) throw new Error('No hint glow');
+          if (keep) {
+            const ids = heard.map((h) => h.id);
+            if (ids[0] !== 'parade.keepnext' || ids.indexOf('parade.next') < 1)
+              throw new Error(`Keep it going miss/hint lines: ${ids}`);
+            const next = heard.find((h) => h.id === 'parade.next');
+            if (next.values.want !== g.round.pattern[g.line.length])
+              throw new Error('Keep it going hint named the wrong color');
+            const slots = cardSlots(g.round, g.line.length, g.hinting).filter((s) => !s.reference);
+            if (slots[g.line.length].color !== g.round.pattern[g.line.length] || !hidden())
+              throw new Error('Keep it going hint must reveal the next slot only');
+          }
           await walkTo(g.mama.x, g.mama.y - 160);
         }
         if (g.plan.mode === 'tap') {
@@ -318,6 +342,8 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
         await goHome();
         if (!(await kit.until(() => g.finished, 15000)))
           throw new Error(`Parade unfinished: ${g.homeCount} home, line ${g.line.length}`);
+        if (keep && !(await kit.until(() => heard.some((h) => h.id === 'parade.kept'), 5000)))
+          throw new Error('Keep it going finished without saying how the pattern kept going');
       });
       await page.evaluate(() => {
         const g = neo.scene.game;

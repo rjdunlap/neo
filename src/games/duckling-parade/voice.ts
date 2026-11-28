@@ -12,6 +12,11 @@ export const VOICE = {
   'parade.spare': [
     'Leave the spare duckling in the meadow. Bring the ducklings that make this pattern: {pattern}!',
   ],
+  'parade.keepgoing': [
+    'Here is a duck pattern: {pattern}. Keep it going! Bring the next four ducklings, then go to the pond.',
+  ],
+  'parade.keepnext': ["Quack! I'm {color}. Look at the card: what comes after {last}?"],
+  'parade.kept': ['{pattern}, and it keeps going: {more}!'],
   'parade.home': ['Everyone is here! Take them to the pond!'],
   'parade.notme': ["Quack! I'm {color}. Find {want}!"],
   'parade.next': ['Next comes {want}!'],
