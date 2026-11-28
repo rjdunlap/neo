@@ -356,6 +356,11 @@ class Inchworm implements Game {
   }
 
   /** Lay the next worm end to end, or tap the reading once the measuring is complete. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || !this.m) return null;
     const move = measureTouch(

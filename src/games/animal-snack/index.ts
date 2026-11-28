@@ -566,6 +566,11 @@ class AnimalSnack implements Game {
   }
 
   /** The ghost finger: tap the animals or snacks, carry a snack to the animal that eats it, count out the number asked for and ring the bell. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0) return null;
     const move = snackTouch(this.plan, {

@@ -179,7 +179,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Sprout Shuffle](docs/games/sprout-shuffle.md) | school | Rainbow Meadow | 8 | tap or drag one copy tile from each parent plant into a possible sprout, then open every bud |
 | [Seed Travelers](docs/games/seed-travelers.md) | toddler–pre-K | Rainbow Meadow | 3 | toddler–pre-K |
 | [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 20 | AB patterns |
-| [Memory Match](docs/games/memory-match.md) | toddler–school | Puzzle Peaks | 12 | four named picture cards, shape/friend/fruit decks and free replay |
+| [Memory Match](docs/games/memory-match.md) | toddler–school | Puzzle Peaks | 13 | four named picture cards, shape/friend/fruit decks and free replay |
 | [Size Parade](docs/games/size-parade.md) | lap–school | Puzzle Peaks | 17 | tap the bigger or smaller friend; tap one friend to make it grow and shrink; drag friends into a line |
 | [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 12 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |
 | [Quick Tricks](docs/games/quick-tricks.md) | toddler–school | Puzzle Peaks | 9 | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle |
@@ -220,7 +220,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Playdate Workshop](docs/games/playdate-workshop.md) | preschool–school | Story Grove | 6 | two critter friends say what they would like; give the one stamp pad to one, stamp, then pass it to the other |
 | [Common Ground](docs/games/common-ground.md) | school–grown-up | Story Grove | 3 | a friend comes to visit and states two requests: the cushion by the window (or door) and the book basket right beside it. She drags a cushion, a basket and an optional plant onto a 2 × 3 floor, presses Visit, and the friend sits down to read. The learning purpose is designing for someone else from what they said: many rooms keep the same promise. |
 | [Dream Cards](docs/games/dream-cards.md) | school | Story Grove | 3 | the pet (or a second person on the same device) gives one pictured clue (*quiet*, *high up*, *cozy*, *floating*, *glowing* or *tiny*) about one of three dream pictures, hidden under a cloud. She points to the picture the clue makes her think of, the chosen picture turns over, and they look at both picks together. Swap lets her give a clue and the pet or friend point. The purpose is that one clue can mean different things to different people and a clue is a way of sharing what you see; nothing is wrong, nothing is scored. |
-| [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 16 | driving the robot to a star with arrow taps |
+| [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 17 | driving the robot to a star with arrow taps |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 11 | decorate matching shape outlines |
 | [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 13 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |
 | [Seesaw Balance](docs/games/seesaw-balance.md) | lap–school | Tinker Lab | 17 | touch the empty end to lift a little friend; tap who is heavier or lighter |

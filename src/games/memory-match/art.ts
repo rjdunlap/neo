@@ -6,6 +6,9 @@ import { shapePath } from '../../art/shapes';
 import {
   clockDrawing,
   digitalTime,
+  DOT_RADIUS,
+  totalCardDots,
+  type TotalSum,
   type FractionSquare,
   type MemoryPicture,
   type VehicleKind,
@@ -148,5 +151,21 @@ export function fractionFace(square: FractionSquare): Graphics {
       .stroke({ width: 3, color: swatch.orange.line });
   }
   g.rotation = square.rotation;
+  return g;
+}
+
+/**
+ * Level 13's two faces: two groups of dots split by a centre line (teal left, orange right on every card, so a color
+ * never gives a pair away), or the total as a numeral. No plus sign or equation: the parts are always pictured.
+ */
+export function totalFace(sum: TotalSum, side: 0 | 1): Container {
+  if (side) return label(String(sum.total), 74, swatch.teal.line);
+  const g = new Graphics();
+  g.moveTo(0, -52).lineTo(0, 52).stroke({ width: 3, color: swatch.purple.light, cap: 'round' });
+  const [left, right] = totalCardDots(sum);
+  for (const d of left)
+    g.circle(d.x, d.y, DOT_RADIUS).fill(swatch.teal.fill).stroke({ width: 2, color: swatch.teal.line });
+  for (const d of right)
+    g.circle(d.x, d.y, DOT_RADIUS).fill(swatch.orange.fill).stroke({ width: 2, color: swatch.orange.line });
   return g;
 }

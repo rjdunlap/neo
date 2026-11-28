@@ -485,6 +485,11 @@ class ScoopShop implements Game {
   }
 
   /** The ghost finger: the tub the order needs next (a new flavor each time in free play, the remembered order on the last level). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     const { order, cone } = this;
     if (this.busy || this.finished || !order || !cone) return null;

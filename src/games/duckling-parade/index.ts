@@ -294,6 +294,11 @@ class DucklingParade implements Game {
    * The ghost finger on the how-to card: tap where Mama should go on the first level, and lead her with a dragged finger
    * after that, to the next duckling the line may take and then to the pond. It waits while she is still walking.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // Ducklings beside Mama's start join at once; let them settle before choosing where to lead her.
     if (

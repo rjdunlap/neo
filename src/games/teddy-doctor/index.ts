@@ -275,6 +275,11 @@ class TeddyDoctor implements Game {
   }
 
   /** Tap the next boo-boo, or carry the right tool to the body part it belongs on. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.patient || !this.round) return null;
     if (this.choosing) return { tap: { on: this.patient, x: 0, y: -130 } };

@@ -217,6 +217,11 @@ class VineSnip implements Game {
    * The ghost finger: at levels 1–2 a swipe across the next vine near its anchor; at 3 a tap near the anchor in the window's
    * middle; at 4–5 a tap on each vine that goes, then the timed tap on the one that stays, one fruit at a time.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (!this.canSnip || this.stroke) return null;
     const h = this.hangs.find((x) => x.phase === 'rest' || x.phase === 'swing');

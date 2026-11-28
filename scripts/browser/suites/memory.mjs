@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function memory() {
     const levels =
-      process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 12 }, (_, i) => i + 1);
+      process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 13 }, (_, i) => i + 1);
     // The toddler window: the hidden four-card round (level 1), played from the toddler band, on a narrow upright phone.
     if (levels.includes(1)) {
       const original = page.viewportSize();
@@ -68,7 +68,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         g.ctx.say = say;
       });
       await launch('memory-match', level);
-      if (level === 1 || level === 8 || level === 12) {
+      if (level === 1 || level === 8 || level === 12 || level === 13) {
         await page.evaluate(async () => {
           const g = neo.scene.game;
           const first = g.views.findIndex((v) => !v.matched),
@@ -185,6 +185,61 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
             v.back.visible = !v.matched;
           }
         });
+      }
+      if (level === 13) {
+        // Same total: a groups card against the wrong number names its groups and their total; faces upright on a phone.
+        const original = page.viewportSize();
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(150);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const lines = [];
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, vars) => {
+            lines.push({ id, vars });
+            return say(id, vars);
+          };
+          const open = (i) => !g.views[i].matched;
+          const groups = g.cards.findIndex((c, i) => open(i) && c.side === 0);
+          const number = g.cards.findIndex(
+            (c, i) => open(i) && c.side === 1 && c.pair !== g.cards[groups].pair,
+          );
+          if (groups >= 0 && number >= 0) {
+            kit.tapOn(g.views[groups].node);
+            await kit.sleep(180);
+            kit.tapOn(g.views[number].node);
+            await kit.until(() => !g.locked);
+            const sum = g.sums[g.cards[groups].pair];
+            const line = lines.find((l) => l.id === 'memory.total-mix');
+            if (!line || !line.vars.groups.includes(' and ') || line.vars.other === line.vars.total)
+              throw new Error(`Level 13 mismatch did not explain the groups: ${JSON.stringify(lines)}`);
+            if (sum.a + sum.b !== sum.total) throw new Error('Level 13 sum does not add up');
+          }
+          g.ctx.say = say;
+          for (const v of g.views) {
+            if (v.node.scale.x * 140 < 100) throw new Error('Level 13 card below 100 units');
+            const b = v.node.getBounds(),
+              scale = neo.view.scale;
+            if (
+              b.x < 0 ||
+              b.y < 0 ||
+              b.x + b.width > neo.view.w * scale ||
+              b.y + b.height > neo.view.h * scale
+            )
+              throw new Error('Level 13 card outside the screen');
+            v.front.visible = true;
+            v.back.visible = false;
+          }
+        });
+        await screenshot('memory-total-portrait');
+        await page.evaluate(() => {
+          for (const v of neo.scene.game.views) {
+            v.front.visible = v.matched;
+            v.back.visible = !v.matched;
+          }
+        });
+        await page.setViewportSize(original);
+        await page.waitForTimeout(150);
       }
       if (level === 10) await screenshot('memory-match');
       await page.evaluate(async () => {

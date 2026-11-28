@@ -275,6 +275,11 @@ class BouncyLaunch implements Game {
    * The ghost finger on the how-to card: tap the spring on the first level, and after that put a finger on the pet, pull it
    * back and down by the pull that lands where it should (on the cloud, or nearer or farther than last time), and let go.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.flying || this.finished || this.grab || this.unasked) return null;
     if (this.plan.mode === 'planet') {

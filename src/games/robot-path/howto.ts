@@ -4,7 +4,8 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Explore how the robot follows or fixes a program.',
   steps: [
-    { from: 16, text: 'Tap an arrow and the robot moves one step that way. Drive it to the star.' },
+    { from: 16, to: 16, text: 'Tap an arrow and the robot moves one step that way. Drive it to the star.' },
+    { from: 17, text: 'Tap one arrow to put it in the program, then press play. The star is one step away.' },
     { to: 10, text: 'Tap arrows to add steps to the program.' },
     { to: 10, text: 'Tap a program slot to remove it (and what follows), then press play.' },
     { from: 7, to: 8, text: 'Tap an arrow again to go further the same way ("right x4").' },
@@ -42,7 +43,8 @@ export const HOW_TO: GameHowTo = {
     { from: 13, to: 13, text: 'The round ends when the robot has picked up the apple and reached the star.' },
     { from: 14, to: 14, text: 'The round ends when the mended loop reaches the star.' },
     { from: 15, to: 15, text: 'The round ends when the robot reaches the star.' },
-    { from: 16, text: 'The round ends when the robot rolls onto the star.' },
+    { from: 16, to: 16, text: 'The round ends when the robot rolls onto the star.' },
+    { from: 17, text: 'The round ends when the one-arrow program reaches the star.' },
   ],
   note: [
     {
@@ -67,12 +69,17 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 16,
+      to: 16,
       text: 'There is no program and no play button, and nothing counts as a miss: a rock or the edge just stops the robot with a wobble. The board is drawn from four small layouts.',
     },
     {
       from: 15,
       to: 15,
       text: 'Two boards: one starts with the Do this arrows placed, the other leaves them empty. A call with nothing to run, or Play with nothing in Start here, only points the way. A walk that bumps or stops short is a gentle miss, and after two the next button to press glows.',
+    },
+    {
+      from: 17,
+      text: 'A wrong arrow is a gentle miss: the robot goes the other way, comes back, and the slot empties for another try. After two misses the right arrow glows.',
     },
   ],
 };

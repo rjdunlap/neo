@@ -793,6 +793,11 @@ class TimelineTrail implements Game {
    * card, last, to the earlier of its two), at level 5 it then drags the still-here chip to the ribbon, and at level 7
    * it then taps the first proving spot of the big picture.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     if (this.questioning) {

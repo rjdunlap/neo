@@ -415,6 +415,11 @@ class JellyDrums implements Game {
   }
 
   /** The ghost finger on the how-to card: play the scale in free play, and in a tune round wait for the tune, then copy it. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.plan.mode === 'order') {
       const lineup = this.lineups[this.tunesDone] ?? null;

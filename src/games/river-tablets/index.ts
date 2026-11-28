@@ -2220,6 +2220,11 @@ class RiverTablets implements Game {
    * stamps toward the fewest marks, Hand in; the cart's verdict, then its number; the accepted tablet, neither or can't tell.
    * Never a wrong answer.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     if (this.brief.id === 'tokens') {

@@ -335,6 +335,11 @@ class SongMaker implements Game {
   }
 
   /** The ghost finger on the how-to card: light the song (free play), or tap what the round asks for, once a heard tune has finished playing. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done || this.listening) return null;
     // My song: once the check is awake it is the next thing to press; until then the loop just plays.

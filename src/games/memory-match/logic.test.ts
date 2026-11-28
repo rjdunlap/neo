@@ -11,6 +11,12 @@ import {
   clockLabel,
   digitalTime,
   selectTimes,
+  selectSums,
+  groupsLabel,
+  countAcross,
+  totalCardDots,
+  TOTAL_PART,
+  DOT_RADIUS,
   PICTURE_POOLS,
   selectPictures,
   cardLabel,
@@ -107,31 +113,32 @@ describe('memory matching', () => {
   });
 
   it('preserves existing plans and IDs, inserting the clock bridge in the school order, deck sizes and band windows with scoped instructions', () => {
-    expect(PLANS.map((p) => p.pairs)).toEqual([2, 3, 4, 6, 8, 4, 8, 8, 8, 10, 3, 3]);
+    expect(PLANS.map((p) => p.pairs)).toEqual([2, 3, 4, 6, 8, 4, 8, 8, 8, 10, 3, 3, 3]);
     expect(LEVELS).toEqual({
       toddler: { min: 1, max: 1 },
       preschool: { min: 1, max: 5 },
       prek: { min: 3, max: 9 },
-      school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] },
+      school: { min: 8, max: 13, order: [8, 12, 13, 9, 10, 11] },
     });
     expect(memoryMatch.bands).toContain('toddler');
     expect(rangeFor(LEVELS, 'toddler')).toEqual({ min: 1, max: 1 });
     expect(howToFor(memoryMatch, 1)!.finish).toBe('Find both picture pairs to finish.');
     expect(howToFor(memoryMatch, 2)!.finish).toBe('The round ends when every pair is found.');
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(100)).toBe(PLANS[11]);
+    expect(planFor(100)).toBe(PLANS[12]);
     for (let level = 1; level <= PLANS.length; level++) {
       const steps = howToFor(memoryMatch, level)!.steps.join(' ');
       expect(steps.includes('A number word matches')).toBe(level === 10);
       expect(steps.includes('A picture of equal parts')).toBe(level === 11);
       expect(steps.includes('digital time')).toBe(level === 12);
+      expect(steps.includes('two groups of dots')).toBe(level === 13);
       expect(steps).toContain('first open card again');
       expect(memoryMatch.describeLevel!(level)).toBe(planFor(level).name);
     }
   });
   it('labels both faces from their actual identity with distinct labels for every pair', () => {
     const letters = 'QAZWSXED'.split('');
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'totals')) {
       const labels = Array.from({ length: plan.pairs }, (_, pair) => {
         const times = [120, 270, 420];
         const a = cardLabel(plan.mode, { pair, side: 0 }, letters, undefined, times);
@@ -340,11 +347,13 @@ describe('Same time bridge', () => {
   it('keeps old saved IDs and pins valid while stepping through the easier bridge', () => {
     const range = LEVELS.school!;
     expect(nextLevelOffer(8, range)).toBe(12);
-    expect(nextLevelOffer(12, range)).toBe(9);
-    expect(stepLevel(9, -1, range)).toBe(12);
+    expect(nextLevelOffer(12, range)).toBe(13);
+    expect(nextLevelOffer(13, range)).toBe(9);
+    expect(stepLevel(9, -1, range)).toBe(13);
+    expect(stepLevel(13, -1, range)).toBe(12);
     expect(stepLevel(12, -1, range)).toBe(8);
     expect(nextLevelOffer(11, range)).toBeNull();
-    for (const id of [8, 9, 10, 11, 12]) expect(nextLevel(id, [], range)).toBe(id);
+    for (const id of [8, 9, 10, 11, 12, 13]) expect(nextLevel(id, [], range)).toBe(id);
   });
   it('selects reproducible mixed boards with three distinct hours and one opposite-side partner', () => {
     const reached = new Set<number>(),
@@ -405,5 +414,106 @@ describe('Same time bridge', () => {
     expect(clockDrawing(690).hour.degrees).toBe(345);
     expect(clockLabel(0)).toBe("twelve o'clock");
     expect(clockLabel(30)).toBe('half past twelve');
+  });
+});
+
+describe('Same total (level 13)', () => {
+  it('deals three distinct totals of two pictured groups, each group 1–5 and every total 2–10 reachable', () => {
+    const totals = new Set<number>(),
+      splits = new Set<string>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const sums = selectSums(new Rng(seed));
+      expect(sums).toEqual(selectSums(new Rng(seed)));
+      expect(sums).toHaveLength(planFor(13).pairs);
+      expect(new Set(sums.map((s) => s.total)).size).toBe(3);
+      for (const { a, b, total } of sums) {
+        for (const part of [a, b]) {
+          expect(part).toBeGreaterThanOrEqual(TOTAL_PART.min);
+          expect(part).toBeLessThanOrEqual(TOTAL_PART.max);
+        }
+        expect(a + b).toBe(total);
+        expect(total).toBeLessThanOrEqual(10);
+        totals.add(total);
+        splits.add(`${a}+${b}`);
+      }
+    }
+    expect([...totals].sort((x, y) => x - y)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    // Every split of every total with parts 1–5: 25 ordered pairs.
+    expect(splits.size).toBe(25);
+  });
+  it('keys each pair to its value: one groups card and one number card, labelled from the same sum', () => {
+    const sums = [
+      { a: 2, b: 3, total: 5 },
+      { a: 1, b: 3, total: 4 },
+      { a: 3, b: 3, total: 6 },
+    ];
+    expect(planFor(13).mode).toBe('totals');
+    expect(cardLabel('totals', { pair: 0, side: 0 }, [], [], [], sums)).toBe('two and three');
+    expect(cardLabel('totals', { pair: 0, side: 1 }, [], [], [], sums)).toBe('five');
+    expect(cardLabel('totals', { pair: 2, side: 0 }, [], [], [], sums)).toBe('three and three');
+    expect(groupsLabel(sums[1])).toBe('one and three');
+    for (let seed = 1; seed <= 100; seed++) {
+      const deck = makeDeck(3, new Rng(seed));
+      for (let i = 0; i < deck.length; i++)
+        for (let j = 0; j < deck.length; j++) {
+          if (i === j) continue;
+          const same = sums[deck[i].pair].total === sums[deck[j].pair].total;
+          // Exactly the two cards of one sum match, and they are always a groups card and a number card.
+          expect(deck[i].pair === deck[j].pair).toBe(same);
+          if (same) expect(deck[i].side).not.toBe(deck[j].side);
+        }
+    }
+  });
+  it('pictures both groups apart and inside the card, with every dot countable', () => {
+    for (let a = 1; a <= 5; a++)
+      for (let b = 1; b <= 5; b++) {
+        const [left, right] = totalCardDots({ a, b, total: a + b });
+        expect(left).toHaveLength(a);
+        expect(right).toHaveLength(b);
+        for (const d of left) expect(d.x + DOT_RADIUS).toBeLessThan(-8);
+        for (const d of right) expect(d.x - DOT_RADIUS).toBeGreaterThan(8);
+        const all = [...left, ...right];
+        for (const d of all) {
+          expect(Math.abs(d.x) + DOT_RADIUS).toBeLessThanOrEqual(DOT_REACH.x + DOT_RADIUS);
+          expect(Math.abs(d.y) + DOT_RADIUS).toBeLessThanOrEqual(DOT_REACH.y);
+        }
+        for (let i = 0; i < all.length; i++)
+          for (let j = i + 1; j < all.length; j++)
+            expect(Math.hypot(all[i].x - all[j].x, all[i].y - all[j].y)).toBeGreaterThanOrEqual(DOT_GAP);
+      }
+  });
+  it('counts across both groups to the total for the hint', () => {
+    expect(countAcross(5)).toBe('one, two, three, four, five');
+    expect(countAcross(10).split(', ')).toHaveLength(10);
+  });
+  it('keeps the known-miss accounting, the seen-only hint and a clean bot finish on level 13 decks', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const cards = makeDeck(3, new Rng(seed));
+      const seen = new Set<number>(),
+        done = new Set<number>();
+      let first: number | null = null,
+        misses = 0,
+        turns = 0;
+      while (done.size < cards.length && turns++ < 50) {
+        const k = nextCard(cards, seen, (i) => done.has(i), first);
+        expect(k).toBeGreaterThanOrEqual(0);
+        expect(done.has(k)).toBe(false);
+        if (first === null) {
+          first = k;
+          seen.add(k);
+          continue;
+        }
+        if (knownMismatch(cards, first, k, seen)) misses++;
+        if (cards[first].pair === cards[k].pair) done.add(first).add(k);
+        seen.add(k);
+        first = null;
+      }
+      expect(done.size).toBe(6);
+      expect(misses).toBe(0);
+    }
+    const cards = makeDeck(3, new Rng(3));
+    const partner = cards.findIndex((c, i) => i !== 0 && c.pair === cards[0].pair);
+    expect(hintPartner(cards, 0, new Set([0]), 2)).toBeNull();
+    expect(hintPartner(cards, 0, new Set([0, partner]), 2)).toBe(partner);
   });
 });
