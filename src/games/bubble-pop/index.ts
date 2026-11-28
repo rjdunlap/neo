@@ -47,6 +47,7 @@ import {
   spawnTarget,
   showsDots,
   staysPut,
+  tenFor,
   TAP_REACH,
   type BubblePlan,
   type BubbleSize,
@@ -530,15 +531,35 @@ class BubblePop implements Game {
     sfx.boing();
     this.misses++;
     this.missStreak++;
-    void this.ctx.say('bubble.notmade', { a: a.number!, b: b.number!, total: a.number! + b.number!, n: sum });
     if (this.missStreak >= 2) {
-      // Light up a pair that works: the first bubble and its partner.
+      // Light up a pair that works: on Make 20, the first bubble of her try and its partner, with a making-ten hint.
       this.missStreak = 0;
       this.hints++;
       const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
-      const first = live.find((o) => live.some((x) => x !== o && x.number! + o.number! === sum));
-      const partner = first && live.find((x) => x !== first && x.number! + first.number! === sum);
-      for (const o of [first, partner]) if (o) o.glow = 4;
+      if (sum === 20) {
+        const partner = live.find((x) => x !== a && x.number! + a.number! === sum);
+        for (const o of [a, partner]) if (o) o.glow = 4;
+        const ten = tenFor(a.number!, sum);
+        if (ten) void this.ctx.say('bubble.ten20', ten);
+        else void this.ctx.say('bubble.made', { a: a.number!, b: sum - a.number!, n: sum });
+      } else {
+        void this.ctx.say('bubble.notmade', {
+          a: a.number!,
+          b: b.number!,
+          total: a.number! + b.number!,
+          n: sum,
+        });
+        const first = live.find((o) => live.some((x) => x !== o && x.number! + o.number! === sum));
+        const partner = first && live.find((x) => x !== first && x.number! + first.number! === sum);
+        for (const o of [first, partner]) if (o) o.glow = 4;
+      }
+    } else {
+      void this.ctx.say('bubble.notmade', {
+        a: a.number!,
+        b: b.number!,
+        total: a.number! + b.number!,
+        n: sum,
+      });
     }
   }
 

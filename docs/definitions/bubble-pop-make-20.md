@@ -1,6 +1,6 @@
 # Bubble Pop level 20, *Make 20* (definition)
 
-**Status:** Defined 2026-11-28 from the Next ten line and the [deep dive's sketch](../deep-dives/bubble-pop.md#new-levels-on-top) ("a make 20 bonds level, 11 + 9"). **Docs only:** no code, browser or device evidence. [OBSERVATIONS](../OBSERVATIONS.md) has no Bubble Pop notes, so nothing below draws on observed play. The build is queued as its own Next ten line.
+**Status:** Built 2026-11-28 ([PR #2363](https://github.com/rjdunlap/neo/pull/2363)) from the [deep dive's sketch](../deep-dives/bubble-pop.md#new-levels-on-top) ("a make 20 bonds level, 11 + 9"). `bubble.mode.20` carries `{pet}` (`Make 20 with {pet}. Pop two bubbles that make 20 together.`) so both new lines (`bubble.mode.20` and `bubble.ten20`) stay on device speech without Kokoro clip renders. [OBSERVATIONS](../OBSERVATIONS.md) has no Bubble Pop notes, so nothing below draws on observed play.
 
 **Fun action and purpose.** The same bonds play as levels 10 (*Make 5*) and 11 (*Make 10*): ten numbered bubbles drift in place, she taps one to hold it and taps the one that makes the sign's number with it, and both pop. Here the sign says 20 and the bubbles carry 1 to 19. The learning purpose is **the pairs that make 20, found through making ten**: every pair but 10 and 10 is a number below 10 and a teen whose ones make ten with it (3 and 17, because 3 and 7 make 10 and the ten makes 20). That is 1.OA.C.6's "making ten" strategy and 2.OA.B.2's fluency within 20; the how-to card claims nothing beyond naming what the level asks.
 
