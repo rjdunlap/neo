@@ -6,6 +6,9 @@ import { HIT_PAD, jellyLayout, orderHalfWidth, orderRowFor } from './layout';
 import { jellyDrums } from './index';
 import {
   answerOf,
+  drawEchoRound,
+  longTune,
+  LONG_FROM,
   drawLineup,
   drawFinish,
   drawFollow,
@@ -130,7 +133,8 @@ describe('Jelly Drums', () => {
   });
 
   it('grows from free play to longer tunes', () => {
-    const echo = PLANS.filter((p) => p.mode === 'echo' && !p.reverse);
+    // Children's tunes stop at five notes; the grown-ups' long tunes (levels 19–22) are tested below.
+    const echo = PLANS.filter((p) => p.mode === 'echo' && !p.reverse && p.length < LONG_FROM);
     expect(PLANS.slice(0, 3).every((p) => p.mode === 'free')).toBe(true);
     for (let i = 1; i < echo.length; i++) expect(echo[i].length).toBeGreaterThanOrEqual(echo[i - 1].length);
     expect(echo[0].length).toBe(2);
@@ -899,5 +903,79 @@ describe('Jelly Drums Lowest to highest, with sizes (level 18)', () => {
   it('is described by what she does, and its card and line exist', () => {
     expect(jellyDrums.describeLevel(18)).toMatch(/different sizes/);
     expect(SCRIPT['jelly.order.sized']).toBeTruthy();
+  });
+});
+
+describe('Jelly Drums long tunes (levels 19–22, grown-ups and the couch)', () => {
+  const LONG = [19, 20, 21, 22];
+
+  it('are tunes of six, eight, twelve and sixteen notes, three, three, two and one of them', () => {
+    expect(LONG.map((l) => [planFor(l).mode, planFor(l).length, planFor(l).goal])).toEqual([
+      ['echo', 6, 3],
+      ['echo', 8, 3],
+      ['echo', 12, 2],
+      ['echo', 16, 1],
+    ]);
+  });
+
+  it('only the grown-up band plays them, after the school top levels', () => {
+    expect(levelsInOrder(rangeFor(LEVELS, 'grownup'))).toEqual([9, 11, 12, 13, 19, 20, 21, 22]);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as const)
+      for (const l of LONG) expect(levelsInOrder(rangeFor(LEVELS, band)), band).not.toContain(l);
+    expect(jellyDrums.bands).toContain('grownup');
+  });
+
+  it('walk the jellies: real jellies, never one twice in a row, at least four of them, mostly neighbours', () => {
+    let steps = 0;
+    let near = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      for (const length of [6, 8, 12, 16]) {
+        const { notes } = longTune(rng, length);
+        expect(notes).toHaveLength(length);
+        expect(new Set(notes).size).toBeGreaterThanOrEqual(4);
+        for (let k = 0; k < notes.length; k++) {
+          expect(notes[k]).toBeGreaterThanOrEqual(0);
+          expect(notes[k]).toBeLessThan(JELLIES);
+          if (k === 0) continue;
+          expect(notes[k]).not.toBe(notes[k - 1]);
+          steps++;
+          if (Math.abs(notes[k] - notes[k - 1]) === 1) near++;
+        }
+      }
+    }
+    expect(near / steps).toBeGreaterThan(0.5);
+    expect(near / steps).toBeLessThan(0.9);
+  });
+
+  it('never repeats a tune within a round, and draws the whole round from the seed alone', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      for (const level of LONG) {
+        const plan = planFor(level);
+        const round = drawEchoRound(new Rng(seed), plan);
+        expect(round).toHaveLength(plan.goal);
+        expect(round.every((t) => t.notes.length === plan.length)).toBe(true);
+        expect(new Set(round.map((t) => t.notes.join())).size).toBe(plan.goal);
+        // The same seed gives the same tunes, so two grown-ups in a face-off copy the same ones however they slip.
+        expect(drawEchoRound(new Rng(seed), plan)).toEqual(round);
+      }
+    }
+  });
+
+  it('keeps her place after a slip, and is described by what the player does', () => {
+    for (const l of LONG) expect(placeAfterMiss(planFor(l).length, 5)).toBe(5);
+    expect(jellyDrums.describeLevel(22)).toBe('Copy a long 16-note tune, 1 tune');
+    expect(jellyDrums.describeLevel(19)).toBe('Copy a long 6-note tune, 3 tunes');
+  });
+
+  it('draws the child echo rounds as before: the shapes and songs of their length', () => {
+    for (const level of [4, 9, 11]) {
+      const plan = planFor(level);
+      const round = drawEchoRound(new Rng(7), plan);
+      expect(round.map((t) => t.notes.length)).toEqual(
+        Array.from({ length: plan.goal }, (_, n) => tuneLength(plan, n)),
+      );
+      expect(round.every((t) => t.notes.length < LONG_FROM)).toBe(true);
+    }
   });
 });

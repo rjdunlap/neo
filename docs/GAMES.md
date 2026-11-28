@@ -72,11 +72,15 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *pre-K–school* · [Down We Go](games/down-we-go.md)
 
+### Stir and See
+
+*toddler–school* · [Stir and See](games/stir-see.md)
+
 ## Music Mountain
 
 ### Jelly Drums
 
-*lap–school* · [Jelly Drums](games/jelly-drums.md)
+*lap–grown-up* · [Jelly Drums](games/jelly-drums.md)
 
 ### Song Maker
 

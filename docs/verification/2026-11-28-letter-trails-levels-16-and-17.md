@@ -1,0 +1,5 @@
+# 2026-11-28 — Letter Trails levels 16 and 17
+
+**Changed:** Letter Trails level 16 "Little words" (a pictured word in little letters, ending on its picture) and level 17 "My name" (a capital standing in the frame, then little letters, ending on the name sign), school 7–17; `framedCapital` and `frameStrokesOf` in `src/learning/tracing/lowercase.ts`; how-to lines; a larger heading on a phone; browser suite `letters16`, and level 15 now also plays on the phone viewport.
+**Ran:** typecheck; `src/games/letter-trails`, `src/learning/tracing` and `src/content` (364 tests, passed); `npm run game-docs`; eslint and prettier on the changed files; `BROWSER_SUITE=letters16` (2 checks: level 16 with two wanders, a miss and a hint, and level 17 as Zoë-Rose, both on 390×844 with frame-inside-view checks and screenshots of the first letter and the closing picture and sign); `BROWSER_SUITE=fingerdemo FINGER_ONLY=letter-trails FINGER_LEVELS=16,17 FINGER_BAND=school` (29.4 s and 54.9 s).
+**Not run:** full `npm test` and `npm run build` (left to CI), a real phone, device speech, `letters10` after the heading change, other suites.

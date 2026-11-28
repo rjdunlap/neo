@@ -254,7 +254,7 @@ describe('the demonstration on a card', () => {
       .filter((id) => GAMES.some((g) => g.id === id))
       .sort();
     expect(withBot).toEqual(couchOnIsland);
-    expect(withBot).toHaveLength(26);
+    expect(withBot).toHaveLength(27);
     expect(demoFor('monster-munch')).toBeNull();
     expect(demoFor('no-such-game')).toBeNull();
   });

@@ -427,6 +427,7 @@ export const game: GameModule = {
   coplayHint: 'Take turns: one gives a town its day, the other says whether any joined town clashes.',
   offScreen:
     'Draw six dots on a page, join the near ones with lines, and colour the dots with three pencils so no joined pair matches.',
+  ownKeys: true,
   hubIcon: () => new WigglyIcon(picture()),
   touchDemo: true,
   upright: true,

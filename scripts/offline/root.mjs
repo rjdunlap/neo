@@ -1,5 +1,6 @@
 import { createTestContext } from '../test-browser.mjs';
 import { publicSave, waitForSave } from './storage.mjs';
+import { sceneWait } from './frames.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 
@@ -49,7 +50,7 @@ export async function rootOffline(browser) {
       await page.locator('.classic-link').waitFor({ state: 'visible' });
       await page.waitForFunction(() => document.fonts.status === 'loaded');
       // Production has no scene API. Allow the 0.35 s curtain to settle after the DOM link becomes visible.
-      await page.waitForTimeout(600);
+      await sceneWait(page, 600);
     };
     if (book) {
       const openBook = async () => {
@@ -61,7 +62,7 @@ export async function rootOffline(browser) {
           [742, 323],
         ]) {
           await page.mouse.click(x, y);
-          await page.waitForTimeout(800);
+          await sceneWait(page, 800);
         }
       };
       await openBook();
@@ -93,10 +94,10 @@ export async function rootOffline(browser) {
       await page.screenshot({ path: `${output}/home.png` });
       // At 1024×768: toddler Home Explore (Little surprises, Places, Favorites, Arcade, Family play), Places, then Counting Cove's place card.
       await page.mouse.click(914, 403);
-      await page.waitForTimeout(1400);
+      await sceneWait(page, 1400);
       await page.locator('.classic-link').waitFor({ state: 'hidden' });
       await page.mouse.click(512, 197);
-      await page.waitForTimeout(2200);
+      await sceneWait(page, 2200);
       await page.screenshot({ path: `${output}/places.png` });
       await page.mouse.click(397, 200);
       await waitForSave(
