@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (15), **Counting Cove** (14), **Cozy Village** (23), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (32) and **Lantern Lake** (28, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (16), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (15), **Counting Cove** (14), **Cozy Village** (23), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (32) and **Lantern Lake** (28, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 205 games; the 175 child games are listed below and the 30 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 170 games, and "grown-up" (13 and up) is played by 42 games: the 30 grown-up puzzles and 12 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 206 games; the 176 child games are listed below and the 30 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 171 games, and "grown-up" (13 and up) is played by 42 games: the 30 grown-up puzzles and 12 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -90,6 +90,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Tide Line](docs/games/tide-line.md) | lap–school | Bubble Beach | 6 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
 | [Down We Go](docs/games/down-we-go.md) | pre-K–school | Bubble Beach | 4 | a boat on a calm sea lowers a lantern down a knotted rope; at each knot a sun dial opens as many petals as there is daylight left and the water deepens in colour, then she plants a seaweed sprout on the deepest ledge where enough light still reaches. |
+| [Stir and See](docs/games/stir-see.md) | toddler–school | Bubble Beach | 5 | TODO: the first fun action and learning purpose. |
 | [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 18 | free play on five notes (lap starts with one big jelly that wakes its friends) |
 | [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 13 | at lap, one big jelly where a touch anywhere lights it; otherwise tap jellies on a looping beat |
 | [Sound Garden](docs/games/sound-garden.md) | lap–pre-K | Music Mountain | 10 | one big singing friend (lap entry 8), then the garden |

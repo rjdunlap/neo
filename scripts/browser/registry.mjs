@@ -16,6 +16,7 @@ import { createSuite as createGroveCutLines20 } from './suites/grove-cut-lines-2
 import { createSuite as createGroveCutLines22 } from './suites/grove-cut-lines-22.mjs';
 import { createSuite as createLens } from './suites/lens-play.mjs';
 import { createSuite as createMeltFreeze } from './suites/melt-freeze-play.mjs';
+import { createSuite as createStirSee } from './suites/stir-see-play.mjs';
 import { createSuite as createMoonWindow } from './suites/moon-window-play.mjs';
 import { createSuite as createSortingMachine } from './suites/sorting-machine-play.mjs';
 import { createSuite as createMemoryDesk } from './suites/memory-desk-play.mjs';
@@ -368,6 +369,7 @@ export const SUITES = [
   'meadow',
   'lens',
   'meltfreeze',
+  'stirsee',
   'moonwindow',
   'sortingmachine',
   'memorydesk',
@@ -581,6 +583,7 @@ export const ALL_SUITES = [
   'meadow',
   'lens',
   'meltfreeze',
+  'stirsee',
   'moonwindow',
   'sortingmachine',
   'memorydesk',
@@ -1011,6 +1014,7 @@ export function createChecks(fixture) {
   install(create137(shared));
   install(createLens(shared));
   install(createMeltFreeze(shared));
+  install(createStirSee(shared));
   install(createMoonWindow(shared));
   install(createSortingMachine(shared));
   install(createMemoryDesk(shared));
@@ -1287,6 +1291,7 @@ export async function runSuite(suite, fixture) {
     discoveryPick,
     storyWeaverPlay,
     meltFreezePlay,
+    stirSeePlay,
     moonWindowPlay,
     sortingMachinePlay,
     memoryDeskPlay,
@@ -1533,6 +1538,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'meadow') await meadowPlay();
   if (suite === 'all' || suite === 'lens') await lensPlay();
   if (suite === 'all' || suite === 'meltfreeze') await meltFreezePlay();
+  if (suite === 'all' || suite === 'stirsee') await stirSeePlay();
   if (suite === 'all' || suite === 'moonwindow') await moonWindowPlay();
   if (suite === 'all' || suite === 'sortingmachine') await sortingMachinePlay();
   if (suite === 'all' || suite === 'memorydesk') await memoryDeskPlay();

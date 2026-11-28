@@ -80,6 +80,7 @@ export const LANDS: readonly Land[] = [
       'tide-line',
       'drift-cards',
       'down-we-go',
+      'stir-see',
     ],
   },
   {

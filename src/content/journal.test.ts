@@ -74,8 +74,24 @@ describe('the entries', () => {
     expect(entriesOf('spinner-fair').map((e) => e.key)).toEqual(['two-dice']);
     expect(entriesOf('swing-pals').map((e) => e.key)).toEqual(['longer-slower']);
     expect(entriesOf('jelly-drums').map((e) => e.key)).toEqual(['low-high', 'scale']);
+    expect(entriesOf('stir-see').map((e) => e.key)).toEqual(['vanishes', 'settles', 'floats', 'still-there']);
     expect(JOURNAL).toHaveLength(
-      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 7 + 3 + 6 + 1 + 1 + 1 + 1 + 2,
+      ALL_THINGS.length +
+        ANIMALS.length +
+        ACTIONS.length +
+        5 +
+        26 +
+        6 +
+        1 +
+        7 +
+        3 +
+        6 +
+        1 +
+        1 +
+        1 +
+        1 +
+        2 +
+        4,
     );
   });
 
@@ -191,6 +207,16 @@ describe('the entries', () => {
           expect(said, e.id).toContain('longer rope swings slower');
           expect(said, e.id).toContain('short rope comes back first');
           break;
+        case 'stir-see':
+          // Matches the outcome table in the game's rules, and "still in there" for the shimmer.
+          if (e.key === 'still-there') expect(said, e.id).toContain('still in the water');
+          else
+            expect(said, e.id).toContain(
+              { vanishes: 'vanish into the water', settles: 'sink to the bottom', floats: 'float on top' }[
+                e.key
+              ]!,
+            );
+          break;
         case 'jelly-drums':
           // Matches JELLY_NAMES in the game's rules: red is the biggest and lowest jelly, blue the littlest and highest.
           if (e.key === 'scale') {
@@ -278,6 +304,11 @@ describe('the entries', () => {
       } else if (e.game === 'jelly-drums') {
         expect(find).toContain(e.key === 'scale' ? 'three jellies' : 'biggest jelly and the littlest jelly');
         expect(found).toContain(e.key === 'scale' ? 'rainbow' : 'sang low');
+      } else if (e.game === 'stir-see') {
+        expect(find.toLowerCase()).toContain(e.key === 'still-there' ? 'tap a cup' : 'into a cup of water');
+        expect(found).toContain(
+          { vanishes: 'vanished', settles: 'sank', floats: 'floated', 'still-there': 'shimmer' }[e.key]!,
+        );
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);
