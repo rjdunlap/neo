@@ -39,6 +39,8 @@ import { Scene } from '../Scene';
 import { markTiming } from '../../engine/timing';
 import { LEAVE_BEAT } from '../leave';
 import '../../chooser.css';
+import { PaperSkin } from '../../ui/paper-dom';
+import { PAPER_ON, paperPass } from '../../art/paperize';
 
 interface Item {
   entry: ProfileEntry;
@@ -47,6 +49,9 @@ interface Item {
 
 /** A small game controller, on the Family play tile. */
 const PAD = `<svg viewBox="0 0 46 30" aria-hidden="true"><path fill="#6b6b7b" d="M10 3h26c5 0 8.5 4 9.4 11l1 8c.4 4-2 6-5.2 6-2.2 0-3.5-1.2-4.8-3.2L33.4 20H12.6l-1.4 4.8C9.9 26.8 8.6 28 6.4 28c-3.2 0-5.6-2-5.2-6l1-8C3.1 7 6 3 10 3z"/><path stroke="#fff" stroke-width="2.6" stroke-linecap="round" d="M13 9v8M9 13h8"/><circle cx="32" cy="10.5" r="2.2" fill="#fff"/><circle cx="37" cy="14.5" r="2.2" fill="#fff"/></svg>`;
+
+/** What on "Who's playing?" is a piece of paper: each person's card, the age places, Add a player and Family play. */
+const PAPER_PIECES = '.chooser__card, .chooser__place, .chooser__add, .chooser__family, .chooser__note';
 
 const MONTHS = [
   'January',
@@ -90,6 +95,8 @@ export class ChooserScene extends Scene {
   canPause = false;
   private backdrop!: Backdrop;
   private readonly page = el('section', 'chooser');
+  /** Dresses the cards as paper (docs/ART-STYLE.md). */
+  private skin: PaperSkin | null = null;
   private readonly cards = el('div', 'chooser__cards');
   private readonly note = el('p', 'chooser__note');
   private items: Item[] = [];
@@ -147,6 +154,7 @@ export class ChooserScene extends Scene {
     this.page.addEventListener('pointerdown', () => this.showRing(false), true);
     window.addEventListener('keydown', this.onKeyDown);
     document.body.append(this.page, this.gear.el);
+    this.skin = new PaperSkin(this.page, PAPER_PIECES);
     setTimeout(() => this.page.classList.add('chooser--in'), 16);
     this.startInput();
     void this.build();
@@ -269,6 +277,7 @@ export class ChooserScene extends Scene {
   /** The stand-in friend on card paper, for a first-visit age place: nobody has a friend yet. */
   private standIn(size: number): HTMLCanvasElement {
     const art = makePortrait(STAND_IN, size);
+    if (PAPER_ON) paperPass(art);
     const canvas = this.app.renderer.extract.canvas({ target: art, resolution: 1.5 }) as HTMLCanvasElement;
     canvas.setAttribute('aria-hidden', 'true');
     art.destroy({ children: true });
@@ -318,6 +327,7 @@ export class ChooserScene extends Scene {
   private friend(save: SaveData): HTMLCanvasElement {
     const friend = companionOf(save.creatures);
     const art = friend ? makePortrait(friend, 230) : makeEgg('whole');
+    if (PAPER_ON) paperPass(art);
     const canvas = this.app.renderer.extract.canvas({ target: art, resolution: 1.5 }) as HTMLCanvasElement;
     canvas.setAttribute('aria-hidden', 'true');
     art.destroy({ children: true });
@@ -563,6 +573,7 @@ export class ChooserScene extends Scene {
     window.removeEventListener('keydown', this.onKeyDown);
     this.stopInput();
     this.dismissForm(false);
+    this.skin?.destroy();
     this.page.remove();
     this.gear.destroy();
     super.destroy();
