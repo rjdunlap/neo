@@ -1,1 +1,0 @@
-**Define Critter Sort level 10 *Pick the signs*** (docs only): play only, nothing kept (decided 2026-10-23); ID 10 is reserved for it; queue its build. [Dive slice 9](../../deep-dives/critter-sort.md#build-slices-in-order).
