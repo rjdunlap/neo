@@ -614,8 +614,8 @@ class DucklingParade implements Game {
     if (!this.lap) this.hints++;
     this.wrongs = 0;
     this.hinting = true;
-    if (this.round.reference) {
-      // Keep it going: the hint shows the next slot's color (only that one) and names it.
+    if (this.round.reference && this.line.length < this.round.pattern!.length) {
+      // Keep it going: the hint shows the next slot's color (only that one) and names it. A full line's hint is the pond glow.
       this.drawCard();
       void this.ctx.say('parade.next', { want: nextInPattern(this.round, this.line.length)! });
     }
