@@ -15,38 +15,13 @@ import {
   birthForChip,
   chipForBirth,
   cleanPlayerName,
-  couchNameFor,
   exitFor,
-  modeFor,
   NAME_LIMIT,
   readNewPlayer,
   skipsEgg,
-  sourceOfClick,
 } from './chooser';
 
 const now = new Date(2026, 9, 15);
-
-describe('which mode a card opens', () => {
-  it('opens the island for a tap or a click and the couch for a key or a controller', () => {
-    expect(modeFor('pointer')).toBe('island');
-    expect(modeFor('key')).toBe('couch');
-    expect(modeFor('pad')).toBe('couch');
-  });
-
-  it('reads a click with no pointer behind it (Enter, or a screen reader) as a key, never as the island', () => {
-    expect(sourceOfClick(1)).toBe('pointer');
-    expect(sourceOfClick(2)).toBe('pointer');
-    expect(sourceOfClick(0)).toBe('key');
-    expect(modeFor(sourceOfClick(0))).toBe('couch');
-  });
-
-  it('trusts a pointer that went down before the click over the click’s detail, which a touch browser may report as 0', () => {
-    expect(sourceOfClick(0, true)).toBe('pointer');
-    expect(modeFor(sourceOfClick(0, true))).toBe('island');
-    expect(sourceOfClick(0, false)).toBe('key');
-    expect(sourceOfClick(1, true)).toBe('pointer');
-  });
-});
 
 describe('where a tapped card opens (D8)', () => {
   it('opens Home by default, the six when chosen, and the hatch for someone with no friend either way', () => {
@@ -55,24 +30,6 @@ describe('where a tapped card opens (D8)', () => {
     expect(exitFor(true, 'six')).toBe('six');
     expect(exitFor(false, 'six')).toBe('hatch');
     expect(exitFor(false, 'explore')).toBe('hatch');
-  });
-});
-
-describe('couch Player 1', () => {
-  it('takes the person’s name, as the couch shows names', () => {
-    expect(couchNameFor('Mia')).toBe('Mia');
-    expect(couchNameFor('  Robert   Dunlap ')).toBe('Robert Dunlap');
-  });
-
-  it('is cut to the couch’s 14 letters', () => {
-    expect(couchNameFor('Bartholomew the Third')).toBe('Bartholomew th');
-    expect([...couchNameFor('x'.repeat(40))!]).toHaveLength(14);
-  });
-
-  it('leaves the couch’s own name alone when the person has none', () => {
-    expect(couchNameFor('')).toBeNull();
-    expect(couchNameFor('   ')).toBeNull();
-    expect(couchNameFor('\u0007\u0000')).toBeNull();
   });
 });
 
