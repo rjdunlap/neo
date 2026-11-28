@@ -797,8 +797,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         duckTargets.every(
           ([x, y, radius]) =>
             x === 0 &&
-            y === -46 &&
-            (mode === 'every' ? radius >= 53 && radius < 56 : radius === (mode === 'bye' ? 53 : 72)),
+            // Level 17's peekers are tapped higher, over the reeds, with a smaller circle.
+            (mode === 'peek'
+              ? y === -60 && radius === 54
+              : y === -46 &&
+                (mode === 'every' ? radius >= 53 && radius < 56 : radius === (mode === 'bye' ? 53 : 72))),
         ),
         'Duck sprite preserves hit circles',
       );
@@ -976,6 +979,42 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await kit.until(() => g.finished, 30000);
           if (g.misses !== 0 || g.hints !== 1)
             throw new Error(`Every way: ${g.misses} misses, ${g.hints} hints`);
+          return;
+        }
+        if (g.plan.mode === 'compare') {
+          // Level 18: which side has more? The first round is paired up before the question. In round 2 two wrong answers
+          // pair the ducks, light the spare ones and count one hint; every right answer is the bot's own tap.
+          const L = await import('/src/games/duck-pond/logic.ts');
+          const tapAnswer = (a) =>
+            kit.tapOn(a === 'same' ? g.cmp.same : g.cmp.sides.find((s) => s.side === a).area);
+          for (let r = 0; r < g.plan.rounds; r++) {
+            await kit.until(() => (!g.busy && g.cmp) || g.finished, 30000);
+            const c = g.cmp;
+            if (c.left.length !== c.round.left || c.right.length !== c.round.right)
+              throw new Error(
+                `Which side: ${c.left.length} and ${c.right.length} ducks for ${c.round.left} and ${c.round.right}`,
+              );
+            if (c.paired !== (r === 0))
+              throw new Error(`Which side: round ${r} paired ${c.paired} at the question`);
+            const answer = L.compareAnswer(c.round);
+            if (r === 1) {
+              const wrong = ['left', 'right', 'same'].filter((x) => x !== answer);
+              tapAnswer(wrong[0]);
+              await kit.sleep(200);
+              await ready();
+              const glowing = [...c.left, ...c.right].filter((d) => d.glowing).length;
+              if (!c.paired || glowing !== Math.abs(c.left.length - c.right.length))
+                throw new Error(`Which side: a wrong answer paired ${c.paired}, ${glowing} spare glowing`);
+              tapAnswer(wrong[1]);
+              await kit.sleep(200);
+              await ready();
+              if (g.misses !== 2 || g.hints !== 1)
+                throw new Error(`Which side: ${g.misses} misses, ${g.hints} hints`);
+            }
+            kit.tapOn(g.autotouch().tap.on);
+            await kit.until(() => g.round > r || g.finished, 30000);
+          }
+          await kit.until(() => g.finished, 30000);
           return;
         }
         for (let r = 0; r < g.plan.rounds; r++) {

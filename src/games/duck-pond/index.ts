@@ -87,6 +87,16 @@ import {
   type PeekCover,
   type PeekGuess,
   type PeekPond,
+  compareRounds,
+  compareStart,
+  compareSide,
+  comparePairs,
+  compareAnswer,
+  compareMove,
+  COMPARE_SCALE,
+  COMPARE_POND_RY,
+  type CompareRound,
+  type CompareAnswer,
 } from './logic';
 import { CardRow } from './every';
 import { rangeFor } from '../../progress/difficulty';
@@ -362,6 +372,18 @@ class DuckPond implements Game {
     /** Indexes into `swimmers` (counting order), in the order she ringed them. */
     rung: number[];
   } | null = null;
+  /** Level 18: the rounds still to come, and this round: the ducks on each side, whether they have paired up, and the targets. */
+  private compares: CompareRound[] = [];
+  private cmp: {
+    round: CompareRound;
+    left: Duck[];
+    right: Duck[];
+    paired: boolean;
+    sides: { area: Container; flash: Graphics; side: 'left' | 'right' }[];
+    same: RoundButton;
+  } | null = null;
+  /** Level 18: the ring that pulses around the right side or "the same" after two misses. */
+  private readonly cmpRing = new Graphics();
   private readonly cardRow: CardRow;
   private busy = true;
   private finished = false;
@@ -406,6 +428,7 @@ class DuckPond implements Game {
       this.ducks,
       this.padLayer,
       this.cardRow,
+      this.cmpRing,
     );
     if (this.plan.mode === 'every') {
       // Level 16: the check keeps the split on the pond (lit only while both sides hold a duck).
@@ -477,10 +500,10 @@ class DuckPond implements Game {
       // A footbridge from the far bank to the near one, splitting the pond into a left and a right side.
       const half = SPLIT_BRIDGE_HALF;
       bridge
-        .roundRect(x - half, y - POND_RY - 14, half * 2, POND_RY * 2 + 28, 10)
+        .roundRect(x - half, y - ry - 14, half * 2, ry * 2 + 28, 10)
         .fill(wood.fill)
         .stroke({ width: 6, color: wood.line });
-      for (let py = y - POND_RY + 20; py < y + POND_RY; py += 36)
+      for (let py = y - ry + 20; py < y + ry; py += 36)
         bridge
           .moveTo(x - half + 6, py)
           .lineTo(x + half - 6, py)
@@ -516,6 +539,7 @@ class DuckPond implements Game {
       const slot = d.pondOffset ?? SLOTS[i];
       d.position.set(x + slot[0], y + slot[1]);
     });
+    if (this.cmp) this.layoutCompare();
     if (this.peek) {
       for (const c of this.peek.covers) c.g.position.set(x + c.at[0], y + c.at[1]);
       this.peek.guesses.forEach(({ button }, i) => {
@@ -541,6 +565,7 @@ class DuckPond implements Game {
     const ring = this.checkRing.clear();
     if (this.check?.visible && this.wrongThisRound >= HINT_AFTER && this.swimmers.length === this.want)
       ring.circle(0, 0, CHECK_HIT_R + 4 + 5 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.7 });
+    this.drawCompareHint();
   }
 
   /** The ghost finger on the how-to card: send the ducks in (all of them, or as many as the sign says), or touch the lily pad with the answer. */
@@ -561,6 +586,7 @@ class DuckPond implements Game {
     );
     if (this.plan.mode === 'every') return this.everyIntent();
     if (this.plan.mode === 'peek') return this.peekIntent();
+    if (this.plan.mode === 'compare') return this.compareIntent();
     if (move === null) return null;
     if (move === 'check') return this.check ? { tap: { on: this.check } } : null;
     // Level 13: the finger touches the water or the grass well away from the big duck, to show that anywhere will do.
@@ -895,6 +921,10 @@ class DuckPond implements Game {
       await this.startPeek();
       return;
     }
+    if (p.mode === 'compare') {
+      await this.startCompare();
+      return;
+    }
     if (p.mode === 'teen') {
       // A full ten arrives at once, then the ones swim into the second frame; in turn, ask the whole or the ones.
       if (!this.teens.length) this.teens = teenRounds(rng, p);
@@ -1130,8 +1160,9 @@ class DuckPond implements Game {
     this.cardRow.reset(0);
     await this.swimAway();
     this.round++;
-    // The how-to card's demonstration shows the first two totals of level 16, so it ends inside its time.
-    const rounds = this.plan.mode === 'every' && this.ctx.demo ? 2 : this.plan.rounds;
+    // The how-to card's demonstration shows the first two totals of level 16 (two rounds of level 18), so it ends inside its time.
+    const short = this.plan.mode === 'every' || this.plan.mode === 'compare';
+    const rounds = short && this.ctx.demo ? 2 : this.plan.rounds;
     if (this.round >= rounds) void this.finale();
     else void this.nextRound();
   }
@@ -1326,6 +1357,222 @@ class DuckPond implements Game {
     if (this.wrongThisRound === HINT_AFTER) this.hints++;
     if (this.wrongThisRound >= HINT_AFTER) this.peekHint();
     this.busy = false;
+  }
+
+  // ----- level 18: which side has more? -----
+
+  /** A round of level 18: each side's ducks pop up on the split pond (lined up, or scattered), then "Which side has more?" */
+  private async startCompare() {
+    const rng = this.ctx.rng;
+    if (!this.compares.length) this.compares = compareRounds(rng, this.plan);
+    const round = this.compares.shift()!;
+    if (this.sizePond({ pondRx: POND_RX, pondRy: COMPARE_POND_RY })) this.resize(this.view);
+    const { x, y } = this.pondCenter();
+    const popIn = (n: number, sign: -1 | 1, wait: number) =>
+      compareStart(rng, n, sign, round.scatter).map((slot, i) => {
+        const d = new Duck();
+        d.eventMode = 'none';
+        d.pondOffset = slot;
+        d.position.set(x + slot[0], y + slot[1]);
+        d.setSwimming(true);
+        d.zIndex = d.y;
+        d.scale.set(0);
+        this.ducks.addChild(d);
+        this.swimmers.push(d);
+        void this.tw.to(
+          d.scale,
+          { x: COMPARE_SCALE, y: COMPARE_SCALE },
+          { duration: 0.3, delay: wait + i * 0.05, ease: ease.outBack },
+        );
+        return d;
+      });
+    const left = popIn(round.left, -1, 0);
+    sfx.splash();
+    await this.tw.wait(0.5);
+    const right = popIn(round.right, 1, 0);
+    sfx.splash();
+    await this.tw.wait(0.6);
+    if (this.finished) return;
+    const sides = (['left', 'right'] as const).map((side) => {
+      const area = new Container();
+      const flash = new Graphics();
+      flash.alpha = 0;
+      area.addChild(flash);
+      onTap(area, () => void this.pickCompare(side), { cooldown: 400 });
+      this.ctx.stage.addChild(area);
+      return { area, flash, side };
+    });
+    const same = new RoundButton(sameIcon(), swatch.blue, PAD_R, () => void this.pickCompare('same'));
+    same.scale.set(0);
+    this.ctx.stage.addChild(same);
+    void this.tw.to(same.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    this.cmp = { round, left, right, paired: false, sides, same };
+    this.layoutCompare();
+    // The first round is the model: the ducks pair up before the question, so she sees what "more" looks like.
+    if (this.round === 0) await this.pairUp();
+    if (this.finished || !this.cmp) return;
+    await this.ctx.instruct('duckcmp.ask');
+    this.busy = false;
+  }
+
+  /** The two sides' tap areas (each half of the pond, either side of the bridge) and "the same" in the pad row. */
+  private layoutCompare() {
+    const cmp = this.cmp;
+    if (!cmp) return;
+    const v = this.view;
+    const { x, y } = this.pondCenter();
+    const rx = pondDrawRx(v, this.pondRx);
+    const ry = this.pondRy;
+    const w = rx - SPLIT_BRIDGE_HALF;
+    for (const { area, flash, side } of cmp.sides) {
+      const sign = side === 'left' ? -1 : 1;
+      area.position.set(x + sign * (SPLIT_BRIDGE_HALF + w / 2), y);
+      area.hitArea = new Rectangle(-w / 2, -ry, w, 2 * ry);
+      flash
+        .clear()
+        .ellipse(0, 0, w / 2 - 10, ry - 10)
+        .fill({ color: 0xffffff, alpha: 0.35 });
+    }
+    const at = padSpot(v, 0, 1);
+    cmp.same.position.set(at.x, at.y);
+  }
+
+  /** The right side or "the same", pulsing after two misses on this round. */
+  private drawCompareHint() {
+    const g = this.cmpRing.clear();
+    const cmp = this.cmp;
+    if (!cmp || this.wrongThisRound < HINT_AFTER) return;
+    const pulse = 5 * Math.sin(this.clock * 8);
+    const answer = compareAnswer(cmp.round);
+    if (answer === 'same') {
+      g.circle(cmp.same.x, cmp.same.y, PAD_R + 18 + pulse).stroke({ width: 10, color: 0xfff3a0, alpha: 0.9 });
+      return;
+    }
+    const area = cmp.sides.find((s) => s.side === answer)!.area;
+    const hit = area.hitArea as Rectangle;
+    g.roundRect(
+      area.x + hit.x - 6 - pulse,
+      area.y + hit.y - 6 - pulse,
+      hit.width + 12 + 2 * pulse,
+      hit.height + 12 + 2 * pulse,
+      40,
+    ).stroke({
+      width: 10,
+      color: 0xfff3a0,
+      alpha: 0.9,
+    });
+  }
+
+  /**
+   * The ducks pair up across the bridge: each side lines up outward from it (mirror images), each pair bobs together and gets a
+   * ring, then the spare ducks on the side with more hop and quack.
+   */
+  private async pairUp() {
+    const cmp = this.cmp;
+    if (!cmp) return;
+    if (!cmp.paired) {
+      cmp.paired = true;
+      await this.ctx.say('duckcmp.pairs');
+      if (!this.cmp) return;
+      const { x, y } = this.pondCenter();
+      const lineUp = (ducks: Duck[], sign: -1 | 1) =>
+        compareSide(ducks.length, sign).map((slot, i) => {
+          const d = ducks[i];
+          d.pondOffset = slot;
+          return this.tw
+            .to(d, { x: x + slot[0], y: y + slot[1] }, { duration: 0.5, ease: ease.inOutSine })
+            .then(() => {
+              if (!d.destroyed) d.zIndex = d.y;
+            });
+        });
+      await Promise.all([...lineUp(cmp.left, -1), ...lineUp(cmp.right, 1)]);
+      const { pairs } = comparePairs(cmp.left.length, cmp.right.length);
+      for (let i = 0; i < pairs; i++) {
+        if (!this.cmp) return;
+        for (const d of [cmp.left[i], cmp.right[i]]) {
+          d.bob();
+          d.markCounted(true);
+        }
+        sfx.bell(5 + (i % 5), 0.15);
+        await this.tw.wait(0.28);
+      }
+    }
+    await this.showSpare();
+  }
+
+  /** The ducks with no partner hop and glow; with none spare, every pair bobs once more. */
+  private async showSpare() {
+    const cmp = this.cmp;
+    if (!cmp) return;
+    const { spare } = comparePairs(cmp.left.length, cmp.right.length);
+    if (!spare) {
+      for (const d of [...cmp.left, ...cmp.right]) d.bob();
+      return;
+    }
+    const ducks = spare.seats.map((i) => (spare.side === 'left' ? cmp.left : cmp.right)[i]);
+    ducks.forEach((d, i) => {
+      d.glow(true);
+      void this.tw.wait(i * 0.12).then(() => {
+        if (d.destroyed) return;
+        d.critter.hop(0.5);
+        if (i < 3) sfx.animal('quack');
+      });
+    });
+    await this.tw.wait(0.4 + ducks.length * 0.12);
+  }
+
+  /** She taps a side or "the same". A right answer pairs the ducks up (if they have not yet) and says why; a wrong one shows the pairs. */
+  private async pickCompare(pick: CompareAnswer) {
+    const cmp = this.cmp;
+    if (!cmp || this.busy || this.finished) return;
+    this.busy = true;
+    const answer = compareAnswer(cmp.round);
+    const side = cmp.sides.find((s) => s.side === pick);
+    if (side) {
+      side.flash.alpha = 1;
+      void this.tw.to(side.flash, { alpha: 0 }, { duration: 0.5 });
+    }
+    if (pick === answer) {
+      sfx.bell(9, 0.3);
+      await this.pairUp();
+      if (!this.cmp) return;
+      await this.ctx.say(answer === 'same' ? 'duckcmp.same' : 'duckcmp.more');
+      this.clearCompare();
+      await this.roundWon(0, false);
+      return;
+    }
+    this.misses++;
+    this.wrongThisRound++;
+    sfx.boing();
+    await this.pairUp();
+    if (!this.cmp) return;
+    await this.ctx.say(answer === 'same' ? 'duckcmp.hintSame' : 'duckcmp.hintMore');
+    // From the second miss the right side (or "the same") glows, and this round counts one hint.
+    if (this.wrongThisRound === HINT_AFTER) this.hints++;
+    this.busy = false;
+  }
+
+  /** The ghost finger at level 18: the middle of the side with more, or "the same". */
+  private compareIntent(): TouchIntent | null {
+    const cmp = this.cmp;
+    if (!cmp) return null;
+    const move = compareMove(cmp.round);
+    if (move === 'same') return { tap: { on: cmp.same } };
+    return { tap: { on: cmp.sides.find((s) => s.side === move)!.area } };
+  }
+
+  /** The targets go and the rings come off before the ducks swim away. */
+  private clearCompare() {
+    const cmp = this.cmp;
+    if (!cmp) return;
+    this.cmp = null;
+    this.cmpRing.clear();
+    for (const d of [...cmp.left, ...cmp.right]) {
+      d.markCounted(false);
+      d.glow(false);
+    }
+    for (const { area } of cmp.sides) area.destroy({ children: true });
+    cmp.same.destroy({ children: true });
   }
 
   // ----- level 17: count the peekers -----
@@ -1738,6 +1985,22 @@ class DuckPond implements Game {
   }
 }
 
+/** Level 18's "the same" button: two matching triangles of dots either side of a little bridge. */
+function sameIcon(): Graphics {
+  const g = new Graphics();
+  g.roundRect(-5, -22, 10, 44, 4).fill(wood.fill).stroke({ width: 3, color: wood.line });
+  for (const sign of [-1, 1])
+    for (const [dx, dy] of [
+      [22, -12],
+      [22, 12],
+      [38, 0],
+    ])
+      g.circle(sign * dx, dy, 8)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line });
+  return g;
+}
+
 /** The hub's little pond with two ducks bobbing about. */
 class PondIcon extends Container {
   private readonly ducks: IllustratedDuck[] = [];
@@ -1824,6 +2087,8 @@ export const duckPond: GameModule = {
       return `Doubles: ${p.min} + ${p.min} to ${p.max} + ${p.max} across the bridge, then one more on a side; how many in all?`;
     if (p.mode === 'teen')
       return 'Ten and some more: a full pond of ten and 1 to 9 more; how many in all (11 to 19), or how many past ten?';
+    if (p.mode === 'compare')
+      return `Which side has more? ${p.min} to ${p.max} ducks either side of the bridge pair up one to one; tap the side with more, or "the same"`;
     if (p.mode === 'peek')
       return `Count the peekers: ${p.min} to ${p.max} ducks peek from reeds and leaves; tap each one to ring and count it, then pick the dotted pad. "A few, or lots?" first, never wrong`;
     if (p.mode === 'every')
@@ -1841,7 +2106,8 @@ export const duckPond: GameModule = {
   offScreen: 'Line up toy ducks or spoons and count them together, touching each one.',
   hubIcon: () => new PondIcon(),
   // 17 (Count the peekers) is played between 6 and 7 by preschool and pre-K; a school save of it starts at school's first level.
-  entryLevels: [12, 13, 17],
+  // 18 (Which side has more?) is pre-K's, played between 7 and 8.
+  entryLevels: [12, 13, 17, 18],
   touchDemo: true,
   upright: true,
   sticker,
