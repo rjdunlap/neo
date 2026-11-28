@@ -16,6 +16,8 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   DRIVE_LEVEL,
+  ONE_STEP_LEVEL,
+  ONE_STEP_PLANS,
   boardFor,
   DIRECTIONS,
   expand,
@@ -205,7 +207,11 @@ class RobotPath implements Game {
       this.plan =
         this.prediction ??
         this.fixPlan ??
-        (this.ctx.level === 13 ? this.ctx.rng.pick(VIA_PLANS) : boardFor(this.ctx.level, this.ctx.rng));
+        (this.ctx.level === 13
+          ? this.ctx.rng.pick(VIA_PLANS)
+          : this.ctx.level === ONE_STEP_LEVEL
+            ? this.ctx.rng.pick(ONE_STEP_PLANS)
+            : boardFor(this.ctx.level, this.ctx.rng));
     }
     this.mode = this.plan.mode ?? 'steps';
     this.solution =
@@ -236,7 +242,9 @@ class RobotPath implements Game {
               ? 'robot.loop'
               : this.mode === 'counts'
                 ? 'robot.counts'
-                : 'robot.start',
+                : this.ctx.level === ONE_STEP_LEVEL
+                  ? 'robot.one'
+                  : 'robot.start',
     );
   }
 
@@ -360,14 +368,20 @@ class RobotPath implements Game {
       this.appleGlow.visible = true;
       await this.ctx.say('robot.forgot');
     } else {
-      await this.ctx.say('robot.short');
+      // One step, then play: a wrong arrow ends somewhere else, not short of the star.
+      await this.ctx.say(this.ctx.level === ONE_STEP_LEVEL ? 'robot.one.wrong' : 'robot.short');
     }
     await this.ctx.tw.wait(0.65);
     const p = this.position([0, 0]);
     await this.ctx.tw.to(this.robot, { x: p.x, y: p.y + 42 }, { duration: 0.4 });
     this.apple.visible = !!this.plan.via;
     this.appleGlow.visible = false;
+    // One step, then play: the one slot empties after a miss, so the next arrow tap fills it again.
     this.running = false;
+    if (this.ctx.level === ONE_STEP_LEVEL) {
+      this.program.length = 0;
+      this.drawQueue();
+    }
     if (this.misses === 2) {
       this.hints++;
       if (this.course) {
@@ -696,27 +710,29 @@ export const robotPath: GameModule = {
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [DRIVE_LEVEL],
+  entryLevels: [DRIVE_LEVEL, ONE_STEP_LEVEL],
   describeLevel: (l) =>
     l === DRIVE_LEVEL
       ? 'Drive the robot: each arrow moves it one step'
-      : l === 11
-        ? 'Where will it stop?'
-        : l === 12
-          ? 'Fix the program'
-          : l === 13
-            ? 'Pick up the apple on the way'
-            : l === 14
-              ? 'Mend the loop'
-              : l === 15
-                ? 'A routine: use the same steps twice'
-                : l === 1
-                  ? 'One or two steps straight to the star'
-                  : l === 2
-                    ? 'A short program with a turn'
-                    : l === 3
-                      ? 'Plan across a bigger grid'
-                      : planFor(l).name,
+      : l === ONE_STEP_LEVEL
+        ? 'One step, then play: one arrow in the program'
+        : l === 11
+          ? 'Where will it stop?'
+          : l === 12
+            ? 'Fix the program'
+            : l === 13
+              ? 'Pick up the apple on the way'
+              : l === 14
+                ? 'Mend the loop'
+                : l === 15
+                  ? 'A routine: use the same steps twice'
+                  : l === 1
+                    ? 'One or two steps straight to the star'
+                    : l === 2
+                      ? 'A short program with a turn'
+                      : l === 3
+                        ? 'Plan across a bigger grid'
+                        : planFor(l).name,
   music: STYLES.jelly,
   offScreen:
     'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
