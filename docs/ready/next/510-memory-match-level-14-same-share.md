@@ -1,1 +1,0 @@
-**`memory-match`, level 14 *Same share*** (new-levels tier): after 13; three equivalent-fraction pairs (1/2 with 2/4, 1/3 with 2/6, 2/3 with 4/6) on same-size rectangles, the subdivision overlay after two misses. [Dive slice 6](../../deep-dives/memory-match.md#build-slices-in-order).

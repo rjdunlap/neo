@@ -1,0 +1,1 @@
+**Define Critter Crossing *Be the gate*** (docs only): the second-seat level at the next free ID (currently 9), an anonymous, uncredited seat and a role-swapped round as supported completion (decided 2026-10-23); queue its build. [Dive slice 7](../../deep-dives/critter-crossing.md#build-slices-in-order).
