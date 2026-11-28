@@ -45,7 +45,7 @@ export const VOICE = {
   'pattern.whyNumber': ['Yes! They count by {step}: {list}!'],
   // Level 21: find the rule, then the next number (slotted, so device speech).
   'pattern.rule': ['Each car adds the same amount, {name}. How much more is each car? Tap it.'],
-  'pattern.ruleWrong': ['Count on from one car to the next. How many more?'],
+  'pattern.ruleWrong': ['Count on from one car to the next, {name}. How many more?'],
   'pattern.ruleHint': ['From {from}: {list}. That is {step} more!'],
   'pattern.ruleRight': ['Yes! Add {step} each time. What number goes in the glowing car?'],
   'pattern.addWrong': ['Add {step} to {last}. Count on {step}!'],

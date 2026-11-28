@@ -368,7 +368,7 @@ class PatternTrain implements Game {
       this.misses++;
       this.wrong++;
       sfx.boing();
-      void this.ctx.say('pattern.ruleWrong');
+      void this.ctx.say('pattern.ruleWrong', { name: this.ctx.childName });
       if (this.wrong === 2) {
         this.hints++;
         this.ruleHinted = true;
