@@ -1,0 +1,1 @@
+**`memory-match`, level 13 *Same total*** (new-levels tier): school, placed with `order`; three pairs of two pictured groups and their total (operands 1–5, totals at most 10, unique per board). [Dive slice 6](../../deep-dives/memory-match.md#build-slices-in-order).

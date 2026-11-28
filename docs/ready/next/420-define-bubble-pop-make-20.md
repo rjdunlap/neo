@@ -1,0 +1,1 @@
+**Define Bubble Pop *Make 20*** (docs only): a bonds-to-20 level after levels 10–11's bonds to ten (11 + 9), its sign, pairs, hint and rule tests; Duck Pond 10 and Frog Hop's crossing ten hold making ten, so this is the only bonds-to-20 level; evens and odds stay Duck Pond's (decided 2026-10-23). [Dive sketches](../../deep-dives/bubble-pop.md#build-slices-in-order).

@@ -1,0 +1,1 @@
+**Define Market Stall's sell stall and bakery** (docs only): from the dive's [sketches](../../deep-dives/market-stall.md#build-slices-in-order), the sell stall (she is paid; the shop's mirror, no fees) as a level at the next free ID and the bakery as a stall skin with its new props, each with first round, accounting, hint, rule tests, art cost and check tier; queue the builds.

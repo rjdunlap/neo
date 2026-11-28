@@ -1,6 +1,6 @@
 # Starting view: Explore or Today's six (definition D8)
 
-*Defined 2026-11-27 · docs only · chunk 19, [discovery action D8](../ROADMAP.md#discovery-actions) · its Play entrance is [Today's six](todays-six.md) (D10, built).* The source audit read `src/rework.ts` (the root's `hub`, `App.phoneOnly`, the one-shot `?daily` flag), `src/app/routes.ts` (`classic/`'s `hub` and `daily`), `ChooserScene.begin`, `beginGuest` and `create`, `src/app/chooser.ts` (`modeFor`), `src/app/players.ts` (`selectPlayer`, `playerChanged`), `DailyScene`'s Back, `HomeScene`'s exits, `src/progress/save.ts` (`settings`, `migrate`, `defaults`) and `src/parent/panel.ts` with `src/parent/copy.ts`.
+*Defined 2026-11-27 · docs only · chunk 19, [discovery action D8](../ROADMAP.md#discovery-actions) · its Play entrance is [Today's six](todays-six.md) (D10, built) · **built 2026-11-28** ([verification](../verification/2026-11-28-d8-the-starting-view.md)): step 0 held, the six opens at `classic/` as it is.* The source audit read `src/rework.ts` (the root's `hub`, `App.phoneOnly`, the one-shot `?daily` flag), `src/app/routes.ts` (`classic/`'s `hub` and `daily`), `ChooserScene.begin`, `beginGuest` and `create`, `src/app/chooser.ts` (`modeFor`), `src/app/players.ts` (`selectPlayer`, `playerChanged`), `DailyScene`'s Back, `HomeScene`'s exits, `src/progress/save.ts` (`settings`, `migrate`, `defaults`) and `src/parent/panel.ts` with `src/parent/copy.ts`.
 
 This is a shell and save change, not a game. It adds no game, level, how-to card, voice line or bot.
 
