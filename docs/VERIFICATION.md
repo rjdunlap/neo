@@ -111,7 +111,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `howto` | 2026-11-10 · [U3, round Back and help](archive/VERIFICATION-2026-11-10.md#2026-11-10--u3-round-back-and-help-pr-1462) | Bubble Pop intro and round help; separate level-picker check stopped at the Quick Tricks fixture |
 | `howtolevel` | 2026-10-16 · [Bubble Pop mode gallery](archive/VERIFICATION-2026-10-15.md#2026-10-16--bubble-pop-mode-gallery) | Bubble Pop mode gallery |
 | `island` | 2026-10-08 · [How-to card every time, with a bot demonstration](archive/VERIFICATION-2026-10-07-13.md#how-to-card-every-time-with-a-bot-demonstration-2026-10-08) | Island shelf and how-to entry |
-| `jarclues` | 2026-11-24 · [Jar Clues lens above the thumb](verification/2026-11-24-jar-clues-lens-above-the-thumb.md) | — |
+| `jarclues` | 2026-11-28 · [Jar Clues level 3 play and readable earlier clues](verification/2026-11-24-jar-clues-level-3-play-and-readable-earlier-clues.md) | — |
 | `countballots` | 2026-11-26 · [Count the Ballots Undo, Restart, keys and dragging](verification/2026-11-26-count-the-ballots-undo-restart-keys-and-dragging.md) | — |
 | `jarsort` | 2026-11-09 · [Jar Sort slices 4–5: levels 11 and 12](archive/VERIFICATION-2026-11-09.md#2026-11-09--jar-sort-slices-45-levels-11-and-12-pr-1433) | `JAR_SORT_LEVELS=11,12` |
 | `journal` | 2026-10-09 · [More discovery-journal sources](archive/VERIFICATION-2026-10-07-13.md#more-discovery-journal-sources-2026-10-09) | Five sources, reload and portrait |

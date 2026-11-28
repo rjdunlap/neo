@@ -110,13 +110,14 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
         return { misses, hints, level };
       }, id);
     /** Plant a guess, then each clue: make the board right and press Next clue; ends at the last look. */
-    const throughClues = async (from, shotAtLast) => {
+    const throughClues = async (from, shotAtLast, atLast) => {
       for (let s = await state(); s.phase === 'clues'; s = await state()) {
         if (s.shown >= from) await solveClue();
         if (shotAtLast && s.shown === s.clues.length) {
           await page.waitForTimeout(300);
           await screenshot(shotAtLast);
         }
+        if (atLast && s.shown === s.clues.length) await atLast();
         await next();
       }
       assert.equal((await state()).phase, 'last');
@@ -226,6 +227,46 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     assert.equal(await stickers(), before + 2);
     await back(secondPage);
 
+    // Level 3: a jar with no ten line and at least one multiple, not-a-multiple, prime or square clue. Leave that clue's
+    // ruled-out numbers standing and press Next clue: one miss, explained in that clue's own terms; then one hint.
+    const thirdPage = await landOpen(3);
+    await tapNumber(30);
+    await next();
+    const newAt = await page.evaluate(() =>
+      neo.scene.game.board.clues.findIndex((c) => ['multiple', 'notmultiple', 'special'].includes(c.kind)),
+    );
+    assert.ok(newAt >= 0, 'a level-3 board has a multiple, not-a-multiple, prime or square clue');
+    for (s = await state(); s.shown < newAt + 1; s = await state()) {
+      await solveClue();
+      await next();
+    }
+    s = await state();
+    assert.ok(s.wrong.length > 0, 'the new clue rules something out');
+    await page.waitForTimeout(300);
+    await screenshot('jar-clues-level-3-new-clue-portrait');
+    await next();
+    s = await state();
+    assert.equal(s.misses, 1, 'a board that does not hold is one miss');
+    const why = await page.evaluate((n) => {
+      const g = neo.scene.game;
+      return g.board.clues[g.shown - 1].fails(n);
+    }, s.fault);
+    assert.ok(s.note.startsWith(`${s.fault} is still standing.`) && s.note.includes(why), s.note);
+    await tapNode('neo.scene.game.help');
+    s = await state();
+    assert.equal(s.hints, 1);
+    for (const n of s.hint.lit) await tapNumber(n);
+    await solveClue();
+    await next();
+    await throughClues(newAt + 2);
+    s = await state();
+    assert.equal(s.level, 3);
+    await tapNode(`neo.scene.game.cards[${s.last.indexOf(s.count)}]`);
+    await finished(id);
+    assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 3 });
+    assert.equal(await stickers(), before + 3);
+    await back(thirdPage);
+
     // Level 4: a plain jar and one one-of-two clue. Play right up to it, leave its ruled-out numbers standing and press
     // Next clue (one miss, explained as both true or neither), then take one hint and finish.
     const fourthPage = await landOpen(4);
@@ -254,16 +295,20 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
     for (const n of s.hint.lit) await tapNumber(n);
     await solveClue();
     await next();
-    await throughClues(pairAt + 2);
+    // At the last clue the earlier clues (one of them a long one-of-two) stay readable: old ones give way to "…".
+    await throughClues(pairAt + 2, 'jar-clues-level-4-last-clue-portrait', async () => {
+      const scale = await page.evaluate(() => neo.scene.game.note.scale.x);
+      assert.ok(scale >= 0.9, `the earlier clues are drawn at ${scale}, below 0.9`);
+    });
     s = await state();
     assert.equal(s.level, 4);
     await tapNode(`neo.scene.game.cards[${s.last.indexOf(s.count)}]`);
     await finished(id);
     assert.deepEqual(await lastRound(), { misses: 1, hints: 1, level: 4 });
-    assert.equal(await stickers(), before + 3);
+    assert.equal(await stickers(), before + 4);
     await back(fourthPage);
     log(
-      'Jar Clues: levels 1, 2 and 4 from Lantern Lake at 390×625 with captions; First clue waiting for a guess, the guess moved free, level 1 swept clean; level 2 a ruled-out number left standing counted once and rechecked free, Help counted once and followed, rotation keeping the board, a card that was not the count chosen with no miss; level 4 a wrong check on the one-of-two clue explained as both or neither, one hint followed; one sticker per round and return passed',
+      'Jar Clues: levels 1 to 4 from Lantern Lake at 390×625 with captions; First clue waiting for a guess, the guess moved free, level 1 swept clean; level 2 a ruled-out number left standing counted once and rechecked free, Help counted once and followed, rotation keeping the board, a card that was not the count chosen with no miss; level 3 a wrong check on a multiple, prime or square clue explained in its own terms, one hint followed; level 4 a wrong check on the one-of-two clue explained as both or neither, one hint followed, the earlier clues readable at the last clue; one sticker per round and return passed',
     );
   }
 
