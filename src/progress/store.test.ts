@@ -179,6 +179,19 @@ describe('switching profiles', () => {
     expect(store.data.settings.language2).toBe('pt-PT');
   });
 
+  it("keeps each player's starting view their own (D8)", async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    store.data.settings.startView = 'six';
+    store.save();
+    const b = store.addProfile()!;
+    expect(await store.switchTo(b)).toBe(true);
+    expect(store.data.settings.startView).toBe('explore');
+    expect(await store.switchTo(a)).toBe(true);
+    expect(store.data.settings.startView).toBe('six');
+  });
+
   it('never shows default data while the other save is being read, and a save made meanwhile still lands on the old one', async () => {
     const store = make();
     await store.load();

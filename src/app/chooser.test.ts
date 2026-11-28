@@ -16,6 +16,7 @@ import {
   chipForBirth,
   cleanPlayerName,
   couchNameFor,
+  exitFor,
   modeFor,
   NAME_LIMIT,
   readNewPlayer,
@@ -44,6 +45,16 @@ describe('which mode a card opens', () => {
     expect(modeFor(sourceOfClick(0, true))).toBe('island');
     expect(sourceOfClick(0, false)).toBe('key');
     expect(sourceOfClick(1, true)).toBe('pointer');
+  });
+});
+
+describe('where a tapped card opens (D8)', () => {
+  it('opens Home by default, the six when chosen, and the hatch for someone with no friend either way', () => {
+    expect(exitFor(true, defaults().settings.startView)).toBe('hub');
+    expect(exitFor(true, 'explore')).toBe('hub');
+    expect(exitFor(true, 'six')).toBe('six');
+    expect(exitFor(false, 'six')).toBe('hatch');
+    expect(exitFor(false, 'explore')).toBe('hatch');
   });
 });
 

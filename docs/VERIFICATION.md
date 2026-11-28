@@ -159,7 +159,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `picturetouch` | 2026-11-25 · [Shared sliding-board helper](verification/2026-11-25-shared-sliding-board-helper.md) | `PICTURE_LEVELS=6` |
 | `pilematch` | 2026-11-09 · [Pile Match slice 4, level 10 Look closely](archive/VERIFICATION-2026-11-09.md#2026-11-09--pile-match-slice-4-level-10-look-closely-pr-1444) | Level 10 upright |
 | `playdateworkshop` | 2026-11-27 · [Playdate Workshop level 6 (PR #2288)](verification/2026-11-27-playdate-workshop-level-6.md) | — |
-| `profiles` | 2026-11-21 · [The first-visit screen and the guest's round](verification/2026-11-21-the-first-visit-screen-and-the-guest-s-round.md) | — |
+| `profiles` | 2026-11-21 · [The first-visit screen and the guest's round](verification/2026-11-21-the-first-visit-screen-and-the-guest-s-round.md); `PROFILES_ONLY=start-view` 2026-11-28 · [D8: the starting view](verification/2026-11-28-d8-the-starting-view.md) | — |
 | `puddlegobble` | 2026-11-20 · [Puddle Gobble level 13 Splash, lap entry](verification/2026-11-20-puddle-gobble-level-13-splash-lap-entry.md) | `PUDDLE_ONLY=13` |
 | `puppetstage` | 2026-11-12 · [U7d fix batch 5: sound-garden and puppet-stage never hold a tap on a right answer's or a free tap's line](archive/VERIFICATION-2026-11-12.md#2026-11-12--u7d-fix-batch-5-sound-garden-and-puppet-stage-never-hold-a-tap-on-a-right-answers-or-a-free-taps-line-pr-1545) | — |
 | `puppetstory` | 2026-11-03 · [Puppet Stage levels 4–6 story cards and the premiere (batch puppet-stage 2)](archive/VERIFICATION-2026-11-03.md#2026-11-03--puppet-stage-levels-46-story-cards-and-the-premiere-batch-puppet-stage-2) | — |
