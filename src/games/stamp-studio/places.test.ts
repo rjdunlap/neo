@@ -56,8 +56,9 @@ describe('Where does it go? (level 12)', () => {
 
   it('closes the preschool, pre-K and school ladders, leaving the lap and toddler ones alone', () => {
     expect(levelsInOrder(stampStudio.levels('preschool'))).toEqual([3, 4, 5, 6, 12]);
-    expect(levelsInOrder(stampStudio.levels('prek'))).toEqual([4, 5, 6, 12]);
-    expect(levelsInOrder(stampStudio.levels('school'))).toEqual([5, 6, 12]);
+    // Level 13 (Next to, between, above) follows 12 from pre-K up.
+    expect(levelsInOrder(stampStudio.levels('prek'))).toEqual([4, 5, 6, 12, 13]);
+    expect(levelsInOrder(stampStudio.levels('school'))).toEqual([5, 6, 12, 13]);
     expect(levelsInOrder(stampStudio.levels('lap'))).toEqual([7, 8, 1, 10, 2]);
     expect(levelsInOrder(stampStudio.levels('toddler'))).toEqual([9, 10, 2, 11, 3]);
     // First levels are unchanged, and 6 steps up to 12.
