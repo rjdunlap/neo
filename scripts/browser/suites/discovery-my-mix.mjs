@@ -61,7 +61,8 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       await ev('pointerdown');
       await page.waitForTimeout(150);
       assert.equal(await page.evaluate(() => !!neo.scene.mix.table), false, 'no table before 0.6 s');
-      await page.waitForFunction(() => !!neo.scene.mix.table, null, { timeout: 5000 });
+      // 0.6 s of scene time is a dozen frames: several seconds at the paper look's headless frame rate.
+      await page.waitForFunction(() => !!neo.scene.mix.table, null, { timeout: 20000 });
       await ev('pointerup');
       await page.waitForTimeout(250);
       assert.equal(await live(), null, 'the lift after the hold starts no mix');
@@ -96,12 +97,16 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
           neo.scene.helpCard.stopTiles.length === n,
         [id, n],
       );
-    await page.evaluate(() => {
-      const speak = speechSynthesis.speak.bind(speechSynthesis);
-      speechSynthesis.speak = (u) => {
-        (window.__said ??= []).push(u.text);
-        speak(u);
-      };
+    // Read from the voice itself, not device speech: a line with a rendered clip plays as audio and never reaches speechSynthesis.
+    await page.evaluate(async () => {
+      const { voice } = await import('/src/audio/voice.ts');
+      for (const key of ['speak', 'speakIn']) {
+        const say = voice[key].bind(voice);
+        voice[key] = (text, ...rest) => {
+          (window.__said ??= []).push(text);
+          return say(text, ...rest);
+        };
+      }
     });
 
     // 1–2. A toddler-age grown-up holds the mix spot: the table opens on Little surprises, no session.

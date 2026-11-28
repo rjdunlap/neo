@@ -66,7 +66,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `crossword` | 2026-11-09 · [Crossword keeps the clue direction](archive/VERIFICATION-2026-11-09.md#2026-11-09--crossword-keeps-the-clue-direction-pr-1455) | — |
 | `cuestudio` | 2026-11-16 · [Cue Studio level 6, Pass the cue (P4c, PR #1726)](verification/2026-11-16-cue-studio-level-6-pass-the-cue-p4c-pr-1726.md) | `CUE_LEVELS=5,6` |
 | `cutalong` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, second session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-second-session.md) | `CUT_LEVELS=11` |
-| `discovery` | 2026-11-27 · [Pick for me D7b](verification/2026-11-27-pick-for-me-d7b-shuffle-into-the-mix.md) | `DISCOVERY_ONLY=pick` passed (with Shuffle); `mix` and `daily` passed 2026-11-25; `my-mix` passed 2026-10-21 |
+| `discovery` | 2026-11-28 · [Mix and offline checks wait on scene time](verification/2026-11-28-mix-and-offline-checks-wait-on-scene-time.md) | `DISCOVERY_ONLY=mix` and `my-mix` passed; `pick` passed 2026-11-27, `daily` 2026-11-25 |
 | `dominopond` | 2026-11-21 · [Campsite level 1, Pitch the tents](verification/2026-11-21-campsite-level-1-pitch-the-tents.md) | — |
 | `dominorun` | 2026-11-25 · [U7d fix batch 2, first part: domino-run and fruit-slice never hold the next board on a praise line](verification/2026-11-25-u7d-fix-batch-2-first-part-domino-run-and-fruit-slice-never.md) | Level 11, portrait |
 | `downwego` | 2026-11-20 · [Down We Go levels 3-4](verification/2026-11-20-down-we-go-levels-3-4.md) | — |
@@ -253,8 +253,8 @@ When a check passes, replace that suite or area's row with the new date, entry l
 
 | Area | Latest recorded pass | Scope |
 | --- | --- | --- |
-| Classic offline | 2026-11-23 · [Rain Garden level 6, rain again on wet ground](verification/2026-11-23-rain-garden-level-6-rain-again-on-wet-ground.md) | Production Classic shell, with 11 new voice clips fetched offline |
-| Root offline | 2026-11-22 · [Collection book and welcome goal](verification/2026-11-22-collection-book-and-welcome-goal.md) | Production root reload and saved collection |
+| Classic offline | 2026-11-28 · [Mix and offline checks wait on scene time](verification/2026-11-28-mix-and-offline-checks-wait-on-scene-time.md) | Production Classic shell, waits on scene time |
+| Root offline | 2026-11-28 · [Mix and offline checks wait on scene time](verification/2026-11-28-mix-and-offline-checks-wait-on-scene-time.md) | Production root reload, waits on scene time |
 | Unit and type checks | 2026-11-24 · [Word Monsters level 8 and sticker guards](verification/2026-11-24-word-monsters-level-8-and-sticker-guards.md) | Typecheck and 161 focused Word Monsters, how-to and registry tests |
 | Unit and type checks | 2026-11-24 · [Word Monsters Told, then asked](verification/2026-11-24-word-monsters-told-then-asked.md) | Typecheck, 110 focused tests, batch play and `fingerdemo` at levels 7 and 8 |
 | Unit and type checks | 2026-11-26 · [Word Monsters level 16 Blend it](verification/2026-11-26-word-monsters-level-16-blend-it.md) | Typecheck, focused tests, batch play and `fingerdemo` at level 16 |
