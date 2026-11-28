@@ -51,6 +51,21 @@ export const HOW_TO: GameHowTo = {
       to: 15,
       text: 'A full pond of ten splashes in at once, then a few more ducks swim into a second frame. Tap the lily pad with how many there are in all; in every other round the sign shows the whole, and she finds how many are past the ten.',
     },
+    {
+      from: 16,
+      to: 16,
+      text: 'The ducks start on one side of the bridge. Tap a duck to send it across (tap it again to bring it back), then tap the green check to keep the split. Every new way earns a card in the row below: "3 and 2", "2 and 3", and so on.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'Ducks peek out from reeds and lily leaves all over the pond. First tap "a few" (two dots) or "lots" (many dots); either is fine. Then tap each duck as you count: it waves, gets a ring and the number is said. Tap the lily pad with how many there are.',
+    },
+    {
+      from: 18,
+      to: 18,
+      text: 'The bridge splits the pond into two sides. Tap the side with more ducks, or the button with two matching sets of dots if both sides have the same. In the first round the ducks pair up across the bridge before the question, to show how.',
+    },
   ],
   finish: [
     { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
@@ -64,8 +79,20 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
     { from: 14, to: 15, text: 'The round ends when the answer is right.' },
+    { from: 17, to: 18, text: 'The round ends when the answer is right.' },
+    { from: 16, to: 16, text: 'The round ends when every way to share the ducks has a card.' },
   ],
   note: [
+    {
+      from: 18,
+      to: 18,
+      text: 'She compares by matching one to one, not by counting: on a wrong answer the ducks line up in pairs across the bridge, each pair gets a ring, and the ducks with no partner hop and glow. After two misses the right side (or the same button) glows. From the third question the ducks start scattered, so a longer-looking side is not always the bigger one.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'A ringed duck is never counted twice: tapping it again just quacks. A wrong pad counts the rings aloud and says whether ducks are still peeking; after two, the uncounted ducks glow.',
+    },
     {
       from: 13,
       to: 13,
@@ -105,6 +132,11 @@ export const HOW_TO: GameHowTo = {
       from: 15,
       to: 15,
       text: 'A wrong pad counts on from ten (ten, eleven, twelve…), or, when she is finding the part past ten, counts just those ducks. After a right answer the sign shows the sentence, such as 10 + 4 = 14.',
+    },
+    {
+      from: 16,
+      to: 16,
+      text: 'Nothing here is a wrong answer: a split she has already kept just lights its card, and swapped sides ("2 and 3" after "3 and 2") count as a new way to share the same ducks. After two repeats in a row a duck glows to show where to go next.',
     },
     {
       from: 11,

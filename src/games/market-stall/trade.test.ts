@@ -43,8 +43,8 @@ function referenceDistances(start: number[], minimum: number): Map<string, numbe
 
 describe('Market Stall 13: Trade up', () => {
   it('keeps existing level IDs and places Trade up before Can I buy it? in the school ladder', () => {
-    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([1, 2]);
-    expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([2, 3, 4]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([1, 2, 14]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([2, 14, 15, 3, 4]);
     expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 12]);
     expect(planFor(12).mode).toBe('afford');
     expect(planFor(13).name).toMatch(/^Trade up/);

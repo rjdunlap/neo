@@ -1012,6 +1012,11 @@ class FossilDig implements Game {
 
   /* Bot ------------------------------------------------------------------------------------------- */
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || this.brushing.size) return null;
     const s = this.state,

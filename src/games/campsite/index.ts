@@ -426,6 +426,11 @@ class Round implements Game {
   }
 
   /** The ghost finger: the three deductions (or a tent to pack up), then Check camp. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     const h = hintFor(CAMP, this.tents);

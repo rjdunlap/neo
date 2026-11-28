@@ -918,6 +918,11 @@ class MonsterMunch implements Game {
   }
 
   /** The ghost finger: tap or carry the foods the sign asks for, ring the bell, and tap the number that is right. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.done || !this.monsters.length) return null;
     // Wait for the foods and the answer pads to finish popping in.

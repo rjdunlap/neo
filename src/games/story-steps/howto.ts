@@ -19,7 +19,22 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'The curved arrow undoes one edit. Watch replays your current story; the lightbulb speaks help and glows a useful control.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'Tap both friends to hear what each one says, then choose an ending and tap the stage to watch.',
+    },
+    {
+      from: 14,
+      to: 14,
+      text: 'The curved arrow undoes your last choice; the lightbulb speaks help and glows a useful control.',
+    },
     { to: 2, text: 'Drag the picture that comes next into the glowing space.' },
+    {
+      from: 15,
+      to: 15,
+      text: 'Slide or tap the one picture on the tray: it jumps into the space and grows (a block lands, a sprout comes up).',
+    },
     { from: 3, to: 5, text: 'Drag the pictures into the spaces in the order the story happens.' },
     {
       from: 6,
@@ -70,7 +85,17 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'After watching the first show and a version with one changed event, tap the green check to take a bow. Creative choices cost no misses; each lightbulb request counts one hint.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'Watch an ending that works for both friends, then tap the green check to take a bow. Trying a one-sided ending once is free; repeating it counts a miss, and Help highlights a working next step.',
+    },
     { to: 7, text: 'The round ends when the story pictures are in a sensible order.' },
+    {
+      from: 15,
+      to: 15,
+      text: 'The round ends once the picture has grown and the two pictures are read aloud.',
+    },
     {
       from: 8,
       to: 8,
@@ -90,6 +115,13 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'The round ends when all four pictures tell the story in order. Swaps are experiments; after eight swaps, a glow helps with an out-of-place picture.',
+    },
+  ],
+  note: [
+    {
+      from: 15,
+      to: 15,
+      text: 'There is only one picture to place and no wrong answer: a drop anywhere, or a tap, puts it in.',
     },
   ],
 };

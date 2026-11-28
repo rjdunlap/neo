@@ -959,6 +959,15 @@ class AdventureWalk implements Game {
   }
 
   /** The ghost finger: the asked way at each stop (levels 1 and 4: either, alternating sides); at level 3 one tap on the badge shows the replay; on level 4's map, the landmarks in the order home; at level 5 the badge once, then the called flag twice (look, go) there and again home. */
+  /** Guided first play: its demonstration replays the badge once, so the hand shows the next real step. The bot's own flags are put back. */
+  showMove(): TouchIntent | null {
+    const shownReplay = this.shownReplay;
+    this.shownReplay = true;
+    const move = this.autotouch();
+    this.shownReplay = shownReplay;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     if (this.plan.trails) {

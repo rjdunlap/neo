@@ -15,6 +15,7 @@ import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BitsRound } from './bits';
+import { MosaicRound } from './mosaic';
 import {
   LEVELS,
   canFinish,
@@ -60,6 +61,7 @@ const MISS_LINE: Record<PixelPlan['mode'], LineId> = {
   free: 'pixel.notthere',
   bitsRow: 'pixel.bits.differ.fill',
   bitsPicture: 'pixel.bits.differ.fill',
+  mosaic: 'pixel.mosaic.more',
 };
 
 class PixelPictures implements Game {
@@ -145,6 +147,11 @@ class PixelPictures implements Game {
   }
 
   /** The ghost finger: choose a color where there is a palette, then tap the squares the picture (or, on logic levels, its numbers) settles. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     if (this.plan.mode === 'free') {
@@ -369,6 +376,15 @@ class PixelPictures implements Game {
     }
   }
 
+  /** For the pad pointer: every square of the board, which hears touches as one big area. */
+  pointerSpots() {
+    const spots: { x: number; y: number }[] = [];
+    for (let y = 0; y < this.n; y++)
+      for (let x = 0; x < this.n; x++)
+        spots.push(this.ctx.stage.toLocal(this.board.toGlobal({ x: (x + 0.5) * CELL, y: (y + 0.5) * CELL })));
+    return spots;
+  }
+
   private tapBoard(e: FederatedPointerEvent) {
     if (this.busy || this.finished) return;
     const p = this.board.toLocal(e.global);
@@ -572,10 +588,14 @@ export const pixelPictures: GameModule = {
   music: STYLES.paint,
   upright: true,
   coplayHint:
-    'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it. On Ones and zeros, one of you flips the cards and reads the ones and zeros aloud, the other says which squares will fill before the arrow is pressed; then swap.',
+    'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it. On Window Mosaic, one of you colors panes while the other says whether the amount is still the same. On Ones and zeros, one of you flips the cards and reads the ones and zeros aloud, the other says which squares will fill before the arrow is pressed; then swap.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',
   hubIcon: () => new PixelIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => (planFor(ctx.level).mode.startsWith('bits') ? new BitsRound(ctx) : new PixelPictures(ctx)),
+  create: (ctx) => {
+    const mode = planFor(ctx.level).mode;
+    if (mode.startsWith('bits')) return new BitsRound(ctx);
+    return mode === 'mosaic' ? new MosaicRound(ctx) : new PixelPictures(ctx);
+  },
 };

@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function traceRound(level, name, wrong = false, want = '') {
-    // Levels 7, 9 and 10 play on a phone held upright, so the word picture, the fading guides and the little letters in
-    // their frame are checked where the playtests happen.
-    const phone = level === 7 || level === 9 || level === 10 || level === 11;
+    // Level 7 and levels 9 and up play on a phone held upright, so the word picture, the fading guides and the little
+    // letters in their frame are checked where the playtests happen.
+    const phone = level === 7 || level >= 9;
     const landscape = page.viewportSize();
     if (phone) await page.setViewportSize({ width: 390, height: 844 });
     try {
@@ -17,7 +17,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
   async function playRound(level, name, wrong, want) {
     await launch('letter-trails', level, name);
     // A wanted letter (level 10's first and last, c and t): relaunch until the seed draws it.
-    for (let i = 0; want && i < 60 && (await page.evaluate(() => neo.scene.game.word)) !== want; i++)
+    for (let i = 0; want && i < 200 && (await page.evaluate(() => neo.scene.game.word)) !== want; i++)
       await launch('letter-trails', level, name);
     if (want)
       assert.equal(await page.evaluate(() => neo.scene.game.word), want, `level ${level} drew ${want}`);
@@ -45,7 +45,19 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       );
     }
     if (level === 9) await threeTries();
-    if (level === 10 || level === 11) await littleLetter(level === 10 ? 'cosvwt' : 'adg');
+    if (level === 16 || level === 17) await wordInFrame(level);
+    if (level >= 10 && level <= 14)
+      await littleLetter(
+        level === 10
+          ? 'cosvwt'
+          : level === 11
+            ? 'adg'
+            : level === 12
+              ? 'uielkyj'
+              : level === 13
+                ? 'prnmhb'
+                : 'fqxz',
+      );
     await page.evaluate(async () => {
       const g = neo.scene.game;
       let steps = 0;
@@ -62,7 +74,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       }
       if (g.letterIndex < g.word.length) throw new Error('Tracing did not complete');
     });
-    if (level === 7 || level === 8) {
+    if (level === 7 || level === 8 || level === 16 || level === 17) {
       // A word ends on its own picture, a name on a sign with the whole name; a name is traced up to eight letters.
       const shown = await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -70,7 +82,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         return { word: g.word, traced: g.traced.size, picture: !!g.picture };
       });
       assert.ok(shown.picture, 'the word or name is shown at the end');
-      if (level === 8)
+      if (level === 8 || level === 17)
         assert.ok(shown.word.length <= 8, `a name is traced up to eight letters (${shown.word})`);
       await page.waitForTimeout(400);
       await screenshot(`letter-trails-${level}-${shown.word}`);
@@ -137,6 +149,34 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 0, 'no hint for one wander');
   }
 
+  /** Levels 16 and 17: a word or a name traced letter by letter in the frame; 17 starts with a capital standing in it. */
+  async function wordInFrame(level) {
+    const shown = await page.evaluate(() => {
+      const g = neo.scene.game;
+      const b = g.frame.getBounds();
+      const w = neo.view.w * neo.view.scale;
+      return {
+        word: g.word,
+        heading: g.heading.text,
+        drawn: b.width > 0,
+        inside: b.x >= 0 && b.x + b.width <= w,
+      };
+    });
+    assert.ok(shown.drawn, 'the four-line frame is drawn');
+    assert.ok(shown.inside, 'the frame stays inside the view');
+    if (level === 16)
+      assert.equal(shown.word, shown.word.toLowerCase(), `a word in little letters (${shown.word})`);
+    else
+      assert.match(
+        shown.word,
+        /^[A-Z][a-z]*$/,
+        `a name as it is written: a capital, then little letters (${shown.word})`,
+      );
+    assert.ok(shown.heading.startsWith(`[ ${shown.word[0]} ]`), 'the heading marks the first letter');
+    await page.waitForTimeout(300);
+    await screenshot(`letter-trails-${level}-${shown.word}-first`);
+  }
+
   /** Level 10: a little letter in the four-line frame with its capital beside it, the frame inside the view. */
   async function littleLetter(group) {
     const shown = await page.evaluate(() => {
@@ -159,7 +199,9 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.ok(shown.drawn, 'the four-line frame is drawn');
     assert.ok(shown.inside, 'the frame stays inside the view');
     await page.waitForTimeout(300);
-    await screenshot(`letter-trails-${group === 'adg' ? 11 : 10}-${shown.letter}`);
+    await screenshot(
+      `letter-trails-${group === 'adg' ? 11 : group === 'uielkyj' ? 12 : group === 'prnmhb' ? 13 : group === 'fqxz' ? 14 : 10}-${shown.letter}`,
+    );
   }
 
   return { traceRound };

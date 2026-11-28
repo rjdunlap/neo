@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from
 import { fishArt, penguinArt, turtleArt } from '../../art/animals';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood, type Swatch } from '../../art/palette';
+import { paperRect, U } from '../../art/paper';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
@@ -291,9 +292,11 @@ class SeaLift implements Game {
 
     const s = this.shaft.clear(),
       top = L.stopY(TOP) - L.pitch * 0.9;
-    s.rect(L.shaftX - 46, top, 92, bottom - top)
-      .fill({ color: 0xffffff, alpha: 0.28 })
-      .stroke({ width: 5, color: swatch.teal.line });
+    // A pale see-through shaft framed by two paper rails and a cap (paper strips, not a hard vector outline).
+    s.rect(L.shaftX - 46, top, 92, bottom - top).fill({ color: 0xffffff, alpha: 0.28 });
+    for (const x of [L.shaftX - 52, L.shaftX + 40])
+      paperRect(s, x, top, 12, bottom - top, 6, swatch.teal.fill, { amp: 0.5 * U, seed: x });
+    paperRect(s, L.shaftX - 60, top - 8, 120, 16, 8, swatch.teal.fill, { amp: 0.5 * U, seed: 5 });
     for (const stop of STOPS) {
       const y = L.stopY(stop) + 12,
         b = L.landings.get(stop)!;
@@ -973,6 +976,11 @@ class SeaLift implements Game {
    * The ghost finger taps the right landing, or at level 4 the right card; level 1's first request also shows the free replay on
    * the card, and level 4's first case taps the friend in the lift for the same reason.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.state.done) return null;
     if (this.level === 1 && !this.replayShown) {
@@ -988,6 +996,15 @@ class SeaLift implements Game {
     }
     const b = this.L.landings.get(hintFor(this.state))!;
     return { tap: { on: this.tapLayer, x: b.x + b.w / 2, y: b.y + b.h / 2 }, pause: 0.8 };
+  }
+
+  /** For the pad pointer: the request card, the number cards and every landing, all heard by one layer that picks the nearest. */
+  pointerSpots() {
+    const c = this.cardBox;
+    const spots: (Container | { x: number; y: number })[] = [{ x: c.x + c.w / 2, y: c.y + c.h / 2 }];
+    if (this.item?.kind === 'howfar') spots.push(...this.cards.map((k) => k.node));
+    for (const b of this.L.landings.values()) spots.push({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
+    return spots;
   }
 
   destroy() {

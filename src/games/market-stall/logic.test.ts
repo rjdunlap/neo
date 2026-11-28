@@ -66,7 +66,9 @@ import {
 } from './logic';
 
 /** Every level where she pays; the purse level asks for a total instead, and the afford level asks what a purse can buy. */
-const PAYING = PLANS.filter((p) => p.mode !== 'purse' && p.mode !== 'afford' && p.mode !== 'trade');
+const PAYING = PLANS.filter(
+  (p) => p.mode !== 'purse' && p.mode !== 'afford' && p.mode !== 'trade' && p.mode !== 'more',
+);
 
 describe('Market Stall', () => {
   it('seeds every stall reproducibly, with distinct awnings, keepers and enough named goods for paired orders', () => {
@@ -343,8 +345,10 @@ describe('Market Stall', () => {
   });
 
   describe('a total she can see (TotoLogic P8)', () => {
-    it('stays hidden on pair, change and purse levels', () => {
-      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([4, 6, 8, 10, 11]);
+    it('stays hidden on pair, change, purse and Which coin? levels', () => {
+      expect(PLANS.filter((p) => !showsTotal(p)).map((p) => PLANS.indexOf(p) + 1)).toEqual([
+        4, 6, 8, 10, 11, 14, 15,
+      ]);
       expect(PLANS.filter(showsTotal).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2, 3, 5, 7, 9, 12, 13]);
     });
 
@@ -590,7 +594,8 @@ describe('Market Stall', () => {
       expect(matSlot(6).y - matSlot(0).y + 1e-9).toBeGreaterThan(r * 1.4);
       // Bigger coins stay bigger on the mat.
       expect(COIN_R[10] * matCoinScale(plan)).toBeGreaterThan(COIN_R[5] * matCoinScale(plan));
-      for (const p of PLANS.filter((q) => !q.coins.includes(10))) expect(matCoinScale(p)).toBe(1);
+      for (const p of PLANS.filter((q) => q.coins.length > 0 && !q.coins.includes(10)))
+        expect(matCoinScale(p)).toBe(1);
       // Twelve coins stay on the mat's box.
       for (let i = 0; i < 12; i++) {
         const at = matSlot(i);

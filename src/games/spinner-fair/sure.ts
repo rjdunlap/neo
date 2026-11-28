@@ -93,7 +93,7 @@ export class SureGame implements Game {
         hills: [grass, swatch.green.light],
         horizon: 0.36,
         clouds: 2,
-        sun: true,
+        sun: false,
         seed: 84,
       },
       ctx.view,

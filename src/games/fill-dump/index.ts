@@ -1,4 +1,5 @@
 import { CapacityGame } from './compare';
+import { CupsGame } from './cups';
 import { PairGame } from './pair';
 import { PourGame } from './pour';
 import { Circle, Container, Graphics, Sprite } from 'pixi.js';
@@ -289,6 +290,11 @@ class FillDump implements Game {
   }
 
   /** The ghost finger on the how-to card: tip the basket, scoop pieces up, or put in the number and tap the check. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.flying > 0) return null;
     const next = nextTouch(this.state);
@@ -645,12 +651,14 @@ export const fillDump: GameModule = {
   sticker,
   create: (ctx) => {
     const kind = kindFor(ctx.level);
-    return kind === 'capacity'
-      ? new CapacityGame(ctx)
-      : kind === 'pour'
-        ? new PourGame(ctx)
-        : kind === 'pair'
-          ? new PairGame(ctx)
-          : new FillDump(ctx);
+    return kind === 'cups'
+      ? new CupsGame(ctx)
+      : kind === 'capacity'
+        ? new CapacityGame(ctx)
+        : kind === 'pour'
+          ? new PourGame(ctx)
+          : kind === 'pair'
+            ? new PairGame(ctx)
+            : new FillDump(ctx);
   },
 };

@@ -232,8 +232,8 @@ export function createSuite({
     await pickFirst();
     await scene('HomeScene');
     await page.evaluate(() => neo.go.explore('places'));
-    await scene('ExploreScene');
-    await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.id === 'cozy-village').node));
+    await scene('MapScene');
+    await page.evaluate(() => kit.tapOn(neo.scene.lands.find((l) => l.def.id === 'cozy-village').node));
     await scene('LocationScene');
     await turnToGame('relay-woods');
     const rp = await page.evaluate(() => neo.scene.page);
@@ -245,7 +245,7 @@ export function createSuite({
     assert.equal(await page.evaluate(() => neo.scene.page), rp);
     log(
       process.env.RELAY_PART === 'routes'
-        ? 'Relay Woods route regression: classic younger signpost/playBand/return page and root Places/pre-K/return page passed'
+        ? 'Relay Woods route regression: classic younger signpost/playBand/return page and root island map/pre-K/return page passed'
         : 'Relay Woods1–4: all templates/branches, log/retrace, long retry, capped help, five optional Keep payloads, profiles/backup, geometry/portrait/leave and root+classic routes passed',
     );
   }

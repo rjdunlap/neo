@@ -92,10 +92,15 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               }
             };
             if (n === 0) {
-              // One too many, then one too few: two explained misses, a counted hint.
+              // One too many, then one too few, then one too many again: three explained misses, one counted hint.
               await bin(want + 1);
               await tap('neo.scene.game.bell');
               await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.glowTop),
+                false,
+                'a first too-tall check does not glow the top block yet',
+              );
               const top = await page.evaluate(() => {
                 const h = neo.scene.game.towerHit.hitArea;
                 return [h.x + h.width / 2, h.y + 40];
@@ -113,8 +118,24 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await tap('neo.scene.game.bell');
               await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
               assert.deepEqual(await counts(), [2, 1]);
+              await bin(2);
+              await tap('neo.scene.game.bell');
+              await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
+              assert.deepEqual(await counts(), [3, 1], 'help repeats without counting another hint');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.glowTop),
+                true,
+                'too tall after two misses glows the top block',
+              );
               await screenshot(`block-tower-${level}`);
-              await bin(1);
+              const [x, y] = await at(top[0], top[1]);
+              await page.mouse.click(x, y);
+              await page.waitForTimeout(350);
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.glowTop),
+                false,
+                'taking the top off clears the glow',
+              );
             } else await bin(want);
             assert.equal(await page.evaluate(() => neo.scene.game.stack.length), want);
             await tap('neo.scene.game.bell');
@@ -410,14 +431,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.deepEqual(
           await score('block-tower'),
           mode === 'flag' || mode === 'match'
-            ? [2, 1]
+            ? [3, 1]
             : mode === 'mend' || mode === 'reach'
               ? [0, 1]
               : [0, 0],
         );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
-          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint', match: "compared with Duck's tower, explained misses, counted hint", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'unscored topple and short stack explained, glowing hint place, star reached', mend: 'let go before a move, cancelled drag, two unscored tumbles with replay, Try again and undo, glowing place, both mended' }[mode]}, saved score and sticker passed`,
+          `Block Tower ${level} (${mode}): ${{ tumble: 'stack and tumble', friend: 'as tall as a friend', flag: 'up to the flag, too tall and too short explained, counted hint, top glow only after two misses', match: "compared with Duck's tower, explained misses, counted hint, top glow only after two misses", stand: 'both predictions unscored, frozen first/third replay and resize, explicit Continue, one sticker', reach: 'unscored topple and short stack explained, glowing hint place, star reached', mend: 'let go before a move, cancelled drag, two unscored tumbles with replay, Try again and undo, glowing place, both mended' }[mode]}, saved score and sticker passed`,
         );
       }
 
@@ -1416,7 +1437,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       log('Pet Says 13 (pat): five pats (two on the meadow), no arrow, saved round and sticker passed');
     }
 
-    const owlsTo = Number(process.env.TO_LEVEL || 6);
+    const owlsTo = Number(process.env.TO_LEVEL || 8);
     if (!only || only === 'owls')
       for (let level = fromLevel; level <= Math.min(4, owlsTo); level++) {
         await launch('owl-walk', level);
@@ -1427,7 +1448,54 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.equal(await page.evaluate(() => neo.scene.game.owls[0].spot), -1);
         const nestTap = '({ getGlobalPosition: () => neo.scene.game.nest.toGlobal({ x: 0, y: -120 }) })';
         let wrong = false;
+        // A grown-up in the pet's seat (levels 2 to 4): it starts off; with it on, the pet's turn waits for their stone.
+        const seatOn = level === 2;
+        if (level === 1)
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.seat.parent === null),
+            true,
+            'no seat button on level 1',
+          );
         for (let t = 0; t < 60 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
+          if (seatOn && t === 1) {
+            assert.equal(
+              await page.evaluate(() => neo.scene.game.partner),
+              false,
+              'solo play is the default',
+            );
+            await tap('neo.scene.game.seat');
+            assert.equal(await page.evaluate(() => neo.scene.game.partner), true);
+            await page.waitForFunction(() => neo.scene.game.partnerWait, null, { timeout: 40000 });
+            const w = await page.evaluate(async () => {
+              const L = await import('/src/games/owl-walk/logic.ts');
+              const g = neo.scene.game;
+              const spots = g.owls.map((o) => o.spot);
+              const { best, color } = g.partnerWait;
+              const to = L.hop(g.path, spots, best, color);
+              const other = g.path.findIndex((c, i) => !L.fits(c, color) && i > spots[best]);
+              return { best, to, other, spot: spots[best], n: g.path.length };
+            });
+            const before = await counts();
+            if (w.other >= 0) {
+              await tap(`neo.scene.game.stones[${w.other}]`);
+              await page.waitForTimeout(400);
+              assert.deepEqual(await counts(), before, 'a grown-up’s wrong tap is never her miss');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.partnerWait !== null),
+                true,
+                'the pet still waits',
+              );
+            }
+            await tap(w.to >= w.n ? nestTap : `neo.scene.game.stones[${w.to}]`);
+            await page.waitForFunction(
+              (b) => neo.scene.game.owls[b].spot > -1 || neo.scene.game.finished,
+              w.best,
+              { timeout: 20000 },
+            );
+            assert.deepEqual(await counts(), before, 'a grown-up’s hop is never her miss or hint');
+            await screenshot('owl-walk-2-seat');
+            await tap('neo.scene.game.seat');
+          }
           await page.waitForFunction(
             () => {
               const g = neo.scene.game;
@@ -1639,6 +1707,159 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         'Owl Walk Home 6 (Color or shape): cards showing color or shape, two misses twinkle the right stone, upright, saved score and sticker passed',
+      );
+    }
+
+    if ((!only || only === 'owls') && fromLevel <= 7 && owlsTo >= 7) {
+      // Level 7, Our two cards (pre-K top, school): give each card to an owl, then go. The session's first pair is unscored.
+      await launch('owl-walk', 7);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.evaluate(async () => (await import('/src/games/owl-walk/index.ts')).resetPairsSeen());
+      await page.waitForFunction(() => neo.scene.game.pair && !neo.scene.game.busy, null, { timeout: 40000 });
+      const plan = (worst) =>
+        page.evaluate(async (worst) => {
+          const L = await import('/src/games/owl-walk/logic.ts');
+          const g = neo.scene.game;
+          const spots = g.owls.map((o) => o.spot);
+          const cards = g.pair.cards;
+          if (cards.length < 2) return { to: [g.pair.to[0]], single: true };
+          const all = L.pairAssignments(g.path, spots);
+          const totals = all.map((p) => L.assignTotal(g.path, spots, cards, p));
+          const max = Math.max(...totals);
+          const k = worst ? totals.indexOf(Math.min(...totals)) : totals.indexOf(max);
+          return { to: all[k], gap: max - Math.min(...totals), single: false };
+        }, worst);
+      const give = async (to) => {
+        for (let k = 0; k < 2; k++) {
+          await tap(`neo.scene.game.faces[${k}]`);
+          await tap(`neo.scene.game.owls[${to[k]}].critter`);
+        }
+      };
+      let pairs = 0;
+      for (let t = 0; t < 12 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
+        await page.waitForFunction(() => neo.scene.game.pair && !neo.scene.game.busy, null, {
+          timeout: 40000,
+        });
+        const best = await plan(false);
+        if (best.single) {
+          await tap('neo.scene.game.go');
+        } else if (pairs === 0) {
+          // The first look is unscored: the worst way hops, nothing is charged.
+          const worst = await plan(true);
+          await give(worst.to);
+          assert.equal(await page.evaluate(() => neo.scene.game.pairComplete()), true);
+          await tap('neo.scene.game.go');
+        } else if (pairs === 1 && best.gap > 0) {
+          // A better way exists: going with a worse one is a gentle miss with both totals said; the second brings the glow.
+          await give((await plan(true)).to);
+          for (let k = 0; k < 2; k++) {
+            await page.waitForTimeout(500);
+            await tap('neo.scene.game.go');
+            await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+          }
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.hintPlan !== null));
+          await screenshot('owl-walk-7-hint');
+          await give(best.to);
+          await tap('neo.scene.game.go');
+        } else {
+          await give(best.to);
+          if (pairs === 2) await screenshot('owl-walk-7');
+          await tap('neo.scene.game.go');
+        }
+        pairs++;
+        await page.waitForFunction(
+          (n) =>
+            neo.scene.game.finished ||
+            (neo.scene.game.pair && !neo.scene.game.busy && neo.scene.game.index > n),
+          0,
+          { timeout: 40000 },
+        );
+      }
+      await finished('owl-walk');
+      assert.ok(
+        await page.evaluate(() => neo.scene.game.owls.every((o) => o.spot >= neo.scene.game.path.length)),
+      );
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        `Owl Walk Home 7 (Our two cards): ${pairs} pairs given, first unscored, a worse way explained with a glow, everyone home`,
+      );
+    }
+    if ((!only || only === 'owls') && fromLevel <= 8 && owlsTo >= 8) {
+      // Level 8, Check the helper (school): the pet proposes an owl; agree when it hops the farthest, else tap the owl that does.
+      await launch('owl-walk', 8);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      const nestTap = '({ getGlobalPosition: () => neo.scene.game.nest.toGlobal({ x: 0, y: -120 }) })';
+      let wrong = false;
+      let corrected = 0;
+      for (let t = 0; t < 60 && !(await page.evaluate(() => neo.scene.game.finished)); t++) {
+        await page.waitForFunction(
+          () => neo.scene.game.finished || (!neo.scene.game.busy && neo.scene.game.turn === 'child'),
+          null,
+          { timeout: 40000 },
+        );
+        if (await page.evaluate(() => neo.scene.game.finished)) break;
+        await tap('neo.scene.game.deck');
+        await page.waitForFunction(() => neo.scene.game.card && !neo.scene.game.busy, null, {
+          timeout: 20000,
+        });
+        const plan = await page.evaluate(async () => {
+          const L = await import('/src/games/owl-walk/logic.ts');
+          const g = neo.scene.game;
+          const spots = g.owls.map((o) => o.spot);
+          const best = L.farthest(g.path, spots, g.card);
+          const proposal = g.proposal;
+          // Agreeing takes the proposed owl when it is a best one (ties count); otherwise the first best owl.
+          const owl = proposal !== null && best.includes(proposal) ? proposal : best[0];
+          const to = L.hop(g.path, spots, owl, g.card);
+          return {
+            owl,
+            to,
+            home: to >= g.path.length,
+            proposal,
+            good: proposal !== null && best.includes(proposal),
+            before: spots[owl],
+            n: g.moving().length,
+          };
+        });
+        if (plan.n > 1) {
+          assert.notEqual(plan.proposal, null, 'the pet proposes an owl while two or more walk');
+          assert.equal(await page.evaluate(() => neo.scene.game.go.visible), true, 'the check shows');
+          if (plan.good) await tap('neo.scene.game.go');
+          else {
+            if (!wrong) {
+              // Agreeing with a shorter hop is a gentle miss; the second brings the glow on the farthest owl.
+              wrong = true;
+              for (let k = 0; k < 2; k++) {
+                await page.waitForTimeout(500);
+                await tap('neo.scene.game.go');
+                await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+              }
+              assert.deepEqual(await counts(), [2, 1]);
+              assert.ok(await page.evaluate((b) => neo.scene.game.owls[b].glow.visible, plan.owl));
+              await screenshot('owl-walk-8-hint');
+            } else corrected++;
+            await tap(`neo.scene.game.owls[${plan.owl}].critter`);
+          }
+          await page.waitForFunction((o) => neo.scene.game.selected === o, plan.owl, { timeout: 20000 });
+        }
+        if (t === 1) await screenshot('owl-walk-8');
+        await tap(plan.home ? nestTap : `neo.scene.game.stones[${plan.to}]`);
+        await page.waitForFunction(
+          ({ b, before }) => neo.scene.game.owls[b].spot !== before,
+          { b: plan.owl, before: plan.before },
+          { timeout: 20000 },
+        );
+      }
+      await finished('owl-walk');
+      assert.ok(
+        await page.evaluate(() => neo.scene.game.owls.every((o) => o.spot >= neo.scene.game.path.length)),
+      );
+      assert.ok(wrong || corrected >= 0);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Owl Walk Home 8 (Check the helper): proposals checked, a shorter proposal agreed to once and explained with a glow, everyone home',
       );
     }
   }

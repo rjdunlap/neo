@@ -521,13 +521,20 @@ export interface SandLayout {
 
 export const PADDLE_H = 100;
 const SIDE = 130;
+/** Upright, the tray starts under the Home and help column (it reaches y 210), so a bay's tap area never covers them. */
+const UPRIGHT_TRAY_Y = 226;
 
 /** Every rectangle for `bays` bays. Nothing shrinks below 100; the pet's corner (bottom-left) and the home button stay clear. */
 export function sandLayout(view: View, bays: number): SandLayout {
   const landscape = view.w >= view.h;
   const trayW = Math.min(860, view.w - 80);
   const rowH = landscape ? 48 : 60;
-  const tray: Rect = { x: (view.w - trayW) / 2, y: landscape ? 170 : 190, w: trayW, h: rowH * RIM };
+  const tray: Rect = {
+    x: (view.w - trayW) / 2,
+    y: landscape ? 170 : view.upright ? UPRIGHT_TRAY_Y : 190,
+    w: trayW,
+    h: rowH * RIM,
+  };
   const colW = trayW / COLS;
   const bayW = trayW / bays;
   const bayRects = Array.from({ length: bays }, (_, b) => ({

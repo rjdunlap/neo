@@ -1,6 +1,7 @@
 import { Graphics } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../art/palette';
 import { shapePath, starPoints } from '../art/shapes';
+import { keepFlat } from '../art/paperize';
 
 export function islandIcon(): Graphics {
   return new Graphics()
@@ -146,11 +147,17 @@ export function collectionBookIcon(): Graphics {
     .fill(swatch.white.fill);
 }
 
+/**
+ * A solid arrowhead (Back, page turns, Robot Path's directions). Kept flat: the paper pass rounds a small three-point shape
+ * into a dot and drops its thick outline, so on a phone the arrows no longer showed which way they point.
+ */
 export function arrowIcon(dir: 1 | -1, color = ink): Graphics {
-  return new Graphics()
-    .poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22])
-    .fill(color)
-    .stroke(line(6, color));
+  return keepFlat(
+    new Graphics()
+      .poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22])
+      .fill(color)
+      .stroke(line(6, color)),
+  );
 }
 
 export function playIcon(color = 0xffffff): Graphics {
@@ -263,6 +270,23 @@ export function flipIcon(color = ink): Graphics {
     .moveTo(0, -24)
     .lineTo(0, 24)
     .stroke({ width: 4, color, cap: 'round' });
+}
+
+/** Two crossing arrows: shuffle (a mix of games in a new order). */
+export function shuffleIcon(color = 0xffffff): Graphics {
+  return new Graphics()
+    .moveTo(-26, -14)
+    .lineTo(-8, -14)
+    .lineTo(8, 14)
+    .lineTo(26, 14)
+    .moveTo(-26, 14)
+    .lineTo(-8, 14)
+    .lineTo(8, -14)
+    .lineTo(26, -14)
+    .stroke(line(6, color))
+    .poly([26, -24, 38, -14, 26, -4])
+    .poly([26, 4, 38, 14, 26, 24])
+    .fill(color);
 }
 
 /** A tick for "done" and "yes". */

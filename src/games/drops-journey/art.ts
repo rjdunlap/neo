@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
+import { paperCircle, paperLine, paperPoints, paperRect } from '../../art/paper';
 import type { Layout } from './layout';
 import type { Driver, Place, State } from './logic';
 
@@ -61,15 +62,17 @@ export function landArt(l: Layout): Graphics {
     g.circle(gr.x + dx, gr.y + dy, 5).fill(SEA.fill);
   // The sea, bottom-right.
   const sea = p.sea;
-  g.roundRect(
+  // Drawn as paper on purpose: a plain rectangle this wide would count as a backdrop and stay flat.
+  paperRect(
+    g,
     sea.x - (right - sea.x) - 120,
     sea.y - 46,
     (right - sea.x) * 2 + 240,
     l.seaFloor - sea.y + 46,
-    46,
-  )
-    .fill(SEA.light)
-    .stroke({ width: 4, color: SEA.line });
+    70,
+    SEA.light,
+    { line: SEA.line, seed: 'drops-sea' },
+  );
   for (let i = -2; i <= 2; i++)
     g.moveTo(sea.x + i * 70 - 22, sea.y + 52)
       .quadraticCurveTo(sea.x + i * 70, sea.y + 38, sea.x + i * 70 + 22, sea.y + 52)
@@ -78,26 +81,87 @@ export function landArt(l: Layout): Graphics {
   const r = p.river;
   const rx0 = peak.x + 40,
     ry0 = peak.y + 70;
-  g.moveTo(rx0, ry0)
-    .bezierCurveTo(rx0 + 60, ry0 + 80, r.x - 120, r.y - 30, r.x, r.y)
-    .bezierCurveTo(r.x + 120, r.y + 30, sea.x - 160, sea.y - 40, sea.x - 60, sea.y)
-    .stroke({ width: 26, color: SEA.fill, cap: 'round' });
-  g.moveTo(rx0, ry0)
-    .bezierCurveTo(rx0 + 60, ry0 + 80, r.x - 120, r.y - 30, r.x, r.y)
-    .bezierCurveTo(r.x + 120, r.y + 30, sea.x - 160, sea.y - 40, sea.x - 60, sea.y)
-    .stroke({ width: 10, color: SEA.light, cap: 'round' });
+  // A paper band (an open stroke would stay a flat vector line), with a lighter hairline of current down its middle.
+  const mid = [
+    ...bezier([rx0, ry0], [rx0 + 60, ry0 + 80], [r.x - 120, r.y - 30], [r.x, r.y]),
+    ...bezier([r.x, r.y], [r.x + 120, r.y + 30], [sea.x - 160, sea.y - 40], [sea.x - 60, sea.y]).slice(1),
+  ];
+  paperPoints(g, band(mid, 11, 16), SEA.fill, { amp: 2, seed: 'drops-river' });
+  paperLine(g, mid.slice(2, -2), SEA.light, 5, { noShadow: true });
   // The big cloud.
   const c = p.cloud;
-  for (const [dx, dy, rr] of [
+  // One paper piece: the outline of the puffs together, with a flat base.
+  const puffs: [number, number, number][] = [
     [-70, 10, 44],
     [-20, -16, 56],
     [44, -4, 50],
     [86, 16, 36],
     [0, 22, 44],
-  ])
-    g.circle(c.x + dx, c.y + dy, rr).fill(0xffffff);
-  g.roundRect(c.x - 110, c.y + 10, 220, 46, 23).fill(0xffffff);
+  ];
+  paperPoints(g, cloudOutline(c.x, c.y, puffs, 50), 0xffffff, { line: 0xb4c4d4, seed: 'drops-cloud' });
   return g;
+}
+
+type Pt = [number, number];
+
+function bezier(p0: Pt, p1: Pt, p2: Pt, p3: Pt, n = 24): Pt[] {
+  return Array.from({ length: n + 1 }, (_, k) => {
+    const t = k / n,
+      u = 1 - t;
+    return [0, 1].map(
+      (i) => u * u * u * p0[i] + 3 * u * u * t * p1[i] + 3 * u * t * t * p2[i] + t * t * t * p3[i],
+    ) as Pt;
+  });
+}
+
+/** A closed band around a path, its half-width easing from `w0` at the start to `w1` at the end, ends rounded. */
+function band(mid: Pt[], w0: number, w1: number): Pt[] {
+  const left: Pt[] = [],
+    right: Pt[] = [];
+  mid.forEach((p, i) => {
+    const a = mid[Math.max(0, i - 1)],
+      b = mid[Math.min(mid.length - 1, i + 1)];
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const nx = -(b[1] - a[1]) / len,
+      ny = (b[0] - a[0]) / len;
+    const w = w0 + ((w1 - w0) * i) / (mid.length - 1);
+    left.push([p[0] + nx * w, p[1] + ny * w]);
+    right.push([p[0] - nx * w, p[1] - ny * w]);
+  });
+  const cap = (p: Pt, from: Pt, w: number): Pt[] => {
+    const a0 = Math.atan2(from[1] - p[1], from[0] - p[0]);
+    return [1, 2, 3, 4, 5].map((k) => {
+      const a = a0 - (k * Math.PI) / 6;
+      return [p[0] + Math.cos(a) * w, p[1] + Math.sin(a) * w];
+    });
+  };
+  const end = mid[mid.length - 1],
+    start = mid[0];
+  return [
+    ...left,
+    ...cap(end, left[left.length - 1], w1),
+    ...right.reverse(),
+    ...cap(start, right[right.length - 1], w0),
+  ];
+}
+
+/** The outline of overlapping puffs seen from the cloud's middle, cut flat `base` units below it. */
+function cloudOutline(cx: number, cy: number, puffs: [number, number, number][], base: number): Pt[] {
+  const n = 72;
+  return Array.from({ length: n }, (_, k) => {
+    const a = (k / n) * Math.PI * 2,
+      dx = Math.cos(a),
+      dy = Math.sin(a);
+    // The farthest point along this ray inside any puff.
+    let far = 0;
+    for (const [px, py, r] of puffs) {
+      const b = dx * px + dy * py,
+        q = b * b - (px * px + py * py - r * r);
+      if (q >= 0) far = Math.max(far, b + Math.sqrt(q));
+    }
+    if (dy > 0) far = Math.min(far, base / dy);
+    return [cx + dx * far, cy + dy * far] as Pt;
+  });
 }
 
 export function sunArt(): Container {
@@ -119,10 +183,14 @@ export function sunArt(): Container {
 }
 
 export function ringArt(): Graphics {
-  return new Graphics()
-    .circle(0, 0, 62)
-    .fill({ color: 0xffffff, alpha: 0.28 })
-    .stroke({ width: 4, color: 0xffffff, alpha: 0.7 });
+  // A see-through paper disc with a soft torn white edge, not a hard vector ring.
+  return paperCircle(new Graphics(), 0, 0, 62, 0xffffff, {
+    alpha: 0.3,
+    noShadow: true,
+    line: 0xffffff,
+    amp: 1.6,
+    seed: 'drops-ring',
+  });
 }
 
 /** The drop in one of its looks. Vapour is only a ring of dots in the drop's outline, with no fill. */

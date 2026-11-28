@@ -22,6 +22,16 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: "Tap the tablet that matches the cart, or neither, or can't tell when the cart is empty. Tap a tablet to hear it.",
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'Pick three picture-signs whose names sound like the sentence, then tap Read. Tap the speaker bar to hear the sentence again.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Tap the silent sign that shows which meaning of the word the sentence uses. Tap the speaker bar to hear the sentence again.',
+    },
   ],
   finish: 'The marks and the things line up, one for one.',
   note: [
@@ -54,6 +64,16 @@ export const HOW_TO: GameHowTo = {
       from: 6,
       to: 6,
       text: "Only an answer counts; a wrong one is a miss and the pet says why. After two misses the goods line up under each tablet (or the empty cart glows), which counts as one hint. Can't tell is the right answer when nothing is left to count. Long ago, by the big rivers, people pressed marks in clay to remember how many.",
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Picking, lifting a picture off the tablet, tapping a sign to hear its name and replaying the sentence are never counted; only a wrong Read is a miss, and the pet says the pictures it heard. After two wrong readings the next step glows, which counts as one hint. Long ago, scribes used pictures of things for their sounds to write words that were not things.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Hearing the sentence again and tapping the sound-sign are never counted; only a wrong silent sign is a miss, and the pet says which sign it was. After two wrong picks the right sign glows, which counts as one hint. Long ago, scribes added silent signs so readers could tell look-alike sounds apart.',
     },
   ],
 };

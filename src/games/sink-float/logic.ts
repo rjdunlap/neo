@@ -36,7 +36,8 @@ export const thingWord = (t: Thing) => WORDS[t] ?? t;
 /** The basket or button that is right for a thing (the how-to card's ghost finger sorts and guesses with it). */
 export const rightBasket = (t: Thing): 'float' | 'sink' => (floats(t) ? 'float' : 'sink');
 
-export type SinkMode = 'hold' | 'drop' | 'say' | 'guess' | 'sort' | 'shape' | 'pair' | 'salt';
+export type SinkMode =
+  'hold' | 'drop' | 'say' | 'guess' | 'sort' | 'shape' | 'pair' | 'salt' | 'raft' | 'boat';
 
 export interface SinkPlan {
   mode: SinkMode;
@@ -48,8 +49,8 @@ export interface SinkPlan {
 }
 
 /**
- * The plans by level ID. ID 8 is reserved for Garden Raft, so level 9 sits between 5 and 6 (pre-K) and between 6 and 7
- * (school) through the bands' `order` in `SINK_LEVELS`.
+ * The plans by level ID. Level 9 sits between 5 and 6 (pre-K) and between 6 and 7 (school), and Garden Raft (8) between 7
+ * and 11 (Build a Boat) then 10, through the bands' `order` in `SINK_LEVELS`.
  */
 export const SINK_PLANS: Record<number, SinkPlan> = {
   1: { mode: 'drop', count: 5, surprises: false, name: 'Tap things to drop them in the water and watch' },
@@ -69,6 +70,12 @@ export const SINK_PLANS: Record<number, SinkPlan> = {
   },
   6: { mode: 'guess', count: 6, surprises: true, name: 'Guess and test surprising things' },
   7: { mode: 'shape', count: 2, surprises: false, name: 'Make the clay float: change its shape and test it' },
+  8: {
+    mode: 'raft',
+    count: 3,
+    surprises: false,
+    name: 'Garden Raft: put floats under the pots so the raft crosses the pond',
+  },
   9: {
     mode: 'pair',
     count: 3,
@@ -81,6 +88,12 @@ export const SINK_PLANS: Record<number, SinkPlan> = {
     surprises: false,
     name: 'Salty or fresh: compare two tanks, then test to find the salty one',
   },
+  11: {
+    mode: 'boat',
+    count: 3,
+    surprises: false,
+    name: 'How much can it carry? Load the boats and pick one for the pile',
+  },
   12: {
     mode: 'hold',
     count: 5,
@@ -91,7 +104,7 @@ export const SINK_PLANS: Record<number, SinkPlan> = {
 
 /**
  * The lap entry level: one big thing held over the water at a time, and a touch anywhere drops it. A stable ID above the
- * ladder that the lap band plays first (`order`), so no saved level is renumbered; 11 stays reserved for Build a Boat.
+ * ladder that the lap band plays first (`order`), so no saved level is renumbered.
  */
 export const HOLD_LEVEL = 12;
 export const SINK_IDS = Object.keys(SINK_PLANS).map(Number);
@@ -101,10 +114,10 @@ export const SINK_LEVELS: BandLevels = {
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
   prek: { min: 4, max: 9, order: [4, 5, 9, 6] },
-  school: { min: 5, max: 10, order: [5, 6, 9, 7, 10] },
+  school: { min: 5, max: 11, order: [5, 6, 9, 7, 8, 11, 10] },
 };
 
-/** A built level's plan; an unbuilt ID (8, Garden Raft) or one above the top falls to the nearest built ID below it. */
+/** A built level's plan; an unbuilt ID or one above the top falls to the nearest built ID below it. */
 export const sinkPlan = (level: number): SinkPlan => {
   const below = SINK_IDS.filter((id) => id <= level);
   return SINK_PLANS[below.length ? below[below.length - 1] : SINK_IDS[0]];
@@ -239,4 +252,193 @@ export function saltRoundFor(plan: SinkPlan, rng: Rng): SaltRound {
       questions: sides.map((salty, i) => ({ salty, test: i === plan.count - 1 ? 'duck' : 'egg' })),
     };
   }
+}
+
+/**
+ * Garden Raft (level 8): put floats under a pallet of pots so it crosses the pond. Two rules, each one line she hears:
+ * each float holds up two stones, so too much weight and the raft sits low; and the raft tips toward the side that has too
+ * much weight to be held up, so the balance point must sit strictly between the outermost floats. All integers, so every
+ * comparison is exact. Pots and floats are kept out of `THINGS` so the pools of levels 1 to 6 and the journal stay as they were.
+ */
+export const RAFT_SLOTS = 6;
+/** Stones one float holds up. */
+export const RAFT_HOLD = 2;
+
+/** Whether `holders` floats (or boat cells) hold up `load` stones (or marbles): each holds `RAFT_HOLD`. Shared by levels 8 and 11. */
+export const holdsLoad = (holders: number, load: number): boolean => holders * RAFT_HOLD >= load;
+
+export interface RaftPot {
+  /** Where it sits on the pallet, 0 (left) to 5 (right). */
+  slot: number;
+  /** Its weight, shown as stones in its basket. */
+  stones: 1 | 2 | 3;
+}
+export type RaftResult = { kind: 'ok' } | { kind: 'low' } | { kind: 'tip'; side: Side };
+
+/**
+ * How a launch goes. Sitting low is checked first, so a raft with both faults reports one thing at a time. A single float
+ * (or none) tips, and so does a balance point on or outside the outermost float's slot, as in Block Tower.
+ */
+export function raftVerdict(pots: readonly RaftPot[], floatSlots: ReadonlySet<number>): RaftResult {
+  const weight = pots.reduce((n, p) => n + p.stones, 0);
+  if (!holdsLoad(floatSlots.size, weight)) return { kind: 'low' };
+  const moment = pots.reduce((n, p) => n + p.stones * p.slot, 0);
+  const slots = [...floatSlots];
+  const lo = slots.length ? Math.min(...slots) : 0;
+  const hi = slots.length ? Math.max(...slots) : RAFT_SLOTS - 1;
+  if (moment <= lo * weight) return { kind: 'tip', side: 'left' };
+  if (moment >= hi * weight) return { kind: 'tip', side: 'right' };
+  return { kind: 'ok' };
+}
+
+export interface RaftRound {
+  name: string;
+  /** Every pot of the round, including a late arrival. */
+  pots: RaftPot[];
+  /** The pot that arrives after the first raft has crossed (round 3's pumpkin), or null. */
+  late: RaftPot | null;
+  /** Float slots already in the water when the round begins. */
+  start: number[];
+  /** Floats she has in all, in the water and on the tray. */
+  floats: number;
+}
+
+/** The three pallets, in order: a small load, a heavy pot that pulls the balance point, and a revision. */
+export const RAFT_ROUNDS: RaftRound[] = [
+  {
+    name: 'herb tubs',
+    pots: [1, 2, 3, 4].map((slot) => ({ slot, stones: 1 as const })),
+    late: null,
+    start: [],
+    floats: 4,
+  },
+  {
+    name: 'big pumpkin',
+    pots: [
+      { slot: 1, stones: 1 },
+      { slot: 2, stones: 1 },
+      { slot: 4, stones: 3 },
+    ],
+    late: null,
+    start: [],
+    floats: 4,
+  },
+  {
+    name: 'new pumpkin',
+    pots: [
+      { slot: 0, stones: 1 },
+      { slot: 1, stones: 1 },
+      { slot: 2, stones: 1 },
+      { slot: 5, stones: 3 },
+    ],
+    late: { slot: 5, stones: 3 },
+    start: [0, 2],
+    floats: 4,
+  },
+];
+
+const mirrorSlot = (slot: number) => RAFT_SLOTS - 1 - slot;
+
+/** The rounds, each mirrored left to right by the seed so the pattern is not memorised. The verdict is symmetric. */
+export function raftRoundFor(plan: SinkPlan, rng: Rng): RaftRound[] {
+  return RAFT_ROUNDS.slice(0, plan.count).map((r) => {
+    if (!rng.chance(0.5)) return { ...r, pots: r.pots.map((p) => ({ ...p })), start: [...r.start] };
+    const flip = (p: RaftPot): RaftPot => ({ ...p, slot: mirrorSlot(p.slot) });
+    return { ...r, pots: r.pots.map(flip), late: r.late && flip(r.late), start: r.start.map(mirrorSlot) };
+  });
+}
+
+/** The pots on the pallet now: the whole load, or without the late arrival before it comes. */
+export const raftLoad = (round: RaftRound, arrived: boolean): RaftPot[] =>
+  arrived || !round.late ? round.pots : round.pots.filter((p) => p.slot !== round.late?.slot);
+
+/** Every set of slots that crosses with at most `round.floats` floats. */
+export function raftAccepted(pots: readonly RaftPot[], max: number): number[][] {
+  const out: number[][] = [];
+  for (let mask = 1; mask < 1 << RAFT_SLOTS; mask++) {
+    const slots = Array.from({ length: RAFT_SLOTS }, (_, i) => i).filter((i) => mask & (1 << i));
+    if (slots.length <= max && raftVerdict(pots, new Set(slots)).kind === 'ok') out.push(slots);
+  }
+  return out;
+}
+
+export interface RaftChange {
+  /** The design it reaches. */
+  target: number[];
+  add: number[];
+  remove: number[];
+}
+
+/**
+ * The fewest float changes to a design that crosses, keeping the floats she placed where it can (fewest removals next, then
+ * the leftmost). Empty when the raft already crosses. It feeds the hint's glow and the bot.
+ */
+export function raftFix(pots: readonly RaftPot[], placed: readonly number[], max: number): RaftChange {
+  const have = new Set(placed);
+  if (raftVerdict(pots, have).kind === 'ok') return { target: [...placed], add: [], remove: [] };
+  let best: RaftChange | null = null;
+  let bestCost: [number, number] = [Infinity, Infinity];
+  for (const target of raftAccepted(pots, max)) {
+    const add = target.filter((s) => !have.has(s));
+    const remove = placed.filter((s) => !target.includes(s));
+    const cost: [number, number] = [add.length + remove.length, remove.length];
+    if (cost[0] < bestCost[0] || (cost[0] === bestCost[0] && cost[1] < bestCost[1])) {
+      best = { target, add, remove };
+      bestCost = cost;
+    }
+  }
+  if (!best) throw new Error('no raft design crosses');
+  return best;
+}
+
+/**
+ * Build a Boat (level 11): a boat is one row of cells, each as wide as a float and holding up two marbles, so a wider boat
+ * carries more. Every boat has the same wall height, and the marbles pile in the middle, so there is no tipping here (balance
+ * is Garden Raft's lesson). All integers. Boats and the bowl are kept out of `THINGS` so the pools of levels 1 to 6 and the
+ * journal stay as they were.
+ */
+export const HULL_CELLS = [1, 2, 3, 4] as const;
+export const hullCapacity = (cells: number): number => cells * RAFT_HOLD;
+
+export type HullVerdict = { kind: 'ok'; freeboard: number } | { kind: 'over' };
+
+/** A boat carries a load when the marbles do not outnumber its capacity; `freeboard` 0 is "at the rim". */
+export function hullVerdict(cells: number, marbles: number): HullVerdict {
+  return holdsLoad(cells, marbles)
+    ? { kind: 'ok', freeboard: hullCapacity(cells) - marbles }
+    : { kind: 'over' };
+}
+
+export interface BoatRound {
+  name: string;
+  /** The boats' widths in cells, left to right. */
+  boats: number[];
+  /** The pile she must carry, or null in round 1 (a measured comparison with no load to meet). */
+  pile: number | null;
+}
+
+/** The three rounds: wide and narrow, a pile of four (two boats carry it), a pile of seven (only the widest does). */
+export const BOAT_ROUNDS: BoatRound[] = [
+  { name: 'wide and narrow', boats: [4, 2], pile: null },
+  { name: 'a pile of four', boats: [1, 2, 3], pile: 4 },
+  { name: 'a pile of seven', boats: [2, 3, 4], pile: 7 },
+];
+
+/** The rounds, each mirrored left to right by the seed so a position is not memorised. Capacities follow the boats. */
+export function boatRoundFor(plan: SinkPlan, rng: Rng): BoatRound[] {
+  return BOAT_ROUNDS.slice(0, plan.count).map((r) => ({
+    ...r,
+    boats: rng.chance(0.5) ? [...r.boats].reverse() : [...r.boats],
+  }));
+}
+
+/** The index of the narrowest boat that carries the pile (the hint's glow and the bot's pick), or null with no pile. */
+export function boatAccepted(round: BoatRound): number | null {
+  const pile = round.pile;
+  if (pile === null) return null;
+  let best: number | null = null;
+  round.boats.forEach((cells, i) => {
+    if (holdsLoad(cells, pile) && (best === null || cells < round.boats[best])) best = i;
+  });
+  return best;
 }

@@ -36,6 +36,7 @@ export const VOICE = {
   'bubble.bonds': ['Find two bubbles that make {n} together. Tap one, then its partner!'],
   'bubble.made': ['{a} and {b} make {n}!'],
   'bubble.notmade': ['{a} and {b} make {total}. We need {n}.'],
+  'bubble.ten20': ['{small} and {ones} make 10, so {small} and {big} make 20.'],
   // The mode picture on the how-to card, tapped by a grown-up.
   'bubble.mode.15': ['Pop anywhere! Pat the screen and the nearest bubble pops.'],
   'bubble.mode.19': ['Blow, then pop! Swipe to blow bubbles for {pet}, then pop them.'],
@@ -56,4 +57,6 @@ export const VOICE = {
   'bubble.mode.16': ['Big and little. Pop only the size I say.'],
   'bubble.mode.17': ['Dots and no numbers. Pop the bubble with as many dots as I say.'],
   'bubble.mode.18': ['Dots and numbers. Tap the dots, then the number that says how many.'],
+  // Level 20's mode card line carries {pet}, so it stays on device speech until the voice pass renders clips for new lines.
+  'bubble.mode.20': ['Make 20 with {pet}. Pop two bubbles that make 20 together.'],
 } satisfies Record<string, string[]>;

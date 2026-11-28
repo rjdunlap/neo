@@ -1,5 +1,5 @@
 :root {
-  --cream: #fff4e3;
+  --cream: #ece4d4;
   --ink: #2b2b3a;
   --teal: #6fcfd0;
   --teal-line: #3a9a9b;
@@ -200,6 +200,129 @@ html.turning .pet-name-form {
   margin: 0;
   color: var(--quiet);
   font-size: 15px;
+}
+
+/* ---------- A grown-up's stamps (src/ui/stamps-sheet.ts); the card and buttons are the playtest sheet's ---------- */
+
+.stamps__game {
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+.stamps ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stamps__goal {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--quiet);
+  font-size: 15px;
+}
+.stamps__goal.is-held {
+  color: var(--ink);
+  font-weight: 600;
+}
+.stamps__goal small {
+  color: var(--quiet);
+  font-weight: 500;
+}
+.stamps__lantern {
+  flex: none;
+  width: 26px;
+  height: 32px;
+}
+.stamps__glow {
+  fill: #ffe9a3;
+  opacity: 0.6;
+}
+.stamps__cap {
+  fill: #2b2b3a;
+}
+.stamps__body {
+  fill: #ece6da;
+  stroke: #b9ae9c;
+  stroke-width: 2;
+}
+.stamps__lantern.is-lit .stamps__body {
+  fill: #ffd54a;
+  stroke: #c79a12;
+}
+.stamps__rib {
+  fill: none;
+  stroke: #b9ae9c;
+  stroke-width: 1.2;
+}
+.stamps__lantern.is-lit .stamps__rib {
+  stroke: #c79a12;
+}
+
+/* Today's share line and the month calendar, above the stamps (the progression loop, slice 5) */
+.stamps__head {
+  margin: 8px 0 0;
+}
+.sixes__line {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff8ea;
+  font: inherit;
+  font-size: 17px;
+  white-space: pre-wrap;
+}
+.sixes__month {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+.sixes__month h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.sixes__month .btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+.sixes__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.sixes__wd {
+  color: var(--quiet);
+  font-size: 12px;
+}
+.sixes__day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  border-radius: 10px;
+  color: var(--quiet);
+  font-size: 14px;
+}
+.sixes__day b {
+  position: relative;
+  font-weight: 500;
+}
+.sixes__day.is-lit b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.sixes__day .stamps__lantern {
+  position: absolute;
+  width: 30px;
+  height: 38px;
+  opacity: 0.9;
+}
+.sixes__day.is-today {
+  box-shadow: inset 0 0 0 2px var(--quiet);
 }
 
 /* ---------- A grown-up's playtest notes on Today's six (src/ui/playtest-sheet.ts) ---------- */
@@ -588,23 +711,16 @@ html.turning .playtest {
   -webkit-user-select: text;
 }
 
-/* The root page's way to the island game at classic/ (src/rework.ts), plain HTML over the canvas. */
-.classic-link {
-  position: fixed;
-  /* Below Home's grown-ups' gear (52px at 12px from the top) until RW08's cutover removes the link. */
-  top: calc(var(--safe-top) + 76px);
-  right: calc(var(--safe-right) + 12px);
-  /* A picture door (RW14 slice 7), not a text pill: it squashes on touch-down like the canvas buttons. */
-  display: block;
-  line-height: 0;
-  transform-origin: 50% 100%;
-  transition: transform 0.18s cubic-bezier(0.3, 1.8, 0.5, 1);
-  -webkit-tap-highlight-color: transparent;
-}
-.classic-link[hidden] {
-  display: none;
-}
-.classic-link:active {
-  transform: scale(1.07, 0.86);
-  transition-duration: 0.05s;
+/* A plain-HTML piece the PaperSkin (src/ui/paper-dom.ts) has drawn as paper: the picture is its background, shadow and
+   outline, so the CSS ones give way while sizes stay as they were. */
+html body .is-paper {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  /* The picture is drawn at the whole box's size, border included. */
+  background-origin: border-box !important;
+  background-clip: border-box !important;
 }

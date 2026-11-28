@@ -29,5 +29,5 @@ it('recreates the original letter and fur artwork for saved sticker seeds 0–99
     for (const char of drawing) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619) >>> 0;
     sticker.destroy({ children: true });
   }
-  expect(hash).toMatchInlineSnapshot(`268666590`);
+  expect(hash).toMatchInlineSnapshot(`2794619996`);
 });

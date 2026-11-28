@@ -7,7 +7,23 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (only !== undefined)
       selectValue(
         only,
-        ['song', 'song8', 'song9', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
+        [
+          'song',
+          'song8',
+          'song9',
+          'song11',
+          'song12',
+          'song13',
+          'song14',
+          'puzzle',
+          'weather',
+          'sink',
+          'sink7',
+          'sink-fresh',
+          'sink8',
+          'sink10',
+          'sink11',
+        ],
         'FOURTH_ONLY',
       );
     // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
@@ -135,9 +151,357 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       );
     }
 
+    // Song Maker 11, Finish my song: beats 1-2 given, beats 3-4 move-per-beat, check wakes after a full 4-beat loop, 0/0 and tune kept.
+    if (!only || only === 'song' || only === 'song11') {
+      await launch('song-maker', 11, 'Mia', 'preschool');
+      await page.waitForTimeout(600);
+      const r11 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const given = g.beads.filter((b) => b.given);
+        const givenFixed =
+          given.length === 2 &&
+          given.every((b) => b.note.col < 2 && b.eventMode === 'none') &&
+          g.beads.filter((b) => b.note.col < 2 && !b.given).every((b) => b.mute && !b.visible);
+        const col2 = g.beads.filter((b) => b.note.col === 2);
+        const col3 = g.beads.filter((b) => b.note.col === 3);
+        const asleep0 = !g.checkAwake && g.check.eventMode === 'none';
+        kit.tapOn(col2[0]);
+        await kit.sleep(200);
+        kit.tapOn(col2[1]);
+        await kit.sleep(200);
+        const movedInBeat = col2.filter((b) => b.lit).length === 1 && col2[1].lit;
+        kit.tapOn(col3[2]);
+        const justLit = !g.checkAwake;
+        const woke = await kit.until(() => g.checkAwake, 6000);
+        kit.tapOn(col3[2]);
+        const backToSleep = !g.checkAwake;
+        await kit.sleep(250);
+        kit.tapOn(col3[0]);
+        const wokeAgain = await kit.until(() => g.checkAwake, 6000);
+        const size = g.check.radius * 2;
+        kit.tapOn(g.check);
+        return {
+          givenFixed,
+          movedInBeat,
+          asleep0,
+          justLit,
+          woke,
+          backToSleep,
+          wokeAgain,
+          size,
+          misses: g.misses,
+        };
+      });
+      assert.ok(
+        r11.givenFixed &&
+          r11.movedInBeat &&
+          r11.asleep0 &&
+          r11.justLit &&
+          r11.woke &&
+          r11.backToSleep &&
+          r11.wokeAgain,
+        `song 11 check ${JSON.stringify(r11)}`,
+      );
+      assert.ok(r11.size >= 100, 'song 11 check is a whole target');
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [0, 0], 'song 11 score');
+      log(
+        'Song Maker 11: opening given, move-per-beat ending, check wakes after 4-beat loop, sticker passed',
+      );
+    }
+
+    // Song Maker 12, Two to choose: heard 4-note tune on 4x3 with two shadows per beat; wrong shadow gives boing + right note + glow after two.
+    if (!only || only === 'song' || only === 'song12') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('song-maker', 12, 'Mia', 'prek');
+      await page.waitForTimeout(600);
+      await screenshot('song-maker-12-portrait');
+      const r12 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!(await kit.until(() => !g.listening, 15000))) throw new Error('Tune never finished');
+        const isNote = (b) => g.song.notes.some((n) => n.col === b.note.col && n.row === b.note.row);
+        const ghostsPerBeat = [0, 1, 2, 3].map(
+          (col) => g.beads.filter((b) => b.note.col === col && b.ghost).length,
+        );
+        const nonChoiceLocked = g.beads.filter((b) => !b.ghost).every((b) => b.eventMode === 'none');
+        const wrong0 = g.beads.find((b) => b.note.col === 0 && b.ghost && !isNote(b));
+        for (let i = 0; i < 2; i++) {
+          kit.tapOn(wrong0);
+          await kit.sleep(250);
+        }
+        const hintAfterTwo = g.misses === 2 && g.hints === 1;
+        const right0 = g.beads.find((b) => b.note.col === 0 && isNote(b));
+        kit.tapOn(right0);
+        await kit.sleep(250);
+        const clearedOtherShadow = !wrong0.ghost && wrong0.eventMode === 'none';
+        for (const n of [...g.remaining]) {
+          kit.tapOn(g.beads.find((b) => b.note.col === n.col && b.note.row === n.row));
+          await kit.sleep(250);
+        }
+        return { ghostsPerBeat, nonChoiceLocked, hintAfterTwo, clearedOtherShadow };
+      });
+      assert.deepEqual(r12.ghostsPerBeat, [2, 2, 2, 2], 'two shadows per beat');
+      assert.ok(r12.nonChoiceLocked, 'non-candidate seeds locked');
+      assert.ok(r12.hintAfterTwo, 'two wrong shadow taps trigger hint');
+      assert.ok(r12.clearedOtherShadow, 'solving a beat clears its other shadow');
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [2, 1], 'song 12 score');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      log(
+        'Song Maker 12: two shadows per beat, wrong shadow hint, solved beat clears other shadow, sticker passed',
+      );
+    }
+
+    // Song Maker 13, Bring it home: a check with beat 8 off home is a miss (the pet plays both versions); two glow the home jelly; ending home finishes.
+    if (!only || only === 'song' || only === 'song13') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('song-maker', 13, 'Mia', 'school');
+      await page.waitForTimeout(600);
+      await screenshot('song-maker-13-portrait');
+      const r13 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const at = (col, row) => g.beads.find((b) => b.note.col === col && b.note.row === row);
+        const startsHome = g.song.given[0].row === 3 && g.song.given[3].row !== 3;
+        for (const col of [4, 5, 6]) {
+          kit.tapOn(at(col, 1));
+          await kit.sleep(150);
+        }
+        kit.tapOn(at(7, 0));
+        await kit.sleep(150);
+        const woke1 = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        await kit.sleep(100);
+        const miss1 = g.misses === 1 && g.hints === 0 && g.explaining && !g.checkAwake && !g.done;
+        const explained1 = await kit.until(() => !g.explaining, 30000);
+        const asleepAfter1 = !g.checkAwake && g.check.eventMode === 'none';
+        kit.tapOn(at(7, 1));
+        await kit.sleep(150);
+        const woke2 = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        await kit.sleep(100);
+        const explained2 = await kit.until(() => !g.explaining, 30000);
+        const hintAfterTwo = g.misses === 2 && g.hints === 1;
+        kit.tapOn(at(7, 3));
+        await kit.sleep(150);
+        const woke3 = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        return { startsHome, woke1, miss1, explained1, asleepAfter1, woke2, explained2, hintAfterTwo, woke3 };
+      });
+      assert.ok(Object.values(r13).every(Boolean), `song 13 check ${JSON.stringify(r13)}`);
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [2, 1], 'song 13 score');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      log(
+        'Song Maker 13: off-home check is a miss with both versions played, glow after two, home ends, sticker passed',
+      );
+    }
+
+    // Song Maker 14, Change one thing: a change that misses the picture's request is a miss (both versions played),
+    // the hint glows after two, the before button replays the pet's tune, and the hinted tap makes the change.
+    if (!only || only === 'song' || only === 'song14') {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('song-maker', 14, 'Mia', 'school');
+      await page.waitForTimeout(600);
+      const r14 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const at = (col, row) => g.beads.find((b) => b.note.col === col && b.note.row === row);
+        const rowOf = (col) => g.beads.find((b) => b.lit && b.note.col === col)?.note.row;
+        const allLit = g.beads.filter((b) => b.lit).length === 6 && !!g.song.request;
+        // Moving beat 2's jelly changes the song but never does what any request asks.
+        const missOnce = async () => {
+          kit.tapOn(at(1, (rowOf(1) + 1) % 4));
+          await kit.sleep(150);
+          const woke = await kit.until(() => g.checkAwake, 15000);
+          kit.tapOn(g.check);
+          await kit.sleep(100);
+          const missed = g.explaining && !g.checkAwake && !g.done;
+          const explained = await kit.until(() => !g.explaining, 30000);
+          return woke && missed && explained && g.check.eventMode === 'none';
+        };
+        const asleepAtStart = await kit.until(() => g.beatsSinceChange >= 8, 15000).then(() => !g.checkAwake);
+        const miss1 = (await missOnce()) && g.misses === 1 && g.hints === 0;
+        kit.tapOn(g.before);
+        await kit.sleep(100);
+        const beforePlays = g.listening;
+        await kit.until(() => !g.listening, 15000);
+        const miss2 = (await missOnce()) && g.misses === 2 && g.hints === 1;
+        const glow = g.glow.getBounds().width > 50;
+        return { request: g.song.request, allLit, asleepAtStart, miss1, beforePlays, miss2, glow };
+      });
+      const sizes = await page.evaluate(() => {
+        const g = neo.scene.game;
+        const box = (o) => o.getBounds();
+        const [c, b, sign] = [box(g.check), box(g.before), box(g.sign)];
+        const apart = (p, q) =>
+          p.x + p.width <= q.x || q.x + q.width <= p.x || p.y + p.height <= q.y || q.y + q.height <= p.y;
+        return {
+          // Upright, the picture, before and check sit in a row above the board.
+          // Only a touch screen held upright gets the phone layout (FOURTH_ONLY=song14 emulates one).
+          upright:
+            !matchMedia('(pointer: coarse)').matches || (g.check.y < g.lay.y0 && g.before.y < g.lay.y0),
+          cell: g.lay.cell,
+          apart: apart(c, b) && apart(b, sign) && apart(c, sign),
+        };
+      });
+      assert.ok(
+        sizes.upright && sizes.cell >= 100 && sizes.apart,
+        `song 14 phone layout ${JSON.stringify(sizes)}`,
+      );
+      await screenshot('song-maker-14-portrait');
+      const done14 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const t = g.autotouch();
+        kit.tapOn(t.tap.on);
+        await kit.sleep(150);
+        const woke = await kit.until(() => g.checkAwake, 15000);
+        kit.tapOn(g.check);
+        return woke;
+      });
+      assert.ok(Object.values(r14).every(Boolean) && done14, `song 14 ${JSON.stringify(r14)}`);
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const s = kit.store.stats('song-maker').history.at(-1);
+        return [s.misses, s.hints];
+      });
+      assert.deepEqual(r, [2, 1], 'song 14 score');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      log(
+        `Song Maker 14 (${r14.request}): missed change is a miss, before replays, glow after two, hinted change ends, sticker passed`,
+      );
+    }
+
     // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
     if (!only || only === 'puzzle')
-      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+      ]) {
+        if (level === 11) {
+          // Mend the picture: two pieces swapped in a finished 3x3; a swap that does not mend both goes back as a miss,
+          // two misses glow the odd pair, tapping the odd pair mends it.
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await launch('puzzle-pals', 11, 'Mia', 'school');
+          await page.waitForTimeout(600);
+          await screenshot('puzzle-pals-11-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const home = (p) => p.piece.row * 3 + p.piece.col;
+            const odd = () => g.pieces.filter((p) => p.at !== home(p));
+            if (g.pieces.length !== 9 || odd().length !== 2)
+              throw new Error('Puzzle 11: nine pieces, two odd');
+            const b = g.pieces[0].node.getBounds();
+            if (b.width < 100 || b.height < 100)
+              throw new Error(`Puzzle 11: pieces are big (${b.width}x${b.height})`);
+            const right = g.pieces.filter((p) => p.at === home(p));
+            const [o1, o2] = odd();
+            // A piece picked and picked again is put down, free.
+            kit.tapOn(right[0].node, 0, 0);
+            await kit.sleep(200);
+            kit.tapOn(right[0].node, 0, 0);
+            await kit.sleep(200);
+            // An odd piece swapped with a right one goes back and is a miss.
+            for (let i = 0; i < 2; i++) {
+              kit.tapOn(o1.node, 0, 0);
+              await kit.sleep(200);
+              kit.tapOn(right[i].node, 0, 0);
+              await kit.sleep(900);
+            }
+            if (g.misses !== 2 || g.hints !== 1 || odd().length !== 2)
+              throw new Error(`Puzzle 11: two bad swaps (${g.misses}, ${g.hints}, ${odd().length})`);
+            if (!o1.mark.visible || !o2.mark.visible) throw new Error('Puzzle 11: the odd pair glows');
+          });
+          await screenshot('puzzle-pals-11-hint');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(500);
+          await screenshot('puzzle-pals-11-landscape');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const home = (p) => p.piece.row * 3 + p.piece.col;
+            const [o1, o2] = g.pieces.filter((p) => p.at !== home(p));
+            kit.tapOn(o1.node, 0, 0);
+            await kit.sleep(200);
+            kit.tapOn(o2.node, 0, 0);
+            await kit.sleep(900);
+          });
+          await page.waitForTimeout(1500);
+          await finished('puzzle-pals');
+          const r11 = await page.evaluate(() => {
+            const r = kit.store.stats('puzzle-pals').history.at(-1);
+            return [r.misses, r.hints];
+          });
+          assert.deepEqual(r11, [2, 1], 'puzzle 11 score');
+          log(
+            'Puzzle Pals 11: bad swaps go back as misses, two glow the odd pair, mending the pair finishes, sticker passed',
+          );
+          continue;
+        }
+        if (level === 10) {
+          // Two pictures, one tray: a piece dropped on the other picture is a miss, two misses glow its own place.
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await launch('puzzle-pals', 10);
+          await page.waitForTimeout(600);
+          await screenshot('puzzle-pals-10-landscape');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            window.twinSlot = (p, board = p.board) => {
+              const b = g.boards[board];
+              return {
+                x: b.x + (600 / g.plan.cols) * (p.piece.col + 0.5) * g.scale,
+                y: b.y + (420 / g.plan.rows) * (p.piece.row + 0.5) * g.scale + 40,
+              };
+            };
+            if (g.pieces.length !== 8 || g.boards.length !== 2)
+              throw new Error('Puzzle 10: eight pieces, two pictures');
+            const [p] = g.pieces.filter((q) => !q.placed);
+            await kit.dragTo(p.node, { x: 20, y: 40 });
+            await kit.sleep(500);
+            if (g.misses !== 0) throw new Error('Puzzle 10: off both frames is free');
+            for (let i = 0; i < 2; i++) {
+              await kit.dragTo(p.node, twinSlot(p, 1 - p.board));
+              await kit.sleep(600);
+            }
+            if (g.misses !== 2 || g.hints !== 1 || g.hinted !== p)
+              throw new Error(`Puzzle 10: two other-picture drops (${g.misses}, ${g.hints})`);
+          });
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(500);
+          await screenshot('puzzle-pals-10-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(500);
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            for (const p of g.pieces.filter((q) => !q.placed)) {
+              await kit.dragTo(p.node, twinSlot(p));
+              await kit.sleep(450);
+              if (!p.placed) throw new Error('Puzzle 10: piece rejected its own place');
+            }
+          });
+          await page.waitForTimeout(1200);
+          await finished('puzzle-pals');
+          const r10 = await page.evaluate(() => {
+            const r = kit.store.stats('puzzle-pals').history.at(-1);
+            return [r.misses, r.hints];
+          });
+          assert.deepEqual(r10, [2, 1], 'puzzle 10 score');
+          log(
+            'Puzzle Pals 10: off-frame is free, the other picture is a miss, a hint, both pictures alive, sticker passed',
+          );
+          continue;
+        }
         if (level === 8) {
           // Lap's first: one big piece out at a time; a touch on the background, the frame or a placed piece hops it in,
           // and the next comes out. A far let-go hops it in too. Nothing counts.
@@ -182,7 +546,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await screenshot('puzzle-pals-8-lap-start-landscape');
           await page.evaluate(async () => {
             const g = neo.scene.game;
-            kit.tapOn(g.board, 0, 0);
+            kit.tapOn(g.board.node, 0, 0);
             await kit.sleep(900);
             if (g.pieces.filter((p) => p.placed).length !== 1)
               throw new Error('Puzzle 8: a frame touch hops it in');
@@ -198,8 +562,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           window.slotAt = (p) => {
             const g = neo.scene.game;
             return {
-              x: g.board.x + (600 / g.plan.cols) * (p.col + 0.5) * g.scale,
-              y: g.board.y + (420 / g.plan.rows) * (p.row + 0.5) * g.scale + 40,
+              x: g.board.x + (g.box.w / g.plan.cols) * (p.col + 0.5) * g.scale,
+              y: g.board.y + (g.box.h / g.plan.rows) * (p.row + 0.5) * g.scale + 40,
             };
           };
         });
@@ -211,8 +575,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.misses !== 0) throw new Error('Drop off the frame counted as a miss');
           if (g.plan.turns) {
             const turned = waiting.filter((p) => p.turn !== 0);
-            if (turned.length !== 3)
-              throw new Error(`Puzzle 9: expected 3 turned pieces, got ${turned.length}`);
+            const want = g.plan.turns;
+            if (turned.length !== want)
+              throw new Error(
+                `Puzzle ${g.plan.quarter ? 12 : 9}: expected ${want} turned pieces, got ${turned.length}`,
+              );
             await kit.dragTo(turned[0].node, slotAt(turned[0].piece));
             await kit.sleep(600);
             if (turned[0].placed || g.misses !== 0 || g.wrong !== 0)
@@ -233,7 +600,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               g.plan,
               g.pieces.filter((p) => p.placed).map((p) => p.piece),
             );
-            if (JSON.stringify(g.hinted?.piece) !== JSON.stringify(expected))
+            if (g.hinted?.piece.col !== expected.col || g.hinted.piece.row !== expected.row)
               throw new Error('Hint does not choose the next useful piece');
             if (g.hints !== 1 || g.glow.eventMode !== 'none')
               throw new Error('Hint accounting or touch clearance is wrong');
@@ -241,7 +608,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!['top-left', 'top-right', 'bottom-left', 'bottom-right', 'left', 'right'].includes(pos))
               throw new Error('First hint is not a corner');
           });
-        if (level === 7 || level === 9) {
+        if (level === 7 || level === 9 || level === 12) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(500);
           await screenshot(`puzzle-pals-${level}-portrait`);
@@ -251,11 +618,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await page.evaluate(async () => {
           const g = neo.scene.game;
           for (const p of g.pieces.filter((p) => !p.placed)) {
-            if (p.turn) {
+            // Level 9 takes one tap to turn a piece round; level 12 takes up to three quarter turns, each a clockwise tap.
+            for (let taps = 0; p.turn && taps < 4; taps++) {
               kit.tapOn(p.node);
               await kit.sleep(350);
-              if (p.turn !== 0) throw new Error('Puzzle 9: tap did not turn piece upright');
             }
+            if (p.turn !== 0) throw new Error('Puzzle turn: taps did not bring the piece upright');
             await kit.dragTo(p.node, slotAt(p.piece));
             await kit.sleep(450);
             if (!p.placed) throw new Error('Piece rejected its own place');
@@ -263,6 +631,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         });
         await page.waitForTimeout(900);
         if (level === 4) await screenshot('puzzle-pals-alive');
+        if (level === 12) await screenshot('puzzle-pals-12-alive');
         await finished('puzzle-pals');
         const r = await page.evaluate(() => {
           const r = kit.store.stats('puzzle-pals').history.at(-1);
@@ -279,7 +648,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (process.env.WARDROBE_SPECIES && (!only || only === 'weather'))
       await useCompanion(process.env.WARDROBE_SPECIES);
     if (!only || only === 'weather')
-      for (const level of [1, 2, 3, 4, 5, 6, 8]) {
+      for (const level of [1, 2, 3, 4, 5, 6, 8, 13]) {
         await launch('weather-wardrobe', level);
         await page.waitForTimeout(700);
         await page.evaluate(async () => {
@@ -314,7 +683,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.plan.mode === 'try' ? g.hints !== 0 || g.misses !== 0 : g.hints !== 1)
             throw new Error('Wardrobe hint/miss accounting wrong');
         });
-        if ([1, 4, 6, 8].includes(level)) await screenshot(`weather-wardrobe-${level}`);
+        if ([1, 4, 6, 8, 13].includes(level)) await screenshot(`weather-wardrobe-${level}`);
         await page.evaluate(async () => {
           const g = neo.scene.game;
           for (let step = 0; !g.done && step < 30; step++) {
@@ -491,6 +860,212 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         log(`Sink or Float ${level}: splashes, guesses, sorting, saved round and sticker passed`);
       }
 
+    // Sink or Float 8, Garden Raft (FOURTH_ONLY=sink8 alone): round 1 with two floats at one end twice (it tips: no miss, then
+    // the glow and one hint), the fix, round 2, and round 3's revision of the raft that already crossed, ending at the sticker.
+    // Portrait with a tipped raft, then landscape; the controller ring through direct control() calls on round 3.
+    if (only === 'sink8') {
+      await launch('sink-float', 8);
+      await page.waitForTimeout(700);
+      const slotTap = (i) =>
+        page.evaluate(async (i) => {
+          const g = neo.scene.game;
+          const a = g.areas[i].hitArea;
+          const p = g.areas[i].toGlobal({ x: a.x + a.width / 2, y: a.y + a.height / 2 });
+          kit.tap(p.x, p.y);
+          await kit.sleep(250);
+        }, i);
+      const ready = () =>
+        page.waitForFunction(() => !neo.scene.game.busy && !neo.scene.game.finished, null, {
+          timeout: 60000,
+        });
+      const launchTap = () =>
+        page.evaluate(async () => {
+          kit.tapOn(neo.scene.game.launchButton);
+          await kit.sleep(300);
+        });
+      await ready();
+      const g1 = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return { start: g.rounds[0].pots.map((p) => p.slot), right: g.rounds[0].pots[0].slot <= 2 };
+      });
+      // The two floats go under the pots' lighter end: the whole row tips.
+      const heavy = g1.start.includes(1) ? [0, 1] : [4, 5];
+      for (const i of heavy) await slotTap(i);
+      await launchTap();
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(900);
+      await screenshot('sink-float-8-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+      await screenshot('sink-float-8-landscape');
+      await ready();
+      let st = await page.evaluate(() => ({ h: neo.scene.game.hints, m: neo.scene.game.misses }));
+      assert.deepEqual(st, { h: 0, m: 0 }, 'one failed launch is neither a miss nor a hint');
+      await launchTap();
+      await ready();
+      st = await page.evaluate(() => ({
+        h: neo.scene.game.hints,
+        m: neo.scene.game.misses,
+        glow: neo.scene.game.glowSlot,
+      }));
+      assert.equal(st.h, 1, 'two launches that tip the same way bring one hint');
+      assert.notEqual(st.glow, null, 'the hint glows a slot');
+      assert.equal(st.m, 0, 'a failed launch is never a miss');
+      // Rounds 1 to 3 by the bot's design (raftFix), pressing each stop through the controller ring in round 3.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const { idle } = await import('/src/engine/controller.ts');
+        const press = (f) => {
+          const c = idle();
+          f(c.players[0]);
+          g.control(c, 0.016);
+        };
+        for (let guard = 0; guard < 400 && !g.finished; guard++) {
+          if (g.busy) {
+            await kit.sleep(150);
+            continue;
+          }
+          const t = g.autotouch();
+          if (!t) {
+            await kit.sleep(100);
+            continue;
+          }
+          if (g.round === 2 && g.arrived) {
+            // The controller ring: walk to the wanted stop and press it.
+            const want = t.tap.on === g.launchButton ? 6 : g.areas.indexOf(t.tap.on);
+            while (g.pick !== want) press((p) => (p.direction = want > g.pick ? 0 : 2));
+            press((p) => (p.action = true));
+          } else if (t.tap.on === g.launchButton) kit.tapOn(t.tap.on);
+          else {
+            const a = t.tap.on.hitArea;
+            const p = t.tap.on.toGlobal({ x: a.x + a.width / 2, y: a.y + a.height / 2 });
+            kit.tap(p.x, p.y);
+          }
+          await kit.sleep(400);
+        }
+      });
+      await finished('sink-float');
+      const score = await page.evaluate(() => {
+        const r = kit.store.stats('sink-float').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(score, [0, 1], 'sink 8 score');
+      log(
+        'Sink or Float 8: a tipped raft twice, the glow, the fix, three pallets with a revision and the ring, to the sticker passed',
+      );
+      return;
+    }
+
+    // Sink or Float 11, How much can it carry? (FOURTH_ONLY=sink11 alone): round 1 guesses the narrow boat (unscored), loads the
+    // wide boat to the rim for a portrait and landscape screenshot, then each boat spills on the marble after its last seat;
+    // round 2 picks the one-cell boat twice (two spills: the glow, one hint) then the glowing two-cell boat; round 3 by the bot,
+    // ending at the sticker. The ring is walked by direct control() calls on round 3.
+    if (only === 'sink11') {
+      await launch('sink-float', 11);
+      await page.waitForTimeout(700);
+      const idleTap = (cells) =>
+        page.evaluate(async (cells) => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy && (g.phase === 'guess' || g.phase === 'pick'), 30000);
+          kit.tapOn(g.boats[g.rounds[g.round].boats.indexOf(cells)]);
+          await kit.sleep(300);
+        }, cells);
+      const dropMarbles = (n) =>
+        page.evaluate(async (n) => {
+          const g = neo.scene.game;
+          for (let i = 0; i < n; i++) {
+            await kit.until(() => !g.busy && g.phase === 'load', 30000);
+            kit.tapOn(g.bowl);
+            await kit.sleep(150);
+          }
+        }, n);
+      await idleTap(2);
+      await dropMarbles(4);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => !g.busy, 30000);
+        if (g.loaded[g.target] !== 4) throw new Error(`narrow boat holds ${g.loaded[g.target]}`);
+      });
+      await dropMarbles(1);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(
+          () => !g.busy && g.phase === 'load' && g.target !== -1 && g.loaded[g.target] === 0,
+          30000,
+        );
+        if (g.held.filter((h) => h !== null).join() !== '4') throw new Error(`held ${g.held}`);
+      });
+      await dropMarbles(8);
+      await page.evaluate(async () => kit.until(() => !neo.scene.game.busy, 30000));
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(700);
+      await screenshot('sink-float-11-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(500);
+      await screenshot('sink-float-11-landscape');
+      await dropMarbles(1);
+      // Round 2: two spills in a row, then the glow.
+      await idleTap(1);
+      await dropMarbles(3);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => g.round === 1 && g.spills === 1 && g.phase === 'pick' && !g.busy, 30000);
+      });
+      await idleTap(1);
+      await dropMarbles(3);
+      const st = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => g.round === 1 && g.spills === 2 && g.phase === 'pick' && !g.busy, 30000);
+        return {
+          hints: g.hints,
+          misses: g.misses,
+          glow: g.glowBoat,
+          glowCells: g.rounds[1].boats[g.glowBoat],
+        };
+      });
+      assert.equal(st.hints, 1, 'two spills bring one hint');
+      assert.equal(st.misses, 0, 'a spill is never a miss');
+      assert.equal(st.glowCells, 2, 'the glow marks the narrowest boat that carries four');
+      await idleTap(2);
+      // Rounds 2 and 3 by the bot; the controller ring on round 3.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const { idle } = await import('/src/engine/controller.ts');
+        const press = (f) => {
+          const c = idle();
+          f(c.players[0]);
+          g.control(c, 0.016);
+        };
+        for (let guard = 0; guard < 400 && !g.finished; guard++) {
+          if (g.busy) {
+            await kit.sleep(150);
+            continue;
+          }
+          const t = g.autotouch();
+          if (!t) {
+            await kit.sleep(100);
+            continue;
+          }
+          if (g.round === 2) {
+            const want = t.tap.on === g.bowl ? g.boats.length : g.boats.indexOf(t.tap.on);
+            while (g.pick !== want) press((p) => (p.direction = want > g.pick ? 0 : 2));
+            press((p) => (p.action = true));
+          } else kit.tapOn(t.tap.on);
+          await kit.sleep(300);
+        }
+      });
+      await finished('sink-float');
+      const score = await page.evaluate(() => {
+        const r = kit.store.stats('sink-float').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(score, [0, 1], 'sink 11 score');
+      log(
+        'Sink or Float 11: two boats measured, two spills, the glow, a carried pile and the ring, to the sticker passed',
+      );
+      return;
+    }
+
     // Sink or Float 10, Salty or fresh (FOURTH_ONLY=sink10 alone): part 1 watched, then a tank tap before the eggs settle is
     // ignored, two wrong tanks on the first egg question bring the glow (one hint), the other questions answered right, the
     // last (the duck) through the two-tank ring by direct control() calls. Portrait with the eggs settled, then landscape.
@@ -606,11 +1181,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.evaluate((ids) => ids.map((id) => ({ id, plays: kit.store.stats(id).plays })), ids),
       progress,
     );
-    await page.evaluate(() => neo.go.place('lap'));
-    await scene('PlaceScene');
-    const lap = await page.evaluate(() => neo.scene.landmarks.map((l) => l.mod.id));
+    // Explore's All games (the age places retired with classic/) holds every lap game.
+    const lap = await page.evaluate(async (band) => {
+      const { allGames } = await import('/src/content/explore.ts');
+      const { GAMES } = await import('/src/games/registry.ts');
+      const { LANDS } = await import('/src/content/lands.ts');
+      return allGames(band, GAMES, LANDS).map((g) => g.id);
+    }, 'lap');
     for (const id of ids) assert.ok(lap.includes(id), id);
-    log('Puddle Lagoon shows all four, and saved progress survives a reload');
+    log('Explore holds all four for lap, and saved progress survives a reload');
   }
 
   return { fourth };

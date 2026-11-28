@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
-import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
+import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import { CROSS_HIT, crossLayout } from './layout';
 import { LEVELS, PLANS } from './logic';
 
@@ -80,3 +80,30 @@ describe.each(Object.entries(views))('Critter Crossing upright on %s', (_, v) =>
     },
   );
 });
+
+describe.each([...Object.entries(views), ['sideways', sideways] as const])(
+  'Critter Crossing Be the gate buttons on %s',
+  (_, v) => {
+    it('the seat buttons and the Cross and Wait buttons are big, apart and clear of the chrome', () => {
+      const L = crossLayout(v);
+      const seats = L.seats.map((p, i) => square(`seat ${i}`, p, 112));
+      const judge = L.judge.map((p, i) => square(`judge ${i}`, p, 112));
+      if (L.upright) {
+        expect(uprightProblems(v, seats, 100)).toEqual([]);
+        expect(uprightProblems(v, judge, 100)).toEqual([]);
+      }
+      expect(Math.abs(L.seats[1].x - L.seats[0].x)).toBeGreaterThanOrEqual(112 + 40);
+      expect(Math.abs(L.judge[1].x - L.judge[0].x)).toBeGreaterThanOrEqual(112 + 20);
+      // Cross and Wait sit above the sign (150 over the gate, 64 tall) and every critter's head (about 150 over its feet).
+      const signTop = L.gate.y - 150 - 64;
+      const highest = Math.min(...Array.from({ length: 6 }, (_, i) => Math.min(L.left(i).y, L.right(i).y)));
+      for (const p of L.judge) {
+        expect(p.y - 56).toBeGreaterThanOrEqual(0);
+        if (L.upright) expect(p.y + 56).toBeLessThanOrEqual(signTop);
+        else expect(p.x - 56).toBeGreaterThan(L.gate.x + 100);
+        expect(p.y + 56).toBeLessThanOrEqual(highest - 150);
+        expect(p.x + 56).toBeLessThanOrEqual(v.w);
+      }
+    });
+  },
+);

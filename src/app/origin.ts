@@ -6,9 +6,11 @@ export function goToOrigin(go: Routes, origin: Origin | undefined, fallback: () 
   else if (origin && 'place' in origin) go.place(origin.place);
   else if (origin && 'journal' in origin) go.journal();
   else if (origin && 'library' in origin) go.library();
-  else if (origin && 'book' in origin) go.book(origin.recipe ? { colour: origin.recipe } : undefined);
+  else if (origin && 'book' in origin)
+    go.book(origin.recipe ? { colour: origin.recipe } : origin.form ? { form: origin.form } : undefined);
   else if (origin && 'explore' in origin) go.explore(origin.explore, origin.page);
   else if (origin && 'daily' in origin) go.daily();
+  else if (origin && 'home' in origin) go.hub();
   else fallback();
 }
 

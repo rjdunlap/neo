@@ -1,6 +1,97 @@
 import assert from 'node:assert/strict';
+import { selectValue } from '../selection.mjs';
 
-export function createSuite({ page, errors, log, ready, scene, pickFirst, screenshot }) {
+export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, screenshot }) {
+  /**
+   * D8's starting view (`PROFILES_ONLY=start-view`), at the root on a tablet-sized screen and then at classic/: a player
+   * set to Today's six taps their card and gets the six, whose Back is Home (the map at classic/); a second player on the
+   * default gets Home (the map). The Opens with row on the grown-ups' page saves it.
+   */
+  async function startView() {
+    const base = process.env.GAME_URL || 'http://127.0.0.1:5173';
+    for (const [path, explore] of [
+      // `classic/` (the map) retired at RW08's cutover, 2026-11-28.
+      ['/', 'HomeScene'],
+    ]) {
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.goto(new URL(path, base).href);
+      await ready();
+      await scene('ChooserScene');
+      // Two players with a friend each: Mia set to Today's six on the grown-ups' page, Sam left on the default.
+      const ids = await page.evaluate(async () => {
+        const friend = (name) => ({
+          owned: [{ id: 'pip0', species: 'sprout', name, look: { color: 'pink' }, metAt: 'start' }],
+          companion: 'pip0',
+        });
+        const store = kit.store;
+        if (store.profiles.length < 2) store.addProfile();
+        const [a, b] = store.profiles.map((p) => p.id);
+        for (const [id, name] of [
+          [b, 'Sam'],
+          [a, 'Mia'],
+        ]) {
+          await store.switchTo(id);
+          store.data.profile.name = name;
+          store.data.creatures = friend(name === 'Mia' ? 'Clover' : 'Pip');
+          store.data.settings.howToCards = false;
+          store.data.settings.startView = 'explore';
+          store.save();
+        }
+        store.flush();
+        neo.go.start();
+        return [a, b];
+      });
+      await scene('ChooserScene');
+      const box = await page.locator('.gear:not(.gear--inline)').boundingBox();
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(2400);
+      await page.mouse.up();
+      await page.locator('.parent').waitFor();
+      await page.selectOption('#p-who', ids[0]);
+      await page.locator('#p-who:not([disabled])').waitFor();
+      const labels = await page.locator('#p-start option').allInnerTexts();
+      assert.deepEqual(
+        labels,
+        [path === '/' ? 'Home' : 'The map', "Today's six"],
+        `Opens with options at ${path}`,
+      );
+      await page.selectOption('#p-start', 'six');
+      assert.equal(
+        await page.evaluate((id) => kit.store.peek(id).then((d) => d.settings.startView), ids[0]),
+        'six',
+        'the row saves the player it is pointed at',
+      );
+      await page.locator('[data-done]').click();
+      await scene('ChooserScene');
+      const card = (name) =>
+        page.locator('.chooser__card', { hasText: name }).locator('.chooser__play').click();
+      await card('Mia');
+      await scene('DailyScene');
+      await screenshot(`start-view-six${path === '/' ? '-root' : '-classic'}`);
+      await tap('neo.scene.back');
+      await scene(explore);
+      // Back from the six is the ordinary hub, which stays Home: the setting changed the chooser's exit only.
+      await page.evaluate(() => neo.go.start());
+      await scene('ChooserScene');
+      await card('Sam');
+      await scene(explore);
+      assert.equal(await page.evaluate(() => kit.store.data.settings.startView), 'explore');
+    }
+    // `?daily` with Today's six chosen: the six once, and their Back is Home, not the six again.
+    await page.goto(new URL('/?daily', base).href);
+    await ready();
+    await scene('ChooserScene');
+    await page.locator('.chooser__card', { hasText: 'Mia' }).locator('.chooser__play').click();
+    await scene('DailyScene');
+    await tap('neo.scene.back');
+    await scene('HomeScene');
+    assert.deepEqual(errors, []);
+    log(
+      "Profiles start view: Opens with saved per player at the root and classic/; Today's six from the card, Back to Home or the map; a second player on the default opens Home or the map; ?daily does not loop",
+    );
+  }
+
   /** "Who's playing?": a new device, add-a-player, the three ways in, the grown-ups' page per player, remove, and a backup of everyone. */
   async function profiles() {
     const idb = (fn, arg) =>
@@ -123,38 +214,26 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await cards(1);
     assert.deepEqual(await names(), ['Mia']);
 
-    // A tap opens the island map as that person, with the home spot their age gives.
+    // A tap opens Home as that person, at their age.
     await pickFirst();
-    await scene('MapScene');
-    assert.deepEqual(await page.evaluate(() => [kit.store.data.profile.band, neo.scene.homeBand]), [
-      'lap',
-      'lap',
-    ]);
+    await scene('HomeScene');
+    assert.equal(await page.evaluate(() => kit.store.data.profile.band), 'lap');
 
     // The map's "Who's playing?" button is the way back.
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.waitForTimeout(800);
-    await page.evaluate(() => kit.tapOn(neo.scene.players));
+    await page.evaluate(() => kit.tapOn(neo.scene.who));
     await cards(1);
 
-    // A touch browser may report a tap's click with no `detail`: with a pointer down first it is still a tap, and with none (Enter, a screen reader) it is couch play.
-    await page.evaluate(() => {
-      const b = document.querySelector('.chooser__play');
-      b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }));
-      b.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
-    });
-    await scene('MapScene');
-    await page.evaluate(() => neo.go.start());
-    await cards(1);
-    await page.waitForTimeout(1700); // longer than the window in which a pointer still counts
+    // A click with no `detail` (Enter, a screen reader) opens the island too: no card leads to couch play.
     await page.evaluate(() =>
       document
         .querySelector('.chooser__play')
         .dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })),
     );
-    await scene('CouchScene');
-    await backToStart();
+    await scene('HomeScene');
+    await page.evaluate(() => neo.go.start());
     await cards(1);
 
     // Someone old enough chooses a friend with no egg, and starts at the top band.
@@ -173,7 +252,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     assert.deepEqual(await names(), ['Mia', 'Robert']);
     await screenshot('chooser-two');
 
-    // Enter on the focused card is couch play, with that person as Player 1. The active player's card starts focused.
+    // Enter on the focused card opens the island as that person, like a tap. The active player's card starts focused.
     await page.waitForTimeout(500);
     assert.equal(
       await page.evaluate(() => document.activeElement?.closest('.chooser__card')?.dataset.id),
@@ -189,30 +268,27 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await page.keyboard.down('Enter');
     await page.waitForTimeout(150);
     await page.keyboard.up('Enter');
-    await scene('CouchScene');
-    assert.equal(
-      await page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1')).names[0]),
-      'Mia',
-      'Player 1 is the person whose card was picked',
-    );
+    await scene('HomeScene');
     assert.equal((await storeNow()).id, firstId);
-
-    // The card's own couch button is the same for a mouse.
-    await backToStart();
+    await page.evaluate(() => neo.go.start());
     await cards(2);
-    await page.locator('.chooser__couch').nth(1).click();
+
+    // Couch play is not on anyone's card: Family play, below the cards, opens it and leaves its names as they were.
+    assert.equal(await page.locator('.chooser__card button').count(), 2, 'a card is one button');
+    await page.locator('.chooser__family').click();
     await scene('CouchScene');
-    assert.equal(
-      await page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1')).names[0]),
-      'Robert',
+    assert.notEqual(
+      await page.evaluate(() => JSON.parse(localStorage.getItem('neo.couch.v1') ?? 'null')?.names[0]),
+      'Mia',
+      'no card fills Player 1',
     );
-    assert.equal((await storeNow()).id, robertId);
+    assert.equal((await storeNow()).id, firstId, 'the island player stays who it was');
     await backToStart();
     await cards(2);
 
     // The grown-ups' page edits whoever is picked at the top, and puts back whoever was playing.
     await page.locator('.chooser__play').nth(0).click();
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.evaluate(() => neo.go.start());
     await cards(2);
     await openGrownUps();
@@ -374,9 +450,15 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, []);
     log(
-      'Profiles: a new device, add-a-player (blank profile filled, no egg from 13, and with taps alone and no name on an upright phone), a tap for the island, Enter and the card button for couch play as Player 1, the map button back, the grown-ups page per player, remove, backup and restore of everyone, and a reload passed',
+      'Profiles: a new device, add-a-player (blank profile filled, no egg from 13, and with taps alone and no name on an upright phone), a tap or Enter on a card for the island, Family play for couch play, the map button back, the grown-ups page per player, remove, backup and restore of everyone, and a reload passed',
     );
   }
 
-  return { profiles };
+  return {
+    profiles: () => {
+      if (process.env.PROFILES_ONLY === undefined) return profiles();
+      selectValue(process.env.PROFILES_ONLY, ['start-view'], 'PROFILES_ONLY');
+      return startView();
+    },
+  };
 }

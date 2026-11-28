@@ -578,6 +578,11 @@ class PuddleGobble implements Game {
     this.destinationAge = 1;
   };
 
+  /** For the pad pointer: the things still on the sand to steer the puddle to (the sand hears every touch as a place to go). */
+  pointerSpots() {
+    return this.items.filter((it) => it.where === 'sand').map((it) => it.node);
+  }
+
   private steer(e: FederatedPointerEvent, down: boolean) {
     if (this.destroyed || this.busy || this.finished) return;
     if (down) {
@@ -1115,6 +1120,11 @@ class PuddleGobble implements Game {
    * Lead the puddle to what the hint names, going round anything in the way by a waypoint first (so the demonstration
    * never shows a bump); at level 8 tap the strip token when the hint is a let-go. Waits while the puddle glides.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.clock < 0.8) return null;
     if (Math.hypot(this.target.x - this.puddle.x, this.target.y - this.puddle.y) > 6) return null;

@@ -14,6 +14,8 @@ export type Gate =
   | { kind: 'or'; rules: [Rule, Rule] };
 
 export const ALL_RULES: Rule[] = ['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'];
+/** The rules a round of this plan may use: the scarf joins on the plans that draw one. */
+export const rulesFor = (plan: CrossPlan): Rule[] => (plan.scarf ? [...ALL_RULES, 'scarf'] : ALL_RULES);
 
 export function passes(c: SortCritter, gate: Gate): boolean {
   switch (gate.kind) {
@@ -51,7 +53,8 @@ export function gateKey(gate: Gate): string {
 
 export const sameGate = (a: Gate, b: Gate) => gateKey(a) === gateKey(b);
 
-export type CrossMode = 'visible' | 'hidden';
+/** Visible: the sign shows the rule. Hidden: the rule is a secret to work out. Keeper: she picks the rule and plays the gate. */
+export type CrossMode = 'visible' | 'hidden' | 'keeper';
 
 export interface CrossPlan {
   name: string;
@@ -66,6 +69,8 @@ export interface CrossPlan {
   rounds: number;
   /** Two pictures stay standing after some critters were already tried: she picks who settles them. */
   settle?: boolean;
+  /** The third look: some critters wear a scarf and "wearing a scarf" joins the rules a gate may use. */
+  scarf?: boolean;
 }
 
 export const PLANS: CrossPlan[] = [
@@ -113,6 +118,7 @@ export const PLANS: CrossPlan[] = [
     options: 4,
     minTests: 3,
     rounds: 2,
+    scarf: true,
   },
   {
     name: 'A secret rule with "or": a critter crosses if it fits either part, so most critters cross',
@@ -122,6 +128,7 @@ export const PLANS: CrossPlan[] = [
     options: 4,
     minTests: 3,
     rounds: 2,
+    scarf: true,
   },
   {
     name: 'Two pictures are still standing: choose the critter who can settle which one is the rule',
@@ -131,6 +138,7 @@ export const PLANS: CrossPlan[] = [
     options: 2,
     minTests: 3,
     rounds: 2,
+    scarf: true,
     settle: true,
   },
   // Appended entry: saved IDs 1–7 retain their rules. Pre-K places this between 1 and 2.
@@ -143,12 +151,23 @@ export const PLANS: CrossPlan[] = [
     minTests: 0,
     rounds: 2,
   },
+  // Appended entry (ID 9): the roles flip, and she chooses the rule and plays the gate. School's top step.
+  {
+    name: 'Be the gate: choose a rule and let the critters across that fit it',
+    mode: 'keeper',
+    gates: 'mixed',
+    critters: 6,
+    options: 4,
+    minTests: 3,
+    rounds: 2,
+    scarf: true,
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 8, order: [1, 8, 2, 3] },
-  school: { min: 2, max: 7 },
+  school: { min: 2, max: 9, order: [2, 3, 4, 5, 6, 7, 9] },
 };
 
 export const planFor = (level: number): CrossPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -165,12 +184,13 @@ export interface CrossRound {
 const KINDS = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'] as const;
 
 function randomGate(plan: CrossPlan, rng: Rng): Gate {
+  const pool = rulesFor(plan);
   const kind = plan.gates === 'mixed' ? rng.pick(['one', 'not', 'and'] as const) : plan.gates;
   if (kind === 'and' || kind === 'or') {
-    const [a, b] = rng.shuffle([...ALL_RULES]);
+    const [a, b] = rng.shuffle([...pool]);
     return { kind, rules: [a, b] };
   }
-  return { kind, rule: rng.pick(ALL_RULES) };
+  return { kind, rule: rng.pick(pool) };
 }
 
 /** Wrong pictures that look like the right one: they share a part of it, or are its opposite. */
@@ -178,7 +198,7 @@ function lookalikes(truth: Gate, plan: CrossPlan, rng: Rng): Gate[] {
   const out: Gate[] = [];
   const rules = (g: Gate): Rule[] => (g.kind === 'and' || g.kind === 'or' ? g.rules : [g.rule]);
   const mine = rules(truth);
-  for (const r of rng.shuffle([...ALL_RULES])) {
+  for (const r of rng.shuffle([...rulesFor(plan)])) {
     if (plan.gates === 'one') out.push({ kind: 'one', rule: r });
     else if (plan.gates === 'and') {
       for (const keep of mine)
@@ -196,6 +216,13 @@ function lookalikes(truth: Gate, plan: CrossPlan, rng: Rng): Gate[] {
   if (truth.kind === 'or') out.unshift({ kind: 'and', rules: truth.rules });
   const seen = new Set([gateKey(truth)]);
   return out.filter((g) => !seen.has(gateKey(g)) && seen.add(gateKey(g)));
+}
+
+/** A random critter; the scarf is drawn from the rng only on plans that use it, so older plans deal as they always did. */
+function newCritter(plan: CrossPlan, rng: Rng): SortCritter {
+  const critter: SortCritter = { kind: rng.pick(KINDS), hat: rng.chance(0.45) };
+  if (plan.scarf) critter.scarf = rng.chance(0.4);
+  return critter;
 }
 
 /** Gates the evidence so far does not rule out. */
@@ -230,12 +257,13 @@ export function bestTest(
  * leaves exactly one picture standing.
  */
 export function makeRound(plan: CrossPlan, rng: Rng, avoid?: string): CrossRound {
+  if (plan.mode === 'keeper') return makeKeeperRound(plan, rng, avoid);
   for (let attempt = 0; attempt < 400; attempt++) {
     const gate = randomGate(plan, rng);
     if (gateKey(gate) === avoid) continue;
     const critters: SortCritter[] = [];
-    for (let i = 0; i < plan.critters; i++) critters.push({ kind: rng.pick(KINDS), hat: rng.chance(0.45) });
-    if (new Set(critters.map((c) => `${c.kind}${c.hat}`)).size < critters.length) continue;
+    for (let i = 0; i < plan.critters; i++) critters.push(newCritter(plan, rng));
+    if (new Set(critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`)).size < critters.length) continue;
     const yes = critters.filter((c) => passes(c, gate)).length;
     if (yes === 0 || yes === critters.length) continue;
     // An "or" lets most critters across; that is what tells it from an "and".
@@ -329,4 +357,62 @@ export function nextStep(
       tried,
     ) ?? waiting[0];
   return test ? { do: 'try', critter: test } : null;
+}
+
+const GATE_KINDS = ['one', 'not', 'and', 'or'] as const;
+
+/**
+ * A Be the gate round: six different critters and four rule cards, one of each kind ("one", "not", "and", "or"), any of
+ * which may be chosen. Every card lets some critters across and keeps some waiting (an "or" lets at least two across), and
+ * every two cards disagree about at least one critter, so whichever rule is picked, trying everyone leaves it the only
+ * picture standing. `avoid` (the last chosen rule's key) is never offered again. `gate` is the first card until a seat
+ * picks one; the scene replaces it with the chosen rule.
+ */
+export function makeKeeperRound(plan: CrossPlan, rng: Rng, avoid?: string): CrossRound {
+  const pool = rulesFor(plan);
+  for (let attempt = 0; attempt < 2000; attempt++) {
+    const critters: SortCritter[] = [];
+    for (let i = 0; i < plan.critters; i++) critters.push(newCritter(plan, rng));
+    if (new Set(critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`)).size < critters.length) continue;
+    const options: Gate[] = rng
+      .shuffle([...GATE_KINDS])
+      .slice(0, plan.options)
+      .map((kind): Gate => {
+        if (kind === 'and' || kind === 'or') {
+          const [a, b] = rng.shuffle([...pool]);
+          return { kind, rules: [a, b] };
+        }
+        return { kind, rule: rng.pick(pool) };
+      });
+    if (new Set(options.map(gateKey)).size < options.length) continue;
+    if (avoid && options.some((g) => gateKey(g) === avoid)) continue;
+    const fair = options.every((g) => {
+      const yes = critters.filter((c) => passes(c, g)).length;
+      return yes > (g.kind === 'or' ? 1 : 0) && yes < critters.length;
+    });
+    if (!fair) continue;
+    const apart = options.every(
+      (g) =>
+        consistent(
+          options,
+          critters.map((c) => ({ c, passed: passes(c, g) })),
+        ).length === 1,
+    );
+    if (!apart) continue;
+    return { gate: options[0], critters, options };
+  }
+  throw new Error(`could not make a ${plan.name} round`);
+}
+
+/**
+ * What a Be the gate match records. With two seats the partner's play is theirs, not hers, so the match always counts as
+ * supported (at least one hint) and never steps her up; her own wrong Cross or Wait taps and guesses still count. Alone,
+ * her result stands as it is.
+ */
+export function gateSwapResult(
+  twoSeats: boolean,
+  misses: number,
+  hints: number,
+): { misses: number; hints: number } {
+  return twoSeats ? { misses, hints: Math.max(hints, 1) } : { misses, hints };
 }

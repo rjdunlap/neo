@@ -111,7 +111,7 @@ export class TypicalGame implements Game {
         hills: [grass, swatch.green.light],
         horizon: 0.36,
         clouds: 2,
-        sun: true,
+        sun: false,
         seed: 88,
       },
       ctx.view,
@@ -631,7 +631,7 @@ export class TypicalGame implements Game {
     this.panel
       .clear()
       .roundRect(x0, L.base - TOWER_H - 6, x1 - x0, TOWER_H + 44, 20)
-      .fill({ color: 0xffffff, alpha: 0.75 });
+      .fill(cream);
     this.panel
       .moveTo(x0 + 10, L.base)
       .lineTo(x1 - 10, L.base)

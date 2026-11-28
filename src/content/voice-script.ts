@@ -1,5 +1,6 @@
 // BEGIN game imports (scripts/content-barrels.mjs)
 import { VOICE as adventureWalkVoice } from '../games/adventure-walk/voice.ts';
+import { VOICE as animalCharadesVoice } from '../games/animal-charades/voice.ts';
 import { VOICE as animalSnackVoice } from '../games/animal-snack/voice.ts';
 import { VOICE as atticFindsVoice } from '../games/attic-finds/voice.ts';
 import { VOICE as beatBuilderVoice } from '../games/beat-builder/voice.ts';
@@ -22,6 +23,8 @@ import { VOICE as circuitGardenVoice } from '../games/circuit-garden/voice.ts';
 import { VOICE as clapSyllablesVoice } from '../games/clap-syllables/voice.ts';
 import { VOICE as clockTowerVoice } from '../games/clock-tower/voice.ts';
 import { VOICE as colorGardenVoice } from '../games/color-garden/voice.ts';
+import { VOICE as commonGroundVoice } from '../games/common-ground/voice.ts';
+import { VOICE as countTheBallotsVoice } from '../games/count-the-ballots/voice.ts';
 import { VOICE as critterCrossingVoice } from '../games/critter-crossing/voice.ts';
 import { VOICE as critterSortVoice } from '../games/critter-sort/voice.ts';
 import { VOICE as crosswordVoice } from '../games/crossword/voice.ts';
@@ -32,7 +35,9 @@ import { VOICE as dominoPondVoice } from '../games/domino-pond/voice.ts';
 import { VOICE as dominoRunVoice } from '../games/domino-run/voice.ts';
 import { VOICE as dotLinkVoice } from '../games/dot-link/voice.ts';
 import { VOICE as downWeGoVoice } from '../games/down-we-go/voice.ts';
+import { VOICE as drawARampVoice } from '../games/draw-a-ramp/voice.ts';
 import { VOICE as drawThePatternVoice } from '../games/draw-the-pattern/voice.ts';
+import { VOICE as dreamCardsVoice } from '../games/dream-cards/voice.ts';
 import { VOICE as driftCardsVoice } from '../games/drift-cards/voice.ts';
 import { VOICE as dropsJourneyVoice } from '../games/drops-journey/voice.ts';
 import { VOICE as duckPondVoice } from '../games/duck-pond/voice.ts';
@@ -70,6 +75,7 @@ import { VOICE as keepHouseVoice } from '../games/keep-house/voice.ts';
 import { VOICE as keyItOutVoice } from '../games/key-it-out/voice.ts';
 import { VOICE as lanternLightsVoice } from '../games/lantern-lights/voice.ts';
 import { VOICE as lassoLoopsVoice } from '../games/lasso-loops/voice.ts';
+import { VOICE as lastPebbleVoice } from '../games/last-pebble/voice.ts';
 import { VOICE as lemonadeStandVoice } from '../games/lemonade-stand/voice.ts';
 import { VOICE as letterTrailsVoice } from '../games/letter-trails/voice.ts';
 import { VOICE as liftItVoice } from '../games/lift-it/voice.ts';
@@ -84,6 +90,7 @@ import { VOICE as lostLayersVoice } from '../games/lost-layers/voice.ts';
 import { VOICE as mailCarrierVoice } from '../games/mail-carrier/voice.ts';
 import { VOICE as makerLaneVoice } from '../games/maker-lane/voice.ts';
 import { VOICE as marbleJumpVoice } from '../games/marble-jump/voice.ts';
+import { VOICE as marketDaysVoice } from '../games/market-days/voice.ts';
 import { VOICE as marketStallVoice } from '../games/market-stall/voice.ts';
 import { VOICE as meadowPensVoice } from '../games/meadow-pens/voice.ts';
 import { VOICE as measuringPostVoice } from '../games/measuring-post/voice.ts';
@@ -118,6 +125,7 @@ import { VOICE as pileMatchVoice } from '../games/pile-match/voice.ts';
 import { VOICE as pixelPicturesVoice } from '../games/pixel-pictures/voice.ts';
 import { VOICE as playdateWorkshopVoice } from '../games/playdate-workshop/voice.ts';
 import { VOICE as pondCongaVoice } from '../games/pond-conga/voice.ts';
+import { VOICE as pondMergeVoice } from '../games/pond-merge/voice.ts';
 import { VOICE as pondTypingVoice } from '../games/pond-typing/voice.ts';
 import { VOICE as puddleGobbleVoice } from '../games/puddle-gobble/voice.ts';
 import { VOICE as puddleLensVoice } from '../games/puddle-lens/voice.ts';
@@ -164,6 +172,7 @@ import { VOICE as spinnerFairVoice } from '../games/spinner-fair/voice.ts';
 import { VOICE as splishSplashVoice } from '../games/splish-splash/voice.ts';
 import { VOICE as sproutShuffleVoice } from '../games/sprout-shuffle/voice.ts';
 import { VOICE as stampStudioVoice } from '../games/stamp-studio/voice.ts';
+import { VOICE as stirSeeVoice } from '../games/stir-see/voice.ts';
 import { VOICE as stopAndGoVoice } from '../games/stop-and-go/voice.ts';
 import { VOICE as storyStepsVoice } from '../games/story-steps/voice.ts';
 import { VOICE as storyWeaverVoice } from '../games/story-weaver/voice.ts';
@@ -178,12 +187,16 @@ import { VOICE as tideLineVoice } from '../games/tide-line/voice.ts';
 import { VOICE as tideTablesVoice } from '../games/tide-tables/voice.ts';
 import { VOICE as tilePairsVoice } from '../games/tile-pairs/voice.ts';
 import { VOICE as timelineTrailVoice } from '../games/timeline-trail/voice.ts';
+import { VOICE as toyDrawerVoice } from '../games/toy-drawer/voice.ts';
 import { VOICE as trackwayTalesVoice } from '../games/trackway-tales/voice.ts';
 import { VOICE as treasureMapVoice } from '../games/treasure-map/voice.ts';
 import { VOICE as truthBridgeVoice } from '../games/truth-bridge/voice.ts';
+import { VOICE as twoTabletsVoice } from '../games/two-tablets/voice.ts';
+import { VOICE as villagePlannerVoice } from '../games/village-planner/voice.ts';
 import { VOICE as villageVoteVoice } from '../games/village-vote/voice.ts';
 import { VOICE as vineSnipVoice } from '../games/vine-snip/voice.ts';
 import { VOICE as waterRoadVoice } from '../games/water-road/voice.ts';
+import { VOICE as waveRibbonVoice } from '../games/wave-ribbon/voice.ts';
 import { VOICE as weatherWardrobeVoice } from '../games/weather-wardrobe/voice.ts';
 import { VOICE as welcomeWaysVoice } from '../games/welcome-ways/voice.ts';
 import { VOICE as whoAmIVoice } from '../games/who-am-i/voice.ts';
@@ -206,6 +219,10 @@ export const SHARED = {
   'discovery.offer': ['Next game: {title}. Or choose another.'],
   'discovery.another': ['Another game. {title}.'],
   'discovery.empty': ['You can play again, or go home.'],
+  'pick.offer': ['Pick one for me?'],
+  'pick.another': ['Another one. {title}.'],
+  'pick.shuffle': ['A mix just for you!'],
+  'pick.all': ['That was all of them.'],
   'mix.offer': ['Little surprises! Games in a row.'],
   'mix.stop': ['{title}.'],
   'mix.next': ['Next: {title}.'],
@@ -241,6 +258,8 @@ export const SHARED = {
   'couch.course.typing': ['Three ponds, every bubble popped!'],
   'couch.course.sunbeams': ['Five boards, every flower awake!'],
   'couch.course.codedoors': ['Five doors, every code cracked!'],
+  'couch.course.robotpath': ['Five mazes, every star reached!'],
+  'couch.course.cardtables': ['All {count} tables, every pair found!'],
   'couch.course.best': ['A new best! Look at that sliding!'],
   'couch.keepsake': ['A keepsake for your first trip: Lantern Night!'],
   // Couch play: what each game asks of the players, one variant so the caption matches the speech.
@@ -278,6 +297,7 @@ export const SHARED = {
   'couch.launch.long': ['Whoa, too far! Push up for less power.'],
   'couch.egg.catch': ['Use the stick or arrow keys to slide the basket under the falling eggs!'],
   'couch.robot.start': ['Help the robot reach the star! Move the stick to add steps, then press the bottom button to play.'],
+  'couch.robot.counts': ['Push the same direction again to go further: push it four times for four steps! Then press the bottom button.'],
   'couch.how.treasure-map': ['Move the ring to the square the map asks for, then press the bottom button to dig. Find the column first, then the row!'],
   'couch.map.steps': ['Start where the pet is. Go {dirs}. Move the ring to where you end up, and press the bottom button!'],
   'couch.how.garden-rows': ['Move the ring to an empty spot and press the bottom button. Pick a flower, and press again to plant it. No flower may repeat in a row or a column!'],
@@ -392,6 +412,13 @@ export const SHARED = {
   'dress.on.beanie': ['A warm hat for {pet}!'],
   'dress.on.boots': ['Boots for {pet}!'],
   'dress.on.mittens': ['Mittens for {pet}!'],
+  'form.pick': ['Pick a seed packet, and plant it to grow a blossom for your friend!'],
+  'form.sun': ['A sunny blossom!'],
+  'form.moon': ['A moon blossom!'],
+  'form.grown': ['A blossom for {pet}!'],
+  'dress.form.sun': ['A sunny blossom for {pet}!'],
+  'dress.form.moon': ['A moon blossom for {pet}!'],
+  'dress.form.none': ['Back to {pet}’s own look!'],
   'dress.off': ['Off it comes!'],
   'dress.none': ['All off!'],
   'home.hello': ['{pet} is home!', 'Hello! {pet} is home!'],
@@ -399,6 +426,8 @@ export const SHARED = {
   'home.explore': ['Let’s explore!'],
   'home.who': ['Who’s playing?'],
   'home.continue': ['Let’s get ready for our new friend!'],
+  'yard.island': ['Off to the island!', 'Let’s walk to the island!'],
+  'yard.lodge': ['Lantern Lodge!', 'Up to Lantern Lodge!'],
   // Welcome a New Friend (RW07, docs/rework/WELCOME-ADVENTURE.md#the-steps).
   'welcome.invite': ['Someone new is coming to live with us! Let’s get ready.'],
   'welcome.ask.pretty': ['Our new friend needs something pretty over their bed. Make them a picture!'],
@@ -431,6 +460,8 @@ export const SHARED = {
   'explore.mine': ['Back to your games!'],
   'daily.go': ['Today’s six!'],
   'daily.open': ["Today's six games! Tap one to play."],
+  'daily.end': ["That was today's six, {name}!"],
+  'daily.end.quiet': ['We can play these another time, {name}.'],
   'daily.done': ['You played all six today! Play one again, or tap the tiles for every game.'],
   // The Arcade's lines stay on device speech until a clip render takes the `arcade` prefix (scripts/voice-clips/clips.mjs).
   'arcade.open': ['The arcade! Watch a game play, then tap it to play.'],
@@ -442,6 +473,8 @@ export const SHARED = {
   'nav.home': ['Home!'],
   'nav.back': ['Back!'],
   'play.ball': ['Throw the ball for {pet}! Tap the ball.'],
+  'play.lamp': ['Good morning, {pet}!', 'The sun is back for {pet}!', 'A new day, {pet}!'],
+  'play.evening': ['Good night, {pet}!', 'Evening time for {pet}!', 'Hello, moon! Hello, {pet}!'],
   'play.fetch': ['Got it!', '{pet} found the ball!', 'Again, again!', 'Fetch!'],
   'species.sprout': ['A sprout!'],
   'species.river': ['A river!'],
@@ -594,6 +627,25 @@ export const SHARED = {
   'woodland.thanks': ['Thank you for helping with my picnic!', 'What a happy picnic in the woods!', 'Thank you, friend!'],
   'woodland.photo': ['Our woodland picnic photo. Tap the round arrow to tell the story again.'],
   'woodland.again': ['Let us get ready for another picnic! Three jobs again.'],
+  // The Missing Melody (Wren's story on Bumpy Hills). Each line carries {name} so it stays on device speech until a clip pass renders it.
+  'melody.spot': ['The Missing Melody! Wren needs your help, {name}.'],
+  'melody.hello': ["Hello, {name}! I'm Wren. My morning song has gone quiet, and I need three jobs done. Tap a card to help!"],
+  'melody.back': ['Welcome back to the hilltop, {name}! Tap a card to help Wren find her song.'],
+  'melody.next': ['Tap the glowing card for the next job, {name}.'],
+  'melody.notes': ['My song has gone faint, {name}. Can you tap its notes back in?'],
+  'melody.notes-done': ['The notes are back, {name}! Look, they bloom along the vine, low to high.'],
+  'melody.notes-recap': ['You tapped the notes back in, {name}, so they bloom along the vine.'],
+  'melody.highlow': ['Some of my notes are high like me, and some are low like Frog, {name}. Which is which?'],
+  'melody.highlow-done': ['High and low, {name}! I am on the top branch and Frog is on the stone below.'],
+  'melody.highlow-recap': ['You heard high and low, {name}. Wren sings up high and Frog sings down low.'],
+  'melody.friends': ['A song is better together, {name}. Who will sing with us?'],
+  'melody.friends-done': ['Two friends came to sing, {name}! One on each side of the vine.'],
+  'melody.friends-recap': ['You chose friends to sing with us, {name}. They are waiting on the hill.'],
+  'melody.ready': ['Everything is ready, {name}. Listen, here is my morning song!'],
+  'melody.keepsake': ['The sun is up! I made you a morning song card to keep, {name}. It is pinned on the tree!'],
+  'melody.thanks': ['Thank you for finding my song, {name}!', 'What a happy morning, {name}!', 'Thank you, {name}!'],
+  'melody.card': ['Our morning song card, {name}. Tap the round arrow to sing it all again.'],
+  'melody.again': ['Let us look for the song again, {name}! Three jobs again.'],
   'neighbors.rhythm': ['Listen to the bird and the frog reply. Now play the frog part, with short and long gaps. Tap the green arrow when ready.'],
   'game.stickers': ['Your stickers!'],
   'map.steps': ['Start where the pet is. Go {dirs}. Where do you end up? Tap that square!'],
@@ -648,6 +700,7 @@ export const SCRIPT = {
   ...SHARED,
   // BEGIN game entries (scripts/content-barrels.mjs)
   ...adventureWalkVoice,
+  ...animalCharadesVoice,
   ...animalSnackVoice,
   ...atticFindsVoice,
   ...beatBuilderVoice,
@@ -670,6 +723,8 @@ export const SCRIPT = {
   ...clapSyllablesVoice,
   ...clockTowerVoice,
   ...colorGardenVoice,
+  ...commonGroundVoice,
+  ...countTheBallotsVoice,
   ...critterCrossingVoice,
   ...critterSortVoice,
   ...crosswordVoice,
@@ -680,7 +735,9 @@ export const SCRIPT = {
   ...dominoRunVoice,
   ...dotLinkVoice,
   ...downWeGoVoice,
+  ...drawARampVoice,
   ...drawThePatternVoice,
+  ...dreamCardsVoice,
   ...driftCardsVoice,
   ...dropsJourneyVoice,
   ...duckPondVoice,
@@ -718,6 +775,7 @@ export const SCRIPT = {
   ...keyItOutVoice,
   ...lanternLightsVoice,
   ...lassoLoopsVoice,
+  ...lastPebbleVoice,
   ...lemonadeStandVoice,
   ...letterTrailsVoice,
   ...liftItVoice,
@@ -732,6 +790,7 @@ export const SCRIPT = {
   ...mailCarrierVoice,
   ...makerLaneVoice,
   ...marbleJumpVoice,
+  ...marketDaysVoice,
   ...marketStallVoice,
   ...meadowPensVoice,
   ...measuringPostVoice,
@@ -766,6 +825,7 @@ export const SCRIPT = {
   ...pixelPicturesVoice,
   ...playdateWorkshopVoice,
   ...pondCongaVoice,
+  ...pondMergeVoice,
   ...pondTypingVoice,
   ...puddleGobbleVoice,
   ...puddleLensVoice,
@@ -812,6 +872,7 @@ export const SCRIPT = {
   ...splishSplashVoice,
   ...sproutShuffleVoice,
   ...stampStudioVoice,
+  ...stirSeeVoice,
   ...stopAndGoVoice,
   ...storyStepsVoice,
   ...storyWeaverVoice,
@@ -826,12 +887,16 @@ export const SCRIPT = {
   ...tideTablesVoice,
   ...tilePairsVoice,
   ...timelineTrailVoice,
+  ...toyDrawerVoice,
   ...trackwayTalesVoice,
   ...treasureMapVoice,
   ...truthBridgeVoice,
+  ...twoTabletsVoice,
+  ...villagePlannerVoice,
   ...villageVoteVoice,
   ...vineSnipVoice,
   ...waterRoadVoice,
+  ...waveRibbonVoice,
   ...weatherWardrobeVoice,
   ...welcomeWaysVoice,
   ...whoAmIVoice,

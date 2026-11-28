@@ -72,11 +72,15 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *pre-K–school* · [Down We Go](games/down-we-go.md)
 
+### Stir and See
+
+*toddler–school* · [Stir and See](games/stir-see.md)
+
 ## Music Mountain
 
 ### Jelly Drums
 
-*lap–school* · [Jelly Drums](games/jelly-drums.md)
+*lap–grown-up* · [Jelly Drums](games/jelly-drums.md)
 
 ### Song Maker
 
@@ -96,7 +100,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Little Conductor
 
-*toddler–pre-K* · [Little Conductor](games/little-conductor.md)
+*toddler–school* · [Little Conductor](games/little-conductor.md)
 
 ### Puppet Stage
 
@@ -110,7 +114,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Little Loom
 
-*toddler–pre-K* · [Little Loom](games/little-loom.md)
+*toddler–school* · [Little Loom](games/little-loom.md)
 
 ### Movie Night
 
@@ -200,7 +204,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Ready for Adventure
 
-*toddler–pre-K* · [Ready for Adventure](games/ready-for-adventure.md)
+*toddler–school* · [Ready for Adventure](games/ready-for-adventure.md)
 
 ### Who Am I?
 
@@ -209,6 +213,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 ### Timeline Trail
 
 *preschool–school* · [Timeline Trail](games/timeline-trail.md)
+
+### Animal Charades
+
+*preschool–pre-K* · [Animal Charades](games/animal-charades.md)
 
 ## Counting Cove
 
@@ -230,7 +238,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Frog Hop
 
-*preschool–school* · [Frog Hop](games/frog-hop.md)
+*lap–school* · [Frog Hop](games/frog-hop.md)
 
 ### Picture Graph
 
@@ -358,6 +366,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *toddler–school* · [Maker Lane](games/maker-lane.md)
 
+### Toy Drawer
+
+*preschool–school* · [Toy Drawer](games/toy-drawer.md)
+
 ## Rainbow Meadow
 
 ### Shape Sorter
@@ -378,7 +390,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Garden Grow
 
-*lap–pre-K* · [Garden Grow](games/garden-grow.md)
+*lap–school* · [Garden Grow](games/garden-grow.md)
 
 ### Treasure Map
 
@@ -490,6 +502,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *pre-K–school* · [Shell Rows](games/shell-rows.md)
 
+### Last Pebble
+
+*school–grown-up* · [Last Pebble](games/last-pebble.md)
+
 ### Domino Pond
 
 *pre-K–grown-up* · [Domino Pond](games/domino-pond.md)
@@ -514,7 +530,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Story Steps
 
-*toddler–school* · [Story Steps](games/story-steps.md)
+*lap–school* · [Story Steps](games/story-steps.md)
 
 ### Word Monsters
 
@@ -546,7 +562,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Owl Walk Home
 
-*lap–pre-K* · [Owl Walk Home](games/owl-walk.md)
+*lap–school* · [Owl Walk Home](games/owl-walk.md)
 
 ### Attic Finds
 
@@ -586,7 +602,15 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Playdate Workshop
 
-*preschool–pre-K* · [Playdate Workshop](games/playdate-workshop.md)
+*preschool–school* · [Playdate Workshop](games/playdate-workshop.md)
+
+### Common Ground
+
+*school–grown-up* · [Common Ground](games/common-ground.md)
+
+### Dream Cards
+
+*school* · [Dream Cards](games/dream-cards.md)
 
 ## Tinker Lab
 
@@ -706,6 +730,18 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Memory Desk](games/memory-desk.md)
 
+### Draw a Ramp
+
+*preschool–school* · [Draw a Ramp](games/draw-a-ramp.md)
+
+### Wave Ribbon
+
+*school–grown-up* · [Wave Ribbon](games/wave-ribbon.md)
+
+### Pond Merge
+
+*pre-K–school* · [Pond Merge](games/pond-merge.md)
+
 ## Lantern Lake
 
 ### Snowball Merge
@@ -803,5 +839,21 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 ### Outcrop Detective
 
 *school–grown-up* · [Outcrop Detective](games/outcrop-detective.md)
+
+### Market Days
+
+*school–grown-up* · [Market Days](games/market-days.md)
+
+### Count the Ballots
+
+*school–grown-up* · [Count the Ballots](games/count-the-ballots.md)
+
+### Two Tablets
+
+*grown-up* · [Two Tablets](games/two-tablets.md)
+
+### Village Planner
+
+*school–grown-up* · [Village Planner](games/village-planner.md)
 
 <!-- end generated -->

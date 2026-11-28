@@ -24,7 +24,14 @@ import { flipItem, moveItem, tidy } from '../content/room';
 import { SPECIES, type SpeciesId } from '../creatures/species';
 import type { LandId } from '../content/lands';
 import { setNote, type PlaytestNote } from '../content/playtest';
-import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
+import { earnShells as earnedFor } from '../content/shells';
+import { awardStamps, newStamps, type StampKind } from '../content/stamps';
+import { buy as buyLook, colorId, type BuyRefusal } from '../content/shop';
+import { build as buildPiece, type BuildRefusal } from '../content/lodge';
+import { keyOf, recordAllSix as recordSix } from '../content/sixes';
+import { countRound, seasonOf, settle, type SeasonGoal } from '../content/seasons';
+import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
+import { cleanForms, cleanLookForm, isForm, type FormId } from '../creatures/forms';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { isGoalId, type GoalId } from '../content/goals';
 import { discover, hasNew, markSeen, mixedColors } from '../content/journal';
@@ -219,6 +226,117 @@ export class Store {
     this.save();
   }
 
+  /** A finished round's shells for this profile's band (0 at the day's cap or for a band that does not earn). */
+  earnShells(gameId: string, day: string): number {
+    const { next, shells } = earnedFor(this.data.shells, gameId, this.data.profile.band, day);
+    if (shells === 0) return 0;
+    this.data.shells = next;
+    this.save();
+    return shells;
+  }
+
+  /**
+   * The stamps a finished round of a grown-up game earns (none for a band that does not earn, or when all are held), with
+   * their one-time shell bonus. Saved with the round; the caller flushes.
+   */
+  earnStamps(
+    gameId: string,
+    range: LevelRange,
+    round: { level: number; misses: number; hints: number },
+  ): { kinds: StampKind[]; bonus: number } {
+    const kinds = newStamps(this.data.stamps, gameId, this.data.profile.band, range, round);
+    if (!kinds.length) return { kinds, bonus: 0 };
+    const won = awardStamps(this.data.stamps, this.data.shells, gameId, kinds, Date.now());
+    this.data.stamps = won.stamps;
+    this.data.shells = won.shells;
+    this.save();
+    return { kinds, bonus: won.bonus };
+  }
+
+  /**
+   * Buys one thing from the friend's shop with shells (the progression loop, slice 4) and writes at once, so a reload never
+   * loses a purchase. Refused, with nothing changed, for a band that does not earn shells, an unknown or owned thing, or a
+   * balance short of its price.
+   */
+  buy(id: string): true | BuyRefusal {
+    const r = buyLook(this.data.shop, this.data.shells, id, this.data.profile.band);
+    if ('refused' in r) return r.refused;
+    this.data.shop = r.shop;
+    this.data.shells = r.shells;
+    this.save();
+    this.flush();
+    return true;
+  }
+
+  /**
+   * All of Today's six are done on `day` (the progression loop, slice 5): the day gets its lantern on the calendar and, the
+   * first time, a band that earns shells gets the bonus. Returns the bonus (0 when already recorded or not earned).
+   */
+  recordAllSix(day: string): number {
+    const r = recordSix(this.data.sixes, this.data.shells, day, this.data.profile.band);
+    if (r.sixes === this.data.sixes) return 0;
+    this.data.sixes = r.sixes;
+    this.data.shells = r.shells;
+    // The day may meet the season's all-six goal (slice 6).
+    const season = settle(
+      this.data.seasons,
+      this.data.shells,
+      seasonOf(day),
+      r.sixes.days,
+      this.stampDays,
+      Date.now(),
+    );
+    this.data.seasons = season.seasons;
+    this.data.shells = season.shells;
+    this.save();
+    this.flush();
+    return r.bonus + season.bonus;
+  }
+
+  /** The local day each stamp was earned on, for the season's stamps goal. */
+  private get stampDays(): string[] {
+    return this.data.stamps.map((s) => {
+      const d = new Date(s.at);
+      return keyOf(d.getFullYear(), d.getMonth(), d.getDate());
+    });
+  }
+
+  /**
+   * A finished round counts toward its season (the progression loop, slice 6) on a band that earns shells: the season's
+   * goals now met pay once, and meeting all four adds the season's keepsake. Saved with the round; the caller flushes.
+   */
+  countSeasonRound(gameId: string, day: string): { goals: SeasonGoal[]; bonus: number; keepsake: boolean } {
+    const r = countRound(
+      this.data.seasons,
+      this.data.shells,
+      gameId,
+      this.data.profile.band,
+      day,
+      this.data.sixes.days,
+      this.stampDays,
+      Date.now(),
+    );
+    if (r.seasons === this.data.seasons) return { goals: [], bonus: 0, keepsake: false };
+    this.data.seasons = r.seasons;
+    this.data.shells = r.shells;
+    this.save();
+    return { goals: r.goals, bonus: r.bonus, keepsake: r.keepsake };
+  }
+
+  /**
+   * Builds one piece of Lantern Lodge with shells (the progression loop, slice 7) and writes at once. Refused, with nothing
+   * changed, for a band that does not earn, an unknown or built piece, one whose support is not built, or a short balance.
+   */
+  buildLodge(id: string): true | BuildRefusal {
+    const r = buildPiece(this.data.lodge, this.data.shells, id, this.data.profile.band);
+    if ('refused' in r) return r.refused;
+    this.data.lodge = r.lodge;
+    this.data.shells = r.shells;
+    this.save();
+    this.flush();
+    return true;
+  }
+
   /** Whether no round of this game has been finished yet (in any place). */
   isNew(gameId: string): boolean {
     return isNew(this.data.games, gameId);
@@ -316,6 +434,10 @@ export class Store {
 
   get woodland(): StoryProgress<'woodland'> {
     return this.data.stories.woodland;
+  }
+
+  get melody(): StoryProgress<'melody'> {
+    return this.data.stories.melody;
   }
 
   /** Marks a story's request done (the Windy Picnic's unless another story is named). Doing it again changes nothing; returns whether it was new. */
@@ -670,6 +792,41 @@ export class Store {
     const who = this.data.creatures.owned.find((o) => o.id === id);
     if (!who) return false;
     who.look.worn = changeWorn(who.look.worn ?? [], item, on);
+    // A form takes the head slot (RW11): a hat going on takes the blossom off.
+    if (on && SLOT[item] === 'head') who.look.form = null;
+    this.save();
+    this.flush();
+    return true;
+  }
+
+  /**
+   * The profile grows a form (RW11) and writes at once. Idempotent: a form already grown changes nothing and returns false,
+   * so the id is the only token a replayed round needs (nothing is counted or saved beside the list). Unknown ids and a full
+   * list change nothing.
+   */
+  growForm(id: FormId, _token = ''): boolean {
+    const forms = this.data.creatures.forms;
+    if (!isForm(id) || forms.includes(id)) return false;
+    forms.push(id);
+    this.data.creatures.forms = cleanForms(forms);
+    this.save();
+    this.flush();
+    return this.data.creatures.forms.includes(id);
+  }
+
+  /**
+   * Shows a grown form on an owned friend, or the original look (null), and writes at once. A form takes the head slot, so a
+   * worn head item comes off. False (and nothing changes) for an id she does not own, a form the profile has not grown or one
+   * another species wears.
+   */
+  setForm(id: string, form: FormId | null): boolean {
+    const who = this.data.creatures.owned.find((o) => o.id === id);
+    if (!who) return false;
+    if (form !== null) {
+      if (cleanLookForm(form, who.species, this.data.creatures.forms) === null) return false;
+      who.look.worn = (who.look.worn ?? []).filter((w) => SLOT[w] !== 'head');
+    }
+    who.look.form = form;
     this.save();
     this.flush();
     return true;
@@ -682,7 +839,13 @@ export class Store {
    */
   recolor(id: string, color: PetColor): boolean {
     const who = this.data.creatures.owned.find((o) => o.id === id);
-    if (!who || !colorChoices(this.petColors, who.look.color).includes(color)) return false;
+    if (!who) return false;
+    // A colour bought in the friend's shop (the progression loop, slice 4) is the profile's too.
+    if (
+      !colorChoices(this.petColors, who.look.color).includes(color) &&
+      !this.data.shop.owned.includes(colorId(color))
+    )
+      return false;
     who.look.color = color;
     this.save();
     this.flush();

@@ -55,6 +55,20 @@ import {
   soundHelp,
   type Food,
   type SnackTable,
+  DIET,
+  DIET_ANIMALS,
+  dietLine,
+  dietMats,
+  dietOf,
+  dietTap,
+  makeDietRound,
+  MAT_GAP,
+  MAT_MARGIN,
+  MATS,
+  MEAT_WORDS,
+  PLANT_WORDS,
+  spotEdges,
+  type DietKind,
 } from './logic';
 
 describe('Animal Snack', () => {
@@ -152,7 +166,8 @@ describe('Animal Snack', () => {
   });
 
   it('never deals two animals with one favorite, so every snack has one eater present', () => {
-    for (const plan of PLANS) {
+    // Level 11 sorts by diet, not favorite: no snack is shown, so two grass eaters may come (its own test below).
+    for (const plan of PLANS.filter((p) => p.mode !== 'diet')) {
       for (let seed = 1; seed <= 400; seed++) {
         for (const r of makeRounds(plan, new Rng(seed))) {
           expect(new Set(r.animals.map((a) => FAVORITE[a])).size, `${plan.mode} seed ${seed}`).toBe(
@@ -183,7 +198,7 @@ describe('Animal Snack', () => {
   });
 
   it('asks about an animal that is there, never the same one twice running, with 2 to 4 snacks to count', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'diet')) {
       for (let seed = 1; seed <= 200; seed++) {
         const rounds = makeRounds(plan, new Rng(seed));
         rounds.forEach((r, i) => {
@@ -208,6 +223,7 @@ describe('Animal Snack', () => {
         let index = 0;
         let eatenCount = 0;
         let touches = 0;
+        let sortedCount = 0;
         // The table as the game builds it: free play and matching use one set of animals; questions deal new ones.
         const deal = (): SnackTable => {
           const r = rounds[Math.min(index, rounds.length - 1)];
@@ -235,6 +251,7 @@ describe('Animal Snack', () => {
             found: [],
             wants: r.wants,
             given: friends.map(() => 0),
+            waiting: plan.mode === 'diet' ? friends[sortedCount] : undefined,
           };
         };
         let table = deal();
@@ -283,6 +300,12 @@ describe('Animal Snack', () => {
               eatenCount++;
               if (eatenCount >= plan.rounds) done = true;
             }
+          } else if ('mat' in move!) {
+            expect(plan.mode).toBe('diet');
+            expect(dietTap(table.waiting!, MATS[move.mat]), 'the right mat, never a miss').toBe('right');
+            sortedCount++;
+            table.waiting = table.friends[sortedCount];
+            if (!table.waiting) done = true;
           } else if ('snack' in move!) {
             const snack = table.snacks[move.snack];
             expect(snack.eaten).toBe(false);
@@ -619,7 +642,7 @@ describe('Animal Snack', () => {
     const plan = planFor(9);
     expect(plan.mode).toBe('count');
     expect(plan.board).toBe('picture');
-    expect(LEVELS.school).toEqual({ min: 8, max: 10 });
+    expect(LEVELS.school).toEqual({ min: 8, max: 11 });
     expect(rowsFor(plan), 'ten snacks need the two-row blanket').toBe(2);
     expect(BOARD_SNACKS, 'two rows of five').toBe(2 * PAIR_PILE);
     const seen = new Set<number>();
@@ -708,6 +731,125 @@ describe('Animal Snack', () => {
       expect(BITE[PET_TREAT]).toBeDefined();
       expect(PET_TURN_WAIT).toBeGreaterThanOrEqual(3);
       expect(PET_TURN_WAIT).toBeLessThanOrEqual(8);
+    });
+  });
+  describe('level 11, Plants, meat or both?', () => {
+    it('sorts every animal by its cited diet: four plant eaters, the cat alone on meat, six that eat both', () => {
+      expect(planFor(11).mode).toBe('diet');
+      expect(LEVELS.school?.max).toBe(11);
+      for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+        expect(LEVELS[band]!.max).toBeLessThan(11);
+      expect(planFor(10).board, 'levels 1 to 10 keep their plans').toBe('words');
+      for (const a of DIET_ANIMALS) expect(ANIMALS).toContain(a);
+      expect(DIET_ANIMALS.sort(), 'no animal had to be left out').toEqual([...ANIMALS].sort());
+      expect(dietOf('plants').sort()).toEqual(['bunny', 'cow', 'horse', 'sheep']);
+      expect(dietOf('meat')).toEqual(['cat']);
+      expect(dietOf('both').sort()).toEqual(['bear', 'dog', 'duck', 'hen', 'mouse', 'pig']);
+    });
+
+    it('agrees with EATS, says only plants for plant foods, and never uses the bone or the honey', () => {
+      for (const a of dietOf('plants')) expect(EATS.fish).not.toContain(a);
+      for (const [food, eaters] of Object.entries(EATS))
+        if (food !== 'fish') expect(eaters).not.toContain('cat');
+      const asFood = (word: string) => (word === 'apples' ? 'apple' : word) as Food;
+      for (const a of DIET_ANIMALS) {
+        const d = DIET[a]!;
+        for (const w of [d.a, d.b]) expect(w).not.toMatch(/bone|honey/);
+        const plants = d.kind === 'plants' ? [d.a, d.b] : d.kind === 'both' ? [d.a] : [];
+        const meat = d.kind === 'meat' ? [d.b] : d.kind === 'both' ? [d.b] : [];
+        for (const w of plants) {
+          expect(PLANT_WORDS, `${a}: ${w} is a plant`).toContain(w);
+          // Where level 7 also asks about the food, it lists this animal (or the food is its favorite).
+          const listed = EATS[asFood(w)];
+          if (listed && FAVORITE[a] !== asFood(w)) expect(listed, `${a} eats ${w}`).toContain(a);
+        }
+        for (const w of meat) expect(MEAT_WORDS, `${a}: ${w} is meat`).toContain(w);
+        if (meat.includes('fish')) expect(EATS.fish).toContain(a);
+      }
+    });
+
+    it('deals four or five, both a plant eater and an animal that eats both, at most two a mat, the cat about half the time and never first', () => {
+      let cats = 0;
+      for (let seed = 1; seed <= 400; seed++) {
+        const rounds = makeRounds(planFor(11), new Rng(seed));
+        expect(rounds).toHaveLength(1);
+        const deal = rounds[0].animals;
+        expect(deal).toEqual(makeDietRound(new Rng(seed)));
+        expect([4, 5]).toContain(deal.length);
+        expect(new Set(deal).size).toBe(deal.length);
+        for (const a of deal) expect(DIET_ANIMALS).toContain(a);
+        for (const kind of MATS) {
+          const on = deal.filter((a) => DIET[a]!.kind === kind).length;
+          expect(on).toBeLessThanOrEqual(2);
+          if (kind !== 'meat') expect(on).toBeGreaterThanOrEqual(1);
+        }
+        expect(deal[0]).not.toBe('cat');
+        if (deal.includes('cat')) cats++;
+      }
+      expect(cats / 400).toBeGreaterThan(0.35);
+      expect(cats / 400).toBeLessThan(0.65);
+    });
+
+    it('takes exactly one mat per animal, and a wrong mat says a true food without naming the right mat', () => {
+      for (const a of DIET_ANIMALS) {
+        const d = DIET[a]!;
+        expect(MATS.filter((m) => dietTap(a, m) === 'right')).toEqual([d.kind]);
+        for (const mat of MATS) {
+          const { id, vars } = dietLine(a, mat);
+          const said = LINES[id][0].replace('{animal}', a).replace('{a}', vars.a).replace('{b}', vars.b);
+          for (const w of [vars.a, vars.b]) expect([d.a, d.b]).toContain(w);
+          if (mat === d.kind) {
+            expect(id).toBe(
+              d.kind === 'plants'
+                ? 'snack.dietplants'
+                : d.kind === 'meat'
+                  ? 'snack.dietmeat'
+                  : 'snack.dietboth',
+            );
+            continue;
+          }
+          const expected: Record<DietKind, string> = {
+            both: 'snack.dietalso',
+            plants: 'snack.dietnomeat',
+            meat: 'snack.dietnoplants',
+          };
+          expect(id).toBe(expected[d.kind]);
+          expect(said, `${a} on ${mat}: "${said}"`).not.toMatch(new RegExp(`\\b${d.kind}\\b`));
+          if (d.kind === 'both') {
+            expect(said).not.toContain('?');
+            // The food that fits the mat she chose comes first.
+            expect(vars.a).toBe(mat === 'meat' ? d.b : d.a);
+          } else expect(said.endsWith('?')).toBe(true);
+        }
+      }
+    });
+
+    it('lays out three mats at least 160 by 120, apart by more than their tap margins, inside the spot', () => {
+      for (const [w, h] of [
+        [768, 1365],
+        [1024, 768],
+        [768, 1024],
+      ]) {
+        const mats = dietMats(w, h);
+        expect(mats).toHaveLength(3);
+        const { left, right } = spotEdges(w);
+        mats.forEach((m, i) => {
+          expect(m.w, `${w}`).toBeGreaterThanOrEqual(160);
+          expect(m.h).toBeGreaterThanOrEqual(120);
+          expect(m.x).toBeGreaterThanOrEqual(left);
+          expect(m.x + m.w).toBeLessThanOrEqual(right);
+          expect(m.y + m.h).toBeLessThanOrEqual(h);
+          if (i > 0) {
+            const gap = m.x - (mats[i - 1].x + mats[i - 1].w);
+            expect(gap).toBeGreaterThanOrEqual(MAT_GAP);
+            expect(gap, 'tap margins never meet').toBeGreaterThan(2 * MAT_MARGIN);
+          }
+        });
+        // The waiting animal's tap circle stays above the mats.
+        expect(friendFeet(h) + (FRIEND_HIT.y + FRIEND_HIT.r) * FRIEND_SCALE).toBeLessThan(
+          mats[0].y - MAT_MARGIN,
+        );
+      }
     });
   });
 });

@@ -1,0 +1,5 @@
+# 2026-11-28 — Robot Path level 17, One step, then play
+
+**Changed:** New Robot Path level 17, One step, then play (preschool, entry level, order `[16, 17, 1, 2]`): two 3 × 3 open boards, one program slot, one arrow, then play, star one step away. A second arrow does not fit; a wrong arrow is a normal miss that empties the slot, and after two misses the right arrow glows.
+**Ran:** `npm run typecheck` (clean); robot-path and registry tests (159 passed, new "One step, then play (level 17)" describe); the upright layout test now covers level 17 on every upright phone view; `DRIVE_ONLY=17 BROWSER_SUITE=robot` on a 390×844 touch phone (two wrong arrows each a miss that empties the slot, a second arrow does not fit, glow after two misses, right arrow reaches the star, misses 2, hints 1); `FINGER_ONLY=robot-path FINGER_LEVELS=17 FINGER_BAND=preschool BROWSER_SUITE=fingerdemo` (passed, 2.5 s). Screenshot `test-results/browser/robot/robot-path-17-glow.png`.
+**Full suite:** `npm test` passed (564 files, 20,761 tests, 5 skipped). **Not run:** `npm run build`.

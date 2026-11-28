@@ -2,7 +2,19 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type DuckMode =
-  'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends' | 'double' | 'teen';
+  | 'along'
+  | 'make'
+  | 'howmany'
+  | 'add'
+  | 'ten'
+  | 'hide'
+  | 'bye'
+  | 'friends'
+  | 'double'
+  | 'teen'
+  | 'every'
+  | 'peek'
+  | 'compare';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -21,6 +33,8 @@ export interface DuckPlan {
   layouts?: Layout[];
   /** howmany: one round in the level may start with an empty pond (never the first), and the pads run from 0. add: one round may be "they all swim away". */
   zero?: boolean;
+  /** howmany: how many of the level's rounds (never the first, never the empty pond) share the pond with frogs and ask about one kind. */
+  mixed?: number;
   /** Answer pads carry their dots, grouped in fives, under the numeral. */
   padDots?: boolean;
   /** The highest pad value (default 10; at most `PAD_CAP`), for levels whose answers pass ten. */
@@ -40,7 +54,16 @@ export const PLANS: DuckPlan[] = [
   { mode: 'make', rounds: 4, min: 1, max: 3, dots: true },
   { mode: 'make', rounds: 4, min: 2, max: 5, dots: true, stop: true },
   { mode: 'make', rounds: 4, min: 3, max: 6, dots: false, stop: true },
-  { mode: 'howmany', rounds: 5, min: 1, max: 5, layouts: ['dice', 'rows'], zero: true, padDots: true },
+  {
+    mode: 'howmany',
+    rounds: 5,
+    min: 1,
+    max: 5,
+    layouts: ['dice', 'rows'],
+    zero: true,
+    padDots: true,
+    mixed: 1,
+  },
   {
     mode: 'howmany',
     rounds: 5,
@@ -49,6 +72,7 @@ export const PLANS: DuckPlan[] = [
     layouts: ['dice', 'rows', 'scatter'],
     zero: true,
     padDots: true,
+    mixed: 2,
   },
   { mode: 'add', rounds: 5, min: 1, max: 5, layouts: ['dice', 'rows'] },
   // One round in the level may be "they all swim away" (zero), never first; the pads then run from 0.
@@ -73,15 +97,25 @@ export const PLANS: DuckPlan[] = [
   { mode: 'double', rounds: 5, min: 1, max: 5, near: 2, split: true },
   // School (dive slice 8, appended as 15): a full ten arrives at once, then 1–9 more; how many in all, or how many past ten.
   { mode: 'teen', rounds: 5, min: 1, max: 9, padMax: 19 },
+  // School (dive slice 9, appended as 16): send ducks across the bridge and find every way to share 3, 4, 5, then 6; `rounds` counts totals.
+  { mode: 'every', rounds: 4, min: 3, max: 6, split: true },
+  // Preschool and pre-K (dive slice 10, appended as 17, played between 6 and 7): 4–10 ducks peek from reeds and lily leaves
+  // all over a crowded pond; each tap rings a duck once and counts it, then a dotted pad says how many. "A few, or lots?" first, unscored.
+  { mode: 'peek', rounds: 4, min: 4, max: 10, padDots: true },
+  // Pre-K (dive slice 10, appended as 18, played between 7 and 8): the bridge splits the pond; 1–10 ducks a side. Which side
+  // has more, or are they the same? The ducks pair up across the bridge, one to one, and the spare ones stand out.
+  { mode: 'compare', rounds: 5, min: 1, max: 10, split: true },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 13, order: [13, 12, 1, 2] },
   toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
-  preschool: { min: 3, max: 7 },
-  prek: { min: 5, max: 9 },
-  // Doubles (14) and Ten and some more (15) go on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
-  school: { min: 8, max: 15, order: [8, 9, 10, 11, 14, 15] },
+  // Count the peekers (17) plays between 6 and 7.
+  preschool: { min: 3, max: 17, order: [3, 4, 5, 6, 17, 7] },
+  // Which side has more? (18) plays between 7 and 8.
+  prek: { min: 5, max: 18, order: [5, 6, 17, 7, 18, 8, 9] },
+  // Doubles (14), Ten and some more (15) and Every way (16) go on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
+  school: { min: 8, max: 16, order: [8, 9, 10, 11, 14, 15, 16] },
 };
 
 export interface HidingPuzzle {
@@ -148,6 +182,301 @@ export function teenRounds(rng: Rng, plan: DuckPlan): TeenRound[] {
 /** A teen round's answer, and the range its pads are dealt from: 11–19 for in all, 1–9 for past ten. */
 export const teenAnswer = (t: TeenRound) => (t.ask === 'total' ? 10 + t.ones : t.ones);
 export const teenPadRange = (t: TeenRound): [number, number] => (t.ask === 'total' ? [11, 19] : [1, 9]);
+
+/** Level 16: one way to share the ducks across the bridge. */
+export interface Way {
+  left: number;
+  right: number;
+}
+
+/** Every ordered way to share `total` ducks between two non-empty sides: `total − 1` of them, `(total − 1, 1)` down to `(1, total − 1)`. A way's key is its right count. */
+export function everyWay(total: number): Way[] {
+  return Array.from({ length: Math.max(0, total - 1) }, (_, i) => ({ left: total - 1 - i, right: i + 1 }));
+}
+
+/**
+ * What keeping the split with `right` ducks across says: `none` (a side is empty, so it is not a split yet), `new`, `swap`
+ * (new, but its mirror `total − right` is already found; only the line the pet says differs) or `again`.
+ */
+export function keepVerdict(
+  total: number,
+  right: number,
+  found: ReadonlySet<number>,
+): 'none' | 'new' | 'swap' | 'again' {
+  if (right <= 0 || right >= total) return 'none';
+  if (found.has(right)) return 'again';
+  return found.has(total - right) ? 'swap' : 'new';
+}
+
+/** The round is over exactly when every way has a card. */
+export const roundDone = (total: number, found: ReadonlySet<number>) => found.size === total - 1;
+
+/** The right counts not found yet. */
+const unfound = (total: number, found: ReadonlySet<number>) =>
+  Array.from({ length: Math.max(0, total - 1) }, (_, i) => i + 1).filter((r) => !found.has(r));
+
+/**
+ * The move that most reduces how far the pond is from the nearest split not found yet: `left` (tap a duck on the left to send it
+ * across) or `right` (tap one on the right to bring it back); ties go toward more ducks across. Always a move that is
+ * possible. Null when the round is done, or when the pond already holds an unfound split (the check is the next touch).
+ */
+export function nextHintMove(
+  total: number,
+  right: number,
+  found: ReadonlySet<number>,
+): 'left' | 'right' | null {
+  const todo = unfound(total, found);
+  if (!todo.length || todo.includes(right)) return null;
+  const dist = (t: number) => Math.abs(t - right);
+  const best = Math.min(...todo.map(dist));
+  return todo.some((t) => dist(t) === best && t > right) ? 'left' : 'right';
+}
+
+/** What a capable child touches next at level 16: the check once the pond holds an unfound split, else the hint's duck. */
+export function everyMove(
+  total: number,
+  right: number,
+  found: ReadonlySet<number>,
+): 'check' | 'left' | 'right' | null {
+  if (roundDone(total, found)) return null;
+  return unfound(total, found).includes(right) ? 'check' : nextHintMove(total, right, found);
+}
+
+/** Level 16's totals in order: no randomness, `min` up to `max`. */
+export const everyTotals = (plan: DuckPlan) =>
+  Array.from({ length: plan.max - plan.min + 1 }, (_, i) => plan.min + i);
+
+/** The seats of a level 16 pond: up to six a side, three to a row, each side filled outward from the bridge. */
+export interface EverySeats {
+  left: [number, number][];
+  right: [number, number][];
+  scale: number;
+  /** A duck's tap radius in its own units (it is `POND_HIT_R`, or half the seat gap, on screen). */
+  hitR: number;
+}
+
+/**
+ * Fixed for a round's total so a duck never changes size as it crosses: full size up to five, a little smaller (0.9) for six
+ * so six fit a side. Seat `i` of either side is the same row and column mirrored across the bridge.
+ */
+export function everySeats(total: number): EverySeats {
+  const big = total > 5;
+  const gap = big ? 100 : DUCK_GAP;
+  const rows = big ? ([-36, 66] as const) : ([-36, 72] as const);
+  const scale = big ? 0.9 : 1;
+  const side = (sign: -1 | 1) =>
+    Array.from({ length: total }, (_, i): [number, number] => [
+      sign * (SPLIT_BRIDGE_HALF + SPLIT_CLEAR + (i % 3) * gap),
+      rows[Math.floor(i / 3)],
+    ]);
+  return { left: side(-1), right: side(1), scale, hitR: Math.min(POND_HIT_R, gap / 2) / scale };
+}
+
+/** The first seat index no duck holds (`taken`), so a duck that crosses lands on the nearest free seat to the bridge and never on another. */
+export const firstFreeSeat = (taken: readonly number[]) => {
+  let i = 0;
+  while (taken.includes(i)) i++;
+  return i;
+};
+
+/**
+ * Level 17's hiding places, relative to the pond's middle (a duck's feet): three rows, the middle one of five, every two at least
+ * 123 apart (130 across a row, 65 across and 105 down between rows), so a jitter of `PEEK_JITTER` keeps ducks over `DUCK_GAP`
+ * apart. Each holds a reed clump or a standing lily leaf; a duck may peek out from behind it.
+ */
+export const PEEK_SPOTS: [number, number][] = [
+  [-195, -90],
+  [-65, -90],
+  [65, -90],
+  [195, -90],
+  [-260, 15],
+  [-130, 15],
+  [0, 15],
+  [130, 15],
+  [260, 15],
+  [-195, 120],
+  [-65, 120],
+  [65, 120],
+  [195, 120],
+];
+export const PEEK_JITTER = 5;
+/** Level 17's pond is drawn taller, so its three rows of hiding places sit inside it. */
+export const PEEK_POND_RY = 186;
+/** A peeking duck's tap area: half the closest two ducks can be, so each stays its own (and over 100 across). */
+export const PEEK_HIT_R = 54;
+
+export type PeekCover = 'reeds' | 'leaf';
+
+/** A round of level 17: every hiding place, the ones a duck peeks from (in counting order), and what hides each. */
+export interface PeekPond {
+  /** All hiding places, jittered, with what stands there. */
+  spots: { at: [number, number]; cover: PeekCover }[];
+  /** Where the ducks peek from, in counting order (back row first, left to right). */
+  ducks: [number, number][];
+}
+
+/** Level 17's counts: `min` to `max`, never the same twice running; the first is at most six, a gentle start. */
+export function peekCounts(rng: Rng, plan: DuckPlan): number[] {
+  const out: number[] = [];
+  while (out.length < plan.rounds) {
+    const n = rng.int(plan.min, out.length ? plan.max : Math.min(plan.max, 6));
+    if (n !== out.at(-1)) out.push(n);
+  }
+  return out;
+}
+
+/** Deal a level 17 pond of `n` peekers (at most one per hiding place). */
+export function peekPond(rng: Rng, n: number): PeekPond {
+  const count = Math.max(0, Math.min(PEEK_SPOTS.length, Math.floor(n)));
+  const spots = PEEK_SPOTS.map(([x, y]) => ({
+    at: [x + rng.int(-PEEK_JITTER, PEEK_JITTER), y + rng.int(-PEEK_JITTER, PEEK_JITTER)] as [number, number],
+    cover: (rng.chance(0.5) ? 'reeds' : 'leaf') as PeekCover,
+  }));
+  const taken = rng.shuffle(spots.map((_, i) => i)).slice(0, count);
+  return { spots, ducks: countingOrder(taken.map((i) => spots[i].at)) };
+}
+
+/** "A few, or lots?": only a prompt to look before counting; either choice is welcome, and the bot picks the nearer. */
+export type PeekGuess = 'few' | 'lots';
+export const peekGuessFor = (n: number): PeekGuess => (n <= 5 ? 'few' : 'lots');
+
+/**
+ * Level 17: she taps duck `i`. A duck not yet ringed is ringed and the voice says the new ring count; a ringed one is never
+ * counted twice (`say` null). The ring count is always the number said last.
+ */
+export function ringDuck(rung: readonly number[], i: number): { rung: number[]; say: number | null } {
+  if (rung.includes(i)) return { rung: [...rung], say: null };
+  const next = [...rung, i];
+  return { rung: next, say: next.length };
+}
+
+/** Level 17: the ducks still to count (indexes in counting order), which glow after two misses. */
+export const unringed = (total: number, rung: readonly number[]) =>
+  Array.from({ length: total }, (_, i) => i).filter((i) => !rung.includes(i));
+
+/**
+ * What a capable child touches next at level 17: the guess first (the nearer one), then each duck not yet ringed in counting
+ * order, then the pad with the answer.
+ */
+export function peekMove(
+  total: number,
+  guessed: boolean,
+  rung: readonly number[],
+  pads: readonly number[],
+  answer: number,
+): { guess: PeekGuess } | { duck: number } | { pad: number } | null {
+  if (!guessed) return { guess: peekGuessFor(total) };
+  const next = unringed(total, rung)[0];
+  if (next !== undefined) return { duck: next };
+  const pad = pads.indexOf(answer);
+  return pad >= 0 ? { pad } : null;
+}
+
+/** Level 18: which side has more ducks, or the same. */
+export type CompareAnswer = 'left' | 'right' | 'same';
+
+/** A round of level 18: the ducks on each side of the bridge, and whether they start scattered over their side's seats. */
+export interface CompareRound {
+  left: number;
+  right: number;
+  /** Scattered: each duck takes a random seat on its side, so the shapes do not line up until the ducks pair up. */
+  scatter: boolean;
+}
+
+export const compareAnswer = (r: Pick<CompareRound, 'left' | 'right'>): CompareAnswer =>
+  r.left === r.right ? 'same' : r.left > r.right ? 'left' : 'right';
+
+/** The first round of level 18: four against six, already paired up, a gentle start. */
+export const COMPARE_FIRST: [number, number] = [4, 6];
+/** Level 18: the rounds from this one on start scattered. */
+export const COMPARE_SCATTER_FROM = 2;
+
+/**
+ * Level 18's rounds: each side `min`–`max` ducks; unequal sides differ by one to four; "the same" in at most one round, never
+ * the first (it has a pair of 2 or more); never three of the same answer running (so the bigger side is not always one side).
+ */
+export function compareRounds(rng: Rng, plan: DuckPlan): CompareRound[] {
+  const sameAt = plan.rounds > 1 && rng.chance(0.6) ? rng.int(1, plan.rounds - 1) : -1;
+  const answers: CompareAnswer[] = [];
+  for (let i = 0; i < plan.rounds; i++) {
+    if (i === sameAt) {
+      answers.push('same');
+      continue;
+    }
+    let a: CompareAnswer = rng.chance(0.5) ? 'left' : 'right';
+    if (answers.length >= 2 && answers.at(-1) === a && answers.at(-2) === a)
+      a = a === 'left' ? 'right' : 'left';
+    answers.push(a);
+  }
+  // A forced "same" could still finish a run of three: swap the side of the round before it.
+  for (let i = 2; i < answers.length; i++)
+    if (answers[i] === answers[i - 1] && answers[i] === answers[i - 2])
+      answers[i - 1] = answers[i] === 'left' ? 'right' : 'left';
+  return answers.map((answer, i) => {
+    const scatter = i >= COMPARE_SCATTER_FROM;
+    if (answer === 'same') {
+      const n = rng.int(Math.max(2, plan.min), plan.max);
+      return { left: n, right: n, scatter };
+    }
+    let [small, big] = COMPARE_FIRST;
+    if (i > 0) {
+      const d = rng.int(1, Math.min(4, plan.max - plan.min));
+      small = rng.int(plan.min, plan.max - d);
+      big = small + d;
+    }
+    return answer === 'left' ? { left: big, right: small, scatter } : { left: small, right: big, scatter };
+  });
+}
+
+/** Level 18's seats: three across a side, four rows, smaller ducks on a taller pond, so ten fit a side on an upright phone. */
+export const COMPARE_PER_ROW = 3;
+export const COMPARE_ROWS = [-74, -8, 58, 124] as const;
+/** The size of a twenty-seat duck (`FRAME_SCALE`) and its column gap (`FRAME_GAP`), which are declared further down. */
+export const COMPARE_SCALE = 0.68;
+export const COMPARE_GAP = 80;
+export const COMPARE_POND_RY = 190;
+/** The farthest a scattered duck strays from its seat, across and down. */
+export const COMPARE_JITTER = 8;
+
+/**
+ * Level 18: `n` seats on one side of the bridge (`sign` −1 left, 1 right), filled outward from the bridge, the top row first.
+ * The two sides are mirror images, so the duck in left seat `i` and the one in right seat `i` are a pair.
+ */
+export function compareSide(n: number, sign: -1 | 1): [number, number][] {
+  const count = Math.max(0, Math.min(COMPARE_PER_ROW * COMPARE_ROWS.length, Math.floor(n)));
+  return Array.from({ length: count }, (_, i): [number, number] => [
+    sign * (SPLIT_BRIDGE_HALF + DUCK_GAP / 2 + (i % COMPARE_PER_ROW) * COMPARE_GAP),
+    COMPARE_ROWS[Math.floor(i / COMPARE_PER_ROW)],
+  ]);
+}
+
+/** Level 18: where a side's ducks start. Lined up, the filled seats; scattered, a random choice of the side's twelve, jittered. */
+export function compareStart(rng: Rng, n: number, sign: -1 | 1, scatter: boolean): [number, number][] {
+  if (!scatter) return compareSide(n, sign);
+  const all = compareSide(COMPARE_PER_ROW * COMPARE_ROWS.length, sign);
+  return rng
+    .shuffle(all.map((_, i) => i))
+    .slice(0, Math.max(0, Math.min(all.length, Math.floor(n))))
+    .map((i) => [
+      all[i][0] + rng.int(-COMPARE_JITTER, COMPARE_JITTER),
+      all[i][1] + rng.int(-COMPARE_JITTER, COMPARE_JITTER),
+    ]);
+}
+
+/** Level 18: the pairs across the bridge (seat indexes, one per side) and the spare ducks, on the side with more. */
+export function comparePairs(
+  left: number,
+  right: number,
+): { pairs: number; spare: { side: 'left' | 'right'; seats: number[] } | null } {
+  const pairs = Math.min(left, right);
+  if (left === right) return { pairs, spare: null };
+  const side = left > right ? 'left' : 'right';
+  const most = Math.max(left, right);
+  return { pairs, spare: { side, seats: Array.from({ length: most - pairs }, (_, i) => pairs + i) } };
+}
+
+/** What a capable child taps at level 18: the side with more, or "the same". */
+export const compareMove = (r: Pick<CompareRound, 'left' | 'right'>): CompareAnswer => compareAnswer(r);
 
 /** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
 export function tenStarts(rng: Rng, plan: DuckPlan): number[] {
@@ -313,6 +642,48 @@ export function howManyAnswers(rng: Rng, plan: DuckPlan): number[] {
     if (n !== out.at(-1) || plan.min === plan.max) out.push(n);
   }
   return out;
+}
+
+export type Kind = 'duck' | 'frog';
+
+/** A mixed round (levels 6–7): ducks and frogs share the pond and she counts one kind. */
+export interface MixedRound {
+  ducks: number;
+  frogs: number;
+  ask: Kind;
+}
+
+/** What a round of levels 6–7 shows: just ducks (`answer` of them) or a mixed pond. */
+export interface HowManyRound {
+  /** The number she is asked for: the ducks, or the asked kind in a mixed round. */
+  answer: number;
+  mixed?: MixedRound;
+}
+
+export const mixedTotal = (m: MixedRound) => m.ducks + m.frogs;
+export const mixedAnswer = (m: MixedRound) => (m.ask === 'duck' ? m.ducks : m.frogs);
+
+/** One mixed round from `total` creatures (at least 2): both kinds are there, so the asked count is never the total. */
+export function mixedRound(rng: Rng, total: number): MixedRound {
+  const t = Math.max(2, total);
+  const frogs = rng.int(1, t - 1);
+  return { ducks: t - frogs, frogs, ask: rng.chance(0.6) ? 'frog' : 'duck' };
+}
+
+/** Who sits in each seat of a mixed pond, in counting order. */
+export function mixedKinds(rng: Rng, m: MixedRound): Kind[] {
+  return rng.shuffle<Kind>([...Array<Kind>(m.ducks).fill('duck'), ...Array<Kind>(m.frogs).fill('frog')]);
+}
+
+/** Levels 6–7's rounds: the plain duck counts of `howManyAnswers`, with `plan.mixed` later non-empty rounds made mixed. */
+export function howManyRounds(rng: Rng, plan: DuckPlan): HowManyRound[] {
+  const rounds: HowManyRound[] = howManyAnswers(rng, plan).map((answer) => ({ answer }));
+  const candidates = rounds.map((_, i) => i).filter((i) => i > 0 && rounds[i].answer > 0);
+  for (const i of rng.shuffle(candidates).slice(0, plan.mixed ?? 0)) {
+    const m = mixedRound(rng, rounds[i].answer);
+    rounds[i] = { answer: mixedAnswer(m), mixed: m };
+  }
+  return rounds;
 }
 
 /** Ducks on the pond are at least this far apart (a duck's own width), so each is counted on its own. */

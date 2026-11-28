@@ -1,5 +1,6 @@
 import { Assets, Container, Sprite, type Texture } from 'pixi.js';
 import { Critter, CRITTERS } from '../critter';
+import { PAPER_CREATURES } from '../creatures/paper';
 import baseUrl from './duck-base.png?url';
 
 let art: Promise<Texture> | undefined;
@@ -36,6 +37,8 @@ export class IllustratedDuck extends Container {
       this.craft.addChild(sprite);
       this.fallback.destroy({ children: true });
     };
+    // In the paper look the drawn duck is the duck: the painted still is only for `?paintedpets`.
+    if (PAPER_CREATURES) return;
     // A sticker may be rendered into a texture immediately, in this same call stack.
     if (loaded) show(loaded);
     else

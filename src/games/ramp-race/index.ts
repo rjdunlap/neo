@@ -457,6 +457,11 @@ class RampRace implements Game {
   }
 
   /** The ghost finger: change the ramp (and the floor where it can change) to what the question needs, then press go. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.waiting) return null;
     const move = rampTouch(

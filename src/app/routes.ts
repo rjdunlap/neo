@@ -3,13 +3,13 @@ import { gameById, playsByTouch } from '../games/registry';
 import { playBand } from '../progress/bands';
 import { store } from '../progress/store';
 import type { App, Routes } from './App';
+import { placeAtRoot } from './origin';
 import { GameScene } from './scenes/GameScene';
 import { HatchScene } from './scenes/HatchScene';
 import { MapScene } from './scenes/MapScene';
 import { PicnicScene } from './scenes/PicnicScene';
 import { WoodlandScene } from './scenes/WoodlandScene';
-import { SubjectPlaceScene } from './scenes/SubjectPlaceScene';
-import { PlaceScene } from './scenes/PlaceScene';
+import { MelodyScene } from './scenes/MelodyScene';
 import { ChooserScene } from './scenes/ChooserScene';
 import { JournalScene } from './scenes/JournalScene';
 import { LandScene } from './scenes/LandScene';
@@ -19,6 +19,8 @@ import { DressScene } from './scenes/DressScene';
 import { StickerBookScene } from './scenes/StickerBookScene';
 import { CouchScene } from './scenes/CouchScene';
 import { DailyScene } from './scenes/DailyScene';
+import { FriendPageScene } from './scenes/FriendPageScene';
+import { LodgeScene } from './scenes/LodgeScene';
 
 export function createRoutes(app: App): Routes {
   return {
@@ -28,12 +30,8 @@ export function createRoutes(app: App): Routes {
     hub: () => void app.show(new MapScene(app)),
     // Explore is the root's (src/rework.ts); the island never makes an Explore origin, so it falls back to the map.
     explore: () => void app.show(new MapScene(app)),
-    place: (band) =>
-      void app.show(
-        store.data.settings.placeLayout === 'subjects'
-          ? new SubjectPlaceScene(app, band)
-          : new PlaceScene(app, band),
-      ),
+    // The age places retired with classic/ (2026-11-28): a way to one lands on Explore's entries, as at the root.
+    place: () => placeAtRoot(app.go),
     hatch: (quick) => void app.show(new HatchScene(app, quick)),
     land: (id, page) => void app.show(new LandScene(app, id, { page })),
     game: (id, band = store.data.profile.band, story, again = false, origin, level) => {
@@ -49,12 +47,15 @@ export function createRoutes(app: App): Routes {
     },
     picnic: (from) => void app.show(new PicnicScene(app, from)),
     woodland: (from) => void app.show(new WoodlandScene(app, from)),
+    melody: (from) => void app.show(new MelodyScene(app, from)),
     // Welcome a New Friend lives at the root only (src/rework.ts); the island has no project page.
     project: () => void app.show(new MapScene(app)),
     stickers: () => void app.show(new StickerBookScene(app)),
     room: () => void app.show(new RoomScene(app)),
     friends: (previewId, origin) => void app.show(new FriendsScene(app, previewId, origin)),
     dress: (id, origin) => void app.show(new DressScene(app, id, origin)),
+    friendPage: () => void app.show(new FriendPageScene(app)),
+    lodge: () => void app.show(new LodgeScene(app)),
     journal: () => void app.show(new JournalScene(app)),
     // The library is the root's (src/rework.ts); the island never makes a library origin, so it opens the treehouse.
     library: () => void app.show(new RoomScene(app)),

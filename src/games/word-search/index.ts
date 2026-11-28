@@ -11,6 +11,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
+import { clampSlide, slideCentering } from '../../engine/slide';
 import { typingPicture } from '../../art/word-pictures';
 import {
   LEVELS,
@@ -362,8 +363,7 @@ class WordSearch implements Game {
 
   /** Slide the grid to `x`, `y` (kept inside what there is to see). */
   setScroll(x: number, y: number) {
-    this.scrollX = Math.min(this.maxX, Math.max(0, x));
-    this.scrollY = Math.min(this.maxY, Math.max(0, y));
+    ({ x: this.scrollX, y: this.scrollY } = clampSlide(x, y, this.maxX, this.maxY));
     this.layoutBoard();
     this.edgesDirty = true;
   }
@@ -372,7 +372,8 @@ class WordSearch implements Game {
   private showCell(i: number) {
     if (!this.touch || (this.maxX <= 0 && this.maxY <= 0)) return;
     const c = this.center(i);
-    this.setScroll(c.x + EDGE - this.vp.w / 2, c.y + EDGE - this.vp.h / 2);
+    const to = slideCentering({ ...this.vp, maxX: this.maxX, maxY: this.maxY }, c.x, c.y, EDGE);
+    this.setScroll(to.x, to.y);
   }
 
   /** Is this square wholly inside the window? */
@@ -1282,6 +1283,11 @@ class WordSearch implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   /** The ghost finger on the how-to card: tap a word's first letter and its last, sliding the grid first when a letter is out of view. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.grid || !this.touch) return null;
     const i = this.grid.words.findIndex((_, k) => !this.found.has(k));

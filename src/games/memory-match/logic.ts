@@ -19,12 +19,14 @@ export const PLANS = [
   { pairs: 10, mode: 'number-words', name: 'Match number words one–ten to numerals' },
   { pairs: 3, mode: 'fractions', name: 'Match fraction pictures to names' },
   { pairs: 3, mode: 'clocks', name: 'Same time: match hour and half-hour clocks' },
+  { pairs: 3, mode: 'totals', name: 'Same total: two groups of dots and the number they make' },
+  { pairs: 3, mode: 'shares', name: 'Same share: equal fractions with different pieces' },
 ] as const;
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 5 },
   prek: { min: 3, max: 9 },
-  school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] },
+  school: { min: 8, max: 14, order: [8, 12, 13, 9, 10, 11, 14] },
 };
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
@@ -105,8 +107,12 @@ export function cardLabel(
   letters: readonly string[],
   pictures?: readonly MemoryPicture[],
   times: readonly number[] = [],
+  sums: readonly TotalSum[] = [],
 ): string {
   if (mode === 'clocks') return clockLabel(times[card.pair]);
+  if (mode === 'totals')
+    return card.side ? numberWord(sums[card.pair].total - 1) : groupsLabel(sums[card.pair]);
+  if (mode === 'shares') return shareOf(card).name;
   if (mode === 'pictures' && pictures) return pictures[card.pair].name;
   if (mode === 'fractions') return fraction(card.pair).name;
   if (mode === 'letters') return letters[card.pair];
@@ -369,6 +375,110 @@ export function clockDrawing(time: number) {
   };
 }
 
+// Same total (level 13) -------------------------------------------------------------------------------------------------
+
+/** One pair of level 13: a card of two groups of dots (`a` then `b`) and a card with their total as a numeral. */
+export interface TotalSum {
+  a: number;
+  b: number;
+  total: number;
+}
+/** Each group holds 1–5 dots, so totals run 2–10. */
+export const TOTAL_PART = { min: 1, max: 5 } as const;
+/**
+ * Three distinct totals from 2–10, each split into two pictured groups of 1–5 with the seeded RNG. The pair is keyed to
+ * the total's value, so no two total cards on a board name the same number and every split of a total has one partner.
+ */
+export function selectSums(rng: Rng): TotalSum[] {
+  const totals = rng.shuffle(Array.from({ length: 9 }, (_, i) => i + 2)).slice(0, 3);
+  return totals.map((total) => {
+    const a = rng.int(
+      Math.max(TOTAL_PART.min, total - TOTAL_PART.max),
+      Math.min(TOTAL_PART.max, total - TOTAL_PART.min),
+    );
+    return { a, b: total - a, total };
+  });
+}
+/** "two and three": what the groups card says when it turns over. */
+export const groupsLabel = (sum: TotalSum): string => `${numberWord(sum.a - 1)} and ${numberWord(sum.b - 1)}`;
+/** Counting across both groups, one number per dot: "one, two, three, four, five". */
+export const countAcross = (total: number): string => NUMBER_WORDS.slice(0, total).join(', ');
+/**
+ * One group's dots in its half of a card: two columns, filled row by row, centred on (cx, 0). Five dots make rows of
+ * two, two and one. The two groups sit either side of the card's centre line so they read as two parts of one total.
+ */
+export function groupDots(n: number, cx: number): DotSpot[] {
+  const rows = Math.ceil(n / 2);
+  return Array.from({ length: n }, (_, i) => {
+    const inRow = i >= n - (n % 2) ? 1 : 2;
+    return {
+      x: cx + (inRow === 1 ? 0 : (i % 2) * 26 - 13),
+      y: Math.floor(i / 2) * 26 - (rows - 1) * 13,
+    };
+  });
+}
+/** Both groups of a sum card: the first left of the centre line, the second right of it. */
+export const totalCardDots = (sum: TotalSum): DotSpot[][] => [groupDots(sum.a, -32), groupDots(sum.b, 32)];
+
+// Same share (level 14) ------------------------------------------------------------------------------------------------
+
+/** One card of level 14: a fraction of the same whole rectangle, shown as `numerator` of `denominator` equal strips. */
+export interface Share {
+  numerator: number;
+  denominator: number;
+  name: string;
+}
+/**
+ * The three pairs, always these: side 0 the fewer, bigger pieces and side 1 the same share cut into twice as many. Values
+ * differ across pairs (a half, a third, two thirds), so exactly two cards on a board shade the same share.
+ */
+export const SHARES: readonly (readonly [Share, Share])[] = [
+  [
+    { numerator: 1, denominator: 2, name: 'one half' },
+    { numerator: 2, denominator: 4, name: 'two quarters' },
+  ],
+  [
+    { numerator: 1, denominator: 3, name: 'one third' },
+    { numerator: 2, denominator: 6, name: 'two sixths' },
+  ],
+  [
+    { numerator: 2, denominator: 3, name: 'two thirds' },
+    { numerator: 4, denominator: 6, name: 'four sixths' },
+  ],
+];
+export const shareOf = (card: MemoryCard): Share => SHARES[card.pair][card.side];
+/** Every card's whole: the same rectangle, its width a multiple of 12 so halves, thirds, quarters and sixths are whole units. */
+export const SHARE_BOX = { width: 108, height: 60, y: -16 } as const;
+/** Compare two shares exactly, by cross-multiplying: negative when `a` shades less, 0 when they are the same share. */
+export const compareShares = (a: Share, b: Share): number =>
+  a.numerator * b.denominator - b.numerator * a.denominator;
+/**
+ * The whole cut into `denominator` equal vertical strips, shaded from the left on every card, so two cards of the same
+ * share shade exactly the same region and only the lines between pieces differ.
+ */
+export function shareStrips(share: Share): { x: number; width: number; shaded: boolean }[] {
+  const width = SHARE_BOX.width / share.denominator;
+  return Array.from({ length: share.denominator }, (_, i) => ({
+    x: -SHARE_BOX.width / 2 + i * width,
+    width,
+    shaded: i < share.numerator,
+  }));
+}
+/** The lines between strips of a share, as x positions inside the whole. */
+export const shareLines = (share: Share): number[] =>
+  shareStrips(share)
+    .slice(1)
+    .map((s) => s.x);
+/**
+ * The hint's overlay on a pair's first card: the lines that cut its pieces into its partner's smaller pieces (the
+ * partner's lines that the first card does not already have), so one half shows as two quarters.
+ */
+export function splitLines(pair: number): number[] {
+  const [coarse, fine] = SHARES[pair];
+  const have = new Set(shareLines(coarse));
+  return shareLines(fine).filter((x) => !have.has(x));
+}
+
 // Layout ---------------------------------------------------------------------------------------------------------------
 
 export interface BoardLayout {
@@ -384,15 +494,16 @@ export interface BoardLayout {
 /**
  * The grid of `count` cards (`pairs` across when six or fewer, else four across), under the scoreboard and right of the
  * corner buttons and the pet. Upright the grid starts below the corner buttons and ends above the pet's corner, so it is
- * centred on the whole width and its cards grow to fill it.
+ * centred on the whole width and its cards grow to fill it; there a board of six or fewer goes two across, so a phone's
+ * tall screen gives its cards (and the dots, clocks and words on them) room to be larger.
  */
 export function boardLayout(v: { w: number; h: number }, count: number, pairs: number): BoardLayout {
-  const cols = count <= 6 ? pairs : 4;
-  const rows = Math.ceil(count / cols);
   const upright = v.h > v.w;
+  const cols = count <= 6 ? (upright ? 2 : pairs) : 4;
+  const rows = Math.ceil(count / cols);
   const top = upright ? 230 : 115;
   const size = upright
-    ? Math.min(170, (v.h - top - 190) / rows - 16, (v.w - 40) / cols - 16)
+    ? Math.min(cols === 2 ? 300 : 170, (v.h - top - 190) / rows - 16, (v.w - 40) / cols - 16)
     : Math.min(150, (v.h - 170) / rows - 16, (v.w - 240) / cols - 16);
   const step = size + 16;
   const cx = upright ? v.w / 2 : v.w / 2 + 40;

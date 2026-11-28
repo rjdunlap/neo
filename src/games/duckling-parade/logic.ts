@@ -7,6 +7,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * ducklings fall in behind her. Nothing is ever lost; the ladder changes which ducklings
  * may join and how many belong in the pond.
  */
+export type PatternUnit = 'ab' | 'aab' | 'abb';
+
 export type ParadeMode = 'tap' | 'walk' | 'count' | 'color' | 'colorCount' | 'pattern';
 
 export interface ParadePlan {
@@ -24,6 +26,10 @@ export interface ParadePlan {
   repeatedPair?: 'aab' | 'abb';
   /** Add one duckling that does not fit the shown pattern. */
   oddDuckling?: boolean;
+  /** Level 12, *Keep it going*: the card shows two units of `reference`; she brings the next `continuation` ducklings. */
+  continuation?: number;
+  /** The units a continuation round picks from. */
+  units?: PatternUnit[];
   name: string;
 }
 
@@ -79,6 +85,14 @@ export const PLANS: ParadePlan[] = [
     repeatedPair: 'abb',
     name: 'Make the pattern: one of a color, then two of another',
   },
+  {
+    mode: 'pattern',
+    ducklings: 6,
+    colors: 2,
+    continuation: 4,
+    units: ['ab', 'aab', 'abb'],
+    name: 'Keep the pattern going: bring the next four ducklings',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -86,7 +100,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 6 },
   prek: { min: 4, max: 8 },
-  school: { min: 9, max: 11 },
+  school: { min: 9, max: 12 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -101,14 +115,28 @@ export interface Round {
   want?: ColorName;
   /** count/colorCount: how many belong in the pond. */
   target?: number;
-  /** pattern: the order the line should make. */
+  /** pattern: the order the line should make. On a continuation round, only the ducklings she brings. */
   pattern?: ColorName[];
+  /** Continuation: the two units the card shows at full color. Card art only, never meadow ducklings. */
+  reference?: ColorName[];
 }
 
 export function makeRound(plan: ParadePlan, rng: Rng): Round {
   const palette =
     plan.colors === 1 ? ['yellow' as ColorName] : rng.shuffle([...DUCK_COLORS]).slice(0, plan.colors);
   const target = plan.min !== undefined ? rng.int(plan.min, plan.max ?? plan.min) : undefined;
+  if (plan.mode === 'pattern' && plan.continuation) {
+    const kind = rng.pick(plan.units ?? ['ab']);
+    const [a, b] = palette;
+    const unit = kind === 'aab' ? [a, a, b] : kind === 'abb' ? [a, b, b] : [a, b];
+    const reference = [...unit, ...unit];
+    const pattern = Array.from(
+      { length: plan.continuation },
+      (_, i) => unit[(reference.length + i) % unit.length],
+    );
+    // One spare of each color, so both are still waiting at every step and the last duckling is a real choice.
+    return { ducklings: rng.shuffle([...pattern, a, b]), pattern, reference };
+  }
   if (plan.mode === 'pattern') {
     const unit =
       plan.repeatedPair === 'aab'
@@ -133,6 +161,29 @@ export function makeRound(plan: ParadePlan, rng: Rng): Round {
     return { ducklings: rng.shuffle(ducklings), want, target };
   }
   return { ducklings: Array(plan.ducklings).fill('yellow'), target };
+}
+
+/**
+ * What the card's pattern slots show: the reference (continuation rounds) at full color, then one slot per duckling of
+ * `pattern`. On a continuation round a slot has a color only once filled, or the next slot while a hint reveals it; on the
+ * other pattern levels every slot shows its color (faint until filled). Null is an empty, colorless ring.
+ */
+export interface CardSlot {
+  color: ColorName | null;
+  filled: boolean;
+  next: boolean;
+  reference: boolean;
+}
+
+export function cardSlots(round: Round, line: number, revealed: boolean): CardSlot[] {
+  const ref = (round.reference ?? []).map((color) => ({ color, filled: true, next: false, reference: true }));
+  const slots = (round.pattern ?? []).map((c, i) => {
+    const filled = i < line;
+    const next = i === line;
+    const shown = !round.reference || filled || (next && revealed);
+    return { color: shown ? c : null, filled, next, reference: false };
+  });
+  return [...ref, ...slots];
 }
 
 export type JoinResult = 'join' | 'wrong-color' | 'wrong-next';

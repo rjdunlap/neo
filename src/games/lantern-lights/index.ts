@@ -715,6 +715,11 @@ class LanternLights implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   /** The ghost finger on the how-to card: tap the lantern of a fewest-press way to light the pond from here. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // A lit pond waits for Next pond.
     if (this.waiting) return this.replaying ? null : { tap: { on: this.nextButton, x: 0, y: 0 }, pause: 0.6 };

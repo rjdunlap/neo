@@ -470,6 +470,11 @@ class BoltBoards implements Game {
   }
 
   /** The ghost finger: the hint each step, highest board first at 1–5, 8 and 10 (then an open hole), the solver's path (bolt, then hole) at 6–7. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.press || this.swings.some((s) => s)) return null;
     const h = this.hint();

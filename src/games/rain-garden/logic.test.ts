@@ -321,15 +321,15 @@ describe('rounds and levels', () => {
   });
 
   it('LEVELS and planFor', () => {
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(planFor(0).level).toBe(1);
     expect(planFor(2.4).level).toBe(2);
-    expect(planFor(99).level).toBe(7);
+    expect(planFor(99).level).toBe(8);
     expect(LEVELS).toEqual({
       toddler: { min: 1, max: 1 },
       preschool: { min: 1, max: 2 },
       prek: { min: 2, max: 3 },
-      school: { min: 3, max: 7 },
+      school: { min: 3, max: 8 },
     });
     for (const r of Object.values(LEVELS))
       for (let l = r!.min; l <= r!.max; l++) expect(planFor(l).level).toBe(l);
@@ -1398,10 +1398,10 @@ const resultOf = (id: string, a: Surface[]) => {
 };
 
 describe('level 7 two rain cards', () => {
-  it('the school window runs 3 to 7 and the plan is named', () => {
-    expect(LEVELS.school).toEqual({ min: 3, max: 7 });
+  it('the school window runs 3 to 8 and the plan is named', () => {
+    expect(LEVELS.school).toEqual({ min: 3, max: 8 });
     expect(planFor(7).level).toBe(7);
-    expect(PLANS).toHaveLength(7);
+    expect(PLANS).toHaveLength(8);
   });
 
   for (const b of BOARDS7) {

@@ -1,6 +1,7 @@
 import { rangeFor } from '../../progress/difficulty';
 import { Circle, Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
+import { ellipsePoints, paperLine, paperRect, U } from '../../art/paper';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineId } from '../../content/voice-script';
@@ -14,6 +15,7 @@ import { WigglyIcon } from '../shared';
 import { townLayout } from './layout';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  ENTRY_LEVELS,
   LEVELS,
   makeFlipRepair,
   makeRepair,
@@ -26,13 +28,22 @@ import {
   unavailableSlots,
   viableCovers,
   hintFor,
+  isMiss,
   makePieces,
+  SNAP,
+  SNAP_HOME,
   planFor,
   targetFor,
   VERTICES,
   type Piece,
   type Shape,
 } from './logic';
+
+/** The ring round the picked piece or slot: a soft crayon-blue paper line, a little thicker than a vector hairline. */
+function selectRing(g: Graphics, x: number, y: number, r: number) {
+  const pts = ellipsePoints(x, y, r, r);
+  paperLine(g, [...pts, pts[0], pts[1]], swatch.blue.line, 7);
+}
 
 function shape(shape: Shape, color: ColorName, outline = true) {
   return new Graphics()
@@ -82,9 +93,18 @@ class TangramTown implements Game {
   done = false;
   constructor(private readonly ctx: GameContext) {
     this.plan = buildFor(ctx.level, ctx.rng);
-    this.filled = this.plan.targets.map(() => false);
+    this.filled = this.plan.targets.map((_, i) => !!this.plan.preset?.includes(i));
     ctx.stage.addChild(this.bg, this.board, this.paletteGlow);
     this.board.addChild(this.outlines, this.glow);
+    // One piece home: the pieces already in the picture sit on the board itself (drawHint clears only the outlines).
+    for (const i of this.plan.preset ?? []) {
+      const t = this.plan.targets[i],
+        g = shape(t.shape, 'purple');
+      g.position.set(t.x, t.y);
+      g.rotation = (t.turns * Math.PI) / 2;
+      g.eventMode = 'none';
+      this.board.addChild(g);
+    }
     this.glow.eventMode = this.paletteGlow.eventMode = 'none';
     this.turn = new RoundButton(againIcon(), swatch.blue, 50, () => {
       if (!this.selected || this.done || this.selected.placed) return;
@@ -109,8 +129,8 @@ class TangramTown implements Game {
         const i = coverHint(this.plan, this.filled);
         this.selected =
           this.pieces.find((p) => !p.placed && p.piece.shape === this.plan.targets[i]?.shape) ?? null;
-      } else if (!this.selected || this.selected.placed)
-        this.selected = this.pieces.find((p) => !p.placed) ?? null;
+      } else if (!this.selected || this.selected.placed || !this.fits(this.selected))
+        this.selected = this.fitting() ?? this.pieces.find((p) => !p.placed) ?? null;
       if (this.selected) {
         const i = hintFor(this.selected.piece, this.plan.targets, unavailableSlots(this.plan, this.filled));
         if (i >= 0) {
@@ -118,7 +138,11 @@ class TangramTown implements Game {
           this.selected.art.rotation = (this.selected.piece.turns * Math.PI) / 2;
         }
       }
-      void ctx.say('tangram.help');
+      void (this.plan.onePiece
+        ? ctx.say('tangram.home-help', { picture: this.plan.picture })
+        : this.plan.pick
+          ? ctx.say('tangram.pick-help', { picture: this.plan.picture })
+          : ctx.say('tangram.help'));
       this.drawHint();
     });
     ctx.stage.addChild(this.turn, this.help);
@@ -132,7 +156,8 @@ class TangramTown implements Game {
       ctx.stage.addChild(node);
       const c: Choice = { piece, node, art, drag: null!, placed: false, named: false };
       c.drag = draggable(node, ctx.tw, {
-        tapToPlace: () => ctx.level <= TAP_PLACE_TO && !this.done && !c.placed,
+        tapToPlace: () =>
+          (ctx.level <= TAP_PLACE_TO || !!this.plan.onePiece || !!this.plan.pick) && !this.done && !c.placed,
         onPick: () => {
           this.selected = c;
           sfx.tick();
@@ -151,6 +176,7 @@ class TangramTown implements Game {
             local.y,
             this.plan.targets,
             unavailableSlots(this.plan, this.filled),
+            this.plan.onePiece || this.plan.pick ? SNAP_HOME : SNAP,
           );
           if (target >= 0) {
             this.filled[target] = true;
@@ -186,20 +212,18 @@ class TangramTown implements Game {
             void ctx.say('tangram.covered');
             return false;
           }
-          if (
-            this.plan.targets.some(
-              (t, i) =>
-                !unavailableSlots(this.plan, this.filled)[i] &&
-                Math.hypot(t.x - local.x, t.y - local.y) < 105,
-            )
-          ) {
+          if (isMiss(this.plan, local.x, local.y, unavailableSlots(this.plan, this.filled))) {
             this.misses++;
             this.wrong++;
             sfx.boing();
-            void ctx.say('tangram.try');
+            void (this.plan.pick
+              ? ctx.say('tangram.pick-try', { picture: this.plan.picture })
+              : ctx.say('tangram.try'));
             if (this.wrong === 2) {
               this.assisted = true;
               this.hints++;
+              // The glow marks where the held piece goes; a wrong shape goes nowhere, so the right one is held instead.
+              if (!this.fits(c)) this.selected = this.fitting() ?? this.selected;
             }
           }
           this.drawHint();
@@ -208,7 +232,15 @@ class TangramTown implements Game {
       });
       this.pieces.push(c);
     }
-    this.selected = this.pieces[0];
+    // On a pick round nothing is held at the start, so the ring never points at the answer before she chooses.
+    this.selected = this.plan.pick ? null : this.pieces[0];
+  }
+  /** Whether a tray piece has an open place in the picture (a pick round's wrong shape never does). */
+  private fits(c: Choice) {
+    return !c.placed && hintFor(c.piece, this.plan.targets, unavailableSlots(this.plan, this.filled)) >= 0;
+  }
+  private fitting() {
+    return this.pieces.find((p) => this.fits(p));
   }
   private drawHint() {
     for (const c of this.outlines.removeChildren()) c.destroy();
@@ -230,7 +262,7 @@ class TangramTown implements Game {
     this.paletteGlow.clear();
     if (this.selected && !this.selected.placed) {
       const c = this.selected;
-      this.paletteGlow.circle(c.drag.home.x, c.drag.home.y, 88).stroke({ width: 5, color: swatch.blue.line });
+      selectRing(this.paletteGlow, c.drag.home.x, c.drag.home.y, 88);
       if (this.assisted) {
         const i = hintFor(c.piece, this.plan.targets, unavailableSlots(this.plan, this.filled));
         if (i >= 0) {
@@ -242,18 +274,24 @@ class TangramTown implements Game {
   }
   start() {
     void this.ctx.instruct(
-      this.plan.covers ? 'tangram.covers' : this.plan.rotate ? 'tangram.turn' : 'tangram.fit',
+      this.plan.covers
+        ? 'tangram.covers'
+        : this.plan.onePiece
+          ? 'tangram.home'
+          : this.plan.pick
+            ? 'tangram.pick'
+            : this.plan.rotate
+              ? 'tangram.turn'
+              : 'tangram.fit',
       { picture: this.plan.picture },
     );
   }
   resize(v: View) {
     const l = townLayout(v, this.pieces.length);
-    this.bg
-      .clear()
-      .rect(0, 0, v.w, v.h)
-      .fill(swatch.blue.light)
-      .roundRect(l.panel.x, l.panel.y, l.panel.w, l.panel.h, 25)
-      .fill(cream);
+    this.bg.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light);
+    // The tray is a paper tray with a gentle edge and its own crayon outline (as one wide sheet the paper pass would
+    // leave it flat, with no edge).
+    paperRect(this.bg, l.panel.x, l.panel.y, l.panel.w, l.panel.h, 25, cream, { amp: 0.7 * U, seed: 6 });
     this.board.position.set(l.board.x, l.board.y);
     this.turn.position.set(l.turn.x, l.turn.y);
     this.turn.visible = this.plan.rotate;
@@ -284,18 +322,26 @@ class TangramTown implements Game {
     if (this.done) for (const c of this.pieces) c.node.y = c.drag.home.y + Math.sin(this.clock * 5) * 5;
   }
   /** The ghost finger on the how-to card: turn the piece in hand until it fits its place (the turn button, never the help hand), then carry it there. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     const hint = this.plan.covers ? coverHint(this.plan, this.filled) : -1;
+    // A piece with somewhere to go: a pick round's wrong shape has none, so the bot never reaches for it.
     const c = this.pieces.find(
-      (p) => !p.placed && (!this.plan.covers || p.piece.shape === this.plan.targets[hint]?.shape),
+      (p) =>
+        !p.placed &&
+        (!this.plan.covers || p.piece.shape === this.plan.targets[hint]?.shape) &&
+        bestTarget(p.piece, this.plan.targets, unavailableSlots(this.plan, this.filled)),
     );
     if (!c || c.drag.dragging) return null;
     const goal = bestTarget(c.piece, this.plan.targets, unavailableSlots(this.plan, this.filled));
     if (!goal) return null;
-    // The turn button turns the piece picked up last; the first in the tray is already in hand, so this only takes a touch if it is not.
-    if (this.selected !== c) return { tap: { on: c.node } };
-    if (goal.turns > 0) return { tap: { on: this.turn } };
+    // The turn button turns the piece picked up last, so a piece that needs turning is picked first; a drag picks it anyway.
+    if (goal.turns > 0) return { tap: { on: this.selected === c ? this.turn : c.node } };
     const t = this.plan.targets[goal.index];
     return { drag: { on: c.node }, to: { on: this.board, x: t.x, y: t.y } };
   }
@@ -427,7 +473,7 @@ class TangramRepair implements Game {
     this.glow.clear();
     if (this.selected !== null) {
       const t = this.plan.targets[this.selected];
-      this.ring.circle(t.x, t.y, 85).stroke({ width: 5, color: swatch.blue.line });
+      selectRing(this.ring, t.x, t.y, 85);
     }
     const i = repairMismatches(this.plan.targets, this.pieces)[0];
     if (this.assisted && i !== undefined) {
@@ -474,6 +520,7 @@ export const tangramTown: GameModule = {
   skills: ['shape-composition', 'rotation', 'spatial-reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   touchDemo: true,

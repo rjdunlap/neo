@@ -1,6 +1,8 @@
 import { Assets, Container, Sprite, type Texture } from 'pixi.js';
 import type { SpeciesId } from './creature';
 import type { IllustratedCreature, Point } from './illustrated';
+import { PAPER_CREATURES } from './paper';
+import { paperItems } from './paper-items';
 import { WEARABLES, type WearableId } from './wear-slots';
 
 /**
@@ -13,7 +15,7 @@ import { WEARABLES, type WearableId } from './wear-slots';
  * the species has no place for it. Separate from the Graphics `Accessory` kinds the RW02 rigs share.
  */
 export { MAX_WORN, SLOT, WEARABLES, type WearableId, type WearSlot } from './wear-slots';
-type File =
+export type File =
   'crown' | 'scarf' | 'sunhat' | 'sunglasses' | 'raincoat' | 'umbrella' | 'beanie' | 'boot' | 'mitten';
 
 /** A prepared item sprite, in its own pixels: its size and the point that goes on the creature. */
@@ -56,9 +58,13 @@ export const fits = (f: Fitting): f is Extract<Fitting, { fits: readonly Fit[] }
 const files = import.meta.glob<string>('./wearables/*.png', { query: '?url', import: 'default' });
 let loading: Promise<Record<File, Texture>> | null = null;
 
-/** Loads the nine item sprites once, mipmapped (they are drawn far below their size). */
+/**
+ * Loads the nine item sprites once, mipmapped (they are drawn far below their size). In the paper look they are drawn
+ * in code instead (`paper-items.ts`, docs/ART-STYLE.md); `?paintedpets` and the unit tests load the painted ones.
+ */
 export function loadWearables(): Promise<Record<File, Texture>> {
   loading ??= (async () => {
+    if (PAPER_CREATURES && typeof document !== 'undefined') return paperItems();
     const names = [...new Set(WEARABLES.map((w) => ITEM_ART[w].file))];
     const entries = await Promise.all(
       names.map(async (n) => {

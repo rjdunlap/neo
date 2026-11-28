@@ -5,7 +5,7 @@ import { ink, swatch, wood, cream } from '../../art/palette';
 import { puffs } from '../../art/shapes';
 import { typingPicture } from '../../art/word-pictures';
 import { picture as rhymePicture } from '../rhyme-time/pictures';
-import type { FourWord, PictureWord, TeamWord } from './logic';
+import type { FourWord, MagicWord, PictureWord, TeamWord } from './logic';
 
 /**
  * A picture for every word a building level asks for, about 260 units across and centered near (0, 0); the scene shows
@@ -44,7 +44,7 @@ function drawn(paint: (g: Graphics) => void): Container {
   return c;
 }
 
-export type WordPicture = PictureWord | TeamWord | FourWord;
+export type WordPicture = PictureWord | TeamWord | FourWord | MagicWord;
 
 const DRAW: Record<WordPicture, () => Container> = {
   cat: () => alone(critter('cat')),
@@ -490,6 +490,66 @@ const DRAW: Record<WordPicture, () => Container> = {
       g.roundRect(-35, -80, 70, 85, 12).fill(swatch.red.fill);
       g.ellipse(0, -85, 65, 22).fill(swatch.red.fill).stroke(line(swatch.red.line, 5));
       g.ellipse(-15, -40, 8, 26).fill(swatch.red.light);
+    }),
+  // Level 17's words: each pair is one drawing and its magic-e twin.
+  cape: () =>
+    drawn((g) => {
+      g.poly([-50, -70, 50, -70, 120, 90, -120, 90]).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.ellipse(0, -72, 52, 16).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 5));
+      g.circle(0, -60, 13).fill(swatch.yellow.line);
+      g.moveTo(-60, 30).quadraticCurveTo(0, 55, 60, 30).stroke(line(swatch.red.line, 4));
+    }),
+  // A candy cane: a hooked stick with stripes.
+  cane: () =>
+    drawn((g) => {
+      g.moveTo(-40, 90).lineTo(-40, -30).bezierCurveTo(-40, -95, 60, -95, 60, -30).stroke(line(0xffffff, 34));
+      g.moveTo(-40, 90)
+        .lineTo(-40, -30)
+        .bezierCurveTo(-40, -95, 60, -95, 60, -30)
+        .stroke(line(swatch.red.line, 6));
+      for (const y of [60, 25, -10])
+        g.moveTo(-58, y + 14)
+          .lineTo(-22, y - 14)
+          .stroke(line(swatch.red.fill, 14));
+      g.moveTo(10, -88).lineTo(36, -74).stroke(line(swatch.red.fill, 14));
+      g.moveTo(54, -62).lineTo(64, -34).stroke(line(swatch.red.fill, 14));
+    }),
+  // A pine tree: stacked green triangles on a trunk.
+  pine: () =>
+    drawn((g) => {
+      g.rect(-16, 50, 32, 50).fill(wood.fill).stroke(line(wood.line, 5));
+      for (const [y, w] of [
+        [30, 110],
+        [-10, 90],
+        [-50, 68],
+      ] as const)
+        g.poly([-w, y + 40, w, y + 40, 0, y - 55])
+          .fill(swatch.green.fill)
+          .stroke(line(swatch.green.line));
+      g.circle(0, -102, 9).fill(swatch.yellow.fill);
+    }),
+  // A tub: a wide bowl with a rim and two handles.
+  tub: () =>
+    drawn((g) => {
+      g.moveTo(-110, -20)
+        .lineTo(110, -20)
+        .lineTo(85, 85)
+        .lineTo(-85, 85)
+        .closePath()
+        .fill(swatch.blue.fill)
+        .stroke(line(swatch.blue.line));
+      g.ellipse(0, -20, 110, 24).fill(swatch.blue.light).stroke(line(swatch.blue.line));
+      g.ellipse(0, -20, 90, 15).fill(0xd9e3e8);
+      for (const x of [-125, 125]) g.circle(x, 10, 14).stroke(line(swatch.blue.line, 8));
+    }),
+  // A tube: a squeezy tube with a cap and a crimped end.
+  tube: () =>
+    drawn((g) => {
+      g.poly([-45, -70, 45, -70, 62, 85, -62, 85]).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
+      g.roundRect(-30, -105, 60, 36, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 5));
+      g.roundRect(-62, 85, 124, 18, 4).fill(swatch.teal.light).stroke(line(swatch.teal.line, 5));
+      g.roundRect(-34, -20, 68, 50, 10).fill(0xffffff).stroke(line(swatch.teal.line, 4));
+      g.moveTo(-50, 100).lineTo(50, 100).stroke(line(swatch.teal.line, 3));
     }),
   // Level 13's words, each holding a two-letter team.
   fish: () => rhyme('fish'),

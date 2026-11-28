@@ -40,6 +40,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Compare rainy totals, then whether sunny totals are equal. Tap a summary to hear and select it, then tap the arrow to check.',
     },
     {
+      from: 8,
+      to: 8,
+      text: 'Two pretend daylight records, each of five bars, are already shown. A longer bar is more daylight. Tap a record to hear it, tap a summary to hear it, then tap the arrow to check.',
+    },
+    {
       from: 10,
       to: 10,
       text: 'The pretend week is already recorded. Count the outlined suns. Tap any record to hear it and mark or unmark it, then choose the total.',
@@ -77,6 +82,11 @@ export const HOW_TO: GameHowTo = {
       from: 6,
       to: 6,
       text: 'Confirm the true summary for each of two questions to finish. Browsing, listening and optional marks are free. Two wrong confirmations highlight the matching records on both pages and the true summary.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Confirm the true summary for each of two questions to finish: which record shows longer daylight, then whether two records are the same. Listening and replaying are free. Two wrong confirmations glow the matching record or records and the true summary.',
     },
     {
       from: 10,

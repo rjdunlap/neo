@@ -1,8 +1,8 @@
 import { createTestContext } from '../test-browser.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
-// The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
-const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', url).href : url);
+// One page since RW08's cutover (2026-11-28): every suite drives the root. (`classic/` used to be the island game.)
+const islandUrl = (url) => url;
 
 export async function createFixture(browser, suite) {
   const output = `test-results/browser/${suite}`;
@@ -15,8 +15,10 @@ export async function createFixture(browser, suite) {
     suite === 'wardrobe12' ||
     suite === 'shadowplay' ||
     suite === 'fencethefield' ||
+    suite === 'lastpebble' ||
     suite === 'keyitout' ||
     suite === 'jarclues' ||
+    suite === 'countballots' ||
     suite === 'harbororders' ||
     suite === 'workshopdetective' ||
     suite === 'outcropdetective' ||
@@ -29,18 +31,27 @@ export async function createFixture(browser, suite) {
     (suite === 'logicgrid' && process.env.LOGICGRID_PHONE === '1') ||
     (suite === 'comeback' && process.env.COMEBACK_PHONE === '1') ||
     (suite === 'woods' && process.env.WOODS_ONLY === 'shop' && process.env.FROM_LEVEL === '13') ||
+    (suite === 'woods' && process.env.WOODS_ONLY === 'grow' && Number(process.env.FROM_LEVEL) >= 12) ||
+    (suite === 'movienight' && process.env.MOVIE_PHONE === '1') ||
     (suite === 'mossypath' && process.env.MOSSY_ONLY === 'upright') ||
     (suite === 'raingarden' && Number(process.env.FROM_LEVEL) >= 5) ||
     (suite === 'bunnypatches' && process.env.BUNNY_ONLY === 'upright') ||
     (suite === 'sumcrates' && process.env.SUMCRATES_ONLY === 'upright') ||
     (suite === 'conductor' && process.env.CONDUCTOR_UPRIGHT === '1') ||
     (suite === 'originals' && process.env.ORIGINALS_ONLY === 'jellysets') ||
+    (suite === 'sandtable' && process.env.SAND_TABLE_PHONE === '1') ||
     (suite === 'thoughtbubbles' &&
       (process.env.THOUGHT_BUBBLES_PHONE === '1' ||
         ['two', 'tell'].includes(process.env.THOUGHT_BUBBLES_ONLY))) ||
     (suite === 'wordglue' &&
       ['kind', 'reversed', 'name', 'doer', 'ending'].includes(process.env.WORDGLUE_ONLY)) ||
-    (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY))
+    (suite === 'villageplanner' && process.env.VILLAGE_PLANNER_PHONE === '1') ||
+    (suite === 'fourth' && process.env.FOURTH_ONLY === 'song14') ||
+    (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY)) ||
+    (suite === 'robot' && ['1', '17'].includes(process.env.DRIVE_ONLY)) ||
+    (suite === 'expansion' && process.env.EXPANSION_ONLY === 'storygrow') ||
+    // A touch phone, so an upright-ready level lays out on the upright 768 × 1024 area.
+    (suite === 'woods' && process.env.WOODS_TOUCH === '1')
       ? { hasTouch: true, isMobile: true }
       : {}),
   });
@@ -64,8 +75,18 @@ export async function createFixture(browser, suite) {
       });
       await frame();
     };
+    /** Waits for a scene by class name; a subclass counts (at the root a land is a `LocationScene`, which is a `LandScene`). */
     const scene = async (name) => {
-      await page.waitForFunction((name) => neo.scene.constructor.name === name && !neo.switching, name);
+      await page.waitForFunction((name) => {
+        if (neo.switching) return false;
+        for (
+          let p = Object.getPrototypeOf(neo.scene);
+          p && p !== Object.prototype;
+          p = Object.getPrototypeOf(p)
+        )
+          if (p.constructor.name === name) return true;
+        return false;
+      }, name);
       await frame();
     };
     /** The first card on "Who's playing?": a tap opens the island as that person. */
@@ -79,11 +100,12 @@ export async function createFixture(browser, suite) {
       await page.fill('#add-year', String(new Date().getFullYear() - 1));
       await page.locator('.parent button[type=submit]').click();
     };
-    /** Enter on the focused card is couch play. A new scene ignores input for 0.35 s, so wait that out first. */
+    /** Into couch play from "Who's playing?": Enter on the Family play tile. A new scene ignores input for 0.35 s, so wait that out first. */
     const chooserEnter = async () => {
       await scene('ChooserScene');
-      await page.locator('.chooser__play').first().waitFor();
+      await page.locator('.chooser__family').waitFor();
       await page.waitForTimeout(500);
+      await page.locator('.chooser__family').focus();
       await page.keyboard.down('Enter');
       await page.waitForTimeout(150);
       await page.keyboard.up('Enter');

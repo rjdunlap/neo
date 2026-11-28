@@ -1,31 +1,22 @@
-import { cleanName } from '../couch/party';
 import type { Band } from '../progress/bands';
+import type { StartView } from '../progress/save';
 import { checkBirthInput, completedYears, type Birth } from '../progress/profiles';
 
 /**
  * The rules of the "Who's playing?" chooser, kept apart from the scene so they are tested without a browser.
  *
- * Couch play is a way of playing, open to any age, not a kind of person. The input that picks a card picks the mode: a tap
- * or a click opens the island, and a controller button or Enter opens the couch shell, because until the island takes a
- * controller (Profiles stage 2) a controller or a keyboard can only drive the couch.
+ * Every card opens the island as that person, whatever picked it (a tap, a click, Enter or a controller button: the pad
+ * pointer drives the island). Couch play is not a kind of person and not on anyone's card: it is the separate Family play
+ * tile below the cards, with its own save and its own names.
  */
-export type Source = 'pointer' | 'key' | 'pad';
-export type Mode = 'island' | 'couch';
-
-export const modeFor = (source: Source): Mode => (source === 'pointer' ? 'island' : 'couch');
-
-/** How recently a pointer must have gone down for the click that follows to be its tap. */
-export const POINTER_WINDOW_MS = 1500;
 
 /**
- * What a click on a card was. A pointer that went down just before it (`pointerSeen`, which the scene reads from a real
- * `pointerdown`) is a tap or a click and opens the island. With none, a click with a `detail` of 1 or more is still read as
- * a pointer, but `detail` is only the fallback: nothing shows that every touch browser sets it, and a wrong guess would put
- * a tap on couch play. A click with neither (Enter, or an assistive technology's "activate") takes the couch, the way Enter
- * does, rather than an island it cannot drive.
+ * Where a tapped card opens (D8, docs/definitions/starting-view.md): the hatch for someone with no friend yet, otherwise the
+ * player's own starting view. `six` is read here only, at the chooser's exit, never by the `hub` route: `hub` is also Home
+ * and every Back, so honouring it there would make Explore unreachable. A phone's root is the six either way.
  */
-export const sourceOfClick = (detail: number, pointerSeen = false): Source =>
-  pointerSeen || detail > 0 ? 'pointer' : 'key';
+export const exitFor = (ownsFriend: boolean, startView: StartView): 'hatch' | 'hub' | 'six' =>
+  !ownsFriend ? 'hatch' : startView === 'six' ? 'six' : 'hub';
 
 /** A person's name as the island keeps it (`migrate` allows 40 characters). */
 export const NAME_LIMIT = 40;
@@ -42,13 +33,6 @@ export const cleanPlayerName = (v: unknown): string =>
         .join('')
         .trim()
     : '';
-
-/**
- * The name that fills couch Player 1 when someone enters couch play: theirs, as the couch shows names (at most 14 letters), or
- * null when they have no name, which leaves whatever the couch already has. Their course records are Player 1's records
- * (the slot, not the person); linking records to people is stage 5.
- */
-export const couchNameFor = (profileName: string): string | null => cleanName(profileName) || null;
 
 /** From this age a person is offered their friend to choose, with no egg to hatch. A UI choice made from the age typed, never stored. */
 export const ADULT_YEARS = 13;

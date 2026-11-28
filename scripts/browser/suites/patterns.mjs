@@ -3,9 +3,35 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function patterns() {
     const levels =
-      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 16 }, (_, i) => i + 1);
+      process.env.PATTERN_LEVELS?.split(',').map(Number) ?? Array.from({ length: 21 }, (_, i) => i + 1);
     for (const level of levels) {
       await launch('pattern-train', level);
+      if (level === 17) {
+        // Make your own: choose circle, circle, square (and take one back out, then choose it again), press Go.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          kit.tapOn(g.tray[0]);
+          await kit.sleep(300);
+          kit.tapOn(g.tray[2]);
+          await kit.sleep(300);
+          kit.tapOn(g.unitCars[1]);
+          await kit.sleep(300);
+          for (const p of [0, 1]) {
+            kit.tapOn(g.tray[p]);
+            await kit.sleep(300);
+          }
+          kit.tapOn(g.tray[2]); // a full unit only sounds
+          await kit.sleep(300);
+        });
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.unit), [0, 0, 1], 'pattern 17 unit');
+        await page.evaluate(() => kit.tapOn(neo.scene.game.go));
+        await finished('pattern-train');
+        assert.equal(await page.evaluate(() => neo.scene.game.trainCars.length), 9, 'pattern 17 train');
+        assert.equal(await page.evaluate(() => neo.scene.game.misses ?? 0), 0, 'pattern 17 no misses');
+        await screenshot('pattern-train-17');
+        log('Pattern Train level 17: chose a unit, took one back, ran it three times, no miss');
+        continue;
+      }
       await page.evaluate(async () => {
         const g = neo.scene.game;
         if (g.plan.match === 'row') {
@@ -38,6 +64,18 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
           }
           return;
         }
+        if (g.rule) {
+          // Level 21: two wrong rule chips (one hint), then the right one; the number path below is the second question.
+          const off = g.rule.choices.findIndex((c) => c !== g.rule.step);
+          for (let i = 0; i < 2; i++) {
+            kit.tapOn(g.choices[off]);
+            await kit.sleep(500);
+          }
+          if (g.hints !== 1) throw new Error(`pattern 21 rule hint: ${g.hints}`);
+          kit.tapOn(g.choices[g.rule.choices.indexOf(g.rule.step)]);
+          await kit.sleep(700);
+          if (g.phase !== 'fill') throw new Error('pattern 21: the right chip did not move on');
+        }
         const answer = g.sequence[g.targets[g.target]],
           wrong = g.choiceValues[g.target].findIndex((value) => value !== answer);
         for (let i = 0; i < 2; i++) {
@@ -47,8 +85,16 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
           await kit.sleep(460);
         }
       });
-      assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `pattern ${level} hint`);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.hints),
+        level === 21 ? 2 : 1,
+        `pattern ${level} hint`,
+      );
       if (level === 12) await screenshot('pattern-train');
+      if (level === 18) await screenshot('pattern-train-18');
+      if (level === 19) await screenshot('pattern-train-19');
+      if (level === 20) await screenshot('pattern-train-20');
+      if (level === 21) await screenshot('pattern-train-21');
       await page.evaluate(async () => {
         const g = neo.scene.game;
         // What the answer that ends the round says (TotoLogic P7), recorded for the check below.
@@ -84,7 +130,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       await finished('pattern-train');
       const said = await page.evaluate(() => window.__said);
       const why = said.find((s) => /^pattern\.(why|oddWhy)/.test(s.id));
-      if (level < 15) {
+      if (level < 15 || level >= 18) {
         assert.ok(why, `pattern ${level} says why: ${JSON.stringify(said)}`);
         assert.ok(
           Object.values(why.vars).every((v) => v !== '' && !/undefined|NaN/.test(String(v))),

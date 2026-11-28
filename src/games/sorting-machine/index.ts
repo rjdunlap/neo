@@ -142,7 +142,8 @@ class SortingMachine implements Game {
         hills: [0xa9e0d6, 0xc5e7a8],
         horizon: 0.5,
         clouds: 2,
-        sun: true,
+        // No sun: the cards and the machine fill the whole top of the sky, so it only ever showed its rays.
+        sun: false,
         seed: 191,
       },
       ctx.view,
@@ -803,6 +804,11 @@ class SortingMachine implements Game {
   }
 
   /** The ghost finger: a telling friend, Send, the slot and its sensor, then Check (level 1: both friends, then Done). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.run || this.busy || !this.layoutNow) return null;
     const m = nextMove(this.brief, this.graph, this.sent);

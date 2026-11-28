@@ -116,7 +116,7 @@ Person, device and review checks stay open (DEVICE-CHECKS once built), from the 
 
 ## What comes next
 
-**FS3** (the card above) ships with the build or right after it; **FS4** ships as this game's `coplayHint`; **FS2** Maker Lane 4–5 (*Stripes or plain*, *Two ways to a box*) is defined after levels 1–3 are played; **FS5** and **FS6** stay sketches.
+**FS3** (the card above) ships with the build or right after it; **FS4** ships as this game's `coplayHint`; **FS2** Maker Lane 4–5 (*Stripes or plain*, *Two ways to a box*) is [defined](maker-lane-4-5.md) 2026-11-24; **FS5** and **FS6** stay sketches.
 
 ## Open decisions
 
@@ -124,6 +124,6 @@ Each has a default the build uses; none waits on the developer (S8).
 
 1. **Register Maker Lane as a new game,** toddler 1, preschool 1–2, pre-K 2–3, school 2–3, home Cozy Village, fallback Painted Canyon (study decision 1).
 2. **Four makers per chain, harvester first.** Default: the table above, so level 2 always has three makers after the harvest. Alternative: three-maker wheat and paper chains as the study sketched; not chosen, because cut-mill-bake skips threshing and chip-pulp-press ends at a sheet, not a box.
-3. **Three cards at every band.** Default: no rule reads the band. Alternative: four cards at school (the study's audience row); deferred to FS2's definition, so one level keeps one meaning for the ladder and the how-to card.
+3. **Three cards at every band.** Default: no rule reads the band. Alternative: four cards at school (the study's audience row); deferred to FS2's definition, so one level keeps one meaning for the ladder and the how-to card. FS2's [definition](maker-lane-4-5.md) kept three cards and gave school levels 4–5 instead.
 4. **Tap sends at levels 1 and 2.** Default: one gesture, so a preschooler moving up from level 1 is never stuck; a refusal is the information. Alternative: the study's tap-to-peek at level 2 with drag to commit; not chosen, because a tap that suddenly does nothing reads as broken.
 5. **The loaf's tempting card is the cow,** on search-summary evidence only; the line says the loaf "began as wheat", which stays true of breads made with milk. The reviewer may swap it for the hen.

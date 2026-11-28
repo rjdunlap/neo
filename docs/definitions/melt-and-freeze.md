@@ -106,7 +106,7 @@ Device and person checks stay open: whether a one-year-old notices the puddle af
 
 ## What comes next
 
-The predictions and the can't-go-back sort with toast and a popped kernel are defined as level IDs 6 and 7 in [melt-and-freeze-predictions.md](melt-and-freeze-predictions.md) (2026-11-17; ID 5 is the lap opening). The remaining rungs follow the study's [slices 3–4](../deep-dives/subjects/matter.md#build-slices-in-order); the dial, steam and the particle lens wait on the named science reviewer. **Stir and See** is defined after this table is frozen, as its outcome table can reuse the substance record.
+The predictions and the can't-go-back sort with toast and a popped kernel are defined as level IDs 6 and 7 in [melt-and-freeze-predictions.md](melt-and-freeze-predictions.md) (2026-11-17; ID 5 is the lap opening). The remaining rungs follow the study's [slices 3–4](../deep-dives/subjects/matter.md#build-slices-in-order); the dial, steam and the particle lens wait on the named science reviewer. **Stir and See** is [defined](stir-and-see.md) (2026-11-27) from this table, as its outcome table can reuse the substance record.
 
 ## Open decisions
 

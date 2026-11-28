@@ -49,3 +49,65 @@ export function pictureLayout(v: View, plan: PixelPlan) {
   const done = narrow ? { x: rowX + 4 * 116 + 10, y: rowY } : { x: x + width + 240, y: y + width - 60 };
   return { board: { x, y, width }, model, modelWidth, paint, done };
 }
+
+/** Window Mosaic: the model window's pane size, her window's (the same as `CELL`) and the choice windows' largest. */
+export const MOSAIC_MODEL_PANE = 40;
+export const MOSAIC_CHOICE_PANE = 50;
+/** A choice window is never narrower than this many units on its shortest side. */
+export const MOSAIC_MIN_CHOICE = 100;
+
+export interface MosaicBox {
+  x: number;
+  y: number;
+  /** Units to a pane; a window is four panes wide. */
+  pane: number;
+}
+
+export interface MosaicLayout {
+  /** Tag 1's model. */
+  model: MosaicBox;
+  /** Tag 2's model, on top of the three choices. */
+  pickModel: MosaicBox;
+  own: MosaicBox;
+  check: { x: number; y: number };
+  choices: MosaicBox[];
+}
+
+/**
+ * Where the windows sit. Tag 1: the model above (upright) or beside her window, with the green check clear of Home and
+ * Help. Tag 2: the model on top and the three choices in a row under it; a view too narrow for a row stacks them in a
+ * column before any window shrinks below `MOSAIC_MIN_CHOICE` units.
+ */
+export function mosaicLayout(v: View): MosaicLayout {
+  const own = 4 * CELL;
+  const modelW = 4 * MOSAIC_MODEL_PANE;
+  const gap = 40;
+  const fit = Math.floor((v.w - 2 * 60 - 2 * gap) / 12);
+  const row = fit >= MOSAIC_MIN_CHOICE / 4;
+  const pane = row ? Math.min(MOSAIC_CHOICE_PANE, fit) : MOSAIC_CHOICE_PANE;
+  const w = 4 * pane;
+  const choices: MosaicBox[] = [0, 1, 2].map((i) =>
+    row
+      ? { x: v.w / 2 - (3 * w + 2 * gap) / 2 + i * (w + gap), y: v.upright ? 440 : 360, pane }
+      : { x: (v.w - w) / 2, y: 330 + i * (w + 24), pane },
+  );
+  if (v.upright) {
+    const y = Math.max(300, (v.h - own) / 2);
+    return {
+      model: { x: (v.w - modelW) / 2, y: 130, pane: MOSAIC_MODEL_PANE },
+      pickModel: { x: (v.w - modelW) / 2, y: 130, pane: MOSAIC_MODEL_PANE },
+      own: { x: (v.w - own) / 2, y, pane: CELL },
+      check: { x: v.w / 2, y: Math.min(v.h - 60, y + own + 86) },
+      choices,
+    };
+  }
+  const x = Math.max(160, (v.w - own - 230) / 2);
+  const y = Math.max(110, (v.h - own) / 2);
+  return {
+    model: { x: x + own + 70, y, pane: MOSAIC_MODEL_PANE },
+    pickModel: { x: (v.w - modelW) / 2, y: 110, pane: MOSAIC_MODEL_PANE },
+    own: { x, y, pane: CELL },
+    check: { x: x + own + 70 + modelW / 2, y: y + own - 60 },
+    choices: choices.map((c) => ({ ...c, y: 330 })),
+  };
+}

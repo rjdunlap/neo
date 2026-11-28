@@ -27,12 +27,18 @@ import {
   SEPARATE,
   ENTRY_RULES,
   RULES,
+  rulesFor,
   spotFor,
   type Place,
   makePlantRound,
   SPROUT_PLANS,
+  PICK_PLAN,
+  makePickRound,
+  offerKey,
+  pairWorks,
+  pickOrder,
 } from './logic';
-import { fits, HAVE_WORDS, type PlantRule } from '../../learning/sorting/rules';
+import { fits, HAVE_WORDS, type PlantRule, type Rule } from '../../learning/sorting/rules';
 
 describe('Critter Sort fresh entry rules', () => {
   const colours = ENTRY_RULES.filter((r) => !RULES.includes(r));
@@ -67,10 +73,10 @@ describe('Critter Sort fresh entry rules', () => {
 });
 
 describe('Critter Sort', () => {
-  it('preserves the younger ladder and stable school IDs, appending 11 without opening reserved level 10', () => {
+  it('preserves the younger ladder and stable school IDs, with 10 between 9 and 11', () => {
     expect(critterSort.levels('preschool').order).toEqual([6, 1]);
     expect(critterSort.levels('prek').order).toEqual([6, 1, 12, 2, 3, 13]);
-    expect(critterSort.levels('school').order).toEqual([2, 12, 3, 13, 4, 5, 7, 8, 9, 11]);
+    expect(critterSort.levels('school').order).toEqual([2, 12, 3, 13, 4, 5, 7, 8, 9, 10, 11]);
     expect(critterSort.entryLevels).toEqual([6]);
     expect(PLANS).toHaveLength(9);
   });
@@ -136,7 +142,7 @@ describe('Critter Sort', () => {
       for (let seed = 1; seed <= 200; seed++) {
         const r = makeRound(plan, new Rng(seed));
         expect(r.critters).toHaveLength(plan.critters);
-        expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}`)).size).toBe(plan.critters);
+        expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`)).size).toBe(plan.critters);
         const places = new Set(
           r.critters.map((c) => placeOf(c, r.rules, plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not')),
         );
@@ -563,5 +569,149 @@ describe('Critter Sort', () => {
     expect(fits(c, 'spotted')).toBe(false);
     expect(fits({ kind: 'cow', hat: true }, 'round')).toBe(false);
     expect(fits(c, 'hat')).toBe(false);
+  });
+});
+
+describe('Critter Sort scarf', () => {
+  const scarfLevels = PLANS.map((p, i) => ({ p, level: i + 1 })).filter(({ p }) => p.scarf);
+
+  it('is the third look on the newcomer, new-sign and this-but-not-that levels only', () => {
+    expect(scarfLevels.map((s) => s.level)).toEqual([7, 8, 9]);
+    expect(fits({ kind: 'cow', hat: false, scarf: true }, 'scarf')).toBe(true);
+    expect(fits({ kind: 'cow', hat: true }, 'scarf')).toBe(false);
+    expect(rulesFor(PLANS[0])).toEqual(RULES);
+  });
+
+  it('old levels never deal a scarf', () => {
+    for (const plan of PLANS) {
+      if (plan.scarf) continue;
+      for (let seed = 1; seed <= 20; seed++)
+        expect(makeRound(plan, new Rng(seed)).critters.some((c) => c.scarf !== undefined)).toBe(false);
+    }
+  });
+
+  it('scarf rounds keep every place in play filled and use the scarf as a rule sometimes', () => {
+    let sawScarfRule = false;
+    for (const { p } of scarfLevels) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const round = makeRound(p, new Rng(seed));
+        if (round.rules.includes('scarf')) sawScarfRule = true;
+        const keys = round.critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`);
+        expect(new Set(keys).size).toBe(keys.length);
+        const not = p.mode === 'butnot' ? 'butnot' : false;
+        const places = new Set(round.critters.map((c) => placeOf(c, round.rules, not)));
+        expect(places.has('out')).toBe(true);
+        expect(places.has('left')).toBe(true);
+        if (p.mode === 'venn') expect(places.has('both')).toBe(true);
+      }
+    }
+    expect(sawScarfRule).toBe(true);
+  });
+});
+
+describe('Critter Sort level 10: Pick the signs', () => {
+  const seeds = Array.from({ length: 200 }, (_, i) => i);
+  const PLACES: Place[] = ['left', 'right', 'both', 'out'];
+  const orderedPairs = (o: readonly Rule[]): [Rule, Rule][] => {
+    const out: [Rule, Rule][] = [];
+    for (const a of o) for (const b of o) if (a !== b) out.push([a, b]);
+    return out;
+  };
+  const pairsOf = (o: readonly Rule[]): [Rule, Rule][] => [
+    [o[0], o[1]],
+    [o[0], o[2]],
+    [o[1], o[2]],
+  ];
+
+  it('every ordered pair of offered signs meets the offer constraints and places every critter', () => {
+    for (const seed of seeds) {
+      const r = makePickRound(PICK_PLAN, new Rng(seed));
+      expect(r.rules).toEqual([]);
+      expect(r.critters).toHaveLength(6);
+      const pairs = orderedPairs(r.options!);
+      expect(pairs).toHaveLength(6);
+      for (const [a, b] of pairs) {
+        expect(r.critters.some((c) => fits(c, a))).toBe(true);
+        expect(r.critters.some((c) => fits(c, b))).toBe(true);
+        expect(r.critters.some((c) => !fits(c, a) && !fits(c, b))).toBe(true);
+        expect(r.critters.some((c) => fits(c, a) !== fits(c, b))).toBe(true);
+        expect(pairWorks(r.critters, a, b)).toBe(true);
+        for (const c of r.critters) expect(PLACES).toContain(placeOf(c, [a, b]));
+      }
+    }
+  });
+
+  it('offers three distinct rules from the plan and the choice changes the sort', () => {
+    const allowed = rulesFor(PICK_PLAN);
+    for (const seed of seeds) {
+      const r = makePickRound(PICK_PLAN, new Rng(seed));
+      expect(r.options).toHaveLength(3);
+      expect(new Set(r.options).size).toBe(3);
+      for (const o of r.options!) expect(allowed).toContain(o);
+      const diagrams = pairsOf(r.options!).map(([a, b]) => r.critters.map((c) => placeOf(c, [a, b])).join());
+      expect(new Set(diagrams).size).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('is deterministic per seed', () => {
+    for (const seed of seeds.slice(0, 20)) {
+      expect(makePickRound(PICK_PLAN, new Rng(seed))).toEqual(makePickRound(PICK_PLAN, new Rng(seed)));
+    }
+  });
+
+  it('round 2 never repeats round 1 offered set, and the six critters differ', () => {
+    for (const seed of seeds) {
+      const rng = new Rng(seed);
+      const r1 = makePickRound(PICK_PLAN, rng);
+      const r2 = makePickRound(PICK_PLAN, rng, offerKey(r1.options!));
+      expect(offerKey(r2.options!)).not.toBe(offerKey(r1.options!));
+      for (const r of [r1, r2]) {
+        const keys = r.critters.map((c) => `${c.kind}|${c.hat}|${!!c.scarf}`);
+        expect(new Set(keys).size).toBe(6);
+      }
+    }
+  });
+
+  it('hints lead somewhere from any partly sorted state under any chosen pair', () => {
+    for (const seed of seeds) {
+      const r = makePickRound(PICK_PLAN, new Rng(seed));
+      for (const [a, b] of orderedPairs(r.options!)) {
+        const rules = [a, b];
+        for (let placedCount = 0; placedCount < 6; placedCount++) {
+          for (const offset of [0, 3]) {
+            const sorters = r.critters.map((c, i) => ({
+              c,
+              placed: (i + offset) % 6 < placedCount ? placeOf(c, rules) : null,
+            }));
+            const next = nextToSort(sorters, rules, false, true);
+            expect(next).toBeDefined();
+            expect(next!.who.placed).toBeNull();
+            expect(PLACES).toContain(next!.place);
+            expect(next!.place).toBe(placeOf(next!.who.c, rules));
+            const missed = sorters.find((s) => !s.placed)!;
+            expect(hintFor(sorters, missed, rules, false, true)).toBe(missed);
+          }
+        }
+      }
+    }
+  });
+
+  it('pickOrder returns two distinct offered rules', () => {
+    for (const seed of seeds) {
+      const r = makePickRound(PICK_PLAN, new Rng(seed));
+      const [a, b] = pickOrder(r, new Rng(seed + 1000));
+      expect(a).not.toBe(b);
+      expect(r.options).toContain(a);
+      expect(r.options).toContain(b);
+    }
+  });
+
+  it('sits on the ladder between 9 and 11 without moving anything else', () => {
+    expect(planFor(10)).toBe(PICK_PLAN);
+    expect(planFor(9)).toBe(PLANS[8]);
+    expect(planFor(11)).toBe(COUNT_PLAN);
+    expect(critterSort.levels('school').order).toEqual([2, 12, 3, 13, 4, 5, 7, 8, 9, 10, 11]);
+    expect(critterSort.levels('prek').order).toEqual([6, 1, 12, 2, 3, 13]);
+    expect(critterSort.levels('preschool').order).toEqual([6, 1]);
   });
 });

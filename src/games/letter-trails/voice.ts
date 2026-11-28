@@ -10,6 +10,9 @@ export const VOICE = {
   'trails.name': ['You wrote your name, {name}!'],
   'trails.dots': ['Now draw {letter} again. Follow the dots!'],
   'trails.little': ['Follow the firefly to draw a little {letter}! Start at the glowing dot.'],
+  'trails.big': [
+    'Here is a big {letter}. Draw the little {letter} that goes with it! Start at the glowing dot.',
+  ],
   'trails.alone': [
     'One more {letter}, all by yourself! Start at the firefly and go the way the arrow points.',
   ],

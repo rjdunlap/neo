@@ -4,6 +4,7 @@ import { makeHost, PageArrow, Signpost } from '../../art/lands';
 import { ink, swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
 import { Backdrop, type BackdropStyle } from '../../art/scenery';
+import { bakePaper } from '../../art/paperize';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
@@ -120,6 +121,8 @@ export interface LandOptions {
  * nearest hers it has.
  */
 export class LandScene extends Scene {
+  /** Takes keys itself. */
+  override padPointer = false;
   readonly land: Land;
   /** Her band, from her profile. */
   readonly band: Band;
@@ -158,7 +161,7 @@ export class LandScene extends Scene {
   /** At the root, a house beside Back that always goes Home (RW14 slice 3); null on the island. */
   readonly house: RoundButton | null;
   private readonly heading = label('', 36);
-  private leaving = false;
+  protected leaving = false;
   private scale0 = 1;
   /** Keys and a pad: a ring over the games standing here, the host, the signpost and the two buttons. Backspace or B goes back to the map. */
   private readonly keys = new ScreenKeys(this.app, {
@@ -348,7 +351,10 @@ export class LandScene extends Scene {
     this.heading.position.set(Math.min(Math.max(v.w / 2, left + half), right - half), 65);
     this.pip.position.set(92, v.h - 12);
     if (!layout) return;
-    if (this.scenery && this.drawScenery) this.drawScenery(this.scenery, layout, v, this.backdrop.groundY);
+    if (this.scenery && this.drawScenery) {
+      this.drawScenery(this.scenery, layout, v, this.backdrop.groundY);
+      bakePaper(this.scenery, v);
+    }
     this.scale0 = layout.box.w / BOX.w;
     for (const mark of [...this.mine, ...this.older]) mark.node.visible = false;
     this.showing.forEach((mark, i) => {

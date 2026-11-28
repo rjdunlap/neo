@@ -176,6 +176,16 @@ export interface Plan {
   repair?: boolean;
   /** A repair round that also has a flip button: the one wrong shape is the mirrored parallelogram. */
   flip?: boolean;
+  /**
+   * One piece home (level 10, toddler): the picture starts with every piece but one already in its place, the one left
+   * snaps home from further away (SNAP_HOME) and no drop is ever a miss.
+   */
+  onePiece?: boolean;
+  /**
+   * Pick the missing piece (level 11, toddler): one slot is open as on one piece home, but the tray also holds one wrong
+   * shape (DECOYS) that fits nowhere; dropping it on the open shadow is a gentle miss.
+   */
+  pick?: boolean;
 }
 export const PLANS: readonly Plan[] = [
   {
@@ -249,13 +259,48 @@ export const PLANS: readonly Plan[] = [
     flip: true,
     name: 'Flip a leaning shape to match its outline: a flip makes a mirror that no turn can',
   },
+  {
+    pool: ['house', 'tree', 'lamp', 'tent', 'shovel', 'broom'],
+    rotate: false,
+    outlines: true,
+    onePiece: true,
+    name: 'One piece home: one shape is already in the picture; move the other onto its shadow',
+  },
+  {
+    pool: ['house', 'tree', 'lamp', 'tent', 'shovel', 'broom'],
+    rotate: false,
+    outlines: true,
+    pick: true,
+    name: 'Pick the missing piece: one shape is missing; choose it from two in the tray and move it onto its shadow',
+  },
 ];
+/**
+ * The wrong shape a pick round may offer for each missing one: never the same shape, never its look-alike (a roof and a
+ * right triangle are both spoken "a triangle"; a rectangle and a trapezoid share a long flat side), never the school
+ * band's mirror piece. Every one is plainly different at a glance.
+ */
+export const DECOYS: Record<Exclude<Shape, 'parallelogram'>, readonly Shape[]> = {
+  square: ['roof', 'rectangle'],
+  roof: ['square', 'rectangle'],
+  triangle: ['square', 'rectangle'],
+  rectangle: ['square', 'roof'],
+  hull: ['square', 'roof'],
+};
+/** How near its shadow a dropped piece must land to snap in: the usual reach, and one piece home's wider one. */
+export const SNAP = 76;
+export const SNAP_HOME = 110;
+/** A drop this near an open shadow that does not fit is a miss (never on a one-piece-home round). */
+export const MISS_RING = 105;
 export const planFor = (l: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, l - 1))];
 /** The level's rules with the picture this round draws from its pool. */
 export interface Build extends Plan {
   picture: PictureId;
   targets: readonly Target[];
   covers?: readonly (readonly number[])[];
+  /** Slots whose piece is already in place when the round starts (one piece home); they get no tray piece. */
+  preset?: readonly number[];
+  /** Pick the missing piece: the wrong shape waiting in the tray beside the right one, the right way up. */
+  decoy?: Piece;
 }
 export function buildFor(level: number, rng: Rng): Build {
   const plan = planFor(level),
@@ -270,19 +315,38 @@ export function buildFor(level: number, rng: Rng): Build {
           [0, 2, 3],
         ],
       }
-    : { ...plan, picture, targets: PICTURES[picture] };
+    : plan.onePiece || plan.pick
+      ? withOpenSlot(plan, picture, rng)
+      : { ...plan, picture, targets: PICTURES[picture] };
+}
+/** One piece home and pick the missing piece: every slot but one is preset; a pick round adds its wrong shape. */
+function withOpenSlot(plan: Plan, picture: PictureId, rng: Rng): Build {
+  const targets: readonly Target[] = PICTURES[picture],
+    open = rng.int(0, targets.length - 1),
+    preset = targets.flatMap((_, i) => (i === open ? [] : [i])),
+    missing = targets[open].shape as keyof typeof DECOYS;
+  return {
+    ...plan,
+    picture,
+    targets,
+    preset,
+    ...(plan.pick ? { decoy: { shape: rng.pick(DECOYS[missing]), turns: 0 } } : {}),
+  };
 }
 export function sameOrientation(shape: Shape, a: number, b: number) {
   const period = shape === 'square' ? 1 : shape === 'rectangle' || shape === 'parallelogram' ? 2 : 4;
   return (((a - b) % period) + period) % period === 0;
 }
-export function makePieces(build: Pick<Build, 'targets' | 'rotate'>, rng: Rng): Piece[] {
-  return rng.shuffle(
-    build.targets.map((t) => ({
-      shape: t.shape,
-      turns: build.rotate ? (t.turns + rng.int(1, 3)) % 4 : t.turns,
-    })),
-  );
+export function makePieces(build: Pick<Build, 'targets' | 'rotate' | 'preset' | 'decoy'>, rng: Rng): Piece[] {
+  return rng.shuffle([
+    ...build.targets
+      .filter((_, i) => !build.preset?.includes(i))
+      .map((t) => ({
+        shape: t.shape,
+        turns: build.rotate ? (t.turns + rng.int(1, 3)) % 4 : t.turns,
+      })),
+    ...(build.decoy ? [{ ...build.decoy }] : []),
+  ]);
 }
 /** Any identical piece can fill a slot, including symmetric turns and the two complementary wall triangles. */
 export function targetFor(
@@ -291,14 +355,27 @@ export function targetFor(
   y: number,
   targets: readonly Target[],
   filled: boolean[],
+  snap = SNAP,
 ): number {
   const near = targets
     .map((t, i) => ({ t, i, d: Math.hypot(t.x - x, t.y - y) }))
-    .filter((a) => !filled[a.i] && a.d < 76)
+    .filter((a) => !filled[a.i] && a.d < snap)
     .sort((a, b) => a.d - b.d);
   return (
     near.find((a) => a.t.shape === piece.shape && sameOrientation(piece.shape, piece.turns, a.t.turns))?.i ??
     -1
+  );
+}
+/** Whether a drop that did not place its piece counts as a miss: near an open shadow, and never on one piece home. */
+export function isMiss(
+  build: Pick<Build, 'targets' | 'onePiece'>,
+  x: number,
+  y: number,
+  unavailable: readonly boolean[],
+): boolean {
+  return (
+    !build.onePiece &&
+    build.targets.some((t, i) => !unavailable[i] && Math.hypot(t.x - x, t.y - y) < MISS_RING)
   );
 }
 export function hintFor(piece: Piece, targets: readonly Target[], filled: boolean[]) {
@@ -426,8 +503,13 @@ export function makeFlipRepair(build: Pick<Build, 'targets'>, rng: Rng): Piece[]
   return pieces;
 }
 
+/**
+ * Appended easier entries: one piece home (10) and pick the missing piece (11) play before level 1 at toddler and are in
+ * no other band.
+ */
+export const ENTRY_LEVELS = [10, 11] as const;
 export const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
+  toddler: { min: 1, max: 11, order: [10, 11, 1, 2] },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
   school: { min: 5, max: 9 },

@@ -507,7 +507,6 @@ class PegGarden implements Game {
     this.touch.removeAllListeners();
     for (const q of this.seeds) q.drag.destroy();
     this.dropButton.removeAllListeners();
-    this.sea.texture.destroy(true);
   }
 
   /** Couch play: hold left or right to swing the launcher, press the bottom button to let the pearl go. */
@@ -565,6 +564,11 @@ class PegGarden implements Game {
    * whose pearl touches the buds still waiting), or, on the aiming levels, put a finger down by the launcher, swing it round
    * to the angle whose shot reaches the wanted flower, and lift.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.ball || this.finished) return null;
     const mode = this.plan.mode;

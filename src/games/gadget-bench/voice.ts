@@ -30,5 +30,11 @@ export const VOICE = {
   'bench.fail.gate': ['Bump! Something is too tall for the little gate.'],
   'bench.instruct.newkit': ['Make a cart that works like that one, with the new parts!'],
   'bench.newkit': ["Those parts went home with {neighbor}. Here's a new box of parts."],
+  'bench.instruct.light': ['{neighbor} wants a light cart to pull. Build one from the box!'],
+  'bench.instruct.strong': ['{neighbor} has a big load to carry. Build a strong cart from the box!'],
+  'bench.next.light': ['Now {neighbor} wants a light cart from the same box!'],
+  'bench.next.strong': ['Now {neighbor} needs a strong cart from the same box!'],
+  'bench.fail.light': ["Too heavy for {neighbor}'s bridge! Try lighter parts."],
+  'bench.fail.strong': ["Not strong enough for {neighbor}'s big load! Use stronger parts."],
   'bench.hint.out': ['{part} does nothing there. I put it back.'],
 } satisfies Record<string, string[]>;

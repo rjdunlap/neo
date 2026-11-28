@@ -42,6 +42,8 @@ describe('the puzzle shelf', () => {
       'typing',
       'sunbeams',
       'codedoors',
+      'robotpath',
+      'cardtables',
     ]);
     for (const row of rows) {
       expect(row).toMatchObject({ best: null, helped: false, over: null, runs: 0, inProgress: false });

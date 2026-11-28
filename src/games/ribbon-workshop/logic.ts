@@ -83,7 +83,9 @@ export const GIFT_LEVELS = [1, 2, 3] as const;
 export const SWITCH_LEVEL = 6;
 /** Ribbon Cases: two gifts share one tray, then the order changes. Its model is at the end of this file. */
 export const CASES_LEVEL = 7;
-export const LEVEL_IDS = [...GIFT_LEVELS, SWITCH_LEVEL, CASES_LEVEL] as const;
+/** How Many Pieces Fit?: measure a three-quarter ribbon with half-spool pieces. Its model is at the end of this file. */
+export const FIT_LEVEL = 8;
+export const LEVEL_IDS = [...GIFT_LEVELS, SWITCH_LEVEL, CASES_LEVEL, FIT_LEVEL] as const;
 export const planFor = (level: number): RibbonPlan => PLANS[level] ?? PLANS[1];
 
 /** The tag's name for a target, also the instruction's line: `ribbon.ask.<amount>`. */
@@ -301,9 +303,9 @@ export function trayLayout(
 }
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: CASES_LEVEL, order: [...LEVEL_IDS] },
-  // A person of 13 or older starts at Whole Switch and steps up to Ribbon Cases; a grown-up can still pin any level.
-  grownup: { min: SWITCH_LEVEL, max: CASES_LEVEL, order: [SWITCH_LEVEL, CASES_LEVEL] },
+  school: { min: 1, max: FIT_LEVEL, order: [...LEVEL_IDS] },
+  // A person of 13 or older starts at Whole Switch and steps up through Ribbon Cases to How Many Pieces Fit?; a grown-up can still pin any level.
+  grownup: { min: SWITCH_LEVEL, max: FIT_LEVEL, order: [SWITCH_LEVEL, CASES_LEVEL, FIT_LEVEL] },
 };
 
 /*
@@ -716,5 +718,193 @@ export class CasesBench {
     if (this.done) return;
     this.history = [];
     this.state = this.base;
+  }
+}
+
+/*
+ * Level 8, How Many Pieces Fit?: a three-quarter order measured with half-spool pieces (¾ ÷ ½ = 1½). Lengths are ticks
+ * (four to the spool), so a measuring piece is 2 and half of a piece is 1. Tag 1 lays pieces on the order, snipping one
+ * in half; tag 2 asks how many pieces fit. See docs/definitions/how-many-pieces-fit.md.
+ */
+
+/** The order is three ticks: ¾ of the spool. */
+export const FIT_ORDER = 3;
+/** The bench holds one whole spool, so a second whole piece can be laid down and seen to hang past the order. */
+export const FIT_CAPACITY = 4;
+/** One measuring piece is ½ of the spool; half of a piece is ¼ of the spool. */
+export const FIT_UNIT_PIECE = 2;
+export const FIT_HALF_PIECE = 1;
+export const FIT_CHOICES = ['1', '1_1/4', '1_1/2', '2'] as const;
+export type FitChoice = (typeof FIT_CHOICES)[number];
+/** The written answer on each card. */
+export const FIT_WRITTEN: Record<FitChoice, string> = { '1': '1', '1_1/4': '1¼', '1_1/2': '1½', '2': '2' };
+
+/** Two measuring pieces in the tray, nothing on the bench. */
+export function fitStart(): RibbonState {
+  return {
+    tray: [
+      { id: 0, size: HALF },
+      { id: 1, size: HALF },
+    ],
+    bench: [],
+    nextId: 2,
+  };
+}
+
+/** Like `apply`, but the bench holds one spool. */
+export function fitApply(s: RibbonState, a: Action): RibbonState | null {
+  if (a.kind === 'place') {
+    const p = s.tray.find((q) => q.id === a.id);
+    if (!p || total(s.bench) + p.size > FIT_CAPACITY) return null;
+    return { ...s, tray: s.tray.filter((q) => q !== p), bench: [...s.bench, p] };
+  }
+  return apply(s, a);
+}
+
+export type FitMeasureVerdict = Verdict;
+/** The bow on tag 1: any bench that adds to three ticks is right. */
+export const fitJudgeMeasure = (s: RibbonState): FitMeasureVerdict => judge(s, FIT_ORDER);
+
+export type FitCountVerdict = 'empty' | 'wrong_unit' | 'wrong' | 'right';
+/** The bow on tag 2: `1¼` mistakes a quarter of the spool for a quarter of a piece. */
+export function fitJudgeCount(choice: FitChoice | null): FitCountVerdict {
+  if (choice === null) return 'empty';
+  return choice === '1_1/2' ? 'right' : choice === '1_1/4' ? 'wrong_unit' : 'wrong';
+}
+
+const FIT_KINDS: Action['kind'][] = ['place', 'snip', 'return'];
+const fitKey = (s: RibbonState) =>
+  `${s.tray.map((p) => p.size).join('')}|${s.bench.map((p) => p.size).join('')}`;
+
+/** The shortest path of place, snip and return actions to a bench of three ticks (breadth first, placing before snipping before returning), or null. */
+export function fitSolve(s: RibbonState): Action[] | null {
+  if (total(s.bench) === FIT_ORDER) return [];
+  const seen = new Set([fitKey(s)]);
+  let frontier: { s: RibbonState; path: Action[] }[] = [{ s, path: [] }];
+  while (frontier.length) {
+    const next: typeof frontier = [];
+    for (const f of frontier)
+      for (const kind of FIT_KINDS) {
+        const from = kind === 'return' ? f.s.bench : f.s.tray;
+        for (const p of from) {
+          const a: Action = { kind, id: p.id };
+          const n = fitApply(f.s, a);
+          if (!n || seen.has(fitKey(n))) continue;
+          seen.add(fitKey(n));
+          if (total(n.bench) === FIT_ORDER) return [...f.path, a];
+          next.push({ s: n, path: [...f.path, a] });
+        }
+      }
+    frontier = next;
+  }
+  return null;
+}
+
+export type FitHint = Action | { kind: 'check' } | { kind: 'choose'; choice: FitChoice };
+/** What the glow and the ghost finger point at on tag 1: the first step of the shortest path, or the bow. */
+export function fitHint(s: RibbonState): FitHint | null {
+  const path = fitSolve(s);
+  return path ? (path[0] ?? { kind: 'check' }) : null;
+}
+/** And on tag 2: the right card, then the bow. */
+export const fitCountHint = (choice: FitChoice | null): FitHint =>
+  choice === '1_1/2' ? { kind: 'check' } : { kind: 'choose', choice: '1_1/2' };
+
+/** What the seed varies: the answer cards' order and the ribbon colour. Never a quantity. */
+export interface FitRound {
+  cards: FitChoice[];
+  paint: number;
+}
+export function fitRound(rng: Rng): FitRound {
+  return { cards: rng.shuffle([...FIT_CHOICES]), paint: rng.int(0, 2 ** 30) };
+}
+
+/**
+ * One round of How Many Pieces Fit?, with an undo stack of exact earlier states. Tag 2 keeps her accepted bench, and
+ * its undo never reaches back into tag 1.
+ */
+export class FitBench {
+  state: RibbonState = fitStart();
+  choice: FitChoice | null = null;
+  tag: 1 | 2 = 1;
+  done = false;
+  readonly tally = new GiftTally();
+  private bankedMisses = 0;
+  private bankedHints = 0;
+  private history: (RibbonState | FitChoice | null)[] = [];
+
+  constructor(readonly round: FitRound) {}
+  get misses() {
+    return this.bankedMisses + this.tally.misses;
+  }
+  get hints() {
+    return this.bankedHints + this.tally.hints;
+  }
+  get canUndo() {
+    return this.history.length > 0;
+  }
+  /** A tag 1 action; false (and nothing changes) when it cannot be done. */
+  act(a: Action): boolean {
+    if (this.done || this.tag !== 1) return false;
+    const next = fitApply(this.state, a);
+    if (!next) return false;
+    this.history.push(this.state);
+    this.state = next;
+    return true;
+  }
+  /** Tag 2: pick a card, replacing the last pick. */
+  choose(c: FitChoice): boolean {
+    if (this.done || this.tag !== 2 || c === this.choice) return false;
+    this.history.push(this.choice);
+    this.choice = c;
+    return true;
+  }
+  undo(): boolean {
+    if (!this.history.length) return false;
+    const prev = this.history.pop()!;
+    if (this.tag === 1) this.state = prev as RibbonState;
+    else this.choice = prev as FitChoice | null;
+    return true;
+  }
+  /** The bow: a wrong answer counts one miss, a right one finishes the tag, an empty one counts nothing. */
+  check(): FitMeasureVerdict | FitCountVerdict {
+    if (this.done) return 'empty';
+    if (this.tag === 1) {
+      const v = fitJudgeMeasure(this.state);
+      if (v === 'short' || v === 'long') this.tally.miss();
+      if (v === 'right') {
+        this.bank();
+        this.tag = 2;
+      }
+      return v;
+    }
+    const v = fitJudgeCount(this.choice);
+    if (v === 'wrong' || v === 'wrong_unit') this.tally.miss();
+    if (v === 'right') {
+      this.bank();
+      this.done = true;
+    }
+    return v;
+  }
+  private bank() {
+    this.bankedMisses += this.tally.misses;
+    this.bankedHints += this.tally.hints;
+    this.tally.misses = this.tally.hints = 0;
+    this.tally.nextGift();
+    this.history = [];
+  }
+  hint(): FitHint | null {
+    if (this.done) return null;
+    return this.tag === 1 ? fitHint(this.state) : fitCountHint(this.choice);
+  }
+  askHint(): boolean {
+    return !this.done && this.tally.ask();
+  }
+  /** The tag as it started; misses and hints already counted stay. */
+  restart() {
+    if (this.done) return;
+    this.history = [];
+    if (this.tag === 1) this.state = fitStart();
+    else this.choice = null;
   }
 }

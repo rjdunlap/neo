@@ -12,9 +12,10 @@ import { RepairStory } from './repair';
 import { UntangleStory } from './untangle';
 import { PredictStory } from './predict';
 import { TheaterStoryGame } from './theater';
-import { THEATER_PLANS } from './theater-logic';
+import { THEATER_PLANS, VIEWPOINTS_NAME } from './theater-logic';
+import { ViewpointsGame } from './viewpoints';
 import { PREDICTION_PLAN } from './predictions';
-import { LEVELS, UNTANGLE_PLAN, REPAIR_PLAN } from './logic';
+import { GROW_LEVEL, LEVELS, UNTANGLE_PLAN, REPAIR_PLAN, stripPlan } from './logic';
 import { storyCard, storySticker } from './art';
 import { stripLayout } from './layout';
 import {
@@ -23,7 +24,6 @@ import {
   CAUSES,
   pictureText,
   STORIES,
-  LEVEL_PLANS,
   sameCard,
   storyPuzzle,
   type StoryCard,
@@ -47,9 +47,12 @@ class StorySteps implements Game {
   private playing = false;
   private alive = true;
   private clock = 0;
+  /** One picture grows (level 15): no wrong card, any drop places it, and the picture grows in. */
+  private readonly grow: boolean;
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, ctx.level - 1))];
+    this.grow = ctx.level === GROW_LEVEL;
+    this.plan = stripPlan(ctx.level);
     this.puzzle = storyPuzzle(this.plan, ctx.rng);
     this.puzzle.fixed.forEach((i) => this.placed.add(i));
     this.replay = new RoundButton(replayArt(), swatch.yellow, 50, () => {
@@ -76,7 +79,8 @@ class StorySteps implements Game {
           if (this.done || this.playing) return false;
           const index = this.next(),
             slot = this.slots[index];
-          if (!slot || Math.abs(x - slot.x) > 91 || Math.abs(y - slot.y) > 98) return false;
+          // One picture grows: the only card is the right one, so any put-down (or a still tap) places it.
+          if (!slot || (!this.grow && (Math.abs(x - slot.x) > 91 || Math.abs(y - slot.y) > 98))) return false;
           if (!sameCard(card, this.puzzle.sequence[index])) {
             this.misses++;
             this.wrong++;
@@ -96,7 +100,9 @@ class StorySteps implements Game {
           choice.drag.enabled = false;
           node.visible = false;
           slot.removeChildren().forEach((c) => c.destroy({ children: true }));
-          slot.addChild(storyCard(card));
+          const placedCard = storyCard(card);
+          slot.addChild(placedCard);
+          if (this.grow) void this.growIn(placedCard, slot);
           this.wrong = 0;
           sfx.bell(5 + index, 0.3);
           void ctx.say('story.step', { step: pictureText(card) });
@@ -119,8 +125,18 @@ class StorySteps implements Game {
   start() {
     this.instruction();
   }
+  /** The one-second grow: the placed picture springs up from small, with a shower of sparkles. */
+  private async growIn(card: Container, slot: Container) {
+    card.scale.set(0.35);
+    sfx.bell(8, 0.3);
+    this.ctx.particles.burst(slot.x, slot.y, { colors: [swatch.yellow.fill, swatch.green.fill], count: 16 });
+    await this.ctx.tw.to(card.scale, { x: 1.15, y: 1.15 }, { duration: 0.55 });
+    if (!this.alive) return;
+    await this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.35 });
+  }
   private instruction() {
-    if (this.puzzle.cause)
+    if (this.grow) void this.ctx.instruct('story.grow');
+    else if (this.puzzle.cause)
       void this.ctx.instruct('story.cause.start', { effect: pictureText(this.puzzle.sequence[1]) });
     else void this.ctx.instruct('story.start', { story: STORIES[this.puzzle.story].name });
   }
@@ -194,6 +210,11 @@ class StorySteps implements Game {
     this.glow.alpha = this.hintGlow.alpha = 0.75 + 0.25 * Math.sin(this.clock * 3);
   }
   /** The ghost finger on the how-to card: carry the picture that comes next in the story to the first empty slot. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done || this.playing || !this.alive) return null;
     const next = nextPicture(
@@ -220,37 +241,49 @@ export const storySteps: GameModule = {
   region: 'story-grove',
   challenge: 'words',
   skills: ['sequencing', 'cause-and-effect', 'storytelling', 'prediction'],
-  bands: ['toddler', 'preschool', 'prek', 'school'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
+  entryLevels: [GROW_LEVEL],
   describeLevel: (l) =>
-    l >= 12
-      ? THEATER_PLANS[l >= 13 ? 1 : 0].name
-      : l >= 11
-        ? PREDICTION_PLAN.name
-        : l === 10
-          ? UNTANGLE_PLAN.name
-          : l === 9
-            ? REPAIR_PLAN.name
-            : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
+    l === GROW_LEVEL
+      ? stripPlan(l).name
+      : l >= 14
+        ? VIEWPOINTS_NAME
+        : l >= 12
+          ? THEATER_PLANS[l >= 13 ? 1 : 0].name
+          : l >= 11
+            ? PREDICTION_PLAN.name
+            : l === 10
+              ? UNTANGLE_PLAN.name
+              : l === 9
+                ? REPAIR_PLAN.name
+                : stripPlan(l).name,
   music: STYLES.paint,
   touchDemo: true,
   upright: true,
   coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
+  coplayHintLap:
+    'Help {name} tap or slide the picture into the space, then say what grew: "One block, two blocks!"',
   offScreen: {
     all: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',
-    // Under 3 (the game starts at toddler): no seed (small parts).
+    // Under 3 (lap and toddler): no seed (small parts).
+    lap: 'Stack two blocks together, or look at a photo of a plant growing.',
     toddler: 'Talk through photos of a familiar activity.',
   },
   hubIcon: () => new WigglyIcon(storySticker()),
   sticker: () => storySticker(),
   create: (ctx) =>
-    ctx.level >= 12
-      ? new TheaterStoryGame(ctx)
-      : ctx.level >= 11
-        ? new PredictStory(ctx)
-        : ctx.level === 10
-          ? new UntangleStory(ctx)
-          : ctx.level === 9
-            ? new RepairStory(ctx)
-            : new StorySteps(ctx),
+    ctx.level === GROW_LEVEL
+      ? new StorySteps(ctx)
+      : ctx.level >= 14
+        ? new ViewpointsGame(ctx)
+        : ctx.level >= 12
+          ? new TheaterStoryGame(ctx)
+          : ctx.level >= 11
+            ? new PredictStory(ctx)
+            : ctx.level === 10
+              ? new UntangleStory(ctx)
+              : ctx.level === 9
+                ? new RepairStory(ctx)
+                : new StorySteps(ctx),
 };

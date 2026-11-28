@@ -31,12 +31,14 @@ describe('migrate', () => {
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
     // A save from when the app had a play timer: the limit is retired, and always saved as 0 (no limit).
     expect(save.settings).toEqual({
-      placeLayout: 'path',
+      startView: 'explore',
       volume: 1,
       music: false,
       sessionMinutes: 0,
       coplayHints: true,
       howToCards: true,
+      briefResults: false,
+      briefIntros: false,
       speech: true,
       showWords: false,
       language2: 'none',
@@ -48,10 +50,9 @@ describe('migrate', () => {
     expect(save.stickers).toEqual([{ game: 'bubble-pop', seed: 5, at: 1 }]);
   });
 
-  it('defaults old saves to the path and preserves a subject-layout backup with progress', () => {
-    expect(migrate({ settings: { placeLayout: 'invalid' } }).settings.placeLayout).toBe('path');
+  it('drops the retired home spot layout and preserves a backup with progress', () => {
+    expect(migrate({ settings: { placeLayout: 'subjects' } }).settings).not.toHaveProperty('placeLayout');
     const save = defaults();
-    save.settings.placeLayout = 'subjects';
     save.games['bubble-pop'] = { plays: 4, level: 3, pinned: 2, history: [] };
     save.stickers.push({ game: 'bubble-pop', seed: 4, at: 1 });
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
@@ -102,7 +103,7 @@ describe('migrate', () => {
     expect(save.profile).toEqual(legacy.profile);
     expect(save.games).toEqual(legacy.games);
     expect(save.stickers).toEqual(legacy.stickers);
-    expect(save.creatures).toEqual({ owned: [], companion: null });
+    expect(save.creatures).toEqual({ owned: [], companion: null, forms: [] });
     expect(save.world).toEqual({ band: null });
   });
 
@@ -123,7 +124,7 @@ describe('migrate', () => {
     const save = migrate(old);
     expect(save.version).toBe(3);
     expect(save.stickers).toEqual(old.stickers);
-    expect(save.creatures).toEqual({ owned: [], companion: null });
+    expect(save.creatures).toEqual({ owned: [], companion: null, forms: [] });
     expect('pet' in save).toBe(false);
   });
 
@@ -131,7 +132,7 @@ describe('migrate', () => {
     id,
     species: 'sprout',
     name: 'Mochi',
-    look: { color: 'pink', worn: [] as string[] },
+    look: { color: 'pink', worn: [] as string[], form: null },
     metAt: 'start',
     ...extra,
   });
@@ -143,11 +144,12 @@ describe('migrate', () => {
         friend('riv1', {
           species: 'river',
           name: 'Pebble',
-          look: { color: 'blue', worn: ['crown', 'scarf'] },
+          look: { color: 'blue', worn: ['crown', 'scarf'], form: null },
           metAt: 'dev:river',
         }),
       ],
       companion: 'riv1',
+      forms: ['sprout:moon'],
     };
     expect(cleanCreatures(JSON.parse(JSON.stringify(c)))).toEqual(c);
   });
@@ -181,12 +183,37 @@ describe('migrate', () => {
       id: 'abcd',
       species: 'sprout',
       name: 'Pip',
-      look: { color: 'teal', worn: [] },
+      look: { color: 'teal', worn: [], form: null },
       metAt: '',
     });
     expect(b.name).toHaveLength(40);
     expect(b.look.color).toBe('purple');
     expect(b.metAt).toHaveLength(60);
+  });
+
+  it('repairs the forms a profile has grown and the one a friend shows (RW11)', () => {
+    expect(
+      cleanCreatures({ forms: ['sprout:moon', 'sprout:moon', 'tree:oak', 7, 'sprout:sun'] }).forms,
+    ).toEqual(['sprout:moon', 'sprout:sun']);
+    expect(cleanCreatures({ forms: 'sprout:sun' }).forms).toEqual([]);
+    const many = Array.from({ length: 30 }, () => 'sprout:sun');
+    expect(cleanCreatures({ forms: many }).forms).toEqual(['sprout:sun']);
+    const shown = (form: unknown, species = 'sprout', forms: unknown = ['sprout:sun']) =>
+      cleanCreatures({ forms, owned: [friend('abcd', { species, look: { color: 'pink', worn: [], form } })] })
+        .owned[0].look.form;
+    expect(shown('sprout:sun')).toBe('sprout:sun');
+    expect(shown('sprout:moon')).toBeNull(); // not grown
+    expect(shown('sprout:sun', 'glider')).toBeNull(); // another species' form
+    expect(shown('sprout:sun', 'sprout', [])).toBeNull();
+    expect(shown('daisy')).toBeNull();
+    expect(shown(undefined)).toBeNull();
+    // A save holding both a form and a hat keeps both: the form is drawn, the hat is not.
+    const both = cleanCreatures({
+      forms: ['sprout:sun'],
+      owned: [friend('abcd', { look: { color: 'pink', worn: ['crown'], form: 'sprout:sun' } })],
+    }).owned[0].look;
+    expect(both.worn).toEqual(['crown']);
+    expect(both.form).toBe('sprout:sun');
   });
 
   it('repairs what a friend wears: unknown ids, repeats, two in a slot, seven at most, misfits kept (RW06)', () => {
@@ -243,7 +270,7 @@ describe('migrate', () => {
       'abcd',
     );
     expect(cleanCreatures({ owned: [], companion: 'abcd' }).companion).toBeNull();
-    expect(cleanCreatures('garbage')).toEqual({ owned: [], companion: null });
+    expect(cleanCreatures('garbage')).toEqual({ owned: [], companion: null, forms: [] });
   });
 
   it('meets a friend once per token, making the first one the companion', () => {
@@ -255,7 +282,7 @@ describe('migrate', () => {
       id: 'id0aa',
       species: 'sprout',
       name: 'Mochi',
-      look: { color: 'pink', worn: [] },
+      look: { color: 'pink', worn: [], form: null },
       metAt: 'start',
     });
     expect(c.companion).toBe('id0aa');
@@ -306,6 +333,7 @@ describe('migrate', () => {
     expect(migrate({}).stories).toEqual({
       picnic: { steps: [], ended: false, keepsake: false },
       woodland: { steps: [], ended: false, keepsake: false },
+      melody: { steps: [], ended: false, keepsake: false },
     });
     // Unknown and repeated steps drop out and the rest keep story order; an ending needs every step.
     const odd = migrate({
@@ -343,12 +371,32 @@ describe('migrate', () => {
     ).toEqual({ steps: ['invitations', 'baskets', 'beat'], ended: true, keepsake: true });
   });
 
+  it('gives an older save an untold Missing Melody and drops steps that belong to another story', () => {
+    const old = migrate({
+      version: 5,
+      stories: { woodland: { steps: ['beat'], ended: false, keepsake: true } },
+    });
+    expect(old.stories.melody).toEqual({ steps: [], ended: false, keepsake: false });
+    expect(old.stories.woodland).toEqual({ steps: ['beat'], ended: false, keepsake: true });
+    const mixed = migrate({
+      stories: {
+        melody: { steps: ['friends', 'beat', 'notes', 'wren', 'notes'], ended: true, keepsake: false },
+      },
+    });
+    expect(mixed.stories.melody).toEqual({ steps: ['notes', 'friends'], ended: false, keepsake: false });
+    expect(
+      migrate({ stories: { melody: { steps: ['friends', 'highlow', 'notes'], ended: true } } }).stories
+        .melody,
+    ).toEqual({ steps: ['notes', 'highlow', 'friends'], ended: true, keepsake: true });
+  });
+
   it('keeps picnic progress through a backup and restore, with older progress untouched', () => {
     const save = defaults();
     save.games['pet-kitchen'] = { plays: 2, level: 3, pinned: null, history: [] };
     save.stickers.push({ game: 'pet-kitchen', seed: 4, at: 1 });
     save.stories.picnic = { steps: ['sandwiches'], ended: false, keepsake: true };
     save.stories.woodland = { steps: ['baskets'], ended: false, keepsake: true };
+    save.stories.melody = { steps: ['highlow'], ended: false, keepsake: true };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
@@ -500,6 +548,38 @@ describe('migrate', () => {
     expect(kept.settings.howToCards).toBe(false);
   });
 
+  it('starts with short results off, repairs the switch and keeps it through a backup', () => {
+    expect(defaults().settings.briefResults).toBe(false);
+    expect(migrate({ settings: { volume: 0.5 } }).settings.briefResults).toBe(false);
+    expect(migrate({ settings: { briefResults: 'yes' } }).settings.briefResults).toBe(false);
+    expect(migrate({ settings: { briefResults: true } }).settings.briefResults).toBe(true);
+    const save = defaults();
+    save.settings.briefResults = true;
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('starts Explore-first, repairs the starting view and keeps it through a backup (D8)', () => {
+    expect(defaults().settings.startView).toBe('explore');
+    expect(migrate({}).settings.startView).toBe('explore');
+    expect(migrate({ settings: { volume: 0.5 } }).settings.startView).toBe('explore');
+    for (const bad of [3, 'mix', 'SIX', null, true])
+      expect(migrate({ settings: { startView: bad } }).settings.startView).toBe('explore');
+    expect(migrate({ settings: { startView: 'six' } }).settings.startView).toBe('six');
+    const save = defaults();
+    save.settings.startView = 'six';
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('starts with short reminders off, repairs the switch and keeps it through a backup', () => {
+    expect(defaults().settings.briefIntros).toBe(false);
+    expect(migrate({ settings: { volume: 0.5 } }).settings.briefIntros).toBe(false);
+    expect(migrate({ settings: { briefIntros: 1 } }).settings.briefIntros).toBe(false);
+    expect(migrate({ settings: { briefIntros: true } }).settings.briefIntros).toBe(true);
+    const save = defaults();
+    save.settings.briefIntros = true;
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
   it('starts with spoken lines on, and repairs the switch', () => {
     expect(defaults().settings.speech).toBe(true);
     expect(migrate({ settings: { volume: 0.5 } }).settings.speech).toBe(true);
@@ -580,6 +660,21 @@ describe('migrate', () => {
       },
     };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
+  it('keeps a picture made on the Sea scene through a backup and restore', () => {
+    const save = defaults();
+    const seaStamp = { kind: 'crab' as const, color: 'red' as const, x: 0.3, y: 0.6, size: 1, turns: 0 };
+    save.creations.picture = {
+      current: { kind: 'picture', scene: 'sea', stamps: [seaStamp] },
+      previous: { kind: 'picture', stamps: [seaStamp] },
+    };
+    const back = migrate(JSON.parse(JSON.stringify(save)));
+    expect(back).toEqual(save);
+    // A damaged scene is dropped while the picture stays.
+    const odd = JSON.parse(JSON.stringify(save));
+    odd.creations.picture.current.scene = 'volcano';
+    expect(migrate(odd).creations.picture.current).toEqual({ kind: 'picture', stamps: [seaStamp] });
   });
 
   it('keeps a bounded finger painting through a backup and restore', () => {

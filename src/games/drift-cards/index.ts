@@ -727,6 +727,26 @@ class DriftCards implements Game {
 
   // The ghost finger ----------------------------------------------------------------------------------
 
+  /** Guided first play: the right answer's touch, without the demonstration's tracing of every boat first. */
+  showMove(): TouchIntent | null {
+    if (this.finished || this.busy) return null;
+    if (this.pc) {
+      const pc = this.pc;
+      const k = pc.options.findIndex((_, i) => fits(pc, i));
+      if (k < 0) return null;
+      return this.option !== k ? { tap: { on: this.patchCards[k] } } : { tap: { on: this.checkBtn } };
+    }
+    if (this.plan.mode === 'predict') {
+      if (!this.held || this.ctx.tw.busy(this.held.scale)) return null;
+      const d = drift(this.sea, this.plan.boats[this.index]);
+      return { tap: { on: this.plates.get(d.beach)! } };
+    }
+    const req = this.request;
+    if (!req) return null;
+    const right = boatsFor(this.sea, this.plan.boats, req.ask);
+    return { tap: { on: this.boatOf(right[0]).node } };
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     if (this.pc) {

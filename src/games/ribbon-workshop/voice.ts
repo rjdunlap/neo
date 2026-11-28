@@ -71,4 +71,21 @@ export const VOICE = {
   'ribbon.cases.both': [
     'Three quarters and three quarters used every piece. One whole and a half used every piece too. Same ribbon, shared a new way.',
   ],
+  'ribbonfit.ask': [
+    'Here is a three-quarter ribbon. Measure it with these half-spool pieces. Tap pieces onto the ribbon, then tap the bow.',
+  ],
+  'ribbonfit.ask2': ['How many half-spool pieces fit along the three-quarter ribbon?'],
+  'ribbonfit.piece': ['One half-spool piece.'],
+  'ribbonfit.halfPiece': ['Half of a piece.'],
+  'ribbonfit.snip': ['Snipped in half! Each bit is half of a piece.'],
+  'ribbonfit.short': ['Not filled yet. There is still space at the end.'],
+  'ribbonfit.long': ['Too long! That piece sticks out past the ribbon. Take it back and snip it in half.'],
+  'ribbonfit.made': ['It fits! One whole piece, and half of another piece.'],
+  'ribbonfit.made.halves': ['It fits! Three half-pieces make one whole piece and half of another piece.'],
+  'ribbonfit.wrongUnit': [
+    'Careful! The leftover bit is a quarter of the whole spool, which is half of a half-spool piece.',
+  ],
+  'ribbonfit.wrong': ['Look at the pieces on the ribbon: one whole piece, plus half of another piece.'],
+  'ribbonfit.pick': ['Pick an answer card first.'],
+  'ribbonfit.done': ['Yes! One and a half half-spool pieces fit in three quarters of the spool.'],
 } satisfies Record<string, string[]>;

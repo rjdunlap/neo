@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, grass, ink, swatch, wood } from '../../art/palette';
 import { weatherArt } from './art';
+import { DaylightRecords } from './daylight';
 import { MonthWheel } from './month-wheel';
 import { WeatherWindow } from './weather-window';
 import { Backdrop } from '../../art/scenery';
@@ -18,6 +19,7 @@ import {
   ANCHOR_LEVEL,
   COUNT_LEVEL,
   MONTH_LEVEL,
+  DAYLIGHT_LEVEL,
   choicesFor,
   DAYS,
   makeCountWeek,
@@ -327,6 +329,11 @@ class DayByDay implements Game {
         });
       }
     }
+  }
+
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
   }
 
   autotouch(): TouchIntent | null {
@@ -712,6 +719,7 @@ export const dayByDay: GameModule = {
     'weather records',
     'counting observations',
     'comparing evidence',
+    'comparing bar records',
   ],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
@@ -734,5 +742,7 @@ export const dayByDay: GameModule = {
       ? new WeatherWindow(ctx)
       : ctx.level === MONTH_LEVEL
         ? new MonthWheel(ctx)
-        : new DayByDay(ctx),
+        : ctx.level === DAYLIGHT_LEVEL
+          ? new DaylightRecords(ctx)
+          : new DayByDay(ctx),
 };

@@ -1,6 +1,70 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
+  async function viewpointsPlay() {
+    await launch('story-steps', 14);
+    await page.waitForTimeout(300);
+    const g = (fn) => page.evaluate(fn);
+    const before = await g(() => kit.store.data.stickers.length);
+    const watch = async () => {
+      await tap('neo.scene.game.showButton');
+      await page.waitForFunction(() => !neo.scene.game.playing, null, { timeout: 45000 });
+    };
+    const pick = async (ending) => {
+      const i = await page.evaluate((e) => neo.scene.game.endings.findIndex((x) => x.ending === e), ending);
+      await tap(`neo.scene.game.endings[${i}].node`);
+    };
+    // Watching before hearing both friends costs nothing and pulses the unheard friend.
+    await pick('stay-loud');
+    await tap('neo.scene.game.showButton');
+    assert.deepEqual(await g(() => [neo.scene.game.watched.length, neo.scene.game.misses]), [0, 0]);
+    await tap('neo.scene.game.friends[0].node');
+    await tap('neo.scene.game.friends[1].node');
+    assert.deepEqual(await g(() => [neo.scene.game.heard.music, neo.scene.game.heard.quiet]), [true, true]);
+    await tap('neo.scene.game.finishButton');
+    assert.equal(await g(() => neo.scene.game.finished), false, 'bowing needs a working ending');
+    // A first one-sided ending is free; the same one again is a miss.
+    await watch();
+    assert.deepEqual(await g(() => [neo.scene.game.watched.length, neo.scene.game.misses]), [1, 0]);
+    await watch();
+    assert.deepEqual(await g(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 0]);
+    await tap('neo.scene.game.finishButton');
+    assert.equal(await g(() => neo.scene.game.finished), false, 'a one-sided ending cannot finish');
+    await pick('turn-off');
+    await tap('neo.scene.game.undoButton');
+    assert.equal(await g(() => neo.scene.game.draft), 'stay-loud');
+    await tap('neo.scene.game.helpButton');
+    assert.deepEqual(
+      await g(() => [
+        neo.scene.game.hints,
+        neo.scene.game.helped === neo.scene.game.endings.find((e) => e.ending === 'two-spots').node,
+      ]),
+      [1, true],
+    );
+    await pick('two-spots');
+    await watch();
+    await screenshot('viewpoints-landscape');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(350);
+    await screenshot('viewpoints-portrait');
+    await tap('neo.scene.game.finishButton');
+    await tap('neo.scene.game.finishButton');
+    await finished('story-steps');
+    assert.equal(await g(() => kit.store.data.stickers.length), before + 1);
+    assert.deepEqual(
+      await g(() => {
+        const r = kit.store.stats('story-steps').history.at(-1);
+        return [r.misses, r.hints];
+      }),
+      [1, 1],
+    );
+    await page.setViewportSize({ width: 1024, height: 768 });
+    assert.deepEqual(errors, []);
+    log(
+      'Two Viewpoints 14: hear both, free first look, repeat miss, undo, help, working ending and one sticker passed',
+    );
+  }
+
   async function storyTheaterPlay() {
     const choose = async (field, value) => {
       const i = await page.evaluate(
@@ -16,7 +80,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         timeout: 45000,
       });
     };
-    for (const level of process.env.THEATER_LEVELS?.split(',').map(Number) ?? [12, 13]) {
+    for (const level of (process.env.THEATER_LEVELS?.split(',').map(Number) ?? [12, 13]).filter(
+      (l) => l <= 13,
+    )) {
       await launch('story-steps', level);
       await page.waitForTimeout(300);
       const before = await page.evaluate(() => kit.store.data.stickers.length);
@@ -153,18 +219,20 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     const before = await page.evaluate(() => kit.store.data.stickers.length);
     await tap('neo.scene.game.showButton');
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.waitForTimeout(1800);
     assert.equal(
       await page.evaluate(() => kit.store.data.stickers.length),
       before,
       'leaving a show does not award',
     );
+    if (!process.env.THEATER_LEVELS || process.env.THEATER_LEVELS.split(',').includes('14'))
+      await viewpointsPlay();
     assert.deepEqual(errors, []);
     log(
       `Story Theater ${process.env.THEATER_LEVELS || '12–13'}: free stories, undo, help, watched comparison/replay, portrait targets, one sticker and leaving mid-show passed`,
     );
   }
 
-  return { storyTheaterPlay };
+  return { storyTheaterPlay, viewpointsPlay };
 }

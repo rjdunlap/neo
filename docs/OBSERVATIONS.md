@@ -17,6 +17,7 @@ Newest first. One heading per paste, `### 2026-11-12, <player>, <phone>` (for ex
 > Navigation for pond congo on mobile wasn't very friendly
 
 - [Swipe anywhere on the screen to steer Pond Conga](https://github.com/rjdunlap/neo/pull/1463).
+- [The pond turns to fill an upright phone](games/pond-conga.md#design-notes) (2026-11-24): cells about 1.7 times as large.
 
 ### 2026-11-09, developer and wife
 

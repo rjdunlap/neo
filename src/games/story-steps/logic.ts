@@ -73,6 +73,15 @@ export const STORIES = {
       'The dog is clean and fluffy!',
     ],
   },
+  laundry: {
+    name: 'Wash the picnic blanket',
+    steps: [
+      'The picnic blanket has a jam spot.',
+      'We scrub the blanket in the tub.',
+      'We hang the wet blanket on the line.',
+      'The blanket is dry and ready for a picnic!',
+    ],
+  },
   rain: {
     name: 'A rainy day',
     steps: [
@@ -109,6 +118,7 @@ export const STORY_FAMILY: Record<StoryId, 'stack' | 'seed' | 'metamorph' | 'was
     apple: 'seed',
     butterfly: 'metamorph',
     dog: 'wash',
+    laundry: 'wash',
     rain: 'weather',
     bedtime: 'bedtime',
   };
@@ -207,7 +217,7 @@ export const STORY_PLANS = [
     fixed: 'none',
     distractors: 0,
     mixed: false,
-    stories: ['flower', 'butterfly', 'apple', 'dog'],
+    stories: ['flower', 'butterfly', 'apple', 'dog', 'laundry'],
     name: 'Put three pictures of a changing story in order',
   },
   {
@@ -235,8 +245,26 @@ export const STORY_PLANS = [
     name: 'Build a four-picture story from six mixed pictures',
   },
 ] as const;
-export type StoryPlan = (typeof STORY_PLANS)[number];
+/**
+ * One picture grows (stable ID 15, the lap and toddler entry, placed first by `order`): the first picture is shown and the
+ * only card on the tray is the one that follows it (a block lands on the block, a sprout grows from the seed). There is
+ * nothing to choose, so a drop anywhere (or a tap) places it and plays a one-second grow.
+ */
+export const GROW_LEVEL = 15;
+export const GROW_PLAN = {
+  count: 2,
+  fixed: 'first',
+  distractors: 0,
+  mixed: false,
+  stories: ['tower', 'flower'],
+  stages: [0, 1],
+  name: 'One picture grows: put the next picture in the space',
+} as const;
+export type StoryPlan = (typeof STORY_PLANS)[number] | typeof GROW_PLAN;
 export const LEVEL_PLANS = [...STORY_PLANS, CAUSE_PLAN] as const;
+/** The plan a picture-strip level plays: the grow entry, or the ladder's plan by position. */
+export const stripPlan = (level: number) =>
+  level === GROW_LEVEL ? GROW_PLAN : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, level - 1))];
 export function sameCard(a: StoryCard, b: StoryCard): boolean {
   return a.story === b.story && a.stage === b.stage;
 }
@@ -267,7 +295,8 @@ export function storyPuzzle(plan: StoryPlan | typeof CAUSE_PLAN, rng: Rng) {
 }
 function sequencePuzzle(plan: StoryPlan, rng: Rng) {
   const story: StoryId = rng.pick([...plan.stories]);
-  const stages = plan.count === 2 ? [0, 3] : plan.count === 3 ? [0, 1, 3] : [0, 1, 2, 3];
+  const stages =
+    'stages' in plan ? plan.stages : plan.count === 2 ? [0, 3] : plan.count === 3 ? [0, 1, 3] : [0, 1, 2, 3];
   const sequence = stages.map((stage) => ({ story, stage }));
   const fixed = plan.fixed === 'none' ? [] : plan.fixed === 'first' ? [0] : [0, sequence.length - 1];
   const choices: (StoryCard & { story: StoryId })[] = sequence.filter((_, i) => !fixed.includes(i));
@@ -330,9 +359,16 @@ export const UNTANGLE_PLAN = {
   kind: 'untangle',
   name: 'Untangle two three-picture stories into their own rows',
 } as const;
-/** Stage 1 adds a lookalike not covered by the endpoint families: two soap baths. */
+/** Stage 1 lookalikes the families do not cover: a story with suds in a tub, and a bubble bath. */
+export const LOOKALIKE_PAIRS: readonly (readonly [StoryId, StoryId])[] = [
+  ['dog', 'bedtime'],
+  ['laundry', 'bedtime'],
+];
 export function canPairStories(a: StoryId, b: StoryId): boolean {
-  return STORY_FAMILY[a] !== STORY_FAMILY[b] && !([a, b].includes('dog') && [a, b].includes('bedtime'));
+  return (
+    STORY_FAMILY[a] !== STORY_FAMILY[b] &&
+    !LOOKALIKE_PAIRS.some(([x, y]) => (a === x && b === y) || (a === y && b === x))
+  );
 }
 export function untanglePuzzle(rng: Rng) {
   const first = rng.pick(STORY_IDS);
@@ -364,9 +400,11 @@ export function nextUntangle<C extends { card: StoryCard; placed: boolean }>(
   return undefined;
 }
 
+/** Lap plays only One picture grows (15); toddler plays it first, then 1–2, by `order`, so no saved level is renumbered. */
 export const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
+  lap: { min: GROW_LEVEL, max: GROW_LEVEL },
+  toddler: { min: 1, max: GROW_LEVEL, order: [GROW_LEVEL, 1, 2] },
   preschool: { min: 2, max: 5 },
   prek: { min: 4, max: 8 },
-  school: { min: 6, max: 13 },
+  school: { min: 6, max: 14 },
 };

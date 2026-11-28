@@ -50,9 +50,57 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 13,
+      to: 13,
       text: 'The lily pads count by tens, 0 to 100. Start at the number shown and hop on or back the tens asked for: tap the lily pad where the frog lands.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'Tap the big lily to hop ten and the little lily to hop one. Land the frog on the flag.',
+    },
+    {
+      from: 15,
+      to: 15,
+      text: 'The line goes from 0 to 100 with no other numbers. Tap where the number on the sign goes, or slide the frog there. On the last line the marks count by tens: put the frog on the right mark.',
+    },
+    {
+      from: 16,
+      to: 16,
+      text: 'Tap anywhere on the pond: the frog hops pad by pad to the lily pad nearest the tap, saying each number. Tap the bank to hop it home.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'The sign shows dots. Tap the lily pad with that many dots, and the frog hops there pad by pad, saying each number.',
+    },
+    {
+      from: 18,
+      to: 18,
+      text: 'A leaf hides one number on a short row of lily pads. Tap the number card for the hidden number, and the frog hops the whole row, saying each number.',
+    },
   ],
-  finish: 'Answer five questions to bring the frog home.',
-  note: 'Two misses show the hops and glow the answer. Help counts once per question; tapping a pad when a number card is wanted is free.',
+  finish: [
+    { to: 14, text: 'Answer the questions to bring the frog home.' },
+    { from: 15, to: 15, text: 'Three guesses, then one number placed on the marked line.' },
+    { from: 16, to: 16, text: 'Six taps, then a big splash.' },
+    { from: 17, to: 17, text: 'Five dot signs, then the frog is home.' },
+    { from: 18, to: 18, text: 'Five hidden numbers, then the frog is home.' },
+  ],
+  note: [
+    {
+      to: 14,
+      text: 'Two misses show the hops and glow the answer. Help counts once per question; tapping a pad when a number card is wanted is free.',
+    },
+    {
+      from: 15,
+      to: 15,
+      text: 'A guess is never a mistake: the frog hops to the real place. On the marked line a wrong mark counts, and after two the right mark glows.',
+    },
+    { from: 16, to: 16, text: 'Nothing here is wrong: every tap hops the frog, forward or back.' },
+    {
+      from: 18,
+      to: 18,
+      text: 'Two misses lift the corner of the leaf and glow the right card. Help counts once per question; tapping a pad is free.',
+    },
+  ],
 };

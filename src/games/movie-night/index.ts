@@ -1,7 +1,7 @@
-import { Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from 'pixi.js';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { frogArt } from '../../art/animals';
 import { Critter, CRITTERS } from '../../art/critter';
-import { cream, ink, swatch, wood } from '../../art/palette';
+import { ink, swatch, wood } from '../../art/palette';
 import { silenced, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
@@ -15,6 +15,9 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { LEVELS, Round, unmet, type Pad, type Match } from './logic';
 import { layout, type Box } from './layout';
 import { glyph, footage, emblem } from './art';
+import { Button, label } from './ui';
+import { isCutLevel } from './cut';
+import { ShotShow } from './cut-scene';
 const padLines: Record<Pad, LineId> = {
   splash: 'mn.splash',
   boing: 'mn.boing',
@@ -31,63 +34,6 @@ const names: Record<Pad, string> = {
   knock: 'Knock',
   hello: 'Hello',
 };
-function label(text: string, y: number, size = 21) {
-  const t = new Text({
-    text,
-    style: {
-      fontFamily: 'Nunito, sans-serif',
-      fontSize: size,
-      fontWeight: '800',
-      fill: ink,
-      align: 'center',
-    },
-  });
-  t.anchor.set(0.5);
-  t.y = y;
-  t.eventMode = 'none';
-  return t;
-}
-class Button extends Container {
-  readonly face = new Container();
-  readonly rim = new Graphics();
-  readonly caption: Text;
-  readonly bg = new Graphics();
-  constructor(
-    public w: number,
-    public h: number,
-    text: string,
-    fn: () => void,
-  ) {
-    super();
-    this.caption = label(text, 27);
-    this.addChild(this.bg, this.face, this.caption, this.rim);
-    this.size(w, h);
-    this.rim.eventMode = 'none';
-    this.face.eventMode = 'none';
-    this.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
-    onTap(this, () => {
-      this.alpha = 0.72;
-      fn();
-    });
-  }
-  size(w: number, h: number) {
-    this.w = w;
-    this.h = h;
-    this.bg
-      .clear()
-      .roundRect(-w / 2, -h / 2, w, h, 18)
-      .fill(cream)
-      .stroke({ color: wood.line, width: 4 });
-    this.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
-  }
-  outline(on: boolean) {
-    this.rim.clear();
-    if (on)
-      this.rim
-        .roundRect(-this.w / 2 + 3, -this.h / 2 + 3, this.w - 6, this.h - 6, 16)
-        .stroke({ color: swatch.yellow.line, width: 7 });
-  }
-}
 interface Playback {
   kind: 'watch' | 'premiere' | 'audition' | 'model';
   slot: number;
@@ -663,6 +609,11 @@ export class MovieNight implements Game {
       .fill(ink);
     this.draw();
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     if (this.round.qualified) return { tap: { on: this.premiereButton } };
@@ -693,7 +644,12 @@ export const movieNight: GameModule = {
   titleLine: 'mn.title',
   region: 'treehouse',
   challenge: 'music',
-  skills: ['combining pictures and sound', 'matching sound to a pictured event', 'revision'],
+  skills: [
+    'combining pictures and sound',
+    'matching sound to a pictured event',
+    'choosing what a show includes and puts first',
+    'revision',
+  ],
   bands: ['preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) =>
@@ -701,6 +657,8 @@ export const movieNight: GameModule = {
       'Sound for the show: any sound on any picture',
       'Right on time: splash on Duck’s landing',
       'Two moments: knock on the door tap, hello on the wave',
+      'Pick the shots: show the find, then the smile',
+      'Keep the surprise: the box before it opens',
     ][planIndex(l)],
   music: silenced(STYLES.quiet),
   touchDemo: true,
@@ -709,8 +667,8 @@ export const movieNight: GameModule = {
     'One person places sounds; the other watches, then swap. A grown-up can look away until the premiere and say what they heard.',
   hubIcon: () => new WigglyIcon(emblem()),
   sticker: () => emblem(),
-  create: (ctx) => new MovieNight(ctx),
+  create: (ctx) => (isCutLevel(ctx.level) ? new ShotShow(ctx) : new MovieNight(ctx)),
 };
 function planIndex(l: number) {
-  return Math.max(0, Math.min(2, Math.floor(l) - 1));
+  return Math.max(0, Math.min(4, Math.floor(l) - 1));
 }

@@ -10,7 +10,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * animal and it munches its snack, or tap a snack and it floats to the animal who loves it. Then
  * "who eats grass?", giving each animal its food by dragging, and finally a number of snacks.
  */
-export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count' | 'sound' | 'eats' | 'pairs';
+export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count' | 'sound' | 'eats' | 'pairs' | 'diet';
 
 export interface SnackPlan {
   mode: SnackMode;
@@ -70,6 +70,7 @@ export const PLANS: SnackPlan[] = [
     board: 'words',
     name: 'The long menu: read two lines, numeral and food word, and give each animal its own number',
   },
+  { mode: 'diet', animals: 5, rounds: 1, name: 'Plants, meat or both: tap the mat each animal belongs on' },
 ];
 
 export const LEVELS: BandLevels = {
@@ -77,7 +78,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
   prek: { min: 5, max: 8 },
-  school: { min: 8, max: 10 },
+  school: { min: 8, max: 11 },
 };
 
 /** Rows of snacks at the feeding spot: two at levels 8–10 (two piles, or the menu board's ten), one everywhere else. */
@@ -389,6 +390,7 @@ export interface SnackRound {
 export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
   if (plan.mode === 'eats') return makeEatsRounds(plan.rounds, rng);
   if (plan.mode === 'pairs') return makePairsRounds(plan.rounds, rng);
+  if (plan.mode === 'diet') return [{ animals: makeDietRound(rng) }];
   const out: SnackRound[] = [];
   const many = plan.mode === 'munch' || plan.mode === 'float' || plan.mode === 'match';
   // Free play and matching keep one set of animals; questions pick new animals each time.
@@ -429,7 +431,8 @@ export const soundHelp = (wrongs: number): 'animal' | 'snack' | null =>
   wrongs === 2 ? 'animal' : wrongs === 4 ? 'snack' : null;
 
 /** One touch of the ghost finger: an animal (by its place in the row), a snack on the blanket, a snack carried to an animal, or the bell. */
-export type SnackTouch = { friend: number } | { snack: number } | { give: number; to: number } | 'bell';
+export type SnackTouch =
+  { friend: number } | { snack: number } | { give: number; to: number } | { mat: number } | 'bell';
 
 /** What the table looks like to the finger. */
 export interface SnackTable {
@@ -446,6 +449,8 @@ export interface SnackTable {
   /** 'pairs': how many each animal wants, and how many of its food it has eaten, in the row's order. */
   wants?: number[];
   given?: number[];
+  /** 'diet': the animal waiting to be sorted. */
+  waiting?: CritterName;
 }
 
 /**
@@ -486,6 +491,8 @@ export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
       const give = t.snacks.findIndex((s) => !s.eaten && s.food === FAVORITE[t.friends[to]]);
       return give < 0 ? null : { give, to };
     }
+    case 'diet':
+      return t.waiting && DIET[t.waiting] ? { mat: MATS.indexOf(DIET[t.waiting]!.kind) } : null;
     case 'count': {
       const fed = t.snacks.filter((s) => s.eaten).length;
       if (fed === t.n) return 'bell';
@@ -630,3 +637,100 @@ export const boardBox = (lines: number) => {
   const height = lines * BOARD_LINE_H + 24;
   return { top, height, bottom: top + height + 10 };
 };
+
+/** Level 11, Plants, meat or both?: what kind of food an animal truly eats. */
+export type DietKind = 'plants' | 'both' | 'meat';
+/** The three mats, left to right: the middle one is drawn where the plant and meat groups overlap. */
+export const MATS: DietKind[] = ['plants', 'both', 'meat'];
+
+/**
+ * Level 11's diet table: each animal's kind and two foods it truly eats, spoken only (nothing here is drawn). A plant
+ * eater's `a` and `b` are two plants; a *both* animal's `a` is a plant and `b` a meat food; the cat's `b` is its meat
+ * food and only `b` is said. The dog's bone and the bear's honey are snack-time favorites, not evidence, and are never
+ * said here. Each source was opened once on 2026-11-28 (docs/definitions/animal-snack-diet-sort.md).
+ */
+export const DIET: Partial<Record<CritterName, { kind: DietKind; a: string; b: string }>> = {
+  // University of Kentucky "Forages for dairy cattle"; UW–Madison Extension corn silage.
+  cow: { kind: 'plants', a: 'hay', b: 'corn' },
+  // University of Missouri Extension G2807; UMN Extension horse feeding.
+  horse: { kind: 'plants', a: 'hay', b: 'oats' },
+  // Oregon State EC 1652; Ontario OMAFRA "Feeding systems for sheep".
+  sheep: { kind: 'plants', a: 'grass', b: 'oats' },
+  // House Rabbit Society Chicago, "Hay! The grass roots of the diet".
+  bunny: { kind: 'plants', a: 'grass', b: 'hay' },
+  // Cornell Feline Health Center, "Feeding your cat": an obligate carnivore.
+  cat: { kind: 'meat', a: 'meat', b: 'fish' },
+  // MSD (Merck) Veterinary Manual, "Overview of Nutrition: Small Animals": nutritionally, dogs are omnivores.
+  dog: { kind: 'both', a: 'grain', b: 'meat' },
+  // Iowa Pork Industry Center "Feedstuffs" (corn); feralhogs.extension.org "Food habits of feral hogs" (earthworms).
+  pig: { kind: 'both', a: 'corn', b: 'worms' },
+  // Audubon field guide, Mallard (seeds); Cornell All About Birds, Mallard food (snails in the breeding season).
+  duck: { kind: 'both', a: 'seeds', b: 'snails' },
+  // NPS black bear pages: apples near farms, and fish.
+  bear: { kind: 'both', a: 'apples', b: 'fish' },
+  // poultry.extension.org "What does a chicken eat?": omnivores, grain plus bugs and worms.
+  hen: { kind: 'both', a: 'corn', b: 'worms' },
+  // Animal Diversity Web, Mus musculus: an omnivore of seeds and grains, plus insects.
+  mouse: { kind: 'both', a: 'grain', b: 'bugs' },
+};
+/** The food words `DIET` may say, by kind, so the tests can check each plant food is a plant. */
+export const PLANT_WORDS = ['hay', 'corn', 'oats', 'grass', 'grain', 'seeds', 'apples'];
+export const MEAT_WORDS = ['meat', 'fish', 'worms', 'snails', 'bugs'];
+export const DIET_ANIMALS = Object.keys(DIET) as CritterName[];
+export const dietOf = (kind: DietKind) => DIET_ANIMALS.filter((a) => DIET[a]!.kind === kind);
+
+/**
+ * Level 11's one sort: two plant eaters and two that eat both, plus the cat on a fair coin, so no mat holds more than
+ * two and the meat mat is sometimes empty. Shuffled, but the cat never walks up first.
+ */
+export function makeDietRound(rng: Rng): CritterName[] {
+  const pick2 = (from: CritterName[]) => rng.shuffle([...from]).slice(0, 2);
+  const out = rng.shuffle([...pick2(dietOf('plants')), ...pick2(dietOf('both'))]);
+  if (rng.chance(0.5)) out.splice(rng.int(1, out.length), 0, 'cat');
+  return out;
+}
+
+export const dietTap = (animal: CritterName, mat: DietKind): 'right' | 'wrong' =>
+  DIET[animal]?.kind === mat ? 'right' : 'wrong';
+
+/** Which reply a tap on `mat` gets, and its words: a right mat names the kind and the foods; a wrong one gives a true food and a question. */
+export type DietLineId =
+  | 'snack.dietplants'
+  | 'snack.dietmeat'
+  | 'snack.dietboth'
+  | 'snack.dietalso'
+  | 'snack.dietnomeat'
+  | 'snack.dietnoplants';
+export function dietLine(
+  animal: CritterName,
+  mat: DietKind,
+): { id: DietLineId; vars: { a: string; b: string } } {
+  const d = DIET[animal]!;
+  if (d.kind === mat) {
+    const id =
+      d.kind === 'plants' ? 'snack.dietplants' : d.kind === 'meat' ? 'snack.dietmeat' : 'snack.dietboth';
+    return { id, vars: { a: d.a, b: d.b } };
+  }
+  if (d.kind === 'both')
+    // The food that fits the mat she chose comes first, then the other kind "too".
+    return { id: 'snack.dietalso', vars: mat === 'meat' ? { a: d.b, b: d.a } : { a: d.a, b: d.b } };
+  return { id: d.kind === 'plants' ? 'snack.dietnomeat' : 'snack.dietnoplants', vars: { a: d.a, b: d.b } };
+}
+
+/** Level 11's mats across the feeding spot: at least 160 by 120 with 32 between, so a 12-unit tap margin never reaches a neighbor. */
+export const MAT_H = 120;
+export const MAT_GAP = 32;
+export const MAT_MARGIN = 12;
+export function dietMats(w: number, h: number): { x: number; y: number; w: number; h: number }[] {
+  const { left, right } = spotEdges(w);
+  const width = Math.min(240, (right - left - 2 * MAT_GAP) / 3);
+  const start = (left + right) / 2 - (3 * width + 2 * MAT_GAP) / 2;
+  return MATS.map((_, i) => ({ x: start + i * (width + MAT_GAP), y: h - 30 - MAT_H, w: width, h: MAT_H }));
+}
+/** A sorted animal shrinks to fit two side by side on a mat. */
+export const MAT_SCALE = 0.24;
+/** Where the `slot`th animal on a mat stands (its feet). */
+export const matSlot = (mat: { x: number; y: number; w: number; h: number }, slot: number) => ({
+  x: mat.x + mat.w * (slot === 0 ? 0.28 : 0.72),
+  y: mat.y + mat.h - 16,
+});

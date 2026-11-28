@@ -89,6 +89,26 @@ import { goToOrigin } from '../origin';
 import { Scene } from '../Scene';
 import { applySettings } from '../settings';
 import '../../couch/style.css';
+import { PaperSkin } from '../../ui/paper-dom';
+import { PAPER_ON, paperPass } from '../../art/paperize';
+import { PAPER_BG } from '../../art/paper';
+
+/** What on couch play's HTML screens is a piece of paper: every button and card, and the panels that frame a group. */
+const PAPER_PIECES = [
+  '.couch button',
+  '.couch-setting',
+  '.couch-player',
+  '.couch-players-choice',
+  '.couch-glass',
+  '.couch-stop',
+  '.couch-hud',
+  '.couch-game-help',
+  '.couch-chip',
+  '.couch-rows li',
+  '.keycaps kbd',
+  '.couch-lanterns span',
+  '.couch-badges li',
+].join(', ');
 
 /** How long the name card shows when a game has already been explained. */
 const CARD_SECONDS = 1.6;
@@ -125,12 +145,16 @@ const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', cls = ''
 
 /** Adult-only host: separate navigation, session goal and save; games retain their own rules. */
 export class CouchScene extends Scene {
+  /** Takes keys itself. */
+  override padPointer = false;
   upright = true;
   /** Couch play has its own pause menu on Esc. */
   canPause = false;
   readonly couch = couchStore;
   private input!: CouchInput;
   private readonly overlay = node('section', '', 'couch');
+  /** Dresses the menus' buttons and panels as paper (docs/ART-STYLE.md). */
+  private skin: PaperSkin | null = null;
   private readonly status = node('p', '', 'couch-status');
   private readonly warning = node('p', '', 'couch-warning');
   /** How to move and choose, kept current as a controller is connected or left behind. */
@@ -196,6 +220,7 @@ export class CouchScene extends Scene {
     this.overlay.setAttribute('aria-label', 'Couch play');
     this.applyPrefs();
     document.body.append(this.overlay);
+    this.skin = new PaperSkin(this.overlay, PAPER_PIECES);
     this.introLayer.addChild(this.paper);
     this.introLayer.visible = false;
     this.ui.addChild(this.introLayer);
@@ -226,6 +251,7 @@ export class CouchScene extends Scene {
   }
   /** What the button that leaves couch play says: the island when it sent her here, else the start. */
   private get leaveLabel() {
+    if (this.origin && 'home' in this.origin) return 'Back home';
     return this.origin ? 'Back to the island' : 'Back to start';
   }
 
@@ -369,6 +395,7 @@ export class CouchScene extends Scene {
   /** The game's picture, drawn once into a canvas for the DOM screens. */
   private iconCanvas(mod: GameModule, resolution = 2) {
     const icon = mod.hubIcon();
+    if (PAPER_ON) paperPass(icon);
     const canvas = this.app.renderer.extract.canvas({ target: icon, resolution }) as HTMLCanvasElement;
     canvas.setAttribute('aria-hidden', 'true');
     icon.destroy({ children: true });
@@ -561,6 +588,7 @@ export class CouchScene extends Scene {
   /** The pet, drawn once into a canvas for the DOM screens. */
   private petCanvas(resolution = 1.5) {
     const pet = makeCompanion();
+    if (PAPER_ON) paperPass(pet);
     const canvas = this.app.renderer.extract.canvas({ target: pet, resolution }) as HTMLCanvasElement;
     canvas.setAttribute('aria-hidden', 'true');
     pet.destroy({ children: true });
@@ -917,7 +945,7 @@ export class CouchScene extends Scene {
     this.focusButtons();
     if (outcome) {
       sfx.tada();
-      void voice.say(outcome.improved ? 'couch.course.best' : info.done);
+      void voice.say(outcome.improved ? 'couch.course.best' : info.done, { count: String(info.best.length) });
     }
   }
 
@@ -1204,7 +1232,7 @@ export class CouchScene extends Scene {
   }
 
   private drawPaper(v: View) {
-    this.paper.clear().rect(0, 0, v.w, v.h).fill(0xf3f6eb);
+    this.paper.clear().rect(0, 0, v.w, v.h).fill(PAPER_BG);
   }
 
   /** Run the demo, put it in its window, and light the controller with whatever its bot presses. */
@@ -1451,8 +1479,14 @@ export class CouchScene extends Scene {
         this.couch.save();
         this.go();
       });
-    this.button(sheet, this.origin ? 'Save and back to the island' : 'Save and return to start', () =>
-      this.leave(),
+    this.button(
+      sheet,
+      this.origin && 'home' in this.origin
+        ? 'Save and back home'
+        : this.origin
+          ? 'Save and back to the island'
+          : 'Save and return to start',
+      () => this.leave(),
     );
     sheet.append(
       node(
@@ -1809,6 +1843,7 @@ export class CouchScene extends Scene {
     this.lifetime.destroy();
     this.game?.destroy();
     this.closeFinale();
+    this.skin?.destroy();
     this.overlay.remove();
     voice.stop();
     music.stop();

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function robots() {
+    if (process.env.DRIVE_ONLY === '17') return oneStep();
+    if (process.env.DRIVE_ONLY) return drive();
     for (
       let level = Number(process.env.FROM_LEVEL || 1);
       level <= Number(process.env.TO_LEVEL || 15);
@@ -268,6 +270,108 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         `Robot Path level ${level}: collisions, hint, ${level > 6 ? 'counted steps and loops, step-through playback, ' : ''}and reward passed`,
       );
     }
+  }
+
+  /** Level 16, Drive the robot, on a phone held upright: a rock and the edge stop it gently, then the arrows reach the star. */
+  async function drive() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('robot-path', 16);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (!g.plan || g.arrows.length !== 4) throw new Error('Drive the robot did not start');
+      if ('play' in g || 'queue' in g) throw new Error('Drive the robot has a program or play button');
+      const tap = async (dir) => {
+        kit.tapOn(g.arrows.find((a) => a.dir === dir).button);
+        await kit.sleep(450);
+        await kit.until(() => !g.moving, 3000);
+      };
+      // The top edge: the robot stays put.
+      const before = g.robot.position.y;
+      await tap('up');
+      if (g.at[0] !== 0 || g.at[1] !== 0 || Math.abs(g.robot.position.y - before) > 1)
+        throw new Error('The edge moved the robot');
+    });
+    await screenshot('robot-path-16-start');
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const tap = async (dir) => {
+        kit.tapOn(g.arrows.find((a) => a.dir === dir).button);
+        await kit.sleep(450);
+        await kit.until(() => !g.moving, 3000);
+      };
+      // Walk next to the rock and push into it, then drive the shortest way home.
+      const [rx, ry] = g.plan.rocks[0];
+      const besides = [
+        [rx - 1, ry, 'right'],
+        [rx, ry - 1, 'down'],
+      ].find(([x, y]) => x >= 0 && y >= 0 && !(x === g.plan.goal[0] && y === g.plan.goal[1]));
+      if (besides) {
+        const [bx, by, into] = besides;
+        for (let k = 0; k < bx; k++) await tap('right');
+        for (let k = 0; k < by; k++) await tap('down');
+        const at = g.at.join();
+        await tap(into);
+        if (g.at.join() !== at) throw new Error('The rock let the robot through');
+      }
+      // The how-to finger's next arrow is the bot's shortest route.
+      for (let k = 0; k < 8 && !g.done; k++) {
+        const next = g.autotouch();
+        if (!next) throw new Error(`No next arrow at ${g.at}`);
+        kit.tapOn(next.tap.on);
+        await kit.sleep(450);
+        await kit.until(() => !g.moving, 3000);
+      }
+      if (!(await kit.until(() => g.done, 6000)))
+        throw new Error(
+          `The robot did not reach the star: at ${g.at} goal ${g.plan.goal} rock ${g.plan.rocks[0]} moving ${g.moving}`,
+        );
+    });
+    await finished('robot-path');
+    log(
+      'Robot Path level 16: edge and rock stop gently, the arrows drive it to the star, no program or play button',
+    );
+  }
+
+  /** Level 17, One step, then play, on a touch phone: two wrong arrows (each a miss that empties the slot), the glow, then the right arrow. */
+  async function oneStep() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('robot-path', 17);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (g.plan.limit !== 1 || g.plan.size !== 3) throw new Error('Level 17 is not a one-slot board');
+      const right = g.solution[0].dir;
+      const wrong = ['up', 'right', 'down', 'left'].filter((d) => d !== right);
+      const press = async (dir) => {
+        kit.tapOn(g.arrows.find((a) => a.dir === dir).button);
+        await kit.sleep(450);
+      };
+      for (let k = 0; k < 2; k++) {
+        await press(wrong[k + 1]);
+        // A second arrow does not fit the one slot.
+        await press(right);
+        if (g.program.length !== 1 || g.program[0].dir !== wrong[k + 1])
+          throw new Error('The slot took two arrows');
+        kit.tapOn(g.play);
+        if (!(await kit.until(() => !g.running && g.misses === k + 1, 8000)))
+          throw new Error('A wrong arrow was not a miss');
+        if (g.program.length !== 0) throw new Error('The slot did not empty after a miss');
+      }
+      if (g.hints !== 1) throw new Error('Two misses did not show the glow');
+    });
+    await screenshot('robot-path-17-glow');
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const next = g.autotouch();
+      kit.tapOn(next.tap.on);
+      await kit.sleep(450);
+      kit.tapOn(g.play);
+      if (!(await kit.until(() => g.done, 8000))) throw new Error('The right arrow did not reach the star');
+      if (g.misses !== 2 || g.hints !== 1) throw new Error('Misses or hints were miscounted');
+    });
+    await finished('robot-path');
+    log(
+      'Robot Path level 17: two wrong arrows are misses that empty the slot, a second arrow does not fit, the glow, the right arrow reaches the star',
+    );
   }
 
   return { robots };

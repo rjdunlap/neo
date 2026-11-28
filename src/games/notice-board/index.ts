@@ -627,6 +627,11 @@ class NoticeBoard implements Game {
   }
 
   /** The ghost finger: tap the answer (the maker, the witness or the basket). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // The demo waits for the lesson and the poster's reading, as a child hearing them would.
     if (this.busy || this.finished || this.unread) return null;

@@ -1,46 +1,28 @@
 import { Circle, Container, Graphics } from 'pixi.js';
-import { shadow, type Swatch } from '../art/palette';
+import { type Swatch } from '../art/palette';
+import { crayon, paperCircle, paperRect } from '../art/paper';
 import { sfx } from '../audio/sfx';
 import { onTap, palmOnGlass } from '../engine/input';
 import type { Meaning } from './origin-art';
 import { namePill } from './text';
 import { PILL } from '../content/button-names';
 
-/** `a` moved toward `b` by `t` (0–1), channel by channel. */
-function blend(a: number, b: number, t: number): number {
-  const ch = (shift: number) =>
-    Math.round(((a >> shift) & 0xff) * (1 - t) + ((b >> shift) & 0xff) * t) << shift;
-  return ch(16) | ch(8) | ch(0);
-}
-
 /** The outline a finish is drawn in: a circle about the origin, or a centred rounded rectangle. */
 export type FinishShape = { radius: number } | { w: number; h: number; corner: number };
 
 /**
- * The one finish every root button and card wears (RW14 slice 7): a short ground shadow, a rim in the swatch's `line`
- * colour, a two-tone face (a deeper lower lip under the lit top) and a soft highlight at the upper left. `face`
- * replaces the swatch's fill for a card's face (cream). One Graphics, so a button's picture stays its second child.
+ * The one finish every root button and card wears: a paper cut-out piece (docs/ART-STYLE.md) with its torn edge, warm
+ * shadow, fibre and a crayon outline in a darker shade of the swatch. `face` replaces the swatch's fill for a card's
+ * face (cream); the outline still follows the swatch, so a card keeps its colour. One Graphics, so a button's picture
+ * stays its second child.
  */
 export function finish(shape: FinishShape, sw: Swatch, face = sw.fill): Graphics {
   const g = new Graphics();
-  const rim = 6;
-  const lip = blend(face, sw.line, 0.35);
-  if ('radius' in shape) {
-    const r = shape.radius;
-    g.ellipse(0, r * 0.9, r * 0.82, r * 0.2).fill({ color: shadow, alpha: 0.2 });
-    g.circle(0, 0, r).fill(sw.line);
-    g.circle(0, 0, r - rim).fill(lip);
-    g.circle(0, -3, r - rim - 2).fill(face);
-    g.ellipse(-r * 0.28, -r * 0.4, r * 0.34, r * 0.2).fill({ color: 0xffffff, alpha: 0.28 });
-    g.circle(-r * 0.36, -r * 0.42, r * 0.11).fill({ color: 0xffffff, alpha: 0.45 });
-  } else {
-    const { w, h, corner: c } = shape;
-    const [x, y] = [-w / 2, -h / 2];
-    g.ellipse(0, h / 2 + 4, w * 0.44, 12).fill({ color: shadow, alpha: 0.2 });
-    g.roundRect(x, y, w, h, c).fill(sw.line);
-    g.roundRect(x + rim, y + rim, w - rim * 2, h - rim * 2, c - rim).fill(lip);
-    g.roundRect(x + rim + 1, y + rim - 2, w - rim * 2 - 2, h - rim * 2 - 4, c - rim - 1).fill(face);
-    g.roundRect(x + rim + 10, y + rim + 6, w * 0.42, 14, 7).fill({ color: 0xffffff, alpha: 0.4 });
+  const line = crayon(sw);
+  if ('radius' in shape) paperCircle(g, 0, 0, shape.radius, face, { line, seed: shape.radius });
+  else {
+    const { w, h, corner } = shape;
+    paperRect(g, -w / 2, -h / 2, w, h, corner, face, { line, seed: w * 7 + h });
   }
   return g;
 }

@@ -514,6 +514,11 @@ class SnowballMerge implements Game {
     if (lit === 'undo') void this.ctx.say(this.stuckLine);
     else if (lit) void this.ctx.say(`snowball.${lit}`);
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch(0);
+  }
+
   autotouch(_dt: number): TouchIntent | null {
     if (!this.ctx.alive || this.busy || this.finished) return null;
     const direction = this.route?.[0];

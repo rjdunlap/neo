@@ -1,0 +1,7 @@
+# 2026-11-27 — Market Stall level 14, Which coin? (PR #2327)
+
+**Changed:** Market Stall level 14 *Which coin?* (dive slice 9, first entry): a `which` plan between levels 2 and 3 for preschool and pre-K, placed with `order` and `entryLevels`; the shopkeeper asks for the one, two or five-shell coin, one tap hands it over and the pips are counted aloud; a wrong coin says its worth; two misses glow the asked coin. The woods shop loop gained a level-14 branch.
+
+**Ran:** `npm run typecheck`, `npm run format:check`, eslint on the game and the suite, and `npx vitest run src/games/market-stall src/content src/progress src/games/registry.test.ts` (683 tests; all pass except the sticker snapshot, which also fails on untouched `origin/main` 88dafc1d0 on this Mac while CI passed it there, so it is local, not this change). `BROWSER_SUITE=woods WOODS_ONLY=shop FROM_LEVEL=14` passed: no bell, the 1, 2 and 5 coins with pips, two wrong coins (two misses, one hint, the asked coin lit), the glow following the coin at 390×844, the saved score and one sticker; screenshot `market-stall-14-upright`. The first run's screenshot showed the glow left where the coin had been before the rotation; `resize()` now moves it, and the suite asserts it. `BROWSER_SUITE=fingerdemo FINGER_ONLY=market-stall FINGER_LEVELS=14 FINGER_BAND=prek` passed (13.0 s).
+
+**Not run:** the shop loop for levels 1–13 (their code paths are unchanged; the pips predicate gives the same answer there), `npm run build` (no shared files or assets changed), offline, and the full `npm test` (left to PR CI).

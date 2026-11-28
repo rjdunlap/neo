@@ -12,6 +12,10 @@ import {
   CAUSE_IDS,
   causePuzzle,
   LEVEL_PLANS,
+  GROW_LEVEL,
+  GROW_PLAN,
+  LEVELS,
+  stripPlan,
   isCause,
   pictureText,
   nextPicture,
@@ -108,8 +112,8 @@ describe('Story Steps', () => {
     expect([...seen].sort()).toEqual([...CAUSE_IDS].sort());
   });
 
-  it('has ten stories, each a real sequence of four different, spoken sentences', () => {
-    expect(STORY_IDS).toHaveLength(10);
+  it('has eleven stories, each a real sequence of four different, spoken sentences', () => {
+    expect(STORY_IDS).toHaveLength(11);
     for (const id of STORY_IDS) {
       const { name, steps } = STORIES[id];
       expect(steps, id).toHaveLength(4);
@@ -119,7 +123,7 @@ describe('Story Steps', () => {
       expect(name, id).toMatch(/^[A-Z][A-Za-z ]+$/);
       expect(STORY_FAMILY[id], id).toBeTruthy();
     }
-    expect(new Set(STORY_IDS.map((id) => STORIES[id].name)).size).toBe(10);
+    expect(new Set(STORY_IDS.map((id) => STORIES[id].name)).size).toBe(11);
   });
 
   it('draws every level from a non-empty pool of known stories, and the youngest levels from building stories only', () => {
@@ -132,9 +136,17 @@ describe('Story Steps', () => {
     }
     for (const id of STORY_PLANS[0].stories)
       expect(STORY_FAMILY[id], 'level 1 is enabling orders only').toBe('stack');
-    // Every story is told somewhere below the last levels, and each of the ten shows up in the full-pool levels.
+    // Every story is told somewhere below the last levels, and each of the eleven shows up in the full-pool levels.
     for (const id of STORY_IDS)
       expect(STORY_PLANS.some((plan) => (plan.stories as readonly string[]).includes(id))).toBe(true);
+  });
+
+  it('draws the laundry story at level 4 and in the full-pool levels, never in the build-on-the-last levels', () => {
+    expect(STORY_PLANS[3].stories).toContain('laundry');
+    expect(STORY_PLANS[4].stories).toContain('laundry');
+    for (const plan of STORY_PLANS.slice(0, 3))
+      expect(plan.stories as readonly string[]).not.toContain('laundry');
+    expect(STORY_FAMILY.laundry).toBe(STORY_FAMILY.dog);
   });
 
   it('never fills a round with a lookalike: extra pictures are from other families, and a mixed round takes its two from two families', () => {
@@ -213,6 +225,9 @@ describe('Story Steps untangle', () => {
       }
     expect(canPairStories('dog', 'bedtime')).toBe(false);
     expect(canPairStories('bedtime', 'dog')).toBe(false);
+    expect(canPairStories('laundry', 'bedtime')).toBe(false);
+    expect(canPairStories('bedtime', 'laundry')).toBe(false);
+    expect(canPairStories('laundry', 'dog')).toBe(false);
   });
   it('deals six distinct required pictures, seeded, with a unique row and independent ordering', () => {
     const seen = new Set<string>();
@@ -251,6 +266,36 @@ describe('Story Steps untangle', () => {
       expect(moves).toBe(6);
       expect(botPlaced.map((s) => s.size)).toEqual([3, 3]);
     }
-    expect(seen.size).toBe(10);
+    expect(seen.size).toBe(11);
+  });
+});
+
+describe('One picture grows (level 15)', () => {
+  it('is the lap level and the toddler entry, played first without renumbering', () => {
+    expect(LEVELS.lap).toEqual({ min: GROW_LEVEL, max: GROW_LEVEL });
+    expect(LEVELS.toddler!.order).toEqual([GROW_LEVEL, 1, 2]);
+    expect(LEVELS.school!.max).toBeLessThan(GROW_LEVEL);
+    expect(stripPlan(GROW_LEVEL)).toBe(GROW_PLAN);
+    expect(stripPlan(1)).toBe(LEVEL_PLANS[0]);
+  });
+
+  it('shows the first picture and offers only the one that grows from it: no choice but the right card', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const p = storyPuzzle(GROW_PLAN, new Rng(seed));
+      expect(['tower', 'flower']).toContain(p.story);
+      expect(p.sequence.map((c) => c.stage)).toEqual([0, 1]);
+      expect(p.fixed).toEqual([0]);
+      expect(p.choices).toHaveLength(1);
+      expect(sameCard(p.choices[0], p.sequence[1])).toBe(true);
+      // The space to fill is the second one, and the bot (and ghost finger) carries the only card there.
+      const placed = new Set(p.fixed);
+      const next = nextPicture(p.sequence, placed, [{ card: p.choices[0], placed: false }]);
+      expect(next?.slot).toBe(1);
+    }
+  });
+
+  it('tells a tiny growing story: a block lands, a sprout comes up', () => {
+    expect(pictureText({ story: 'tower', stage: 1 })).toContain('second block');
+    expect(pictureText({ story: 'flower', stage: 1 })).toContain('sprout');
   });
 });

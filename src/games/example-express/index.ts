@@ -754,6 +754,15 @@ export class ExampleExpress implements Game {
     this.background.clear().rect(0, 0, view.w, view.h).fill(swatch.teal.light);
     this.draw();
   }
+  /** Guided first play: its demonstration replays a test once, so the hand shows the next real step. The bot's own flags are put back. */
+  showMove(): TouchIntent | null {
+    const demoReplayed = this.demoReplayed;
+    this.demoReplayed = true;
+    const move = this.autotouch();
+    this.demoReplayed = demoReplayed;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     if (!this.round.surpriseSeen) return { tap: { on: this.testButton } };

@@ -420,6 +420,11 @@ class WordCode implements Game {
   }
 
   /** The ghost finger: the picture word's letters from the tray, or the reference solver's next try on the keyboard, then the check. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const want = this.plan.picture ? this.hidden : this.nextDemoTry();
@@ -463,6 +468,7 @@ export const game: GameModule = {
     'After each try, say what the marks tell you: "The C is a cross, so it is not in the word. Which letters could still fit?"',
   offScreen:
     'Pick a short word in your head and let her guess it, telling her for each letter whether it is in the word and in the right place.',
+  ownKeys: true,
   hubIcon: () => new WigglyIcon(marksArt()),
   touchDemo: true,
   upright: true,

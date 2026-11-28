@@ -1,5 +1,6 @@
 import { Assets, type Texture } from 'pixi.js';
 import type { AccessoryKind } from './creature';
+import { paperArt } from './paper';
 import {
   type ArtBase,
   type ArtSet,
@@ -538,7 +539,7 @@ export async function loadCastArt(): Promise<void> {
   await Promise.all(
     CAST.map(async (s) => {
       try {
-        loaded[s] = await loadCast(s);
+        loaded[s] = paperArt(s) ?? (await loadCast(s));
       } catch (e) {
         console.warn(`Could not load the ${s} art`, e);
       }

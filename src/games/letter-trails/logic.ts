@@ -20,11 +20,23 @@ export const PLANS = [
   },
   { letters: 'cosvwt', name: 'Little letters like their capitals: c, o, s, v, w, t in a four-line frame' },
   { letters: 'adg', name: 'Magic c: a, d and g start with a little c, then a line' },
+  { letters: 'uielkyj', name: 'Lines and hooks: u, i, e, l, k, y and j in the four-line frame' },
+  { letters: 'prnmhb', name: 'Down, up and over: p, r, n, m, h and b in the four-line frame' },
+  { letters: 'fqxz', name: 'The last four: f, q, x and z in the four-line frame' },
+  {
+    letters: 'abcdefghijklmnopqrstuvwxyz',
+    name: 'Big and little: trace any little letter, with its capital shown beside it',
+  },
+  { letters: '', name: 'Little words: trace a short word in little letters, then see its picture' },
+  {
+    letters: '',
+    name: 'My name, the way it is written: a capital first, then little letters (up to eight)',
+  },
 ];
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 6 },
   prek: { min: 3, max: 10 },
-  school: { min: 7, max: 11 },
+  school: { min: 7, max: 17 },
 };
 
 /** The levels that trace several letters (a word, a name): their misses and hints count once per letter. */
@@ -38,16 +50,37 @@ export const LITTLE_LEVEL = 10;
 /** Level 11 traces one of a, d, g: a little c, then a line (a short one, a tall one, one that reaches below the base). */
 export const MAGIC_LEVEL = 11;
 
-/** Whether the round's letters are little letters, traced in the frame. */
-export const inFrame = (level: number): boolean => {
+/** Level 12 traces one of u i e l k y j: lines, hooks and dots (e starts in the middle of its round, not at the top). */
+export const HOOKS_LEVEL = 12;
+
+/** Level 13 traces one of p r n m h b: down a stem, back up it, then over in a hump or a bowl. */
+export const OVER_LEVEL = 13;
+
+/** Level 14 traces one of f q x z: a hooked stem and bar, a stem with a tail turning right, a cross, a zigzag. */
+export const LAST_LEVEL = 14;
+
+/** Level 15 traces any of the 26 little letters; its capital is ghosted beside the frame (shown, never judged). */
+export const BIG_LEVEL = 15;
+
+/** Level 16 traces one of level 7's short words in little letters, in the frame, and ends on the word's picture. */
+export const LITTLE_WORD_LEVEL = 16;
+
+/** Level 17 traces her name as it is written: a capital standing in the frame, then little letters. */
+export const MY_NAME_LEVEL = 17;
+
+/** Whether the round is traced in the four-line frame: every level from 10 (little letters, and level 17's capital). */
+export const inFrame = (level: number): boolean => trailLevel(level) >= LITTLE_LEVEL;
+
+/** A level that traces her name and ends on a sign with the whole of it: in capitals (8) or as it is written (17). */
+export const nameLevel = (level: number): boolean => {
   const l = trailLevel(level);
-  return l === LITTLE_LEVEL || l === MAGIC_LEVEL;
+  return l === NAME_LEVEL || l === MY_NAME_LEVEL;
 };
 
 /** A word or a name: several letters, each a short flourish, counted at most once per letter. Level 9 is one letter. */
 export const severalLetters = (level: number): boolean => {
   const l = trailLevel(level);
-  return l === WORD_LEVEL || l === NAME_LEVEL;
+  return l === WORD_LEVEL || l === LITTLE_WORD_LEVEL || nameLevel(l);
 };
 
 /** The guide each try of a round shows: one solid try, or level 9's three with less help each time. */
@@ -83,19 +116,33 @@ export function trailLevel(level: number): number {
   return Math.max(1, Math.min(PLANS.length, Math.floor(level)));
 }
 
-/** What the round traces: one capital, a short word or the first eight letters of her name in capitals, or one little letter. */
+/**
+ * What the round traces: one capital, a short word in capitals (7) or little letters (16), the first eight letters of
+ * her name in capitals (8) or as it is written (17), or one little letter.
+ */
 export function trailWord(level: number, name: string, rng: Rng): string {
   const l = trailLevel(level);
-  return l === NAME_LEVEL
-    ? fullName(name).slice(0, NAME_CAP)
-    : l === WORD_LEVEL
-      ? rng.pick(SHORT_WORDS).toUpperCase()
-      : rng.pick(PLANS[l - 1].letters.split(''));
+  if (l === NAME_LEVEL) return fullName(name).slice(0, NAME_CAP);
+  if (l === MY_NAME_LEVEL) return writtenName(name).slice(0, NAME_CAP);
+  if (l === WORD_LEVEL) return rng.pick(SHORT_WORDS).toUpperCase();
+  if (l === LITTLE_WORD_LEVEL) return rng.pick(SHORT_WORDS);
+  return rng.pick(PLANS[l - 1].letters.split(''));
 }
 
-/** Her whole name in capitals, as the closing sign shows it. */
+/** Her whole name in capitals, as level 8's closing sign shows it. */
 export function fullName(name: string): string {
   return nameLetters(name);
+}
+
+/** Her whole name as it is written (level 17): a capital, then little letters. Accents fall away; PIP becomes Pip. */
+export function writtenName(name: string): string {
+  const all = fullName(name);
+  return all[0] + all.slice(1).toLowerCase();
+}
+
+/** The closing sign's name: in capitals at level 8, as it is written at level 17. */
+export function signName(level: number, name: string): string {
+  return trailLevel(level) === MY_NAME_LEVEL ? writtenName(name) : fullName(name);
 }
 
 /**

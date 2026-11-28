@@ -11,8 +11,10 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { drawClay, floatIcon, sameWeightIcon, sinkIcon, smallArt, thingArt } from './art';
+import { drawClay, drawTank, floatIcon, sameWeightIcon, sinkIcon, smallArt, thingArt } from './art';
 import { rangeFor } from '../../progress/difficulty';
+import { BoatLoad } from './boat';
+import { GardenRaft } from './raft';
 import { SaltTanks } from './salt';
 import {
   ALL_SHAPES,
@@ -236,6 +238,11 @@ class SinkFloat implements Game {
    * The ghost finger on the how-to card: tap each thing to drop it in, guess the right button for it, or carry it to its basket.
    * (A guess is never a wrong answer here, but a demonstration shows the plain right one.)
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     if (this.plan.mode === 'shape') return this.choosing ? { tap: { on: this.tileFor('boat').node } } : null;
@@ -769,21 +776,7 @@ class SinkFloat implements Game {
     this.held = { x: (l + r) / 2, y: (top + 110) / 2 + 10 };
     this.catcher.hitArea = new Rectangle(0, 0, v.w, v.h);
     const t = this.tank;
-    this.tankBack
-      .clear()
-      .roundRect(l, t.top, r - l, t.bottom - t.top, 24)
-      .fill({ color: swatch.white.fill, alpha: 0.5 })
-      .rect(l + 6, t.surface, r - l - 12, t.bottom - t.surface - 6)
-      .fill({ color: swatch.blue.fill, alpha: 0.35 });
-    const front = this.tankFront.clear();
-    front.moveTo(l + 6, t.surface);
-    for (let x = l + 6; x <= r - 6; x += 20) front.lineTo(x, t.surface + Math.sin(x / 30) * 4);
-    front.stroke({ width: 4, color: swatch.blue.fill, alpha: 0.8 });
-    front
-      .roundRect(l, t.top, r - l, t.bottom - t.top, 24)
-      .stroke({ width: 8, color: swatch.white.fill })
-      .roundRect(l + 18, t.top + 20, 14, 120, 7)
-      .fill({ color: swatch.white.fill, alpha: 0.6 });
+    drawTank(this.tankBack.clear(), this.tankFront.clear(), t);
 
     const b = this.baskets.clear();
     if (sorting) {
@@ -976,13 +969,8 @@ class SinkFloat implements Game {
 function tankArt(seed = 1): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const g = new Graphics()
-    .roundRect(-90, -150, 180, 150, 18)
-    .fill({ color: swatch.white.fill, alpha: 0.6 })
-    .rect(-84, -100, 168, 94)
-    .fill({ color: swatch.blue.fill, alpha: 0.45 })
-    .roundRect(-90, -150, 180, 150, 18)
-    .stroke({ width: 6, color: swatch.white.line });
+  const g = new Graphics();
+  drawTank(g, g, { l: -90, r: 90, top: -150, surface: -100, bottom: 0 });
   c.addChild(g);
   const floater = thingArt(rng.pick(['duck', 'boat', 'ball'] as Thing[]));
   floater.scale.set(0.6);
@@ -1014,5 +1002,10 @@ export const sinkFloat: GameModule = {
   hubIcon: () => new WigglyIcon(tankArt()),
   touchDemo: true,
   sticker: (seed) => tankArt(seed),
-  create: (ctx) => (sinkPlan(ctx.level).mode === 'salt' ? new SaltTanks(ctx) : new SinkFloat(ctx)),
+  create: (ctx) => {
+    const mode = sinkPlan(ctx.level).mode;
+    if (mode === 'raft') return new GardenRaft(ctx);
+    if (mode === 'boat') return new BoatLoad(ctx);
+    return mode === 'salt' ? new SaltTanks(ctx) : new SinkFloat(ctx);
+  },
 };

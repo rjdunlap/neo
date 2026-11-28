@@ -427,6 +427,11 @@ class DominoRun implements Game {
   }
 
   /** The ghost finger: drag the hint's domino into its socket until the line would ring, then tap the starter. It never shows a stall. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.line || this.pieces.some((p) => p.handle.dragging)) return null;
     if (this.plan.tapAny) return { tap: { on: this.nodes[0][1] ?? this.starters[0], x: 0, y: -40 } };
@@ -949,9 +954,12 @@ class DominoRun implements Game {
         life: [0.4, 0.8],
       });
     }
-    await this.ctx.say(line);
     const last = this.index === this.lines.length - 1;
-    if (!last) {
+    // The ring line plays over the dominoes standing up and the slide to the next line (U7d batch 2); the next line's
+    // instruction cuts it. The last line is heard out, because the finale's own line would cut it.
+    const said = this.ctx.say(line);
+    if (last) await said;
+    else {
       await this.standUp(this.nodes.flat().filter((n): n is Container => !!n));
       const away = -this.ctx.view.w;
       await Promise.all([

@@ -23,6 +23,8 @@ import {
   basketSlot,
   countSign,
   describeFill,
+  pourLanding,
+  streamWidth,
   hintFor,
   insideCount,
   landingSpots,
@@ -402,7 +404,7 @@ describe('Pouring to a line', () => {
 describe('Full and empty (level 6)', () => {
   it('routes each level ID through the plan table: basket 1–4, the jug at 5, the pair at 6', () => {
     expect([1, 2, 3, 4, 5, 6].map(kindFor)).toEqual(['basket', 'basket', 'basket', 'basket', 'pour', 'pair']);
-    expect(Object.keys(FILL_LEVELS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(Object.keys(FILL_LEVELS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(describeFill(6)).toMatch(/full/i);
     expect(describeFill(5)).toMatch(/jug/);
   });
@@ -550,5 +552,38 @@ describe('busy-window acknowledgment', () => {
       expect(busyTouch(false, false, on)).toBeNull();
       expect(busyTouch(true, true, on)).toBeNull();
     }
+  });
+});
+
+describe('pour feedback helpers (V3)', () => {
+  it('lands in the tray exactly when the cup is full and the jug holds water', () => {
+    expect(pourLanding({ jug: 1, cup: 1 })).toBe('tray');
+    expect(pourLanding({ jug: 1, cup: 0.99 })).toBe('cup');
+    expect(pourLanding({ jug: 1, cup: 0 })).toBe('cup');
+    expect(pourLanding({ jug: 1, cup: 2 }, 2)).toBe('tray');
+    expect(pourLanding({ jug: 1, cup: 1 }, 2)).toBe('cup');
+  });
+  it('lands nowhere when the jug is empty or the numbers are not finite', () => {
+    expect(pourLanding({ jug: 0, cup: 0.5 })).toBeNull();
+    expect(pourLanding({ jug: 0, cup: 1 })).toBeNull();
+    expect(pourLanding({ jug: Number.NaN, cup: 0 })).toBeNull();
+  });
+  it('does not mutate its argument', () => {
+    const s = { jug: 1, cup: 1 };
+    pourLanding(s);
+    expect(s).toEqual({ jug: 1, cup: 1 });
+  });
+  it('widens the stream from 6 to 14 and never thins as the jug tips further', () => {
+    let last = 0;
+    for (let t = -0.5; t <= 1.5; t += 0.01) {
+      const w = streamWidth(t);
+      expect(w).toBeGreaterThanOrEqual(6);
+      expect(w).toBeLessThanOrEqual(14);
+      expect(w).toBeGreaterThanOrEqual(last);
+      last = w;
+    }
+    expect(streamWidth(0.85)).toBe(14);
+    expect(streamWidth(Number.NaN)).toBe(6);
+    expect(streamWidth(Infinity)).toBe(6);
   });
 });

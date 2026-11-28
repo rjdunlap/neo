@@ -22,7 +22,6 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
         kit.store.entry.startBand = 'lap';
         kit.store.data.profile.band = 'lap';
         kit.store.data.settings.howToCards = true;
-        kit.store.data.settings.placeLayout = 'path';
         neo.go.place('lap');
       });
     // Scrolled to the start first, and a frame later read where the spot was drawn (hit tests use the last rendered frame).
@@ -32,12 +31,14 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       });
       await page.waitForTimeout(120);
       return page.evaluate(() => {
-        const p = neo.scene.mixSpot.node.toGlobal({ x: 0, y: -70 });
+        const p = (({ x, y, width, height }) => ({ x: x + width / 2, y: y + height / 2 }))(
+          neo.scene.mixSpot.node.getBounds(),
+        );
         return [p.x, p.y];
       });
     };
     const holdSpot = async () => {
-      await scene('PlaceScene');
+      await scene('ExploreScene');
       await page.waitForTimeout(300);
       const [x, y] = await spot();
       const ev = (type) =>
@@ -61,7 +62,8 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       await ev('pointerdown');
       await page.waitForTimeout(150);
       assert.equal(await page.evaluate(() => !!neo.scene.mix.table), false, 'no table before 0.6 s');
-      await page.waitForFunction(() => !!neo.scene.mix.table, null, { timeout: 5000 });
+      // 0.6 s of scene time is a dozen frames: several seconds at the paper look's headless frame rate.
+      await page.waitForFunction(() => !!neo.scene.mix.table, null, { timeout: 20000 });
       await ev('pointerup');
       await page.waitForTimeout(250);
       assert.equal(await live(), null, 'the lift after the hold starts no mix');
@@ -96,12 +98,16 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
           neo.scene.helpCard.stopTiles.length === n,
         [id, n],
       );
-    await page.evaluate(() => {
-      const speak = speechSynthesis.speak.bind(speechSynthesis);
-      speechSynthesis.speak = (u) => {
-        (window.__said ??= []).push(u.text);
-        speak(u);
-      };
+    // Read from the voice itself, not device speech: a line with a rendered clip plays as audio and never reaches speechSynthesis.
+    await page.evaluate(async () => {
+      const { voice } = await import('/src/audio/voice.ts');
+      for (const key of ['speak', 'speakIn']) {
+        const say = voice[key].bind(voice);
+        voice[key] = (text, ...rest) => {
+          (window.__said ??= []).push(text);
+          return say(text, ...rest);
+        };
+      }
     });
 
     // 1–2. A toddler-age grown-up holds the mix spot: the table opens on Little surprises, no session.
@@ -175,7 +181,7 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       const c = neo.scene.helpCard.body.children[0];
       kit.tapOn(c.children.find((b) => b.radius === 52));
     });
-    await scene('PlaceScene');
+    await scene('ExploreScene');
     assert.equal(await live(), null);
     await page.waitForTimeout(300);
     {
@@ -192,10 +198,9 @@ export function createSuite({ page, log, scene, tap, screenshot, finished, next,
       await selectPlayer(first);
       kit.store.data.profile.band = 'lap';
       kit.store.data.settings.howToCards = true;
-      kit.store.data.settings.placeLayout = 'path';
       neo.go.place('lap');
     });
-    await scene('PlaceScene');
+    await scene('ExploreScene');
     await page.waitForTimeout(300);
     {
       const [x, y] = await spot();

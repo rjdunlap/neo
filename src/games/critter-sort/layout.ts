@@ -1,6 +1,6 @@
 import { spread, type View } from '../../engine/view';
 import { BUBBLE, BUBBLE_FOOT, BUBBLE_TEXT_H, STRIP_H, STRIP_MIN_VIEW_H } from '../../ui/caption-layout';
-import { HOOP_R, MAT_RX, hoopCenters, neitherMat, type Point, type SortMode } from './logic';
+import { HOOP_R, MAT_RX, hoopCenters, neitherMat, overlaps, type Point, type SortMode } from './logic';
 
 /** Hit areas in board units, measured from each piece's feet. */
 export const CRITTER_SCALE = 0.32;
@@ -30,7 +30,7 @@ export function sortLayout(view: View, mode: SortMode, hoops: number, loose: num
     centers,
     mat,
     signs: centers.map((c, i) => ({
-      x: c.x + (hoops === 2 && (!upright || mode === 'venn') ? (i ? 80 : -80) : 0),
+      x: c.x + (hoops === 2 && (!upright || overlaps(mode)) ? (i ? 80 : -80) : 0),
       y: c.y - HOOP_R - 50,
     })),
     parent: mode === 'venn' ? { x: middle, y: first.y - 150 } : { x: first.x - 215, y: first.y - 70 },
@@ -39,6 +39,8 @@ export function sortLayout(view: View, mode: SortMode, hoops: number, loose: num
       x,
       y: upright ? mat.y : Math.min(h * 0.42 + HOOP_R + 120, h - 150),
     })),
+    // Pick the signs: the offered signs wait across the empty hoops, clear of the loose critters' bottom row.
+    picks: [-1, 0, 1].map((i) => ({ x: middle + i * 190, y: first.y })),
     guesses: (upright ? choices : spread(3, 220, w - 120, 190)).map((x) => ({ x, y: h - 90 })),
     compares: choices.map((x) => ({ x, y: h - 65 })),
     badges: [

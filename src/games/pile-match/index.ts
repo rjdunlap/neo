@@ -564,6 +564,11 @@ class PileMatch implements Game {
   }
 
   /** The ghost finger: tap the hint's target each step, a piece or a tray piece to put back. It never shows a refused tap. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const key = `${this.mask}:${this.trayOrder.join(',')}`;
@@ -672,6 +677,11 @@ class PileMatch implements Game {
   /* -------------------------------------------------------------------------------------------- */
   /* Touch                                                                                          */
   /* -------------------------------------------------------------------------------------------- */
+
+  /** For the pad pointer: every piece still on the heap or in the tray (one layer hears every touch), covered ones too. */
+  pointerSpots() {
+    return this.pieces.filter((p) => p.visible && !!p.parent);
+  }
 
   private local(e: FederatedPointerEvent) {
     return this.ctx.stage.toLocal(e.global);

@@ -164,6 +164,11 @@ export interface GameModule {
    * the controller implements `touchReturned()` to come back.
    */
   liveController?: true;
+  /**
+   * The game reads the keyboard itself in a round (its own arrow, number or letter keys), so the island's pad pointer
+   * (`src/app/pad-pointer.ts`) takes only a pad there, never the arrows and Enter.
+   */
+  ownKeys?: true;
   /** A keyboard typing game (Pond Typing): couch play hands it the letter keys pressed (`CouchControls.typed`) while its round is on screen. */
   typing?: true;
   /**
@@ -201,6 +206,11 @@ export interface RoundResult {
    * the new ones in her discovery journal.
    */
   discoveries?: string[];
+  /**
+   * The flower kind that bloomed for a request from the collection book (RW11 slice 2: Garden Grow level 2's `request`). The
+   * shell grows the matching form from it, never from the request alone, so the blossom is exactly what she grew.
+   */
+  grew?: string;
 }
 
 /**
@@ -265,7 +275,8 @@ export interface GameContext extends LifetimeContext {
    */
   couch?: { versus: boolean; course?: CouchCourse };
   /**
-   * What the round was asked for by the collection book's path (RW10 slice 2): Paint Mixer level 5's recipe. A game that
+   * What the round was asked for by the collection book's path: Paint Mixer level 5's recipe (RW10 slice 2) or Garden Grow
+   * level 2's first flower kind (RW11 slice 2, reported back as `RoundResult.grew`). A game that
    * cannot honour it ignores it; a round opened any other way has none.
    */
   request?: string;
@@ -285,6 +296,13 @@ export interface Game {
    */
   touchReturned?(): void;
   /**
+   * Things a finger would touch that the pad pointer cannot find by their listeners, because the game hears touches on a
+   * layer or the stage and picks the nearest thing itself (Bubble Pop's bubbles). The hand jumps to them and follows them as
+   * they move (`src/app/pad-pointer.ts`). A place with nothing drawn to name it (a landing, a square of a board) is a point
+   * in `ctx.stage` units. Never a hint: list every candidate, right or wrong.
+   */
+  pointerSpots?(): readonly (Container | { x: number; y: number })[];
+  /**
    * What a capable player would press this frame, for the couch intro's "watch me" demo. The demo
    * hands it straight to `control()`, so it can only do what a real controller can.
    */
@@ -296,6 +314,15 @@ export interface Game {
    * game chooses targets and a test can check its rule. A game that has this sets `touchDemo` on its module.
    */
   autotouch?(dt: number): TouchIntent | null;
+  /**
+   * A move to show a player on the real board (guided first play, `src/app/round-guide.ts`): on her first round of the game,
+   * and when nothing has been touched for a while. The shell points at it with a drawn hand that touches nothing, so this
+   * must have no side effects; it may be called at any time. Aim at a right answer where there is one, and show the action
+   * the round asks for (the first card to flip, not the hidden pair). Return null while there is nothing to do yet, or for
+   * a move that only makes sense at a moment. `autotouch` is often the same rule, but a bot may plan, err on purpose or
+   * keep timers, so a game opts in here explicitly.
+   */
+  showMove?(): TouchIntent | null;
   /**
    * The couch pause menu's "start this again", and the island pause sheet's (`GameScene.pauseActions`, labelled the
    * couch's way, or plainly for a game made only for grown-ups): put the board in the round's current part back to its first

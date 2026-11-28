@@ -98,7 +98,7 @@ export class RaceGame implements Game {
         hills: [grass, swatch.green.light],
         horizon: 0.36,
         clouds: 2,
-        sun: true,
+        sun: false,
         seed: 85,
       },
       ctx.view,
@@ -574,7 +574,7 @@ export class RaceGame implements Game {
     L.tracks.forEach((t, i) => {
       this.trackArt
         .roundRect(t.x - t.w / 2, t.y - t.h / 2, t.w, t.h, 30)
-        .fill({ color: 0xffffff, alpha: 0.55 })
+        .fill(cream)
         .stroke({ width: 4, color: sw(this.racers[i]).line, alpha: 0.6 });
       for (let s = 1; s <= TRACK; s++) {
         const b = L.racerAt(i, s);

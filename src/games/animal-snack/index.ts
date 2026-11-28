@@ -17,6 +17,8 @@ import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
+import type { LineVars } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -28,6 +30,14 @@ import {
   boardBox,
   boardLines,
   countedFood,
+  DIET,
+  dietLine,
+  dietMats,
+  dietTap,
+  MAT_MARGIN,
+  MAT_SCALE,
+  MATS,
+  matSlot,
   eaterOf,
   eats,
   eatsTap,
@@ -255,6 +265,16 @@ class AnimalSnack implements Game {
   /** Level 7: the eaters found this question, each marked with a green tick above it. */
   found: CritterName[] = [];
   private readonly ticks = new Graphics();
+  /** Level 11: the three mats (plants, both, meat), the outlines that make the middle one the overlap, and their art. */
+  readonly mats: Container[] = [];
+  private readonly matDraw = new Graphics();
+  private readonly matArt: Container[][] = [];
+  /** Level 11: the animal waiting to be sorted (also the only one in `friends`), and the animals already on a mat. */
+  waiting: Friend | null = null;
+  private walking = false;
+  readonly sorted: { name: CritterName; node: Critter; mat: number; slot: number; moving: boolean }[] = [];
+  /** Level 11: how many animals of the round have been sorted. */
+  private queue = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -281,6 +301,7 @@ class AnimalSnack implements Game {
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => void this.ring());
     this.bell.visible = this.plan.mode === 'count' || this.plan.mode === 'pairs';
     ctx.stage.addChild(this.meadow, this.decor, this.spot, this.bubble, this.glow, this.ticks, this.bell);
+    if (this.plan.mode === 'diet') this.makeMats();
     this.showScene(this.scene);
   }
 
@@ -336,6 +357,82 @@ class AnimalSnack implements Game {
     this.bubble.position.set(v.w / 2, 120);
     this.bell.position.set(v.w - 80, 110);
     this.drawTicks();
+    if (this.plan.mode === 'diet') this.layoutMats(v);
+  }
+
+  /**
+   * Level 11's three mats, left to right: plants (a tuft of grass), both (grass and fish side by side) and meat (a fish).
+   * The whole mat, and a margin that never reaches a neighbor, is its tap area.
+   */
+  private makeMats() {
+    this.matDraw.eventMode = 'none';
+    this.ctx.stage.addChildAt(this.matDraw, this.ctx.stage.getChildIndex(this.spot) + 1);
+    MATS.forEach((kind, i) => {
+      const mat = new Container();
+      mat.addChild(new Graphics());
+      const foods: Food[] = kind === 'plants' ? ['grass'] : kind === 'meat' ? ['fish'] : ['grass', 'fish'];
+      const art = foods.map((food) => {
+        const a = foodArt(food);
+        a.scale.set(0.8);
+        a.alpha = 0.9;
+        a.eventMode = 'none';
+        mat.addChild(a);
+        return a;
+      });
+      this.matArt.push(art);
+      onTap(mat, () => void this.tapMat(i), { cooldown: 350 });
+      this.mats.push(mat);
+      this.ctx.stage.addChildAt(mat, this.ctx.stage.getChildIndex(this.matDraw) + 1);
+    });
+  }
+
+  /** Level 11: place and draw the mats, the waiting animal above the middle one, and each sorted animal on its mat. */
+  private layoutMats(v: View) {
+    const boxes = dietMats(v.w, v.h);
+    const [p, b, m] = boxes;
+    // Two rounded outlines: green round plants and both, red round both and meat, so the middle mat is the overlap.
+    this.matDraw
+      .clear()
+      .roundRect(p.x - 12, p.y - 12, b.x + b.w - p.x + 24, p.h + 24, 28)
+      .stroke({ width: 6, color: swatch.green.line })
+      .roundRect(b.x - 22, b.y - 22, m.x + m.w - b.x + 44, m.h + 44, 34)
+      .stroke({ width: 6, color: swatch.red.line });
+    boxes.forEach((box, i) => {
+      const mat = this.mats[i];
+      mat.position.set(box.x + box.w / 2, box.y + box.h / 2);
+      mat.hitArea = new Rectangle(
+        -box.w / 2 - MAT_MARGIN,
+        -box.h / 2 - MAT_MARGIN,
+        box.w + 2 * MAT_MARGIN,
+        box.h + 2 * MAT_MARGIN,
+      );
+      const g = (mat.children[0] as Graphics).clear();
+      const [x, y, w, h] = [-box.w / 2, -box.h / 2, box.w, box.h];
+      if (MATS[i] === 'both')
+        g.roundRect(x, y, w, h, 20)
+          .fill(swatch.red.light)
+          .roundRect(x, y, w / 2, h, 20)
+          .fill(swatch.green.light)
+          .rect(x + w / 4, y, w / 4, h)
+          .fill(swatch.green.light);
+      else g.roundRect(x, y, w, h, 20).fill(MATS[i] === 'plants' ? swatch.green.light : swatch.red.light);
+      g.roundRect(x, y, w, h, 20).stroke({
+        width: 5,
+        color: MATS[i] === 'meat' ? swatch.red.fill : swatch.green.fill,
+      });
+      const art = this.matArt[i];
+      art.forEach((a, k) => a.position.set(art.length === 1 ? 0 : (k === 0 ? -1 : 1) * w * 0.22, 0));
+    });
+    if (this.waiting && !this.walking) {
+      this.waiting.node.position.set(b.x + b.w / 2, friendFeet(v.h));
+      this.waiting.node.scale.set(FRIEND_SCALE);
+    }
+    for (const s of this.sorted) {
+      if (s.moving) continue;
+      const at = matSlot(boxes[s.mat], s.slot);
+      s.node.position.set(at.x, at.y);
+      s.node.scale.set(MAT_SCALE);
+    }
   }
 
   /** Level 7: a green tick over each eater already found, so the ones found stay marked. */
@@ -356,6 +453,8 @@ class AnimalSnack implements Game {
   /** The snacks' place at the bottom: a picnic blanket in the meadow, a trough in the orchard, a tin tub in the garden, a big bowl at dusk. */
   private drawSpot(v: View) {
     const g = this.spot.clear();
+    // Level 11's mats take the feeding spot's place.
+    if (this.plan.mode === 'diet') return;
     const { left, right } = spotEdges(v.w);
     const mid = (left + right) / 2;
     // Level 8's two piles: the spot grows upward by a row; its bottom stays put.
@@ -566,6 +665,11 @@ class AnimalSnack implements Game {
   }
 
   /** The ghost finger: tap the animals or snacks, carry a snack to the animal that eats it, count out the number asked for and ring the bell. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0) return null;
     const move = snackTouch(this.plan, {
@@ -578,9 +682,11 @@ class AnimalSnack implements Game {
       found: this.found,
       wants: this.round.wants,
       given: this.given(),
+      waiting: this.waiting?.name,
     });
     if (!move) return null;
     if (move === 'bell') return { tap: { on: this.bell } };
+    if ('mat' in move) return { tap: { on: this.mats[move.mat] } };
     // An animal's body is the middle of its tap area, and a snack dropped there lands within reach of its mouth.
     if ('friend' in move) return { tap: { on: this.friends[move.friend].node, y: -125 } };
     if ('snack' in move) return { tap: { on: this.snacks[move.snack].node } };
@@ -704,6 +810,13 @@ class AnimalSnack implements Game {
     this.found = [];
     this.drawTicks();
     const mode = this.plan.mode;
+    if (mode === 'diet') {
+      if (this.index > 0) return void this.finale();
+      this.setFriends([]);
+      this.queue = 0;
+      await this.ctx.say('snack.dietintro', { meat: 'fish and bugs' });
+      return this.walkUp();
+    }
     if (mode === 'munch' || mode === 'float' || mode === 'match') {
       if (this.index > 0) return void this.finale();
       this.setFriends(this.plan.oneBig ? this.round.animals.slice(0, 1) : this.round.animals);
@@ -989,6 +1102,8 @@ class AnimalSnack implements Game {
       return;
     }
     if (mode === 'eats') return this.tapEats(f);
+    // Level 11: the waiting animal asks again, free.
+    if (mode === 'diet') return void this.askDiet();
     if (mode !== 'who') {
       f.node.poke();
       const voice = VOICE[f.name];
@@ -1316,6 +1431,86 @@ class AnimalSnack implements Game {
     this.busy = false;
   }
 
+  /** Level 11: the next animal of the sort walks up from the right with its call and asks what it eats. */
+  private async walkUp() {
+    const name = this.round.animals[this.queue];
+    this.wrongs = 0;
+    this.glowing = null;
+    const v = this.view;
+    const f = this.makeFriend(name);
+    this.friends.length = 0;
+    this.friends.push(f);
+    this.waiting = f;
+    this.walking = true;
+    const mid = dietMats(v.w, v.h)[1];
+    f.node.position.set(v.w + 160, friendFeet(v.h));
+    await this.ctx.tw.to(f.node, { x: mid.x + mid.w / 2 }, { duration: 0.9, ease: ease.inOutSine });
+    this.walking = false;
+    // A turn of the phone during the walk would leave the old width's place.
+    this.resize(this.view);
+    const voice = VOICE[name];
+    if (voice) sfx.animal(voice);
+    this.busy = false;
+    return this.askDiet();
+  }
+
+  private askDiet() {
+    if (!this.waiting) return Promise.resolve();
+    return this.ctx.instruct('snack.diet', { animal: ANIMAL_WORDS[this.waiting.name]! });
+  }
+
+  /**
+   * Level 11, Plants, meat or both?: a tap on a mat. The right mat: the animal hops on and shrinks to fit, nibbles once,
+   * and the pet says its kind and two true foods. A wrong mat shakes its head and says one true food with a question (a
+   * miss); the second miss on the same animal glows its mat (a hint), and later misses only repeat the reply.
+   */
+  async tapMat(i: number) {
+    if (this.busy || this.finished || !this.waiting) return;
+    this.idle = 0;
+    const f = this.waiting;
+    const line = dietLine(f.name, MATS[i]);
+    const vars = { animal: ANIMAL_WORDS[f.name]!, ...line.vars };
+    if (dietTap(f.name, MATS[i]) === 'wrong') {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      this.shake(f);
+      void this.ctx.say(line.id, vars);
+      if (this.wrongs === 2) {
+        this.hints++;
+        this.glowing = this.mats[MATS.indexOf(DIET[f.name]!.kind)];
+      }
+      return;
+    }
+    this.busy = true;
+    this.glowing = null;
+    this.waiting = null;
+    this.friends.length = 0;
+    const slot = this.sorted.filter((s) => s.mat === i).length;
+    const entry = { name: f.name, node: f.node, mat: i, slot, moving: true };
+    this.sorted.push(entry);
+    f.node.eventMode = 'none';
+    this.ctx.stage.addChild(f.node);
+    const to = matSlot(dietMats(this.view.w, this.view.h)[i], slot);
+    this.ctx.tw.kill(f.node);
+    this.ctx.tw.kill(f.node.scale);
+    f.node.rotation = 0;
+    await Promise.all([
+      this.ctx.tw.to(f.node, { x: to.x, y: to.y }, { duration: 0.45, ease: ease.inOutSine }),
+      this.ctx.tw.to(f.node.scale, { x: MAT_SCALE, y: MAT_SCALE }, { duration: 0.45 }),
+    ]);
+    entry.moving = false;
+    this.resize(this.view);
+    sfx.bite(BITE[FAVORITE[f.name]!]);
+    f.node.poke();
+    await this.ctx.say(line.id, vars);
+    this.queue++;
+    if (this.queue < this.round.animals.length) return this.walkUp();
+    // The closing lines carry the count, so they stay on device speech like the other filled-in lines.
+    const done = this.round.animals.includes('cat') ? 'snack.dietdone' : 'snack.dietdonenomeat';
+    return void this.finale(done, { n: this.round.animals.length });
+  }
+
   /** Count levels: the bell says "that's how many". Too many come back to the basket. */
   private async ring() {
     if (this.busy || this.finished) return;
@@ -1352,13 +1547,14 @@ class AnimalSnack implements Game {
     this.busy = false;
   }
 
-  private async finale() {
+  private async finale(line: LineId = 'snack.done', vars?: LineVars) {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
     sfx.tada();
     for (const f of this.friends) f.node.cheer();
-    await this.ctx.say('snack.done');
+    for (const s of this.sorted) s.node.cheer();
+    await this.ctx.say(line, vars);
     const turn = {
       saved: companion() !== null,
       guideShown: this.ctx.pet.visible,

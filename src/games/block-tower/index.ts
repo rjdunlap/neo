@@ -384,6 +384,11 @@ class BlockTower implements Game {
   }
 
   /** The ghost finger on the how-to card: stack by tapping, ring the bell at the target, pick the tower that stands, or carry blocks out to the star. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || !this.rounds[this.index]) return null;
     switch (this.plan.mode) {
@@ -786,7 +791,8 @@ class BlockTower implements Game {
     if (this.plan.mode === 'match')
       await this.ctx.say('tower.match-wrong', { bear: r.bear!, have, want: r.target, friend: 'Duck' });
     else await this.ctx.say(result === 'short' ? 'tower.short' : 'tower.tall');
-    if (result === 'tall') this.glowTop = true;
+    // The top block glows only once help is due (two misses), per the 2026-10-23 decision.
+    if (result === 'tall' && this.wrongs >= 2) this.glowTop = true;
     if (this.wrongs >= 2) {
       // Count them together: the child's blocks bounce one by one.
       if (!this.hinted) {

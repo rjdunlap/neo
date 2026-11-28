@@ -6,6 +6,16 @@ export const HOW_TO: GameHowTo = {
   steps: [
     { to: 6, text: 'Drag each shape onto its shadow.' },
     {
+      from: 10,
+      to: 10,
+      text: 'One shape is already in the picture. Drag the other onto its shadow, or tap it and then the shadow.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'One shape is missing. Two wait in the tray; drag the one that fits onto its shadow, or tap it and then the shadow.',
+    },
+    {
       from: 7,
       to: 7,
       text: 'Make the house wall with one square or two triangles; add its roof. Either way finishes.',
@@ -37,6 +47,16 @@ export const HOW_TO: GameHowTo = {
   finish: [
     { to: 7, text: 'The round ends when the shapes fill the picture.' },
     { from: 8, to: 9, text: 'A correct green check ends the repaired picture.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'The round ends when the shape is home; a drop anywhere else just comes back.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'The round ends when the right shape is home. The other shape dropped on the shadow bounces back with a hint; after two, the right one glows.',
+    },
   ],
   note: 'For toddler, preschool and pre-K play, each piece says its shape name the first time you pick it up.',
 };

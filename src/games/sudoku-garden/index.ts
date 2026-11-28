@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle, Text } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -94,6 +94,11 @@ class SudokuGarden implements Game {
   touch: boolean;
   readonly tapLayer = new Graphics();
   readonly touchLayer = new Container();
+  /** The finger on the bed and the square under it: on a bed whose squares are under a comfortable thumb, a lens lifts that square above the finger. */
+  private lensAt: { id: number; i: number } | null = null;
+  private readonly lens = new Container();
+  private readonly lensArt = new Graphics();
+  private readonly lensNum: Text = label('', 40);
   /** The touch tray's targets, in stage units, and the hit area standing over each. */
   slots: Slot[] = [];
   slotNodes: Container[] = [];
@@ -202,7 +207,17 @@ class SudokuGarden implements Game {
       // A layer over the bed works out which square a finger touched, so a tap never depends on a drawing's own hit area.
       onTap(this.tapLayer, (e) => this.tapBed(e.global.x, e.global.y), { cooldown: 60 });
       this.tapLayer.cursor = 'pointer';
-      ctx.stage.addChild(this.tapLayer, this.touchLayer);
+      this.lens.eventMode = 'none';
+      this.lens.visible = false;
+      this.lensNum.eventMode = 'none';
+      this.lens.addChild(this.lensArt, this.lensNum);
+      this.tapLayer.on('pointerdown', this.lensDown);
+      this.tapLayer.on('pointermove', this.lensMove);
+      this.tapLayer.on('pointerup', this.lensUp);
+      this.tapLayer.on('pointerupoutside', this.lensUp);
+      // Pixi does not pass the DOM's pointercancel on: a touch a system gesture swallows ends here.
+      ctx.listen(window, 'pointercancel', () => this.lift(null), { capture: true });
+      ctx.stage.addChild(this.tapLayer, this.touchLayer, this.lens);
     }
   }
 
@@ -272,6 +287,7 @@ class SudokuGarden implements Game {
     this.tapLayer.clear().rect(0, 0, w, w).fill({ color: 0xffffff, alpha: 0.001 });
     this.tapLayer.hitArea = new Rectangle(0, 0, w, w);
     this.tapLayer.position.copyFrom(this.board.position);
+    this.lift(null);
     for (const node of this.touchLayer.removeChildren()) node.destroy();
     this.slotNodes = this.slots.map((slot, k) => {
       const node = new Container();
@@ -683,7 +699,9 @@ class SudokuGarden implements Game {
     }
   }
 
-  destroy() {}
+  destroy() {
+    this.lensAt = null;
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Rounds and beds                                                                               */
@@ -861,6 +879,72 @@ class SudokuGarden implements Game {
       this.dirty = true;
     }
     sfx.tick();
+  }
+
+  /** The square under a stage point, or null off the bed. */
+  private squareAt(gx: number, gy: number): number | null {
+    const p = this.board.toLocal({ x: gx, y: gy });
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return null;
+    const c = Math.floor(p.x / this.cell),
+      r = Math.floor(p.y / this.cell);
+    return c < 0 || r < 0 || c >= this.n || r >= this.n ? null : r * this.n + c;
+  }
+
+  private lensDown = (e: FederatedPointerEvent) => {
+    const i = this.squareAt(e.global.x, e.global.y);
+    if (i === null || this.busy || this.finished) return;
+    this.lift({ id: e.pointerId, i });
+  };
+
+  private lensMove = (e: FederatedPointerEvent) => {
+    if (!this.lensAt || e.pointerId !== this.lensAt.id) return;
+    const i = this.squareAt(e.global.x, e.global.y);
+    if (i !== null) this.lift({ id: e.pointerId, i });
+  };
+
+  /** Lifting the finger chooses the square it ended on, so a press can slide to a neighbour before it lands. */
+  private lensUp = (e: FederatedPointerEvent) => {
+    const t = this.lensAt;
+    if (!t || e.pointerId !== t.id) return;
+    this.lift(null);
+    const i = this.squareAt(e.global.x, e.global.y);
+    if (i !== null && i !== this.cursor && !this.busy && !this.finished) {
+      this.cursor = i;
+      this.dirty = true;
+    }
+  };
+
+  /**
+   * The lens: a 9 by 9 square is 42.7 CSS px on an upright phone, so while a finger is down the square it is on shows large above
+   * the thumb, ringed in the flower's colour and holding its number (or its pencil marks), and it follows the finger.
+   */
+  private lift(t: { id: number; i: number } | null) {
+    this.lensAt = t;
+    const small = this.cell * this.view.scale < 44 - 0.5;
+    this.lens.visible = !!t && small && this.touch && !this.finished;
+    if (!t || !this.lens.visible) return;
+    const mid = this.center(t.i);
+    const r = Math.round(this.cell * 0.95);
+    const x = Math.min(this.view.w - r - 8, Math.max(r + 8, this.board.x + mid.x));
+    const y = Math.max(r + 8, this.board.y + mid.y - this.cell * 2.1);
+    const d = this.grid[t.i];
+    const g = this.lensArt.clear();
+    g.circle(x, y, r)
+      .fill({ color: cream })
+      .stroke({ width: 6, color: d ? this.color(d).line : this.given[t.i] ? wood.line : wood.light });
+    const num = this.lensNum;
+    if (d) {
+      num.text = String(d);
+      num.style.fontSize = Math.round(r * 1.1);
+      num.style.fill = this.given[t.i] ? ink : ENTERED;
+    } else {
+      const marks: number[] = [];
+      for (let k = 1; k <= this.n; k++) if (this.notes[t.i] & (1 << (k - 1))) marks.push(k);
+      num.text = marks.join(' ');
+      num.style.fontSize = Math.round(r * 0.5);
+      num.style.fill = ink;
+    }
+    num.position.set(x, y);
   }
 
   /** A finger on a tile of the tray. The tile sinks at once; the number goes into the chosen square, or is pencilled in while Marks is on. */
@@ -1204,6 +1288,11 @@ class SudokuGarden implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   /** The ghost finger on the how-to card: tap the square the easy steps can fill, then its number in the tray. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle || !this.touch) return null;
     if (!this.botPick || this.grid[this.botPick.cell]) this.botPick = this.pickNext();

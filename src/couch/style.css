@@ -41,7 +41,7 @@
   border-radius: calc(16px * var(--u));
   padding: calc(15px * var(--u)) calc(22px * var(--u));
   cursor: pointer;
-  background: white;
+  background: #fdf6e6;
   margin: calc(6px * var(--u)) calc(8px * var(--u)) calc(6px * var(--u)) 0;
 }
 .couch button:hover {
@@ -1245,4 +1245,72 @@
   letter-spacing: 0;
   color: #35685a;
   font-weight: 600;
+}
+
+/* A piece's own colour override; never handed down to the pieces inside it. */
+@property --paper {
+  syntax: '*';
+  inherits: false;
+}
+/* ---- Paper and crayon (docs/ART-STYLE.md, 2026-11-28) -------------------------------------------------------------
+   The page is the oatmeal ground with its fibre. Each button, card and panel the scene's PaperSkin (src/ui/paper-dom.ts)
+   is given becomes a torn piece of construction paper in its `--paper` colour (its background colour when unset), with
+   a warm shadow and a crayon outline in a darker shade of that colour, drawn once as its background picture. The CSS
+   border and box shadow give way to the paper's own (`.is-paper`), so sizes and focus rings stay as they were. */
+.couch {
+  background-color: #ece4d4;
+  background-image: var(--paper-ground, none);
+  background-size: 192px 192px;
+  --paper-radius: 16;
+}
+.couch-playing {
+  background: transparent;
+}
+.couch-modal {
+  background-color: #ece4d4f5;
+  background-image: var(--paper-ground, none);
+  background-size: 192px 192px;
+}
+.couch .couch-card {
+  --paper-radius: 20;
+}
+.couch button.is-paper:hover {
+  filter: brightness(1.04) saturate(1.05);
+}
+.couch .couch-setting,
+.couch .couch-player,
+.couch .couch-players-choice {
+  background-color: #fffaf0;
+}
+.couch-hud,
+.couch-game-help {
+  background-color: #fff4e3;
+  --paper-radius: 12;
+}
+.couch-rows li,
+.keycaps kbd,
+.couch-chip {
+  --paper-radius: 8;
+}
+/* The demo window is a live round, so it keeps a plain frame: a crayon-brown ring and a warm, unblurred shadow. */
+.couch .couch-demo {
+  box-shadow:
+    0 0 0 calc(5px * var(--u)) #a89878,
+    calc(3px * var(--u)) calc(8px * var(--u)) 0 calc(5px * var(--u)) #2d1e1433;
+}
+.couch .pad .pad-body {
+  fill: #fffaf0;
+  stroke: #8f8166;
+}
+.couch .couch-lanterns span {
+  background-color: #fffaf0;
+  color: #6b5b3f;
+}
+.couch .couch-lanterns .lit {
+  background-color: #ffd86c;
+}
+/* The finale's night sky is drawn under the page, so the page itself is see-through there. */
+.couch.couch-finale-open {
+  background-color: transparent;
+  background-image: none;
 }

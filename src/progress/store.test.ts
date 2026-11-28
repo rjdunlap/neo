@@ -179,6 +179,19 @@ describe('switching profiles', () => {
     expect(store.data.settings.language2).toBe('pt-PT');
   });
 
+  it("keeps each player's starting view their own (D8)", async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    store.data.settings.startView = 'six';
+    store.save();
+    const b = store.addProfile()!;
+    expect(await store.switchTo(b)).toBe(true);
+    expect(store.data.settings.startView).toBe('explore');
+    expect(await store.switchTo(a)).toBe(true);
+    expect(store.data.settings.startView).toBe('six');
+  });
+
   it('never shows default data while the other save is being read, and a save made meanwhile still lands on the old one', async () => {
     const store = make();
     await store.load();
@@ -713,6 +726,28 @@ describe('stories', () => {
   });
 });
 
+describe('the Missing Melody', () => {
+  it('completes each step once, ends only with all three and keeps its card through a retelling', async () => {
+    const store = make();
+    await store.load();
+    expect(store.completeStep('highlow', 'melody')).toBe(true);
+    expect(store.completeStep('highlow', 'melody')).toBe(false);
+    // Another story's step never lands in the melody, and the melody leaves the others alone.
+    expect(store.completeStep('beat', 'melody')).toBe(false);
+    expect(store.completeStep('notes', 'woodland')).toBe(false);
+    store.endStory('melody');
+    expect(store.melody.ended).toBe(false);
+    store.completeStep('friends', 'melody');
+    store.completeStep('notes', 'melody');
+    expect(store.melody.steps).toEqual(['notes', 'highlow', 'friends']);
+    store.endStory('melody');
+    expect(store.melody).toEqual({ steps: ['notes', 'highlow', 'friends'], ended: true, keepsake: true });
+    expect(store.woodland.steps).toEqual([]);
+    store.retellStory('melody');
+    expect(store.melody).toEqual({ steps: [], ended: false, keepsake: true });
+  });
+});
+
 describe('her friends (RW05)', () => {
   it('meets a friend once per token and writes at once, without waiting for the batch', async () => {
     const store = make();
@@ -815,7 +850,7 @@ describe('her friends (RW05)', () => {
     const other = make();
     await other.load();
     other.reset();
-    other.data.creatures = { owned: [], companion: null };
+    other.data.creatures = { owned: [], companion: null, forms: [] };
     other.beginWelcome('prek', 'pretty');
     for (const step of ['pretty', 'yummy', 'song'] as const) other.completeWelcomeStep(step, null, ANY_ROUND);
     expect(other.adoptWelcome('Rex')?.name).toBe('Pebble');
@@ -938,6 +973,41 @@ describe('her friends (RW05)', () => {
     await store.restoreAll(text);
     await store.switchTo(a);
     expect(store.companion?.look.worn).toEqual(['sunhat']);
+  });
+});
+
+describe('forms (RW11)', () => {
+  it('grows a form once, shows it only where it belongs, and shares the head slot both ways', async () => {
+    const store = make();
+    await store.load();
+    const pip = store.meet('sprout', 'Pip', 'teal', 'start')!;
+    const wisp = store.meet('glider', 'Wisp', 'purple', 'dev:glider')!;
+    // Not grown yet: nothing to show.
+    expect(store.setForm(pip.id, 'sprout:sun')).toBe(false);
+    expect(store.growForm('sprout:sun', 'garden:sunflower')).toBe(true);
+    expect(store.growForm('sprout:sun', 'garden:sunflower')).toBe(false);
+    expect(store.growForm('sprout:nope' as never)).toBe(false);
+    expect(store.data.creatures.forms).toEqual(['sprout:sun']);
+    store.wear(pip.id, 'crown', true);
+    store.wear(pip.id, 'scarf', true);
+    expect(store.setForm('nobody', 'sprout:sun')).toBe(false);
+    expect(store.setForm(wisp.id, 'sprout:sun')).toBe(false); // another species' form
+    expect(store.setForm(pip.id, 'sprout:moon')).toBe(false); // not grown
+    expect(store.setForm(pip.id, 'sprout:sun')).toBe(true);
+    expect(store.companion?.look.form).toBe('sprout:sun');
+    expect(store.companion?.look.worn).toEqual(['scarf']); // the crown came off, the scarf stayed
+    store.wear(pip.id, 'beanie', true);
+    expect(store.companion?.look.form).toBeNull(); // a hat takes the blossom off
+    expect(store.setForm(pip.id, 'sprout:sun')).toBe(true);
+    store.wear(pip.id, 'mittens', true); // a non-head item leaves it
+    expect(store.companion?.look.form).toBe('sprout:sun');
+    expect(store.setForm(pip.id, null)).toBe(true);
+    expect(store.companion?.look.form).toBeNull();
+    // A reset keeps creatures, and so the forms.
+    store.setForm(pip.id, 'sprout:sun');
+    store.reset();
+    expect(store.data.creatures.forms).toEqual(['sprout:sun']);
+    expect(store.companion?.look.form).toBe('sprout:sun');
   });
 });
 
@@ -1086,5 +1156,104 @@ describe('the chosen book goal', () => {
     expect(store.data.book.goal).toBe('friend:welcome');
     store.chooseGoal(null);
     expect(savedAs('neo.save').book.goal).toBeNull();
+  });
+});
+
+describe('shells (the progression loop)', () => {
+  it('a grown-up profile earns them and keeps them; a child profile earns none', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('prek');
+    expect(store.earnShells('tile-pairs', '2026-11-25')).toBe(0);
+    expect(store.data.shells.balance).toBe(0);
+    store.setBand('grownup');
+    expect(store.earnShells('tile-pairs', '2026-11-25')).toBe(5);
+    expect(store.data.shells.balance).toBe(5);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.shells.balance).toBe(5);
+  });
+});
+
+describe('stamps (the progression loop)', () => {
+  it('a grown-up earns a stamp once, with its bonus shells', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    const range = { min: 1, max: 5 };
+    expect(store.earnStamps('tile-pairs', range, { level: 5, misses: 0, hints: 0 })).toEqual({
+      kinds: ['first', 'middle', 'top', 'clean'],
+      bonus: 100,
+    });
+    expect(store.data.shells.balance).toBe(100);
+    expect(store.earnStamps('tile-pairs', range, { level: 5, misses: 0, hints: 0 })).toEqual({
+      kinds: [],
+      bonus: 0,
+    });
+    store.setBand('school');
+    expect(store.earnStamps('word-code', range, { level: 1, misses: 0, hints: 0 }).kinds).toEqual([]);
+  });
+});
+
+describe('the friend shop (the progression loop)', () => {
+  it('a grown-up buys with shells and keeps it; a child profile cannot buy', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    store.data.shells.balance = 150;
+    expect(store.buy('wear:crown')).toBe('short');
+    expect(store.buy('color:lilac')).toBe(true);
+    expect(store.data.shells.balance).toBe(30);
+    expect(store.buy('color:lilac')).toBe('owned');
+    // A bought paint colour is the friend's to wear, though it was never mixed.
+    const pal = store.meet('sprout', 'Pip', 'teal', 'grownup:friend')!;
+    expect(store.recolor(pal.id, 'lilac')).toBe(true);
+    expect(store.recolor(pal.id, 'rose')).toBe(false);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.shop.owned).toEqual(['color:lilac']);
+    again.setBand('school');
+    again.data.shells.balance = 500;
+    expect(again.buy('wear:scarf')).toBe('band');
+    expect(again.data.shells.balance).toBe(500);
+  });
+});
+
+describe("Today's six extras (the progression loop)", () => {
+  it('records a grown-up day of all six once, with its bonus, and keeps it', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    expect(store.recordAllSix('2026-11-28')).toBe(25);
+    expect(store.recordAllSix('2026-11-28')).toBe(0);
+    expect(store.data.shells.balance).toBe(25);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.sixes.days).toEqual(['2026-11-28']);
+    again.setBand('prek');
+    expect(again.recordAllSix('2026-11-29')).toBe(0);
+    expect(again.data.sixes.days).toEqual(['2026-11-28']);
+  });
+});
+
+describe('Lantern Lodge (the progression loop)', () => {
+  it('a grown-up builds with shells and keeps it; a child profile cannot build', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    store.data.shells.balance = 100;
+    expect(store.buildLodge('walls')).toBe('needs');
+    expect(store.buildLodge('foundation')).toBe(true);
+    expect(store.data.shells.balance).toBe(20);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.lodge.built).toEqual(['foundation']);
+    again.setBand('toddler');
+    again.data.shells.balance = 500;
+    expect(again.buildLodge('dock')).toBe('band');
   });
 });

@@ -370,8 +370,8 @@ export function createSuite({
     await pickFirst();
     await scene('HomeScene');
     await page.evaluate(() => neo.go.explore('places'));
-    await scene('ExploreScene');
-    await tap("neo.scene.cards.find(c=>c.id==='cozy-village').node");
+    await scene('MapScene');
+    await tap("neo.scene.lands.find((l) => l.def.id === 'cozy-village').node");
     await scene('LocationScene');
     await turnToGame('village-vote');
     const rp = await page.evaluate(() => neo.scene.page);

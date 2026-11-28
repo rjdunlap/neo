@@ -25,6 +25,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [IDEAS.md](IDEAS.md) | The idea notebook: proposals, not a mandate |
 | [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md) | Only before work that depends on a call the developer alone can make |
 | [DEVICE-CHECKS.md](DEVICE-CHECKS.md) | The parked device and child checks, and what a phone playtest can answer |
+| [device-checks/](device-checks/ROTATION.md) | The twice-weekly phone and controller check: its rotation of games and one dated report per run |
 
 ## What exists and how it works
 
@@ -33,6 +34,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [README.md](../README.md) (repository root) | Setup, the game inventory and count, the browser suites and their filters |
 | [DESIGN.md](DESIGN.md) | Architecture and systems; before changing an area, its [integration contract](DESIGN.md#integration-contracts); before writing a helper, the [reuse map](DESIGN.md#reuse-map); before pointer or texture code, the [pitfalls](DESIGN.md#input-and-rendering-pitfalls) |
 | [GAMES.md](GAMES.md), [`games/`](games/) | The index and one page per game: what it does at each level, and its design notes |
+| [ART-STYLE.md](ART-STYLE.md) | The paper cut-out look (chosen 2026-11-26): the recipe, the shared paper helper and the automatic paper pass, and how a game keeps a drawing flat |
 | [COUCH-PLAY.md](COUCH-PLAY.md) | The player guide for couch play |
 | [VERIFICATION.md](VERIFICATION.md), [`verification/`](verification/) | The coverage summary per suite or area, and one dated entry file per set of checks |
 
@@ -40,8 +42,34 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 
 | Document | Open it |
 | --- | --- |
-| [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md)) and the concept art (proposed until delivered) |
+| [`rework/`](rework/README.md) | The creature-world target, its work items (RW10 packet: [collection book](rework/COLLECTION-BOOK.md); RW11 packet: [forms and talents](rework/FORMS-AND-TALENTS.md)) and the concept art (proposed until delivered) |
 | [`definitions/`](definitions/) | One buildable definition per game or feature; read only the section for the level being built |
+| [Critter Crossing: Be the gate](definitions/critter-crossing-be-the-gate.md) | Critter Crossing level 9: pick one of four pictured rules and act as the gatekeeper (`Cross` or `Wait`), swapping seats in round 2 with **Two of us** or letting the pet deduce your rule in **Just me**; school |
+| [Duckling Parade: Keep it going](definitions/duckling-parade-keep-it-going.md) | Duckling Parade level 12: a two-unit duck pattern on the card, four colorless slots to continue it, a one-slot reveal counted as help; school 9–12 |
+| [Pattern Train: Add three, add four](definitions/pattern-train-add-three-add-four.md) | Pattern Train level 21: name the rule of a +3 or +4 numbered train with a jump chip, then fill the last car; two questions, one hint each; school |
+| [Critter Sort: Pick the signs](definitions/critter-sort-pick-the-signs.md) | Critter Sort level 10: tap two of three picture signs onto overlapping hoops, then sort six critters by her own rules; choosing is never a miss, nothing is kept; school |
+| [Progression loop](definitions/progression-loop.md) | Neopets-style earn, spend and collect by age band: shells, a shop for her friend, stamps; grown-ups first, never lap or toddler |
+| [Playdate Workshop 4–6](definitions/playdate-workshop-4-6.md) | Social-emotional slice 6, Playdate Workshop levels 4–6: the smudged banner (two repairs), a new idea mid-round (revise the plan) and Ask first (an unspoken request); school 3–6, no misses |
+| [Wave Ribbon](definitions/wave-ribbon.md) | Energy and waves E6, levels 1–3: send a finite pulse along an elastic ribbon, watch a bead move locally while the wave travels, compare Small and Tall amplitudes, and test equal arrival times; analytic solver in `logic.ts`, `upright: true`, Tinker Lab |
+| [Pond Merge](definitions/pond-merge.md) | Physics chunk 27, levels 1–3: drop pond friends so two the same merge into the next size (egg to swan); a fixed-step circle-pile solver in `logic.ts`, no fail line (a full pond lifts), free take-back, `upright: true` |
+| [Draw a Ramp](definitions/draw-a-ramp.md) | Physics chunk 27, levels 1–3: draw ramps so a marble rolls and banks to the star balloon; deterministic circle-vs-capsule solver in `logic.ts`, `upright: true`, free experiments, Tinker Lab |
+| [Stir and See](definitions/stir-and-see.md) | Matter slice 6, levels 1–5: stir pretend powders, a leaf and oil into a clear cup and see what vanishes, settles or floats; unscored predictions and a tested sort; no reviewer needed below the saturation count |
+| [Village Planner](definitions/village-planner.md) | Routines slice 4, levels 1–3: schedule island errands across Baker's Hill and Creek Mill with one bench and one cart, visible conflict replay and optional fewer-trips comparison; school 1–2, grownup 1–3, Lantern Lake |
+| [River Tablets 7–8](definitions/river-tablets-7-8.md) | Ancient river civilizations AR4, River Tablets levels 7–8: Say it with pictures (rebus sound-signs) and Which one do I mean? (mute determinatives); school |
+| [Under the Soil](definitions/under-the-soil.md) | Life-science step 5, Garden Grow levels 14–15: lift a window to see roots below the shoot, a leaf window in three steps, then two matched beds read above and below (reuses the Growing Conditions table); toddler–pre-K 14, school 15 |
+| [Growing Conditions](definitions/growing-conditions.md) | Genetics G8, Garden Grow levels 12–13: two beds from the same seeds, name the one difference and run a one-change fair test (toy sun/shade and water table); pre-K 12, school 12–13 |
+| [Laundry Day](definitions/laundry-day.md) | Daily life long ago H7, Story Steps' eleventh story: scrub, hang and dry a picnic blanket in order; a fictional chore, no real history |
+| [Market Days](definitions/market-days.md) | Medieval life ML4, a map-colouring puzzle for Lantern Lake: give eight towns market days so towns a day apart differ, with the fewest days; grown-up, school levels 1–2 |
+| [Two Tablets](definitions/two-tablets.md) | River civilizations AR5, a decipherment puzzle for Lantern Lake: line up a message written as pictures and as island signs, learn which sign makes which sound, and read a new line; grown-up, two levels |
+| [Count the Ballots](definitions/count-the-ballots.md) | Community-civics CC3, a ranked-ballot puzzle for Lantern Lake: sort nine ballots by first choice, drop the smallest pile and move its ballots on, and see when that differs from most first choices; grown-up, school levels 1–2 |
+| [How Many Pieces Fit?](definitions/how-many-pieces-fit.md) | Fractions R7, Ribbon Workshop level 8: measure a ¾ ribbon with ½-spool pieces (snipping one in half) and answer 1½ pieces; school and grownup |
+| [Ready for Adventure 4](definitions/ready-for-adventure-4.md) | Routines RA4, Ready for Adventure level 4: the parade request changes, so repair the bag and Check again; school |
+| [Toy Drawer](definitions/toy-drawer.md) | Routines study: Toy Drawer levels 1–4, fit differently sized toys into a drawer (new game `toy-drawer`; slice 1 ready to build, level 4 slice 2); preschool to school |
+| [Window Mosaic](definitions/window-mosaic.md) | Fractions R6, Pixel Pictures level 13: color a second window the same amount in a different shape, then pick the matching window; school |
+| [Common Ground, level 1: A Place for You](definitions/common-ground.md) | Social-emotional slice 4: place a cushion by a window and a basket beside it for a visiting friend, then press Visit; a new school-only game |
+| [Common Ground, level 2: A request changed](definitions/common-ground-2.md) | Level 2 of `common-ground`: after the preview the friend asks for the basket on a different side, so the room is revised with undo; school only |
+| [Common Ground, level 3: Two residents](definitions/common-ground-3.md) | Social-emotional slice 4: place a drawing and a drum on the 2×3 floor so both friends' needs are kept, then choose among plans that serve different wishes; school and grown-up |
+| [Two Viewpoints](definitions/two-viewpoints.md) | Social-emotional slice 3, Story Steps level 14: Bunny and Bear hear unexpected picnic music, state differing wishes, and she enacts a Story Theater ending that keeps both; school only |
 | [Word Code](definitions/word-code.md) | Puzzle-pages PP9, levels 1–3: guess the hidden word by letter marks, picture words at school and five letters at grown-up |
 | [Domino Pond](definitions/domino-pond.md) | Puzzle-pages PP2, levels 1–3, from dot matching to exact totals and comparisons |
 | [Tide Tables](definitions/tide-tables.md) | Assign three jobs to a fictional harbor day using tide heights and job order, with multiple working schedules; grown-up, Lantern Lake |
@@ -53,11 +81,17 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Outcrop Detective](definitions/outcrop-detective.md) | Earth materials E6, levels 1–2: reorder four event cards to build a cliff's story, then say whether the rocks tell the order for sure and choose the look that decides; school and grownup, Lantern Lake |
 | [Shadow Play](definitions/shadow-play.md) | Slide three flat cut-outs between a lamp and a screen (later turn them and swap rails) until the shadow fills a skyline outline; levels 1–4, both batches built; grown-up, Lantern Lake |
 | [Fence the Field](definitions/fence-the-field.md) | Dots and boxes on a small field against the pet: claim a safe rail, then runs and the leave-two answer; levels 1–4, both batches built; grown-up, Lantern Lake |
+| [Last Pebble 3–5](definitions/last-pebble-3-5.md) | Strategy-games SG3b: choose who goes first, bigger steps (take 3 or 4) and misère (last stone loses); two build batches |
+| [Last Pebble](definitions/last-pebble.md) | Strategy-games SG3, levels 1–2: lay one or two stones across a stream in turn to reach the far bank, finding stepping stones back from the end; school (about 10 and up) and grown-up, Puzzle Peaks |
 | [Sum Crates](definitions/sum-crates.md) | Puzzle-pages PP5, levels 1–3: crossing rows and columns of fruit crates that add to their signs, no repeat in a line; school 1–2, grown-up 3 |
 | [Garden Rows level 11](definitions/garden-rows-bee.md) | Puzzle-pages PP4, The bee counts tall flowers: a 3×3 bed with visibility clues viewed from each gate |
+| [Garden Rows level 12](definitions/garden-rows-two-flower-beds.md) | Two-flower beds: a 4×4 bed with two packets, two of each flower in every row and column; school 11–12 |
 | [Campsite](definitions/campsite.md) | Puzzle-pages PP6, school level 1: pitch three tents using row and column counts and one shared-edge pairing per tree |
 | [Bunny Patches](definitions/bunny-patches.md) | Puzzle-pages PP3, levels 1–3: one bunny in every row, column and patch, none touching; pre-K 4×4 to school 6×6 |
 | [Market Stall levels 12–13](definitions/market-stall-12-13.md) | Can I buy it? (does a purse cover a price, then spend it on two things) and Trade up (swap small coins for a bigger one); school, built after levels 8–11 |
+| [Market Stall sell stall and bakery](definitions/market-stall-sell-and-bakery.md) | *Is it enough?* (she keeps the stall, counts a customer's shells, then sells or asks for more; school, after level 8) and the bakery, a fourth stall skin with four new props |
+| [Bubble Pop Make 20](definitions/bubble-pop-make-20.md) | Level 20, *Make 20* (school, after 14): the bonds play of *Make 10* with the sign at 20; the hint glows her held bubble's partner and says how making 10 gets there |
+| [Animal Snack level 11](definitions/animal-snack-diet-sort.md) | *Plants, meat or both?* (school, after 10): one animal at a time, tap its mat; a cited diet table for all eleven animals, only the cat eats meat alone |
 | [Block Tower level 7](definitions/block-tower-mend.md) | Mend the leaning tower: move the top block under ropes, release, and see whether it stands; school, a repair interaction |
 | [Egg Catch level 13](definitions/egg-catch-sorting-gate.md) | Sorting gate: place a shell-reading sorter at one junction and turn it so four mixed eggs reach their baskets; school, a placement interaction |
 | [Swing Pals level 9](definitions/swing-pals-paint-the-beat.md) | Paint the beat: a paint pot on the swing paints wiggles on a rolling paper strip; the painting is kept only on request; preschool to school |
@@ -71,6 +105,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Look It Up levels 4–6](definitions/look-it-up-4-6.md) | Contents page (find an animal's page from a contents list), Picture or words? (the picture shows the baby, only the printed caption gives its name tag) and Two pages together (read one page, find another that says the same); school, in two batches |
 | [Lasso Loops level 7](definitions/lasso-loops-too-few-too-many.md) | Too few, too many: loop one jar of ten, then tap away the guess cards that cannot be right (too few or too many) before the tens round checks the one that stays; school top, a new level on an existing interaction |
 | [Shell Rows levels 4–5](definitions/shell-rows-4-5.md) | Two ways to win (set a shell that makes two rows at once) and Play it out (a whole gentle match where a tie is a good ending), with the grown-up seat as a second batch; school |
+| [Maker Lane levels 4–5](definitions/maker-lane-4-5.md) | Stripes or plain (dye at the fleece, the yarn or the scarf; stripes need coloured yarn before the loom) and Two ways to a box (a log and old paper both become boxes); school, Cozy Village |
 | [Draw the Pattern level 12](definitions/draw-the-pattern-your-pattern.md) | Your pattern: draw a hill or a dip in each empty place of a strip, with no wrong choice, then the pet says her pattern back and carries it to the end of the strip; pre-K and school |
 | [Silly Scene](definitions/silly-scene.md) | Puzzle-pages PP7, levels 1–3: tap what could not happen in a familiar picture and hear why; preschool 1, pre-K 1–2, school 2–3, Puzzle Peaks |
 | [Vine Snip level 6](definitions/vine-snip-where-will-it-land.md) | Where will it land?: predict where one orange lands when released through the same point heading right, then left, then watch both and replay free; school, a prediction interaction |
@@ -90,6 +125,7 @@ Each is dated and keeps its numbered proposals (P1…, U1…); what was adopted 
 | --- | --- |
 | [CRITTER-DAILY.md](reviews/CRITTER-DAILY.md), [TYPING-LAND.md](reviews/TYPING-LAND.md), [SPARK-AI-GAMES.md](reviews/SPARK-AI-GAMES.md), [POK-POK.md](reviews/POK-POK.md), [TOTOLOGIC.md](reviews/TOTOLOGIC.md) | Other games and apps, played as references |
 | [UX-REVIEW-2026-11-09.md](reviews/UX-REVIEW-2026-11-09.md) | Our own screens and navigation |
+| [FIRST-PLAY-AUDIT-2026-11-28.md](reviews/FIRST-PLAY-AUDIT-2026-11-28.md) | Which games are hard to figure out without reading the how-to card, and guided first play (a hand showing the move on the real board) with its rollout order |
 | [CODEBASE-REVIEW-2026-11-07.md](reviews/CODEBASE-REVIEW-2026-11-07.md) | Our own code structure |
 | [CLAUDE-3D-ANIMATION-2026-11-22.md](reviews/CLAUDE-3D-ANIMATION-2026-11-22.md) | Tools and practices for 3D models and animation made with Claude, with a verdict on each for our creature art |
 | [WORKFLOW-REVIEWS.md](reviews/WORKFLOW-REVIEWS.md) | How sessions work here: what was measured, what changed and why (the reasons behind the session guide) |

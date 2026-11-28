@@ -59,3 +59,67 @@ export function nextTheaterAction(
     return { kind: 'choose', field: 'weather', value: shows[0].weather === 'sun' ? 'rain' : 'sun' };
   return { kind: 'show' };
 }
+
+/* Level 14, Two Viewpoints: hear two friends' own words about one event, then choose an ending that keeps both wishes. */
+export type ViewpointsEnding = 'stay-loud' | 'turn-off' | 'two-spots' | 'soft-spot';
+export type ViewpointsRole = 'music' | 'quiet';
+export type ViewpointsVerdict = 'ok' | 'unmet-quiet' | 'unmet-music';
+export type Heard = Record<ViewpointsRole, boolean>;
+export const VIEWPOINTS_ENDINGS: readonly ViewpointsEnding[] = [
+  'stay-loud',
+  'turn-off',
+  'two-spots',
+  'soft-spot',
+];
+export const VIEWPOINTS_NAME = 'Story Theater: Two Viewpoints, hear two friends and choose an ending';
+
+export interface ViewpointsRound {
+  musicFriend: Cast;
+  quietFriend: Cast;
+  order: ViewpointsEnding[];
+}
+/** Neither friend is always the loud one: the roles are seeded, and the ending cards are shuffled. */
+export function viewpointsRound(rng: {
+  chance(p: number): boolean;
+  shuffle<T>(a: T[]): T[];
+}): ViewpointsRound {
+  const bunnyMusic = rng.chance(0.5);
+  return {
+    musicFriend: bunnyMusic ? 'bunny' : 'bear',
+    quietFriend: bunnyMusic ? 'bear' : 'bunny',
+    order: rng.shuffle([...VIEWPOINTS_ENDINGS]),
+  };
+}
+export function evaluateViewpoints(ending: ViewpointsEnding): ViewpointsVerdict {
+  return ending === 'stay-loud' ? 'unmet-quiet' : ending === 'turn-off' ? 'unmet-music' : 'ok';
+}
+export const canWatchViewpoints = (heard: Heard, draft: ViewpointsEnding | null): boolean =>
+  heard.music && heard.quiet && draft !== null;
+export const canFinishViewpoints = (
+  heard: Heard,
+  draft: ViewpointsEnding | null,
+  watched: readonly ViewpointsEnding[],
+): boolean =>
+  canWatchViewpoints(heard, draft) && watched.includes(draft!) && evaluateViewpoints(draft!) === 'ok';
+/** A first look at a one-sided ending is free exploration; looking at the same one again counts a miss. */
+export function watchConsequence(ending: ViewpointsEnding, watchedBefore: readonly ViewpointsEnding[]) {
+  const verdict = evaluateViewpoints(ending);
+  const accepted = verdict === 'ok';
+  return { verdict, accepted, miss: !accepted && watchedBefore.includes(ending) };
+}
+export type ViewpointsAction =
+  | { kind: 'hear'; role: ViewpointsRole }
+  | { kind: 'choose'; ending: ViewpointsEnding }
+  | { kind: 'show' | 'finish' };
+/** The next useful control for Help and the ghost finger; it never replaces an ending she chose that already works. */
+export function nextViewpointsAction(
+  heard: Heard,
+  draft: ViewpointsEnding | null,
+  watched: readonly ViewpointsEnding[],
+): ViewpointsAction {
+  if (!heard.music) return { kind: 'hear', role: 'music' };
+  if (!heard.quiet) return { kind: 'hear', role: 'quiet' };
+  if (canFinishViewpoints(heard, draft, watched)) return { kind: 'finish' };
+  if (!draft || evaluateViewpoints(draft) !== 'ok') return { kind: 'choose', ending: 'two-spots' };
+  return { kind: 'show' };
+}

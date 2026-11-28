@@ -9,7 +9,7 @@ import {
   type Texture,
 } from 'pixi.js';
 import type { Mood } from '../art/critter';
-import { ink, swatch, type ColorName } from '../art/palette';
+import { ink, petSage, swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
 import type { Creature } from '../art/creatures/creature';
 import {
@@ -20,7 +20,10 @@ import {
 } from '../art/creatures/illustrated';
 import { GLIDER_WEAR, IllustratedGlider } from '../art/creatures/glider-illustrated';
 import { IllustratedRiver, RIVER_WEAR } from '../art/creatures/river-illustrated';
+import { formFits, wearForm } from '../art/creatures/forms';
 import { IllustratedSprout, SPROUT_WEAR } from '../art/creatures/sprout-illustrated';
+import { PAPER_CREATURES, paperArt } from '../art/creatures/paper';
+import { paperCircle, paperLine, paperPoly } from '../art/paper';
 import { changeWorn, SLOT, type WearSlot } from '../art/creatures/wear-slots';
 import {
   fileOf,
@@ -30,12 +33,14 @@ import {
   WEARABLES,
   type ItemTextures,
   type WearableId,
+  type WearTable,
   type WearTables,
 } from '../art/creatures/wearables';
 import { sfx } from '../audio/sfx';
 import { MIXED_COLORS, type PetColor } from '../content/world';
 import type { Individual } from '../progress/save';
 import { store } from '../progress/store';
+import type { FormId } from './forms';
 import { ART_OF, creaturePoint, PARTS, type PartName } from './parts';
 import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
 
@@ -60,7 +65,37 @@ const loaded: {
 } = { sets: {}, pictures: new Map(), items: {} };
 
 /** Where each wearable sits on each species (RW06), from the rigs' own tables. */
-export const WEAR: WearTables = { sprout: SPROUT_WEAR, river: RIVER_WEAR, glider: GLIDER_WEAR };
+/**
+ * Where the paper creatures (docs/ART-STYLE.md) need an item placed differently from the painted ones. The paper
+ * Sprout's face sits low, so its scarf goes lower and its crown higher, leaving the mouth and eyes showing. The paper River has a thicker neck
+ * further forward and a rounder, smaller head: its scarf wraps the front of the neck, its glasses are sized to the head,
+ * and its boots sit low enough to hide the paws.
+ */
+const PAPER_FITS: Partial<Record<SpeciesId, Partial<WearTable>>> = {
+  sprout: {
+    scarf: { fits: [{ at: { x: 262, y: 344 }, width: 140 }] },
+    crown: { fits: [{ at: { x: 245, y: 100 }, width: 150, ride: { x: 245, y: 150 } }] },
+  },
+  river: {
+    scarf: { fits: [{ at: { x: 585, y: 140 }, width: 92, rotation: -0.25 }] },
+    sunglasses: { fits: [{ at: { x: 640, y: 56 }, width: 78 }] },
+    boots: {
+      fits: [
+        { at: { x: 215, y: 312 }, width: 50 },
+        { at: { x: 330, y: 312 }, width: 50 },
+        { at: { x: 555, y: 314 }, width: 50 },
+        { at: { x: 610, y: 312 }, width: 50 },
+      ],
+    },
+  },
+};
+const withPaper = (species: SpeciesId, table: WearTable): WearTable =>
+  PAPER_CREATURES ? { ...table, ...PAPER_FITS[species] } : table;
+export const WEAR: WearTables = {
+  sprout: withPaper('sprout', SPROUT_WEAR),
+  river: withPaper('river', RIVER_WEAR),
+  glider: withPaper('glider', GLIDER_WEAR),
+};
 
 /** The items a species can wear, in the wardrobe's order: its misfits are never offered. */
 export const wearableBy = (species: SpeciesId): WearableId[] =>
@@ -76,7 +111,10 @@ const EGG_FILE: Record<EggStage, string> = {
 
 /** Loads every species' rig art, the portraits, the card paper, the sprout's egg and the wearables. Never throws: what fails falls back (an item that failed is not drawn). */
 export async function loadCollectionArt(): Promise<void> {
-  const pictures = [...SPECIES_IDS.map((s) => `${s}-portrait`), 'card-paper', ...Object.values(EGG_FILE)];
+  // The paper look draws the egg, the cards and their portraits in code (`paperEgg`, `makePortrait`'s frozen rig).
+  const pictures = PAPER_CREATURES
+    ? []
+    : [...SPECIES_IDS.map((s) => `${s}-portrait`), 'card-paper', ...Object.values(EGG_FILE)];
   await Promise.all([
     loadWearables().then(
       (items) => void (loaded.items = items),
@@ -84,7 +122,7 @@ export async function loadCollectionArt(): Promise<void> {
     ),
     ...SPECIES_IDS.map(async (s) => {
       try {
-        loaded.sets[s] = await loadArt(s);
+        loaded.sets[s] = paperArt(s) ?? (await loadArt(s));
       } catch (e) {
         console.warn(`Could not load the ${s} art`, e);
       }
@@ -314,11 +352,18 @@ export class Companion extends Container implements CompanionRig {
   private readonly parts = new Map<PartName, Container[]>();
 
   private shown: WearableId[] = [];
+  /** What is actually on the rig (a misfit, a leave-off slot, a failed texture or a blossom's head slot are listed but not drawn). */
+  private readonly drawn = new Set<WearableId>();
+  private shownForm: FormId | null = null;
   /** Slots this companion never draws, though they stay listed in `worn` (the guide's `held`). */
   private readonly leaveOff: readonly WearSlot[];
 
   constructor(
-    who: { species: SpeciesId; look: { color: PetColor; worn?: readonly WearableId[] }; id?: string | null },
+    who: {
+      species: SpeciesId;
+      look: { color: PetColor; worn?: readonly WearableId[]; form?: FormId | null };
+      id?: string | null;
+    },
     art: ArtSet | undefined = loaded.sets[who.species],
     leaveOff: readonly WearSlot[] = [],
   ) {
@@ -336,7 +381,7 @@ export class Companion extends Container implements CompanionRig {
     this.touch = { x: t.x * fit.scale, y: t.y * fit.scale - fit.lift, r: t.r * fit.scale };
     this.body.addChild(this.rig);
     this.addChild(this.body);
-    this.dress(who.look.worn ?? []);
+    this.dress(who.look.worn ?? [], who.look.form ?? null);
   }
 
   /** What it has on, as saved (RW06), in the order put on. A misfit for its species is listed but not drawn. */
@@ -344,26 +389,45 @@ export class Companion extends Container implements CompanionRig {
     return this.shown;
   }
 
+  /** The blossom it shows (RW11), as saved, or null for its original look. */
+  get form(): FormId | null {
+    return this.shownForm;
+  }
+
   /**
-   * Changes what it wears to `worn`: what is no longer listed comes off first, then what is new goes on. The Graphics
-   * fallback rig wears nothing (`wearItem` dresses illustrated rigs only), nor does an item whose texture failed.
+   * Changes what it wears to `worn` and the blossom it shows to `form` (kept as it is when omitted): what is no longer
+   * wanted comes off first, then what is new goes on. A blossom takes the head slot, so a hat in `worn` is kept but not
+   * drawn while a blossom is. The Graphics fallback rig wears nothing (`wearItem` dresses illustrated rigs only), nor does
+   * an item whose texture failed.
    */
-  dress(worn: readonly WearableId[]) {
+  dress(worn: readonly WearableId[], form: FormId | null = this.shownForm) {
     const next = [...worn];
     if (this.rig instanceof IllustratedCreature) {
       const table = WEAR[this.species];
-      for (const w of this.shown) if (!next.includes(w)) wearItem(this.rig, table, w, null);
+      const blossom = form !== null && formFits(this.species, form);
+      const wanted = (w: WearableId) =>
+        next.includes(w) &&
+        !!loaded.items[fileOf(w)] &&
+        !this.leaveOff.includes(SLOT[w]) &&
+        !(blossom && SLOT[w] === 'head');
+      for (const w of [...this.drawn]) {
+        if (wanted(w)) continue;
+        wearItem(this.rig, table, w, null);
+        this.drawn.delete(w);
+      }
       for (const w of next) {
         const t = loaded.items[fileOf(w)];
-        if (!this.shown.includes(w) && t && !this.leaveOff.includes(SLOT[w])) wearItem(this.rig, table, w, t);
+        if (t && wanted(w) && !this.drawn.has(w) && wearItem(this.rig, table, w, t)) this.drawn.add(w);
       }
+      if (form !== this.shownForm) wearForm(this.rig, this.species, blossom ? form : null);
     }
     this.shown = next;
+    this.shownForm = form;
   }
 
-  /** Puts one item on (taking off whatever shares its slot) or takes it off. */
+  /** Puts one item on (taking off whatever shares its slot, and the blossom for a hat) or takes it off. */
   wear(item: WearableId, on: boolean) {
-    this.dress(changeWorn(this.shown, item, on));
+    this.dress(changeWorn(this.shown, item, on), on && SLOT[item] === 'head' ? null : this.shownForm);
   }
 
   /** A body-centred hit circle, `grow` units larger than the body. */
@@ -632,7 +696,7 @@ function silhouetteOf(node: Container) {
  */
 export function makeEgg(stage: EggStage): Container {
   const t = loaded.pictures.get(EGG_FILE[stage]);
-  if (!t) return drawEgg(new Graphics(), stage === 'whole' ? 0 : 4);
+  if (!t) return paperEgg(stage);
   const egg = new Sprite(t);
   egg.anchor.set(0.5, 1);
   egg.scale.set(EGG.scale);
@@ -653,6 +717,77 @@ export const EGG = {
   origins: { whole: [189, 107], crack: [189, 107], open: [189, 26] } as Record<EggStage, [number, number]>,
   files: EGG_FILE,
 };
+
+const EGG_SHELL = 0xfdf3dc;
+const EGG_SPOT = petSage.fill;
+const EGG_CRACK = petSage.line;
+
+/** A point on the egg's edge, `a` from the top round clockwise: 100 wide at the waist, narrower on top, 130 tall. */
+const eggAt = (a: number): [number, number] => [
+  100 * Math.sin(a) * (1 - 0.1 * Math.cos(a)),
+  -130 * Math.cos(a) + 4,
+];
+
+/** The crack across the shell at y = -20, a zigzag from x0 to x1. */
+function zigzag(x0: number, x1: number): number[] {
+  const out: number[] = [];
+  const n = 8;
+  for (let i = 0; i <= n; i++) out.push(x0 + ((x1 - x0) * i) / n, -20 + (i % 2 ? 14 : -10));
+  return out;
+}
+
+/**
+ * The sprout's egg in paper (docs/ART-STYLE.md), for every stage, in the old drawn egg's box (200 × 260, bottom at
+ * 134): a cream shell with teal spots, cracked across the middle, and opened with the cap lifted and tipped.
+ */
+export function paperEgg(stage: EggStage): Container {
+  const c = new Container();
+  const shell = (from: number, to: number, cut: boolean, spots: [number, number, number][]) => {
+    const g = new Graphics();
+    const pts: number[] = [];
+    for (let k = 0; k <= 40; k++) pts.push(...eggAt(from + ((to - from) * k) / 40));
+    // The edge runs round from one end of the crack to the other, so the zigzag closes it back to the start.
+    if (cut) pts.push(...zigzag(pts[pts.length - 2], pts[0]));
+    // A gentle wobble: the egg is big on the hatch screen, and a lumpy egg looks squashed.
+    paperPoly(g, pts, EGG_SHELL, { amp: 1.4, seed: `egg${from}`, line: 0xb9a888 });
+    spots.forEach(([x, y, r], i) =>
+      paperCircle(g, x, y, r, EGG_SPOT, { noShadow: true, amp: 1.2, seed: `spot${i}` }),
+    );
+    return g;
+  };
+  if (stage !== 'open') {
+    const g = shell(0, Math.PI * 2, false, [
+      [-34, -72, 26],
+      [44, -16, 32],
+      [-46, 42, 30],
+      [30, 86, 24],
+    ]);
+    if (stage === 'crack') {
+      const z = zigzag(-94, 94);
+      paperLine(
+        g,
+        z.flatMap((v, i) => (i % 2 ? [] : [[v, z[i + 1]] as [number, number]])),
+        EGG_CRACK,
+        7,
+        { noShadow: true },
+      );
+    }
+    c.addChild(g);
+    return c;
+  }
+  const a0 = Math.acos(24 / 130);
+  const bottom = shell(a0, Math.PI * 2 - a0, true, [
+    [-46, 42, 30],
+    [30, 86, 24],
+    [52, 14, 18],
+  ]);
+  const cap = shell(-a0, a0, true, [[-30, -76, 24]]);
+  cap.pivot.set(60, -20);
+  cap.position.set(66, -58);
+  cap.rotation = 0.36;
+  c.addChild(bottom, cap);
+  return c;
+}
 
 /** The drawn egg: the fallback when the art did not load. */
 export function drawEgg(g: Graphics, cracks = 0): Graphics {

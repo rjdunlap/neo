@@ -10,11 +10,18 @@ import { ink } from '../../art/palette';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clockFace, fractionFace, pictureFace } from './art';
+import { clockFace, fractionFace, pictureFace, shareFace, shareSplit, totalFace } from './art';
 import {
   selectFractionSquares,
   type FractionSquare,
   selectTimes,
+  selectSums,
+  countAcross,
+  groupsLabel,
+  type TotalSum,
+  compareShares,
+  shareOf,
+  SHARES,
   DOT_RADIUS,
   selectDotLayouts,
   selectPictures,
@@ -32,20 +39,34 @@ import {
   planFor,
   pictureIdentity,
   type MemoryCard,
+  type MemoryMode,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import { courseBest, courseMinimum, courseTables, isMemoryCourse, type Table } from './course';
 
-type CardView = { node: Container; front: Container; back: Graphics; matched: boolean };
+type CardView = { node: Container; front: Container; back: Graphics; matched: boolean; split?: Graphics };
 class MemoryMatch implements Game {
-  readonly cards: MemoryCard[];
+  cards: MemoryCard[];
   readonly views: CardView[] = [];
   readonly seen = new Set<number>();
-  private readonly plan;
+  private plan: { pairs: number; mode: MemoryMode; name: string };
   private readonly letters: string[];
-  readonly pictures: readonly MemoryPicture[];
+  pictures: readonly MemoryPicture[];
   readonly dots: readonly DotSpot[][];
   readonly squares: readonly FractionSquare[];
   readonly times: readonly number[];
+  readonly sums: readonly TotalSum[];
+  // A couch challenge course: fixed tables played in a row, scored by cards turned over (docs/DESIGN.md "Adding a challenge course").
+  private readonly course: { tables: Table[]; par: number[]; minimum: number } | null = null;
+  private index = 0;
+  private doneBoards: number[] = [];
+  /** Flips already spent on the table we are resuming, so leaving and coming back cannot erase them. */
+  private carry = 0;
+  private flips = 0;
+  private assisted = false;
+  private get boardFlips() {
+    return this.carry + this.flips;
+  }
   private readonly background = new Graphics();
   private readonly hint = new Graphics();
   private first: number | null = null;
@@ -72,33 +93,68 @@ class MemoryMatch implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.versus = !!ctx.couch?.versus;
-    this.times = this.plan.mode === 'clocks' ? selectTimes(ctx.rng) : [];
-    this.cards = makeDeck(this.plan.pairs, ctx.rng);
-    this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
-    this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
+    const run = ctx.couch?.course;
+    if (run && isMemoryCourse(run.id)) {
+      this.course = {
+        tables: courseTables(run.id),
+        par: courseBest(run.id),
+        minimum: courseMinimum(run.id),
+      };
+      this.index = Math.min(this.course.tables.length - 1, run.resume.board);
+      this.doneBoards = run.resume.done.slice();
+      this.carry = run.resume.attempts;
+      this.assisted = run.resume.assisted;
+      const table = this.course.tables[this.index];
+      this.plan = { pairs: table.pairs, mode: 'pictures', name: 'Card table' };
+      this.cards = table.cards;
+      this.pictures = table.pictures;
+      this.times = [];
+      this.letters = [];
+    } else {
+      this.times = this.plan.mode === 'clocks' ? selectTimes(ctx.rng) : [];
+      this.cards = makeDeck(this.plan.pairs, ctx.rng);
+      this.letters = ctx.rng.shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')).slice(0, this.plan.pairs);
+      this.pictures = this.plan.mode === 'pictures' ? selectPictures(this.plan.pairs, ctx.rng) : [];
+    }
     this.dots = this.plan.mode === 'numbers' ? selectDotLayouts(this.plan.pairs, ctx.rng) : [];
     this.squares = this.plan.mode === 'fractions' ? selectFractionSquares(ctx.rng) : [];
+    this.sums = this.plan.mode === 'totals' ? selectSums(ctx.rng) : [];
     this.remaining = this.plan.pairs;
     ctx.stage.addChild(this.background, this.hint, this.ring, this.board);
     this.ring.eventMode = 'none';
     this.board.eventMode = 'none';
+    this.buildCards();
+  }
+
+  /** One node per card, built again for each table of a course. */
+  private buildCards() {
+    for (const v of this.views) v.node.destroy({ children: true });
+    this.views.length = 0;
     this.cards.forEach((card, i) => {
       const node = new Container();
       const front = new Container();
       front.addChild(tile(140, 140, 'white'), this.face(card));
+      // Level 14: the first card of each pair carries a hidden overlay cutting its pieces into its partner's.
+      const split = this.plan.mode === 'shares' && card.side === 0 ? shareSplit(card.pair) : undefined;
+      if (split) {
+        split.visible = false;
+        front.addChild(split);
+      }
       front.visible = false;
       const back = tile(140, 140, 'purple');
       back.poly(starPoints(30, 14)).fill(swatch.purple.light);
       node.addChild(front, back);
       node.hitArea = new Rectangle(-70, -70, 140, 140);
       onTap(node, () => void this.choose(i), { cooldown: 180 });
-      ctx.stage.addChild(node);
-      this.views.push({ node, front, back, matched: false });
+      this.ctx.stage.addChild(node);
+      this.views.push({ node, front, back, matched: false, split });
     });
   }
 
   private face(card: MemoryCard): Container {
     if (this.plan.mode === 'clocks') return clockFace(this.times[card.pair], card.side);
+    if (this.plan.mode === 'totals') return totalFace(this.sums[card.pair], card.side);
+    if (this.plan.mode === 'shares') return shareFace(shareOf(card));
     if (this.plan.mode === 'pictures') return pictureFace(this.pictures[card.pair]);
     if (this.plan.mode === 'fractions') {
       const amount = fraction(card.pair)!;
@@ -134,11 +190,131 @@ class MemoryMatch implements Game {
       .stroke({ width: 4, color: swatch[color].line });
   }
 
+  private labelOf(i: number): string {
+    return cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures, this.times, this.sums);
+  }
+
+  /**
+   * Level 13's nonmatch speech, the same for exploring and a known miss (only the boing differs): a groups card names
+   * its two groups and their total, so a groups card and the wrong number say "two and three make five, not seven".
+   * Two numbers fall back to the ordinary line. False when this is not level 13 or both cards are numbers.
+   */
+  private explainTotals(first: number, second: number): boolean {
+    if (this.plan.mode !== 'totals') return false;
+    const [a, b] = [this.cards[first], this.cards[second]];
+    if (a.side && b.side) return false;
+    const word = (n: number) => numberWord(n - 1);
+    const [groups, other] = a.side ? [b, a] : [a, b];
+    const sum = this.sums[groups.pair],
+      that = this.sums[other.pair];
+    if (other.side)
+      void this.ctx.say('memory.total-mix', {
+        groups: groupsLabel(sum),
+        total: word(sum.total),
+        other: word(that.total),
+      });
+    else
+      void this.ctx.say('memory.total-two', {
+        groups: groupsLabel(sum),
+        total: word(sum.total),
+        others: groupsLabel(that),
+        other: word(that.total),
+      });
+    return true;
+  }
+
+  /**
+   * Level 14's overlay: shown on a matched pair's first card (so a half stays visibly two quarters) and on the hinted
+   * pair's first card while its glow lasts. It sits on the card's face, so it shows the next time that card is turned.
+   */
+  private drawSplits() {
+    const hinted = this.hintAt === null ? -1 : this.cards[this.hintAt].pair;
+    this.views.forEach((v, i) => {
+      if (v.split) v.split.visible = v.matched || this.cards[i].pair === hinted;
+    });
+  }
+
+  /** Done with the round: for a course, only after its last table (between tables the cards are dealt again). */
   get finished() {
-    return this.remaining === 0;
+    return this.remaining === 0 && !(this.course && this.index + 1 < this.course.tables.length);
+  }
+
+  /** The next table of a course: its cards, its pictures, and nothing carried over from the last. */
+  private loadTable(i: number) {
+    const table = this.course!.tables[i];
+    this.index = i;
+    this.plan = { pairs: table.pairs, mode: 'pictures', name: 'Card table' };
+    this.cards = table.cards;
+    this.pictures = table.pictures;
+    this.remaining = table.pairs;
+    this.first = null;
+    this.focus = 0;
+    this.flips = 0;
+    this.wrong = 0;
+    this.hintAt = null;
+    this.hint.clear();
+    this.seen.clear();
+    this.botWait = 1.5;
+    this.buildCards();
+  }
+
+  /** Hand a course's numbers to the shell. `finished` means the table just ended, so none of its flips are "in progress". */
+  private report(finished = false) {
+    const run = this.ctx.couch?.course;
+    if (!run || !this.course) return;
+    run.progress({
+      board: this.index,
+      boards: this.course.tables.length,
+      done: this.doneBoards.slice(),
+      attempts: finished ? 0 : this.boardFlips,
+      par: this.course.par[this.index],
+      minimum: this.course.minimum,
+      assisted: this.assisted,
+    });
+  }
+
+  /** The flips for the table just finished, over the cards for a moment. */
+  private async boardScore() {
+    const par = this.course!.par[this.index],
+      total = this.course!.tables.length,
+      n = this.doneBoards[this.doneBoards.length - 1];
+    const flips = `${n} ${n === 1 ? 'flip' : 'flips'}`;
+    const text =
+      n <= par
+        ? `Table ${this.index + 1} of ${total}: ${flips}, on par or better!`
+        : `Table ${this.index + 1} of ${total}: ${flips} (par ${par})`;
+    const note = new Container();
+    const t = label(text, 30, ink);
+    const padX = 22,
+      padY = 14;
+    note.addChild(
+      new Graphics()
+        .roundRect(-t.width / 2 - padX, -t.height / 2 - padY, t.width + padX * 2, t.height + padY * 2, 16)
+        .fill(cream)
+        .stroke({ width: 3, color: swatch.green.line }),
+      t,
+    );
+    note.position.set(this.ctx.view.w / 2, this.ctx.view.h / 2);
+    note.alpha = 0;
+    this.ctx.stage.addChild(note);
+    await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.wait(1.1);
+    await this.ctx.tw.to(note, { alpha: 0 }, { duration: 0.25 });
+    note.destroy({ children: true });
   }
 
   start() {
+    // Level 13's instruction names its pair count, so it stays on device speech and needs no rendered clip.
+    if (this.plan.mode === 'totals')
+      return void this.ctx.instruct('memory.total', { count: numberWord(this.plan.pairs - 1) });
+    // Level 14's lines all carry slots too, so it also stays on device speech.
+    if (this.plan.mode === 'shares')
+      return void this.ctx.instruct('memory.share', { count: numberWord(this.plan.pairs - 1) });
+    if (this.course) {
+      this.report();
+      void this.ctx.instruct('memory.start');
+      return;
+    }
     void this.ctx.instruct(
       this.plan.mode === 'clocks'
         ? 'memory.clock'
@@ -157,7 +333,7 @@ class MemoryMatch implements Game {
   private async choose(i: number) {
     const view = this.views[i];
     if (this.locked || view.matched || this.remaining === 0) return;
-    const contents = cardLabel(this.plan.mode, this.cards[i], this.letters, this.pictures, this.times);
+    const contents = this.labelOf(i);
     if (this.first === i) {
       void this.ctx.say('memory.card', { card: contents });
       return;
@@ -165,6 +341,11 @@ class MemoryMatch implements Game {
     view.front.visible = true;
     view.back.visible = false;
     sfx.pop(5 + (this.cards[i].pair % 5));
+    // A course counts every card turned over, and saves it at once so a reload cannot lose it.
+    if (this.course) {
+      this.flips++;
+      this.report();
+    }
     if (this.first === null) {
       void this.ctx.say('memory.card', { card: contents });
       this.first = i;
@@ -187,9 +368,19 @@ class MemoryMatch implements Game {
         this.drawBoard();
       }
       sfx.sparkle();
-      void this.ctx.say(this.plan.mode === 'clocks' ? 'memory.clock-pair' : 'memory.pair-card', {
-        card: contents,
-      });
+      this.drawSplits();
+      if (this.plan.mode === 'shares')
+        void this.ctx.say('memory.share-pair', { first: this.labelOf(first), second: contents });
+      else if (this.plan.mode === 'totals') {
+        const sum = this.sums[this.cards[i].pair];
+        void this.ctx.say('memory.total-pair', {
+          groups: groupsLabel(sum),
+          total: numberWord(sum.total - 1),
+        });
+      } else
+        void this.ctx.say(this.plan.mode === 'clocks' ? 'memory.clock-pair' : 'memory.pair-card', {
+          card: contents,
+        });
       await this.ctx.tw.wait(0.35);
     } else {
       const known = knownMismatch(this.cards, first, i, this.seen);
@@ -198,10 +389,19 @@ class MemoryMatch implements Game {
         this.wrong++;
         sfx.boing();
       }
-      void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
-        first: cardLabel(this.plan.mode, this.cards[first], this.letters, this.pictures, this.times),
-        second: contents,
-      });
+      if (this.plan.mode === 'shares') {
+        // The same line for exploring and a known miss (only the boing differs): which of the two shades more.
+        const more = compareShares(shareOf(this.cards[first]), shareOf(this.cards[i])) > 0 ? first : i;
+        void this.ctx.say('memory.share-mix', {
+          first: this.labelOf(first),
+          second: contents,
+          bigger: this.labelOf(more),
+        });
+      } else if (!this.explainTotals(first, i))
+        void this.ctx.say(known ? 'memory.wrong-cards' : 'memory.explore', {
+          first: this.labelOf(first),
+          second: contents,
+        });
       await this.ctx.tw.wait(1.2);
       a.front.visible = view.front.visible = false;
       a.back.visible = view.back.visible = true;
@@ -213,6 +413,10 @@ class MemoryMatch implements Game {
         const partner = hintPartner(this.cards, first, this.seen, this.wrong);
         if (partner !== null) {
           this.hints++;
+          if (this.course) {
+            this.assisted = true;
+            this.report();
+          }
           this.hintAt = partner;
           if (this.plan.mode === 'clocks') {
             const time = this.times[this.cards[partner].pair];
@@ -224,13 +428,42 @@ class MemoryMatch implements Game {
                   ? `on ${Math.floor(time / 60) || 12}`
                   : `halfway between ${Math.floor(time / 60) || 12} and ${(Math.floor(time / 60) % 12) + 1}`,
             });
+          } else if (this.plan.mode === 'totals') {
+            // Both cards of a pair share its sum: count across its two groups to reach the number.
+            const sum = this.sums[this.cards[partner].pair];
+            void this.ctx.say('memory.total-hint', {
+              groups: groupsLabel(sum),
+              count: countAcross(sum.total),
+              total: numberWord(sum.total - 1),
+            });
+          } else if (this.plan.mode === 'shares') {
+            const [coarse, fine] = SHARES[this.cards[partner].pair];
+            void this.ctx.say('memory.share-hint', {
+              card: this.labelOf(partner),
+              coarse: coarse.name,
+              fine: fine.name,
+            });
           } else void this.ctx.say('memory.hint');
           this.drawHint();
+          this.drawSplits();
         }
       }
     }
     this.seen.add(i);
     this.first = null;
+    if (!this.remaining && this.course) {
+      this.doneBoards.push(this.boardFlips);
+      this.report(true);
+      this.carry = 0;
+      if (!this.ctx.demo) await this.boardScore();
+      if (this.index + 1 < this.course.tables.length) {
+        this.loadTable(this.index + 1);
+        this.locked = false;
+        this.resize(this.ctx.view);
+        this.report();
+        return;
+      }
+    }
     this.locked = false;
     if (!this.remaining)
       this.ctx.finish({
@@ -317,6 +550,11 @@ class MemoryMatch implements Game {
   }
 
   /** The ghost finger on the how-to card: the same player who remembers, tapping the card itself. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.locked || this.remaining === 0) return null;
     const target = nextCard(this.cards, this.seen, (k) => this.views[k].matched, this.first);

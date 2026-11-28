@@ -1648,6 +1648,28 @@ class MysteryGrid implements Game {
    * The ghost finger replays the rule solver: one tap for a yes, two for a no (the second soon after, before the first is
    * judged), then taps the friend who has the pie. Level 7 taps only the yeses.
    */
+  /**
+   * Guided first play: the bot's next square (or the answer card), but only while it is already in view. The bot scrolls a
+   * phone's case file to bring its square in; a hint must not move the board under her.
+   */
+  showMove(): TouchIntent | null {
+    const b = this.current;
+    if (!b || this.busy || this.finished) return null;
+    if (this.phase === 'answer') {
+      const who = answerOf(b);
+      if (this.phoneCase && !this.rowInView(this.rowY(who))) return null;
+      return { tap: { on: this.friendCards[who], x: (b.case ? HW : SQ) / 2, y: this.cs / 2 } };
+    }
+    const yes = b.case
+      ? solveSteps(shapeOf(b), b.clues).steps.find(
+          (x) => x.mark === FILLED && this.marks[x.square] !== FILLED,
+        )
+      : undefined;
+    const st = yes ?? nextStep(b, this.marks);
+    if (!st || (this.slides && !this.inView(st.square))) return null;
+    return { tap: { on: this.cells[st.square], x: this.cs / 2, y: this.cs / 2 } };
+  }
+
   autotouch(): TouchIntent | null {
     const b = this.current;
     if (!b || this.busy || this.finished) return null;

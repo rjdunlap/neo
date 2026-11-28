@@ -43,8 +43,8 @@ describe('Story Steps clue endings', () => {
       expect(predictionFeedback(0, attempts)).toEqual({ complete: true, miss: false, hint: false });
   });
   it('preserves level 11 and younger ranges when theater is appended', () => {
-    expect(storySteps.levels('school')).toEqual({ min: 6, max: 13 });
-    expect(storySteps.levels('toddler')).toEqual({ min: 1, max: 2 });
+    expect(storySteps.levels('school')).toEqual({ min: 6, max: 14 });
+    expect(storySteps.levels('toddler')).toEqual({ min: 1, max: 15, order: [15, 1, 2] });
     expect(storySteps.levels('preschool')).toEqual({ min: 2, max: 5 });
     expect(storySteps.levels('prek')).toEqual({ min: 4, max: 8 });
     expect(storySteps.describeLevel(10)).toContain('two');

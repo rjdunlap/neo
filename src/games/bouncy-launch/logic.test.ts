@@ -26,6 +26,14 @@ import {
   BETWEEN_PLAN,
   BETWEEN_TRIPLES,
   betweenTriples,
+  SPRING_LEVEL,
+  SPRING_PLAN,
+  SPRING_KINDS,
+  canSpringReach,
+  idealSpringFor,
+  pullForSpring,
+  springFactor,
+  springTargets,
   PLANET_PLAN,
   planetPairs,
   gravityFor,
@@ -53,6 +61,10 @@ import {
   reach,
   revealsPullRule,
   targets,
+  MAGNET_AFTER,
+  MAGNET_RANGE,
+  magnetPull,
+  notchPull,
 } from './logic';
 import { CLOUDS } from './course';
 
@@ -376,7 +388,7 @@ describe('Planet Hop, level 12', () => {
 describe('level 13, the flower meadow (lap)', () => {
   it('opens lap before level 1; no other band reaches it; the other levels keep their plans', () => {
     expect(planFor(MEADOW_LEVEL)).toBe(MEADOW_PLAN);
-    expect(levelsInOrder(LEVELS.lap!)).toEqual([MEADOW_LEVEL, 1]);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([MEADOW_LEVEL, 1, 2]);
     expect(firstLevel(LEVELS.lap!)).toBe(MEADOW_LEVEL);
     expect(stepLevel(MEADOW_LEVEL, 1, LEVELS.lap!)).toBe(1);
     expect(stepLevel(MEADOW_LEVEL, -1, LEVELS.lap!)).toBe(MEADOW_LEVEL);
@@ -422,9 +434,9 @@ describe('level 13, the flower meadow (lap)', () => {
 });
 
 describe('level 10, Where on the line?', () => {
-  it('is school only, after Between two flights and before Planet Hop', () => {
+  it('is school only, after Between two flights and before Planet Hop and Pick a spring', () => {
     expect(planFor(LINE_LEVEL)).toBe(LINE_PLAN);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([4, 5, 7, 6, 9, LINE_LEVEL, 12]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([4, 5, 7, 6, 9, LINE_LEVEL, 12, SPRING_LEVEL]);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(LINE_LEVEL);
     expect(bouncyLaunch.describeLevel(LINE_LEVEL)).toMatch(/1 to 10 line/);
@@ -471,5 +483,100 @@ describe('level 10, Where on the line?', () => {
   it('has its lines in the voice script', () => {
     for (const id of ['launch.line', 'launch.line-yes', 'launch.line-near', 'launch.line-gap'])
       expect(SCRIPT[id as keyof typeof SCRIPT]).toBeDefined();
+  });
+});
+
+describe('level 11, Pick a spring', () => {
+  it('is school only, at the end of school order, and keeps levels 1–6 and Cloud Hopper unchanged', () => {
+    expect(planFor(SPRING_LEVEL)).toBe(SPRING_PLAN);
+    expect(levelsInOrder(LEVELS.school!).at(-1)).toBe(SPRING_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(SPRING_LEVEL);
+    for (let i = 1; i <= 6; i++) expect(planFor(i)).toBe(PLANS[i - 1]);
+    for (let p = 0; p <= 200; p += 10) expect(reach(p, 1, 1)).toBe(reach(p));
+    expect(CLOUDS.version).toBe(1);
+    expect(bouncyLaunch.describeLevel(SPRING_LEVEL)).toMatch(/spring/i);
+  });
+
+  it('strictly increases reach with both pull and spring, and stiffest at full pull reaches at most the last cloud', () => {
+    for (const kind of SPRING_KINDS) {
+      const f = springFactor(kind);
+      for (let p = MIN_PULL; p < MAX_PULL; p += 10)
+        expect(reach(p + 10, 1, f)).toBeGreaterThan(reach(p, 1, f));
+    }
+    for (let p = MIN_PULL + 10; p <= MAX_PULL; p += 10) {
+      expect(reach(p, 1, springFactor('medium'))).toBeGreaterThan(reach(p, 1, springFactor('soft')));
+      expect(reach(p, 1, springFactor('stiff'))).toBeGreaterThan(reach(p, 1, springFactor('medium')));
+    }
+    expect(reach(MAX_PULL, 1, springFactor('stiff'))).toBeLessThanOrEqual(padAt(PADS - 1));
+  });
+
+  it('has a valid spring and leash pull for every star, while softer springs fall short of far clouds', () => {
+    for (let t = 0; t < PADS; t++) {
+      const ideal = idealSpringFor(t);
+      expect(canSpringReach(ideal, t)).toBe(true);
+      expect(canSpringReach('stiff', t)).toBe(true);
+      const pull = pullForSpring(padAt(t), ideal);
+      expect(pull).toBeGreaterThanOrEqual(MIN_PULL);
+      expect(pull).toBeLessThanOrEqual(MAX_PULL);
+      expect(padHit(reach(pull, 1, springFactor(ideal)))).toBe(t);
+    }
+    expect(canSpringReach('soft', 3)).toBe(false);
+    expect(canSpringReach('soft', 4)).toBe(false);
+    expect(canSpringReach('medium', 4)).toBe(false);
+  });
+
+  it('deals three distinct star clouds per round covering stiff, medium and near targets, deterministic per seed', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const t = springTargets(new Rng(seed));
+      expect(t).toHaveLength(3);
+      expect(new Set(t).size).toBe(3);
+      expect(t).toContain(4);
+      expect(t).toContain(3);
+      expect(t.some((c) => c <= 2)).toBe(true);
+      expect(targets(SPRING_PLAN, new Rng(seed))).toEqual(t);
+    }
+  });
+
+  it('gives the ghost finger a full pull for round 1 and exact spring pulls for round 2', () => {
+    expect(pullToTake(SPRING_PLAN, 0, [4, 3, 1])).toBe(MAX_PULL);
+    for (let seed = 1; seed <= 50; seed++) {
+      const tgs = springTargets(new Rng(seed));
+      tgs.forEach((t, i) => {
+        const spring = idealSpringFor(t);
+        const pull = pullToTake(SPRING_PLAN, i + 1, tgs, undefined, [], spring);
+        expect(pull).toBeGreaterThanOrEqual(MIN_PULL);
+        expect(pull).toBeLessThanOrEqual(MAX_PULL);
+        expect(judge(SPRING_PLAN, reach(pull, 1, springFactor(spring)), t)).toBe('yes');
+      });
+    }
+  });
+
+  it('has all spring voice lines in the script', () => {
+    for (const id of [
+      'launch.spring-predict',
+      'launch.spring-why-right',
+      'launch.spring-why',
+      'launch.spring-pick',
+      'launch.spring-first',
+      'launch.spring-too-soft',
+    ])
+      expect(SCRIPT[id as keyof typeof SCRIPT]).toBeDefined();
+  });
+});
+
+describe('the magnet (slice 8)', () => {
+  it('snaps a near pull onto the right notch and leaves a far one alone', () => {
+    for (let i = 0; i < PADS; i++) {
+      const t = notchPull(i);
+      expect(magnetPull(t + MAGNET_RANGE, t)).toBe(t);
+      expect(magnetPull(t - MAGNET_RANGE, t)).toBe(t);
+      expect(padHit(reach(magnetPull(t + 9, t)))).toBe(i);
+      expect(magnetPull(t + MAGNET_RANGE + 1, t)).toBe(t + MAGNET_RANGE + 1);
+    }
+  });
+  it('is a hint after four misses, later than the preview, and reaches a cloud inside its range', () => {
+    expect(MAGNET_AFTER).toBe(4);
+    expect(MAGNET_RANGE).toBeLessThan(notchPull(1) - notchPull(0));
   });
 });

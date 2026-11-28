@@ -57,10 +57,13 @@ function bottomRow(v: V): number {
   return narrow(v) ? v.h - 290 - Math.max(0, v.h - 1206) * 0.15 : v.h - 130;
 }
 
+/** Loose monster spots to reserve: ladder keeps a 4th spot open for a lifted standing monster. */
+const spotChoices = (plan: Plan) => (plan.mode === 'ladder' ? 4 : plan.choices);
+
 /** The anchor the picture, the boxes and the read button hang from. */
 export function topSpot(v: V, plan: Plan): Spot {
   if (!narrow(v)) return { x: v.w / 2, y: v.h * 0.3 };
-  const rows = rowSizes(v, plan.choices).length;
+  const rows = rowSizes(v, spotChoices(plan)).length;
   return { x: v.w / 2, y: bottomRow(v) - (rows - 1) * ROW_GAP - 380 };
 }
 
@@ -75,17 +78,18 @@ export function slotSpot(v: V, plan: Plan, i: number, count: number): Spot {
 
 /**
  * Where `n` loose monsters stand (all of them at the start of a question; fewer when the screen turns mid-word). `count`
- * is the word's boxes, which level 12 keeps its row near.
+ * is the word's boxes, which levels 12 and 18 keep their row near.
  */
 export function looseSpots(v: V, plan: Plan, n: number, count = 3): Spot[] {
-  const sizes = rowSizes(v, plan.choices);
-  const five = plan.choices === 5;
+  const choices = spotChoices(plan);
+  const sizes = rowSizes(v, choices);
+  const five = choices === 5;
   const base =
-    plan.mode === 'repair' && !narrow(v)
+    (plan.mode === 'repair' || plan.mode === 'ladder') && !narrow(v)
       ? Math.min(v.h - 130, slotSpot(v, plan, 0, count).y + 375)
       : bottomRow(v);
   const out: Spot[] = [];
-  let left = n;
+  let left = plan.mode === 'ladder' ? choices : n;
   sizes.forEach((size, j) => {
     const m = Math.min(left, size);
     left -= m;
@@ -97,7 +101,7 @@ export function looseSpots(v: V, plan: Plan, n: number, count = 3): Spot[] {
     for (let i = 0; i < m; i++)
       out.push({ x: xs[i], y: base - (sizes.length - 1 - j) * ROW_GAP + JITTER[i % 2] });
   });
-  return out;
+  return out.slice(0, n);
 }
 
 /** Level 9: where the big monster stands. */
@@ -126,3 +130,9 @@ export const FIXED_HIT = { w: 148, h: 164 } as const;
 export const SLOT_ROW_HIT = { pad: 80, h: 160 } as const;
 /** A drop this far above or below the boxes' middle still tries the next box. */
 export const DROP_REACH = 140;
+
+/** Level 16: a picture card is this big a square (a tap anywhere on it counts) and its picture is drawn this scale. */
+export const CARD = { size: 176, scale: 0.55 } as const;
+
+/** Level 16: where its three picture cards stand, in the loose monsters' places (a row; lifted clear of the guide upright). */
+export const cardSpots = (v: V, plan: Plan): Spot[] => looseSpots(v, plan, plan.choices);

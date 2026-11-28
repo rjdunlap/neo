@@ -134,6 +134,8 @@ export interface PlayLayout {
   books: Spot;
   /** Welcome a New Friend's basket bed (RW07 slice 3): between the tune plaque and the basket, clear of the ball's floor. */
   bed: Spot;
+  /** The sun-and-moon lamp (RW11 slice 3), a second toy on the floor beside the ball, clear of the ball's floor. */
+  lamp: Spot;
   floor: Floor;
 }
 
@@ -141,6 +143,9 @@ export interface PlayLayout {
  * The newcomer's basket bed in creature play (RW07 slice 3): her project picture on the upper part (a tap says whose bed
  * it is), and the newcomer curled in the basket below it (a tap wakes it). Each part is at least 100 units tall.
  */
+/** The lamp's width in units (RW11 slice 3). */
+export const LAMP_W = 120;
+
 export const BED = { w: 180, h: 220, picture: 105 };
 
 export function playLayout(v: { w: number; h: number }): PlayLayout {
@@ -155,9 +160,15 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   const top = BACK.y + BACK.r + 130;
   const plaque = { x: v.w - 50 - 80, y: top };
   const board = { x: plaque.x - 80 - 40 - 130, y: top };
+  // The lamp stands left of the basket, on the right of the grass, and the ball's floor ends before it. The upright
+  // area has no room for that, so there it stands above the guide's corner, clear of the floor.
+  const lamp =
+    v.w < NARROW
+      ? { x: GUIDE_CORNER.w / 2 + 40, y: v.h - 340 }
+      : { x: basket.x - BASKET.w / 2 - LAMP_W / 2 - 20, y: v.h - 110 };
   const floor = {
     x0: GUIDE_CORNER.w + BALL_RADIUS,
-    x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30,
+    x1: v.w < NARROW ? basket.x - BASKET.w / 2 - BALL_RADIUS - 30 : lamp.x - LAMP_W / 2 - BALL_RADIUS - 20,
     y0: Math.max(backdrop.floorTop + 40, v.h - 220),
     y1: v.h - BALL_RADIUS - 20,
   };
@@ -175,6 +186,7 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
     basket,
     books,
     bed,
+    lamp,
     floor,
   };
 }
@@ -390,4 +402,127 @@ export function endingLayout(v: { w: number; h: number }): EndingLayout {
     scale: 0.8,
   };
   return { ...l, names, arrow, picture, plates, companion };
+}
+
+/** A thing standing in Home's yard: its foot on the grass and its scale (`src/art/home/yard.ts`). */
+export interface YardSpot {
+  x: number;
+  y: number;
+  scale: number;
+}
+
+/**
+ * Home as a yard to tap around (the developer, 2026-11-28: "you should just be able to click things and things should
+ * happen", like a point-and-click adventure). Each way out is a thing in the picture: the treehouse door (creature
+ * play), a notice board of six cards (Today's six), an arcade cabinet (every game), a signpost on the path (out to the
+ * island) and a picnic blanket (family play); Welcome a New Friend's basket while that project is open. A bush and a
+ * patch of flowers only do something. Two layouts: the upright 768-wide area of a phone held upright, and the wide one.
+ * Only Who's playing (top left) and the grown-ups' gear (top right) stay buttons.
+ */
+export interface YardLayout {
+  backdrop: Backdrop;
+  who: Spot;
+  stage: Spot & { scale: number };
+  treehouse: YardSpot;
+  board: YardSpot;
+  arcade: YardSpot;
+  signpost: YardSpot;
+  /** Family play is grown-up couch play: no blanket for lap and toddler, whose ball takes its corner. */
+  blanket: YardSpot | null;
+  basket: YardSpot | null;
+  /** Pick for me's kite (D7a), in the sky for every band; its foot is the string's end. */
+  kite: YardSpot;
+  /** Lantern Lodge on the hill, for the bands that earn shells (`earnsShells`, grown-ups): placed always, drawn only for them. */
+  lodge: YardSpot;
+  bush: YardSpot;
+  flowers: YardSpot;
+  /** The upright area's own sun (the backdrop's stands off to the right, out of an upright phone's view). */
+  sun: YardSpot | null;
+  ball: Spot | null;
+  floor: Floor;
+}
+
+/** Roughly how big each yard thing is at scale 1, its foot at the bottom centre (for clearance tests and hit boxes). */
+export const YARD_SIZE = {
+  /** The house and its trunk, not the whole canopy, so the bush and the cabinet beside it keep their own taps. */
+  treehouse: { w: 400, h: 640 },
+  board: { w: 210, h: 250 },
+  arcade: { w: 130, h: 230 },
+  signpost: { w: 220, h: 215 },
+  blanket: { w: 220, h: 100 },
+  basket: { w: 140, h: 120 },
+  kite: { w: 150, h: 240 },
+  lodge: { w: 190, h: 150 },
+  bush: { w: 180, h: 110 },
+  flowers: { w: 130, h: 120 },
+} as const;
+
+export function yardLayout(v: { w: number; h: number }, young: boolean, project = false): YardLayout {
+  const backdrop = backdropFit(v);
+  const g = backdrop.floorTop;
+  const upright = v.w < NARROW;
+  const ballSpot = (stage: Spot) => ({ x: stage.x + 230, y: v.h - 80 });
+  if (upright) {
+    // 768 wide: the treehouse on the left hill, the cabinet and board up on the grass's back edge, the signpost by the
+    // path's end on the right, the blanket in front of the board; her friend in the middle, right of the guide corner.
+    // A tall phone (the area runs to about 1,660 units) scales the backdrop up, so the yard's things grow with it.
+    const k = Math.min(1.35, backdrop.scale);
+    const stage = { x: 390, y: v.h - 60, scale: 1.2 };
+    const ball = young ? ballSpot(stage) : null;
+    return {
+      backdrop,
+      who: { x: BACK.x, y: BACK.y },
+      stage,
+      treehouse: { x: 170, y: Math.round(g + 70 * k), scale: 0.62 * k },
+      board: { x: 630, y: Math.round(g + 10 * k), scale: 0.85 * k },
+      arcade: { x: 425, y: Math.round(g - 25 * k), scale: 0.85 * k },
+      // The youngest have no blanket: the signpost stands in its place, and the ball has the bottom right.
+      signpost: young
+        ? { x: 640, y: Math.round(g + 200 * k), scale: 0.85 }
+        : { x: 672, y: v.h - 60, scale: 0.85 },
+      // On a short upright screen (a tablet held upright) the grass is shallow: the blanket steps left of the signpost.
+      blanket: young ? null : { x: k < 1.2 ? 540 : 610, y: Math.round(g + 110 * k), scale: 0.85 * k },
+      basket: project && !young ? { x: 265, y: Math.round(g + 120 * k), scale: 0.85 } : null,
+      // High enough that its name pill stays over the sky, clear of the treehouse's canopy.
+      kite: { x: 300, y: Math.round(Math.max(330, g - 560 * k)), scale: 0.9 * k },
+      bush: { x: 60, y: Math.round(g + 150 * k), scale: 0.7 * k },
+      flowers: { x: 205, y: Math.round(g + 170 * k), scale: 0.8 },
+      lodge: { x: 640, y: Math.round(g - 270 * k), scale: 0.75 * k },
+      sun: { x: 600, y: Math.round(Math.max(260, g - 520 * k)), scale: k },
+      ball,
+      floor: { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: v.w - 200, y0: v.h - 160, y1: v.h - BALL_RADIUS - 20 },
+    };
+  }
+  // Wide: left to right along the back of the grass, treehouse, board, cabinet, then the signpost at the right edge.
+  const s = Math.min(1, Math.max(0.8, (v.h - g) / 260));
+  const stage = {
+    x: Math.round(Math.max(v.w * 0.33, GUIDE_CORNER.w + 150 * 1.2 + 10)),
+    y: v.h - 60,
+    scale: 1.2,
+  };
+  const ball = young ? ballSpot(stage) : null;
+  return {
+    backdrop,
+    who: { x: BACK.x, y: BACK.y },
+    stage,
+    treehouse: { x: Math.round(Math.max(190, v.w * 0.14)), y: g + 50, scale: 0.6 },
+    board: { x: Math.round(v.w * 0.5), y: g + 10, scale: 0.9 * s },
+    arcade: { x: Math.round(v.w * 0.63), y: g + 15, scale: 0.95 * s },
+    signpost: { x: v.w - 120, y: v.h - 50, scale: s },
+    blanket: young ? null : { x: Math.round(v.w * 0.6), y: v.h - 60, scale: s },
+    basket: project && !young ? { x: Math.round(v.w * 0.72), y: g + 30, scale: 0.9 * s } : null,
+    // Up in the sky between the treehouse and the board, over her friend's head.
+    kite: { x: Math.round(v.w * 0.38), y: Math.round(g - 230), scale: 0.8 * s },
+    bush: { x: v.w - 90, y: g + 5, scale: 0.8 },
+    flowers: { x: Math.round(v.w * 0.77), y: v.h - 25, scale: 0.8 },
+    sun: null,
+    lodge: { x: Math.round(v.w * 0.8), y: g - 90, scale: 0.8 * s },
+    ball,
+    floor: {
+      x0: GUIDE_CORNER.w + BALL_RADIUS,
+      x1: Math.round(v.w * 0.55) - BALL_RADIUS,
+      y0: Math.max(g + 40, v.h - 220),
+      y1: v.h - BALL_RADIUS - 20,
+    },
+  };
 }

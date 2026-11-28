@@ -446,6 +446,11 @@ class ShapeSorter implements Game {
   }
 
   /** The ghost finger on the how-to card: carry the next waiting piece to its matching hole (tap it, where a tap puts it in). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     if (this.plan.tapIn) {

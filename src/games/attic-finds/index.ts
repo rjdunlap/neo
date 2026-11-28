@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
+import { lighten, paperEllipse, U } from '../../art/paper';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -919,9 +920,11 @@ class AtticFinds implements Game {
       .lineTo(wx, wy + 34)
       .stroke({ width: 4, color: BEAM });
     const r = OBJ * L.scale;
-    this.bg
-      .ellipse(L.object.x, L.object.y + r + 4, r * 1.15, 26)
-      .fill({ color: swatch.red.fill, alpha: 0.55 });
+    // A solid paper rug in a soft red (a see-through wash would stay flat, with no edge).
+    paperEllipse(this.bg, L.object.x, L.object.y + r + 4, r * 1.15, 26, lighten(swatch.red.fill, 0.22), {
+      amp: 0.8 * U,
+      seed: 7,
+    });
     this.bg.hitArea = new Rectangle(0, 0, v.w, v.h);
     const x0 = Math.min(...L.shelf.map((p) => p.x)) - 110,
       x1 = Math.max(...L.shelf.map((p) => p.x)) + 110;
@@ -1559,6 +1562,15 @@ class AtticFinds implements Game {
   }
 
   /* Bot ------------------------------------------------------------------------------------------- */
+
+  /** Guided first play: the bot's next touch, except that it points at the right picture where the bot tries the wrong one first. */
+  showMove(): TouchIntent | null {
+    const move = this.autotouch();
+    if (this.free || this.plan.mode !== 'try' || !move || !('tap' in move)) return move;
+    const right = this.cards.find((c) => c.effect === this.obj.effect);
+    const wrong = this.cards.find((c) => c.effect !== this.obj.effect);
+    return right && move.tap.on === wrong?.node ? { tap: { on: right.node } } : move;
+  }
 
   autotouch(): TouchIntent | null {
     if (this.free) {

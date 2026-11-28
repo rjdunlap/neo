@@ -80,6 +80,7 @@ export const LANDS: readonly Land[] = [
       'tide-line',
       'drift-cards',
       'down-we-go',
+      'stir-see',
     ],
   },
   {
@@ -164,6 +165,7 @@ export const LANDS: readonly Land[] = [
       'ready-for-adventure',
       'who-am-i',
       'timeline-trail',
+      'animal-charades',
     ],
   },
   {
@@ -234,6 +236,7 @@ export const LANDS: readonly Land[] = [
       'keep-house',
       'notice-board',
       'maker-lane',
+      'toy-drawer',
     ],
   },
   {
@@ -300,6 +303,7 @@ export const LANDS: readonly Land[] = [
       'critter-crossing',
       'mossy-path',
       'shell-rows',
+      'last-pebble',
       'domino-pond',
       'bunny-patches',
       'campsite',
@@ -341,6 +345,8 @@ export const LANDS: readonly Land[] = [
       'not-always',
       'thought-bubbles',
       'playdate-workshop',
+      'common-ground',
+      'dream-cards',
     ],
   },
   {
@@ -387,6 +393,9 @@ export const LANDS: readonly Land[] = [
       'circuit-garden',
       'measuring-post',
       'memory-desk',
+      'draw-a-ramp',
+      'wave-ribbon',
+      'pond-merge',
     ],
   },
   {
@@ -430,6 +439,10 @@ export const LANDS: readonly Land[] = [
       'harbor-orders',
       'workshop-detective',
       'outcrop-detective',
+      'market-days',
+      'count-the-ballots',
+      'two-tablets',
+      'village-planner',
     ],
   },
 ];
@@ -691,6 +704,32 @@ const MAP_TALL: Record<MapSpotId, [number, number]> = {
 };
 
 /**
+ * The island map in the main app held upright (2026-11-28): five rows of at most three, so its spots can grow on a tall
+ * phone (`mapSpotScale`) without their touch circles meeting.
+ */
+const MAP_TALL_ROOT: Record<MapSpotId, [number, number]> = {
+  'music-mountain': [0.05, 0],
+  'puzzle-peaks': [0.5, 0],
+  'story-grove': [0.95, 0],
+  treehouse: [0.05, 0.25],
+  home: [0.5, 0.25],
+  'tinker-lab': [0.95, 0.25],
+  'cozy-village': [0.05, 0.5],
+  barnyard: [0.5, 0.5],
+  'lantern-lake': [0.95, 0.5],
+  'bubble-beach': [0.05, 0.75],
+  'counting-cove': [0.5, 0.75],
+  'rainbow-meadow': [0.95, 0.75],
+  picnic: [0.5, 1],
+};
+
+/** How much the main app's upright map grows its spots: up to 1.2 on a tall phone, never past what its rows allow. */
+export function mapSpotScale(view: { w: number; h: number }, root: boolean): number {
+  if (!root || view.w >= view.h) return 1;
+  return Math.min(1.2, view.h / 1100);
+}
+
+/**
  * The map's own buttons, as circles: "Who's playing?" (top-left), the treehouse (bottom-left), the book
  * (bottom-right), and the grown-ups' gear (top-right). The gear is plain HTML of a fixed size in CSS pixels
  * (52 across, 12 from the corner), so on a phone, where a logical unit is small, it covers more of the map.
@@ -703,9 +742,9 @@ export const mapButtons = (view: { w: number; h: number; scale: number }) => [
 ];
 
 /** Where every map spot stands in a view. */
-export function mapLayout(view: { w: number; h: number }): Record<MapSpotId, Spot> {
+export function mapLayout(view: { w: number; h: number }, root = false): Record<MapSpotId, Spot> {
   const wide = view.w >= view.h;
-  const table = wide ? MAP_WIDE : MAP_TALL;
+  const table = wide ? MAP_WIDE : root ? MAP_TALL_ROOT : MAP_TALL;
   const x0 = 125;
   const x1 = view.w - 125;
   const y0 = 195;

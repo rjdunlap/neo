@@ -1,10 +1,18 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { cream, grass, swatch } from '../../art/palette';
 import type { WearableId } from '../../art/creatures/wearables';
+import { formsFor, type FormId } from '../../creatures/forms';
+import { formNode } from '../../art/creatures/forms';
 import { colorChoices, type PetColor } from '../../content/world';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { itemTexture, makeIndividual, wearableBy, type Companion } from '../../creatures/companion';
+import {
+  itemTexture,
+  makeIndividual,
+  makePortrait,
+  wearableBy,
+  type Companion,
+} from '../../creatures/companion';
 import { dressLayout, OFF_RADIUS, SWATCH_RADIUS, swatchRow } from '../../creatures/dress-layout';
 import { BACK, CARD } from '../../creatures/friends-layout';
 import { HOME_BUTTON } from '../../creatures/home-layout';
@@ -17,7 +25,8 @@ import { arrowIcon, colourSwatch, crossIcon, houseIcon } from '../../ui/icons';
 import type { App, BookOrigin } from '../App';
 import { Scene } from '../Scene';
 
-type Card = Container & { item: WearableId };
+/** A card is a wearable, or a form (a blossom, or null for the friend's own look: always the first form card). */
+type Card = Container & { item?: WearableId; form?: FormId | null };
 type Swatch = Graphics & { color: PetColor };
 
 /**
@@ -76,15 +85,23 @@ export class DressScene extends Scene {
     this.ui.addChild(this.swatches, this.rowPrevious, this.rowNext);
     this.colours = colorChoices(store.petColors, who.look.color);
     this.setFriend(who);
+    // RW11: once she has grown a blossom its species can show, the original look is the first card, then each blossom.
+    const forms = formsFor(who.species, store.data.creatures.forms);
+    if (forms.length)
+      for (const form of [null, ...forms]) {
+        const card = this.card();
+        card.form = form;
+        const pic = form
+          ? formNode(form)
+          : makePortrait({ species: who.species, look: { color: who.look.color } }, 100);
+        if (form) pic.scale.set(0.9);
+        card.addChild(pic);
+        onTap(card, () => this.setForm(form), { cooldown: 250 });
+        this.cards.addChild(card);
+      }
     for (const item of wearableBy(who.species)) {
-      const card = new Container() as Card;
+      const card = this.card();
       card.item = item;
-      card.addChild(
-        new Graphics()
-          .roundRect(-CARD / 2, -CARD / 2, CARD, CARD, 24)
-          .fill(0xffffff)
-          .stroke({ width: 5, color: swatch.teal.line }),
-      );
       const t = itemTexture(item);
       if (t) {
         const s = new Sprite(t);
@@ -92,10 +109,22 @@ export class DressScene extends Scene {
         s.scale.set(Math.min(110 / t.width, 110 / t.height));
         card.addChild(s);
       }
-      card.hitArea = new Rectangle(-CARD / 2, -CARD / 2, CARD, CARD);
       onTap(card, () => this.toggle(item), { cooldown: 250 });
       this.cards.addChild(card);
     }
+  }
+
+  /** An empty card: white paper, a teal edge and the whole square as its touch area. */
+  private card(): Card {
+    const card = new Container() as Card;
+    card.addChild(
+      new Graphics()
+        .roundRect(-CARD / 2, -CARD / 2, CARD, CARD, 24)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: swatch.teal.line }),
+    );
+    card.hitArea = new Rectangle(-CARD / 2, -CARD / 2, CARD, CARD);
+    return card;
   }
 
   /** Puts the friend on the stage as the save has it now (a new colour needs a new picture). */
@@ -158,6 +187,29 @@ export class DressScene extends Scene {
     return this.who?.look.worn ?? [];
   }
 
+  /** The blossom the friend shows now, from the save (null: its own look). */
+  get form(): FormId | null {
+    return this.who?.look.form ?? null;
+  }
+
+  /** Shows a blossom (taking a hat off, since a blossom takes the head slot) or goes back to the friend's own look. */
+  setForm(form: FormId | null) {
+    const who = this.who;
+    if (!who) return;
+    this.touched++;
+    if (!store.setForm(who.id, form)) return;
+    this.friend?.dress(this.worn, this.form);
+    if (form) {
+      this.friend?.hop(0.8);
+      sfx.sparkle();
+      void voice.say(form === 'sprout:sun' ? 'dress.form.sun' : 'dress.form.moon', { pet: who.name });
+    } else {
+      sfx.pop(4);
+      void voice.say('dress.form.none', { pet: who.name });
+    }
+    this.drawRings();
+  }
+
   /** Puts an item on, or takes it off if it is on. */
   toggle(item: WearableId) {
     const who = this.who;
@@ -165,7 +217,7 @@ export class DressScene extends Scene {
     this.touched++;
     const on = !who.look.worn.includes(item);
     if (!store.wear(who.id, item, on)) return;
-    this.friend?.dress(this.worn);
+    this.friend?.dress(this.worn, this.form);
     if (on) {
       this.friend?.hop(0.8);
       sfx.sparkle();
@@ -190,13 +242,14 @@ export class DressScene extends Scene {
     this.drawRings();
   }
 
-  /** Takes everything off, keeping the colour. */
+  /** Takes everything off, the blossom too, keeping the colour. */
   allOff() {
     const who = this.who;
     if (!who) return;
     this.touched++;
     for (const w of [...who.look.worn]) store.wear(who.id, w, false);
-    this.friend?.dress(this.worn);
+    store.setForm(who.id, null);
+    this.friend?.dress(this.worn, this.form);
     sfx.pop(4);
     void voice.say('dress.none', { pet: who.name });
     this.drawRings();
@@ -205,7 +258,7 @@ export class DressScene extends Scene {
   private drawRings() {
     this.rings.clear();
     for (const c of this.cards.children as Card[]) {
-      if (this.worn.includes(c.item))
+      if (c.item ? this.worn.includes(c.item) : c.form === this.form)
         this.rings
           .roundRect(c.x - CARD / 2 - 8, c.y - CARD / 2 - 8, CARD + 16, CARD + 16, 28)
           .stroke({ width: 7, color: swatch.yellow.line });

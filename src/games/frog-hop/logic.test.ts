@@ -4,8 +4,25 @@ import { frogHop } from './index';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { levelsInOrder } from '../../progress/difficulty';
 import { GUIDE_CORNER } from '../../creatures/home-layout';
 import {
+  ownScene,
+  planFor,
+  ESTIMATE_FIRST,
+  ESTIMATE_SPREAD,
+  valueAt,
+  placeOf,
+  nearestTen,
+  closeness,
+  estimateLayout,
+  hopsLayout,
+  openLine,
+  overshoots,
+  routeLanding,
+  routeWords,
+  shortestRoute,
+  LEVELS,
   hopLayout,
   UPRIGHT_PAD_ROW,
   sceneFor,
@@ -46,9 +63,11 @@ import {
   type HopQuestion,
 } from './logic';
 
+/** The plans drawn on the nine-pad line with its own layout (level 18 lays out its short run; see missing.test.ts). */
+const LINE_PLANS = PLANS.filter((p) => !ownScene(p.mode) && p.mode !== 'missing');
 describe('Frog Hop', () => {
   it('asks questions whose start and answer are both on the pads in view', () => {
-    for (const plan of PLANS) {
+    for (const plan of LINE_PLANS) {
       for (let seed = 1; seed <= 300; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
         expect(qs).toHaveLength(plan.questions);
@@ -115,7 +134,7 @@ describe('Frog Hop', () => {
   });
 
   it('always has an answer on the screen for the ghost finger to tap, and it is the right one', () => {
-    for (const plan of PLANS) {
+    for (const plan of LINE_PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           const slot = answerSlot(plan.mode, q, q.lo);
@@ -167,7 +186,7 @@ describe('Frog Hop support', () => {
   });
 
   it('covers the whole ladder in school and rejects nonexistent descriptions', () => {
-    expect(frogHop.levels('school')).toEqual({ min: 3, max: PLANS.length });
+    expect(frogHop.levels('school')).toEqual({ min: 3, max: 15 });
     expect(frogHop.describeLevel(0)).toBeUndefined();
     expect(frogHop.describeLevel(PLANS.length + 1)).toBeUndefined();
     expect(SCRIPT['hop.ten'][0]).toContain('{k}');
@@ -313,7 +332,7 @@ describe('Frog Hop, Fraction Landings', () => {
     const fl = 10;
     expect(at('frac-match')).toBe(PLANS[fl - 1]);
     expect(at('frac-hop')).toBe(PLANS[fl - 2]);
-    expect(frogHop.levels('prek').max).toBeLessThan(fl - 1);
+    expect(levelsInOrder(frogHop.levels('prek'))).not.toContain(fl - 1);
     for (const n of ['{where}', '{hops}']) expect(SCRIPT['hop.frac'][0]).toContain(n);
     expect(SCRIPT['hop.frac.second'][0]).toContain('{size}');
     for (const n of ['{first}', '{second}', '{name}']) expect(SCRIPT['hop.frac.same'][0]).toContain(n);
@@ -360,7 +379,8 @@ describe('Frog Hop, Fraction Landings', () => {
         const flowers = Array.from({ length: plan.top + 1 }, (_, n) => n).filter((n) =>
           flowerOn(plan.mode, n),
         );
-        if (i < 2 || isFrac(plan.mode)) expect(flowers).toEqual([]);
+        if (i < 2 || isFrac(plan.mode) || ownScene(plan.mode) || plan.mode === 'missing')
+          expect(flowers).toEqual([]);
         else expect(flowers).toEqual([5, 10, 15, 20].filter((n) => n <= plan.top));
       });
     });
@@ -434,7 +454,7 @@ describe('Frog Hop, Fraction Landings', () => {
       expect(PLANS.indexOf(plan) + 1).toBe(12);
       expect(PLANS[10].mode).toBe('count-up');
       expect(frogHop.levels('school').min).toBe(3);
-      expect(frogHop.levels('prek')).toEqual({ min: 1, max: 4 });
+      expect(levelsInOrder(frogHop.levels('prek'))).toEqual([1, 2, 18, 3, 4]);
       expect(frogHop.describeLevel(12)).toContain('your way');
       // No number cards: she taps pads, and the stop at 10 is optional rather than a stage.
       expect(countsHops('your-way')).toBe(false);
@@ -513,8 +533,7 @@ describe('Frog Hop, Hop by tens (level 13)', () => {
 
   it('is the next free school level, appended without reordering, and says its landings', () => {
     expect(PLANS.indexOf(plan) + 1).toBe(13);
-    expect(PLANS.length).toBe(13);
-    expect(frogHop.levels('school').max).toBe(13);
+    expect(PLANS.length).toBeGreaterThanOrEqual(13);
     expect(frogHop.describeLevel(13)).toBe(plan.name);
     expect(saysNumbers('tens')).toBe(true);
     expect(countsHops('tens') || splitsAtTen('tens') || isFrac('tens')).toBe(false);
@@ -628,7 +647,7 @@ describe('Scenes (slice 6)', () => {
       h: GUIDE_CORNER.h,
     });
     for (const v of [...VIEWS, ...UPRIGHT_VIEWS])
-      for (const plan of PLANS) {
+      for (const plan of LINE_PLANS) {
         // The layout takes no scene: a pad's place and hit area are the same in all four.
         const l = hopLayout(v, plan.mode, GUIDE_CORNER.w);
         const pads = l.pads.map((p) => hit(p, PAD_HIT));
@@ -662,7 +681,7 @@ describe('Scenes (slice 6)', () => {
 
   it('folds the line into two rows upright, hung up from the bottom edge, in order, with the sign and bracket clear', () => {
     for (const v of UPRIGHT_VIEWS)
-      for (const plan of PLANS) {
+      for (const plan of LINE_PLANS) {
         const l = hopLayout(v, plan.mode, GUIDE_CORNER.w);
         const what = `${plan.mode} at ${Math.round(v.w)}×${Math.round(v.h)} upright`;
         const a = l.pads.slice(0, UPRIGHT_PAD_ROW);
@@ -688,7 +707,178 @@ describe('Scenes (slice 6)', () => {
       }
     // A 768 × 1024 view has room for the sign under the shell buttons.
     const v = UPRIGHT_VIEWS[0];
-    for (const plan of PLANS)
+    for (const plan of LINE_PLANS)
       expect(hopLayout(v, plan.mode, GUIDE_CORNER.w).sign.y, plan.mode).toBeGreaterThanOrEqual(130);
+  });
+});
+
+describe('Big hops and little hops (level 14)', () => {
+  const plan = PLANS[13];
+  const questions = (seed: number) => makeQuestions(plan, new Rng(seed));
+
+  it('is the next ladder level, in school', () => {
+    expect(plan.mode).toBe('hops');
+    expect(LEVELS.school?.max).toBeGreaterThanOrEqual(14);
+  });
+
+  it('asks tens and ones: neither start nor distance is a multiple of ten, the flag is on the line', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = questions(seed);
+      expect(qs).toHaveLength(4);
+      for (const q of qs) {
+        expect(q.start).toBeGreaterThanOrEqual(12);
+        expect(q.start).toBeLessThanOrEqual(58);
+        expect(q.start % 10).not.toBe(0);
+        expect(q.hops).toBeGreaterThanOrEqual(11);
+        expect(q.hops).toBeLessThanOrEqual(45);
+        expect(q.hops % 10).not.toBe(0);
+        expect(q.target).toBe(q.start + q.hops);
+        expect(q.target).toBeLessThanOrEqual(100);
+        expect(q.bigs! * 10 + q.smalls!).toBe(q.hops);
+        expect(q.bigs).toBeGreaterThanOrEqual(1);
+        expect(q.smalls).toBeGreaterThanOrEqual(1);
+      }
+      expect(new Set(qs.map((q) => q.hops)).size).toBe(4);
+      qs.slice(1).forEach((q, i) => expect(q.bigs).not.toBe(qs[i].bigs));
+      expect(qs.some((q) => (q.start % 10) + q.smalls! > 10)).toBe(true);
+    }
+  });
+
+  it('opens on 47 to 72, two big hops and five little ones', () => {
+    const q = questions(7)[0];
+    expect([q.start, q.target, q.bigs, q.smalls]).toEqual([47, 72, 2, 5]);
+  });
+
+  it('lands the same in any order, and an extra big hop overshoots once', () => {
+    const q = questions(3)[0];
+    const route = [...Array(q.bigs!).fill(10), ...Array(q.smalls!).fill(1)];
+    const shuffled = [...route].reverse();
+    expect(routeLanding(q.start, route)).toBe(q.target);
+    expect(routeLanding(q.start, shuffled)).toBe(q.target);
+    expect(overshoots(q.start, q.target, route)).toBe(0);
+    expect(overshoots(q.start, q.target, shuffled)).toBe(0);
+    expect(overshoots(q.start, q.target, [...route, 10])).toBe(1);
+    expect(shortestRoute(q.hops)).toEqual({ bigs: q.bigs, smalls: q.smalls });
+  });
+
+  it('names the route in words', () => {
+    expect(routeWords(2, 5)).toBe('Two big hops and five little hops');
+    expect(routeWords(1, 1)).toBe('One big hop and one little hop');
+  });
+
+  it('shows a window with the start, the flag and the ten above it, at most 70 numbers', () => {
+    for (let seed = 1; seed <= 300; seed++)
+      for (const q of questions(seed)) {
+        const { lo, hi, scale } = openLine(q);
+        expect(lo).toBeLessThanOrEqual(q.start);
+        expect(hi).toBeGreaterThanOrEqual(Math.min(100, (Math.floor(q.target / 10) + 1) * 10));
+        expect(hi - lo).toBeLessThanOrEqual(70);
+        expect(scale).toBeGreaterThan(0);
+        expect(scale * (hi - lo)).toBeLessThanOrEqual(12 * 70);
+      }
+  });
+
+  it('keeps the big, small and back lilies at least 100 units, apart, clear of the guide, inside every view', () => {
+    const views = [
+      { w: 1280, h: 720 },
+      { w: 1024, h: 768 },
+      { w: 768, h: 1024, upright: true as const },
+      { w: 768, h: 1400, upright: true as const },
+    ];
+    for (const v of views) {
+      const l = hopsLayout(v, 200);
+      const boxes = [l.big, l.small, l.back];
+      for (const b of boxes) {
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+        expect(b.x - b.w / 2).toBeGreaterThanOrEqual(200);
+        expect(b.x + b.w / 2).toBeLessThanOrEqual(v.w);
+        expect(b.y + b.h / 2).toBeLessThanOrEqual(v.h);
+      }
+      for (let i = 1; i < boxes.length; i++)
+        expect(boxes[i].x - boxes[i].w / 2).toBeGreaterThanOrEqual(boxes[i - 1].x + boxes[i - 1].w / 2);
+      expect(l.line.y).toBeLessThan(l.big.y - 70);
+    }
+  });
+});
+
+describe('Where does it go? (level 15)', () => {
+  const plan = PLANS[14];
+  const questions = (seed: number) => makeQuestions(plan, new Rng(seed));
+
+  it('is the top of school, after Big hops and little hops', () => {
+    expect(plan.mode).toBe('estimate');
+    expect(LEVELS.school?.max).toBe(15);
+    expect(planFor(15)).toBe(plan);
+  });
+
+  it('asks three guesses (37 first, never 0, 50, 100 or a ten, spread out), then one ten on the marked line', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = questions(seed);
+      expect(qs).toHaveLength(4);
+      expect(qs.map((q) => q.place)).toEqual(['guess', 'guess', 'guess', 'ticks']);
+      expect(qs[0].target).toBe(ESTIMATE_FIRST);
+      const guesses = qs.slice(0, 3).map((q) => q.target);
+      for (const n of guesses) {
+        expect(n).toBeGreaterThan(0);
+        expect(n).toBeLessThan(100);
+        expect(n % 10).not.toBe(0);
+      }
+      for (let i = 0; i < 3; i++)
+        for (let j = i + 1; j < 3; j++)
+          expect(Math.abs(guesses[i] - guesses[j])).toBeGreaterThanOrEqual(ESTIMATE_SPREAD);
+      const t = qs[3].target;
+      expect(t % 10).toBe(0);
+      expect([0, 50, 100]).not.toContain(t);
+    }
+  });
+
+  it('maps the line linearly, and every number has a reachable place that reads back as itself', () => {
+    const [x0, x1] = [70, 698];
+    expect(valueAt(x0, x0, x1)).toBe(0);
+    expect(valueAt(x1, x0, x1)).toBe(100);
+    expect(valueAt((x0 + x1) / 2, x0, x1)).toBe(50);
+    expect(valueAt(x0 - 50, x0, x1)).toBe(0);
+    expect(valueAt(x1 + 50, x0, x1)).toBe(100);
+    for (let n = 0; n <= 100; n++) {
+      expect(valueAt(placeOf(n, x0, x1), x0, x1)).toBe(n);
+      expect(nearestTen(n) % 10).toBe(0);
+      expect(Math.abs(nearestTen(n) - n)).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('says how close a guess was for every guess, the same either side', () => {
+    for (let t = 0; t <= 100; t++)
+      for (let g = 0; g <= 100; g++) {
+        const c = closeness(g, t);
+        expect(['spot', 'close', 'near', 'far']).toContain(c);
+        expect(closeness(t + (t - g), t)).toBe(c);
+      }
+    expect(closeness(37, 37)).toBe('spot');
+    expect(closeness(45, 37)).toBe('close');
+    expect(closeness(20, 37)).toBe('near');
+    expect(closeness(90, 37)).toBe('far');
+    for (const c of ['spot', 'close', 'near'])
+      expect(SCRIPT[`hop.est.${c}` as keyof typeof SCRIPT]).toBeTruthy();
+  });
+
+  it('lays the line out inside the view, clear of the guide corner and the sign, on every view', () => {
+    for (const [w, h, upright] of [
+      [1024, 768, false],
+      [1366, 768, false],
+      [768, 1662, true],
+      [768, 1366, true],
+    ] as const) {
+      const v = { w, h, ...(upright ? { upright: true as const } : {}) };
+      const L = estimateLayout(v);
+      expect(L.band.x).toBeGreaterThanOrEqual(0);
+      expect(L.band.x + L.band.w).toBeLessThanOrEqual(w);
+      expect(L.band.h).toBeGreaterThanOrEqual(100);
+      // Clear of the guide's corner below and the sign above.
+      expect(L.band.y + L.band.h).toBeLessThan(h - GUIDE_CORNER.h);
+      expect(L.band.y).toBeGreaterThan(L.sign.y + 60);
+      // A mark by tens is at least 50 units from the next, so a place snaps to the mark she meant.
+      expect((L.line.x1 - L.line.x0) / 10).toBeGreaterThanOrEqual(50);
+    }
   });
 });

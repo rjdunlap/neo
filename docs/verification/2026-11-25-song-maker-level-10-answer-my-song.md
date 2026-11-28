@@ -1,0 +1,5 @@
+# 2026-11-25 — Song Maker level 10, Answer my song (PR #2164)
+
+**Changed:** new `answer` mode at level 10 (school only): 8×4 board, eight authored four-note questions (last three skipped), one jelly per answer beat that a tap moves, check under the board (top right upright) wakes after all four are filled and eight beats have played, finishes 0/0, whole song kept as a tune; 2 voice lines, how-to lines, bot. Not built: the performing critter and the pet singing the answer half.
+**Ran:** typecheck; `npx vitest run src/games/song-maker src/content` (328 pass, including the new level 10 rules and the upright views); a scripted play in headless Chrome at 1024×768 and 768×1024 (a tap moved a jelly within its beat, the question beats ignored taps, the check woke, 0 misses, 0 hints, sticker, no page errors); `fingerdemo` song-maker level 10 passed.
+**Not run:** the scripted play was a throwaway probe, not a registered suite; the upright phone layout is covered by `upright.test.ts` only, not by a screenshot; full `npm test`, `npm run build`, offline.

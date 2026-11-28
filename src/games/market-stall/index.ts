@@ -32,7 +32,10 @@ import {
   goodPlacement,
   type StallId,
   PLANS,
-  PIP_LEVELS,
+  hasPips,
+  coinWord,
+  pipCount,
+  ENTRY_LEVELS,
   PIP_NUMERAL,
   pips,
   teachLine,
@@ -68,6 +71,10 @@ import {
   shelfX,
   spendBell,
   spendHint,
+  compareDots,
+  dearer,
+  moreShelfX,
+  moreTap,
   type AffordOrder,
   type Order,
   type ShopPlan,
@@ -134,7 +141,7 @@ export function coinArt(value: number): Container {
 /** A coin for the stall: at the first levels it also shows its value as pips, on a layer of its own (fresh 2). */
 function shopCoin(value: number, level: number): Container {
   const c = coinArt(value);
-  if (level > PIP_LEVELS) return c;
+  if (!hasPips(level)) return c;
   const r = COIN_R[value];
   // Shrink and lift the numeral so the pips sit clear of it.
   c.children[1].scale.set(PIP_NUMERAL.scale);
@@ -216,6 +223,8 @@ class MarketStall implements Game {
   /** On purse levels: the three number cards along the foot, and the glow the hint puts behind the right one. */
   readonly cards: { n: number; node: Container }[] = [];
   readonly glow = new Graphics();
+  /** On the Which coin? level: the glow two misses put behind the asked coin in the purse. */
+  readonly coinGlow = new Graphics();
   /** On change levels: the ten strip under the tag, redrawn as change lands (fresh 4). */
   private strip: Graphics | null = null;
   /** The running total on the counter, where the game also says it; null when nothing is shown. */
@@ -288,16 +297,24 @@ class MarketStall implements Game {
     this.glow.visible = false;
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.glow);
-    // A purse level asks how much is already on the counter, so there is no purse to pay from and no bell.
+    this.coinGlow.circle(0, 0, 66).fill({ color: swatch.yellow.fill, alpha: 0.85 });
+    this.coinGlow.visible = false;
+    this.coinGlow.eventMode = 'none';
+    ctx.stage.addChild(this.coinGlow);
+    // A purse level asks how much is already on the counter, so there is no purse to pay from and no bell; Which coin?
+    // hands over one coin with one tap, so it has no bell either.
     const counting = this.plan.mode === 'purse';
-    this.bell.visible = !counting;
-    if (counting) this.bell.eventMode = 'none';
+    const bell = !counting && this.plan.mode !== 'which' && this.plan.mode !== 'more';
+    this.bell.visible = bell;
+    if (!bell) this.bell.eventMode = 'none';
     // Afford and trade orders also begin with their own coins on the counter.
     for (const value of counting || this.plan.mode === 'afford' || this.tradeCounter ? [] : this.plan.coins) {
       const node = shopCoin(value, ctx.level);
       node.scale.set(1.25);
       node.hitArea = new Circle(0, 0, 46);
-      onTap(node, () => this.add(value), { cooldown: 140 });
+      onTap(node, () => (this.plan.mode === 'which' ? void this.give(value) : this.add(value)), {
+        cooldown: 140,
+      });
       this.purse.push({ value, node });
       ctx.stage.addChild(node);
     }
@@ -371,6 +388,7 @@ class MarketStall implements Game {
     }
     const homes = purseFor(v, this.purse.length);
     this.purse.forEach((p, i) => p.node.position.set(homes[i].x, homes[i].y));
+    this.placeCoinGlow();
     this.ghost.position.set(this.mat.x, this.mat.y);
     this.placeCards();
   }
@@ -405,9 +423,19 @@ class MarketStall implements Game {
   update() {}
 
   /** The ghost finger: put the coins of the payment on the counter one at a time, then ring the bell. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.order) return null;
     if (this.tradeCounter) return this.tradeCounter.touch(this.bell);
+    if (this.order.ask !== undefined) {
+      const coin = this.purse.find((p) => p.value === this.order.ask);
+      return coin ? { tap: { on: coin.node } } : null;
+    }
+    if (this.plan.mode === 'more') return { tap: { on: this.shelf[dearer(this.order)].node } };
     if (this.order.afford) {
       const o = this.order as AffordOrder;
       if (o.afford.kind === 'choose') return { tap: { on: this.shelf[affordHint(o)].node } };
@@ -443,6 +471,7 @@ class MarketStall implements Game {
     this.firstWay = null;
     this.clearGhost();
     this.glow.visible = false;
+    this.coinGlow.visible = false;
     this.cards.splice(0).forEach((c) => c.node.destroy({ children: true }));
     if (this.index >= this.orders.length) return void this.finale();
     const o = this.order;
@@ -460,7 +489,9 @@ class MarketStall implements Game {
     this.picked.length = 0;
     this.dear = 0;
     this.shelfGlow = null;
+    this.clearCompare();
     if (o.afford) return this.startAfford(o as AffordOrder);
+    if (this.plan.mode === 'more') return this.startMore(o);
     o.prices.forEach((price, i) => {
       const good = this.ctx.rng.pick(STALLS[this.stallId].goods.filter((g) => !this.names.includes(g.name)));
       this.names.push(good.name);
@@ -500,6 +531,8 @@ class MarketStall implements Game {
         n,
       });
     if (this.plan.mode === 'fewest') return this.ctx.instruct('shop.fewest', { fruit: this.names[0], n });
+    if (o.ask !== undefined)
+      return this.ctx.instruct('shop.which', { fruit: this.names[0], n, word: coinWord(o.ask) });
     if (o.purse) return this.ctx.instruct('shop.purse');
     return this.ctx.instruct('shop.pay', { fruit: this.names[0], n });
   }
@@ -542,6 +575,59 @@ class MarketStall implements Game {
     } else if (showsTotal(this.plan)) void this.ctx.say('count', { n: total });
     else void this.ctx.say('count', { n: value });
     this.drawTotal();
+  }
+
+  /** The Which coin? hint glow sits behind the asked coin, wherever the purse is laid out. */
+  private placeCoinGlow() {
+    const right = this.purse.find((p) => p.value === this.order?.ask);
+    if (right) this.coinGlow.position.set(right.node.x, right.node.y);
+  }
+
+  /**
+   * Which coin? (level 14): the asked coin goes onto the counter and the shopkeeper counts its pips, then takes it. Another
+   * coin is a miss that says what that coin is worth and stays in the purse; the second miss on an order glows the asked coin
+   * (one hint per order).
+   */
+  private async give(value: number) {
+    const ask = this.order?.ask;
+    if (this.busy || this.finished || ask === undefined) return;
+    this.busy = true;
+    const purse = this.purse.find((p) => p.value === value)!.node;
+    if (value !== ask) {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      this.hop(purse, 1.25);
+      await this.ctx.say('shop.which.wrong', { word: coinWord(value), n: value });
+      if (this.wrongs >= 2 && !this.hinted) {
+        this.hints += hintCharge(this.wrongs, this.hinted, this.hintCharged);
+        this.hintCharged = true;
+        this.hinted = true;
+        this.coinGlow.visible = true;
+        this.placeCoinGlow();
+        await this.ctx.say('shop.which.hint', { word: coinWord(ask) });
+      }
+      this.busy = false;
+      return;
+    }
+    this.coinGlow.visible = false;
+    sfx.pop(4 + value);
+    const node = shopCoin(value, this.ctx.level);
+    node.eventMode = 'none';
+    node.scale.set(1.25);
+    this.mat.addChild(node);
+    this.onMat.push({ value, node });
+    this.layoutMat();
+    const end = { x: node.x, y: node.y };
+    const from = this.mat.toLocal(purse.getGlobalPosition());
+    node.position.set(from.x, from.y);
+    await this.ctx.tw.to(node, end, { duration: 0.25, ease: ease.outQuad });
+    this.hop(node, 1.25);
+    await this.ctx.say('shop.which.count', { n: pipCount(value), word: coinWord(value) });
+    await this.slideOver();
+    await this.ctx.say('shop.thanks');
+    await this.ctx.tw.to(this.goods, { alpha: 0 }, { duration: 0.3 });
+    await this.next();
   }
 
   /**
@@ -618,13 +704,115 @@ class MarketStall implements Game {
     return this.ctx.instruct(spend ? 'shop.spend.ask' : 'shop.afford.ask', { n: o.afford.purse });
   }
 
+  /**
+   * A Which costs more? order (level 15): two fruits stand on the shelf, each with its tag (numeral and one dot per shell)
+   * as one tap target. Nothing is bought and there are no coins or bell: she taps the fruit that costs more.
+   */
+  private async startMore(o: Order) {
+    this.shelfGlow = new Graphics();
+    this.shelfGlow.eventMode = 'none';
+    this.goods.addChild(this.shelfGlow);
+    o.prices.forEach((price, i) => {
+      const good = this.ctx.rng.pick(STALLS[this.stallId].goods.filter((g) => !this.names.includes(g.name)));
+      this.names.push(good.name);
+      const node = new Container();
+      node.x = moreShelfX(i);
+      const place = goodPlacement(good.kind, 2, i);
+      const ring = new Graphics();
+      const art = prop(good.kind, good.color);
+      art.scale.set(place.scale);
+      art.y = place.y;
+      const tag = tagArt(price);
+      tag.y = -150;
+      node.addChild(ring, art, tag);
+      node.hitArea = new Rectangle(-GOOD_HIT.w / 2, GOOD_HIT.y - GOOD_HIT.h / 2, GOOD_HIT.w, GOOD_HIT.h);
+      onTap(node, () => void this.tapMore(i), { cooldown: 250 });
+      this.shelf.push({ price, node, ring });
+      this.goods.addChild(node);
+    });
+    this.goods.alpha = 0;
+    await this.ctx.tw.to(this.goods, { alpha: 1 }, { duration: 0.3 });
+    this.busy = false;
+    return this.ctx.instruct('shop.more', { a: this.names[0], b: this.names[1] });
+  }
+
+  /**
+   * A tap on a fruit at Which costs more?: the dearer one cheers and the next pair comes. The cheaper one is a miss that
+   * lays both prices' dots side by side on the counter, one row each, so the dearer row's extra dots stand out; the second
+   * miss of an order also glows the dearer fruit (one hint per order).
+   */
+  private async tapMore(i: number) {
+    const o = this.order;
+    if (this.busy || this.finished || !o || this.plan.mode !== 'more') return;
+    this.busy = true;
+    const { price, node } = this.shelf[i];
+    const other = o.prices[1 - i];
+    const result = moreTap(o, i, this.wrongs);
+    if (result === 'yes') {
+      this.lightShelf([]);
+      sfx.bell(7, 0.3);
+      this.hop(node);
+      this.keeper.cheer();
+      this.ctx.pet.cheer();
+      await this.ctx.say('shop.more.yes', { a: this.names[i], p: price, q: other });
+      await this.ctx.tw.to(this.goods, { alpha: 0 }, { duration: 0.3 });
+      await this.next();
+      return;
+    }
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    const tag = node.children[2];
+    void this.ctx.tw
+      .to(tag, { rotation: 0.15 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(tag, { rotation: -0.12 }, { duration: 0.1 }))
+      .then(() => this.ctx.tw.to(tag, { rotation: 0 }, { duration: 0.08 }));
+    this.showCompare(o.prices);
+    await this.ctx.say('shop.more.less', { p: price, q: other });
+    if (result === 'hint' && !this.hinted) {
+      this.hints += hintCharge(this.wrongs, this.hinted, this.hintCharged);
+      this.hintCharged = true;
+      this.hinted = true;
+      this.lightShelf([dearer(o)], moreShelfX);
+      await this.ctx.say('shop.more.hint', { p: o.prices[dearer(o)] });
+    }
+    this.busy = false;
+  }
+
+  /** The two prices' dots side by side on the counter mat, drawn after a wrong tap at Which costs more?. */
+  private compare: Container | null = null;
+
+  private showCompare(prices: readonly number[]) {
+    if (this.compare) return;
+    const c = new Container();
+    c.eventMode = 'none';
+    const g = new Graphics();
+    for (const row of compareDots(prices)) {
+      for (const d of row.dots)
+        g.circle(d.x, d.y, 14).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+      const n = label(String(row.dots.length), 34, ink);
+      n.position.set(row.numeral.x, row.numeral.y);
+      c.addChild(n);
+    }
+    c.addChildAt(g, 0);
+    c.alpha = 0;
+    this.mat.addChild(c);
+    this.compare = c;
+    void this.ctx.tw.to(c, { alpha: 1 }, { duration: 0.25 });
+  }
+
+  private clearCompare() {
+    this.compare?.destroy({ children: true });
+    this.compare = null;
+  }
+
   /** The hint's glow behind the given goods (none clears it). */
-  private lightShelf(indices: readonly number[]) {
+  private lightShelf(indices: readonly number[], xFor: (i: number) => number = shelfX) {
     const g = this.shelfGlow?.clear();
     if (!g) return;
     for (const i of indices)
       g.roundRect(
-        shelfX(i) - GOOD_HIT.w / 2 - 12,
+        xFor(i) - GOOD_HIT.w / 2 - 12,
         GOOD_HIT.y - GOOD_HIT.h / 2 - 12,
         GOOD_HIT.w + 24,
         GOOD_HIT.h + 24,
@@ -1046,6 +1234,7 @@ export const marketStall: GameModule = {
   skills: ['counting', 'money', 'adding', 'counting-on'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => PLANS[level - 1]?.name,
   music: STYLES.stickers,
   coplayHint: 'Take turns being the shopkeeper: "That will be 4, please!" and count the coins together.',

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, ready, scene, pickFirst, screenshot }) {
   /**
-   * RW14 slices 4 and 10: the illustrated locations (`HOME_ONLY=meadow`). Places shows each pictured land's postcard; the meadow draws
+   * RW14 slices 4 and 10: the illustrated locations (`HOME_ONLY=meadow`). the meadow draws
    * its picture over the whole view with no code-drawn sun, clouds or scenery and its games on plates, in both orientations;
    * a location without a picture, if any is left, is unchanged; a round launched in the meadow finishes on the picture; Explore's postcard shows it.
    */
@@ -30,14 +30,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
       const walk = (n) => (n.texture && n.texture.width >= 400) || (n.children ?? []).some(walk);
       return walk(node);
     };
-    await page.evaluate(() => neo.go.explore('places'));
-    await scene('ExploreScene');
-    await page.waitForTimeout(500);
-    const cards = await page.evaluate((src) => {
-      const walk = eval(src);
-      return neo.scene.cards.map((c) => [c.id, walk(c.node)]);
-    }, `(${pictured})`);
-    // Every land with a picture in src/art/locations/ (RW14 slices 4 and 10) shows its postcard, and no other.
+    // Places is the island map now (2026-11-28), so the postcards live only on Explore's last-visited card, below.
     const { withPicture, unpictured } = await page.evaluate(async () => {
       const { FILES } = await import('/src/art/locations/index.ts');
       const { LAND_IDS } = await import('/src/content/lands.ts');
@@ -47,12 +40,6 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
       };
     });
     assert.ok(withPicture.includes('rainbow-meadow'));
-    assert.deepEqual(
-      cards.filter(([, p]) => p).map(([id]) => id),
-      cards.map(([id]) => id).filter((id) => withPicture.includes(id)),
-      JSON.stringify(cards),
-    );
-    await screenshot('meadow-places');
     const look = () =>
       page.evaluate(() => {
         const s = neo.scene,
@@ -154,7 +141,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await screenshot('meadow-explore-postcard');
     assert.deepEqual(errors, []);
     log(
-      'Illustrated meadow: Places postcards, picture in both orientations without sun/clouds/scenery, an unpictured location unchanged, result on the picture and the Explore postcard passed',
+      'Illustrated meadow: picture in both orientations without sun/clouds/scenery, an unpictured location unchanged, result on the picture and the Explore postcard passed',
     );
   }
 

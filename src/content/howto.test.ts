@@ -4,7 +4,7 @@ import { GAMES } from '../games/registry';
 import type { LevelLine } from '../games/types';
 import { COUCH_INFO, demoFor } from '../couch/catalog';
 import { islandDemo } from './demos';
-import { HOW_TO, howToFor, shouldExplain } from './howto';
+import { HOW_TO, briefIntro, howToFor, introKey, shouldExplain, type BriefIntroCase } from './howto';
 
 /** Every level any band of a game plays. */
 function levelsOf(g: (typeof GAMES)[number]): number[] {
@@ -139,8 +139,10 @@ describe('touch how-to cards', () => {
     expect(howToFor(snack, 9)!.steps.join(' ')).toContain('menu board');
     expect(howToFor(snack, 10)!.finish).toContain('three two-line menus');
     expect(howToFor(snack, 10)!.steps.join(' ')).toContain('two lines');
-    expect(howToFor(snack, 11)!.finish).toBe('');
-    expect(howToFor(snack, 11)!.steps).toEqual([]);
+    expect(howToFor(snack, 11)!.finish).toContain('every animal stands on a mat');
+    expect(howToFor(snack, 11)!.steps.join(' ')).toContain('plants, both, or meat');
+    expect(howToFor(snack, 12)!.finish).toBe('');
+    expect(howToFor(snack, 12)!.steps).toEqual([]);
   });
 
   it('explains Beat Builder controls, finish gates and target counts for each current mode', () => {
@@ -209,7 +211,14 @@ describe('touch how-to cards', () => {
     expect(howToFor(pop, 18)!.note).toContain('moves the hold');
     expect(howToFor(pop, 19)!.steps).toEqual([expect.stringContaining('blow a trail of bubbles')]);
     expect(howToFor(pop, 19)!.note).toContain('just blows one');
-    expect(howToFor(pop, 20)!.steps).toEqual([]);
+    expect(howToFor(pop, 20)!.steps).toEqual([
+      expect.stringContaining('shows 20'),
+      expect.stringContaining('makes 20 with it'),
+      expect.stringContaining('10 and 10 is a pair too'),
+    ]);
+    expect(howToFor(pop, 20)!.finish).toContain('last pair is popped');
+    expect(howToFor(pop, 20)!.note).toContain('making 10 gets there');
+    expect(howToFor(pop, 21)!.steps).toEqual([]);
     expect(howToFor(pop, 15)!.note).toContain('No touch is wrong');
     expect(howToFor(pop, 14)!.note).toContain('wrong bubble');
     // The sign is mentioned only where there is one, and the new levels do not inherit the dots or the pairs.
@@ -254,7 +263,7 @@ describe('the demonstration on a card', () => {
       .filter((id) => GAMES.some((g) => g.id === id))
       .sort();
     expect(withBot).toEqual(couchOnIsland);
-    expect(withBot).toHaveLength(26);
+    expect(withBot).toHaveLength(27);
     expect(demoFor('monster-munch')).toBeNull();
     expect(demoFor('no-such-game')).toBeNull();
   });
@@ -316,4 +325,46 @@ it('Under the hen describes lane taps and five eggs without inheriting the pair 
   expect(card.note).toContain('Two wrong taps');
   expect(JSON.stringify(card)).not.toMatch(/gates|pairs|six eggs/);
   expect(howToFor(game, 7)!.finish).toContain('three pairs');
+});
+
+describe('the short reminder (D4b)', () => {
+  const base: BriefIntroCase = {
+    cards: true,
+    brief: true,
+    explained: true,
+    mix: false,
+    daily: false,
+    input: 'touch',
+    introduced: true,
+  };
+
+  it('is short only for an introduced mode with every switch on', () => {
+    expect(briefIntro(base)).toBe(true);
+    expect(briefIntro({ ...base, input: 'mouse' })).toBe(true);
+  });
+
+  it('is the full card in every other case', () => {
+    const cases: Partial<BriefIntroCase>[] = [
+      { brief: false },
+      { cards: false },
+      { explained: false },
+      { mix: true },
+      { daily: true },
+      { input: null },
+      { introduced: false },
+    ];
+    for (const c of cases) expect(briefIntro({ ...base, ...c }), JSON.stringify(c)).toBe(false);
+  });
+
+  it('keys a level, band and input apart, so a changed mode has no key', () => {
+    const k = { id: 'bubble-pop', band: 'toddler', level: 2, input: 'touch' as const };
+    const keys = [
+      introKey(k),
+      introKey({ ...k, level: 3 }),
+      introKey({ ...k, band: 'preschool' }),
+      introKey({ ...k, input: 'mouse' }),
+      introKey({ ...k, id: 'jar-sort' }),
+    ];
+    expect(new Set(keys).size).toBe(keys.length);
+  });
 });

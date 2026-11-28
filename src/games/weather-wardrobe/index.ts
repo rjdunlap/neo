@@ -33,6 +33,7 @@ import {
   STICKER_ITEMS,
   STICKER_WEATHERS,
   suits,
+  tempOf,
   wardrobeFor,
   wardrobePlan,
   WEATHERS,
@@ -250,6 +251,11 @@ class WeatherWardrobe implements Game {
   }
 
   /** The ghost finger on the how-to card: tap the sky to change the weather (free play), or the next thing that fits the weather. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.plan.mode === 'play') {
@@ -428,6 +434,7 @@ class WeatherWardrobe implements Game {
       this.instruct(`weather.light.${days}.${spaces}`);
     } else if (this.plan.mode === 'trip')
       this.instruct('weather.trip', { a: o.weathers[0], b: o.weathers[1] });
+    else if (o.temp) this.instruct('weather.temp', { weather: o.weathers[0], temp: o.temp });
     else
       this.instruct(this.plan.mode === 'pick' ? 'weather.pick' : 'weather.all', { weather: o.weathers[0] });
     this.resize(this.view);
@@ -533,18 +540,21 @@ class WeatherWardrobe implements Game {
         return;
       }
       // Level 8 has no mistakes: anything goes on, shows what it does, and hops back.
+      // A thermometer round's temperature things are wrong for the other temperature, and say so in its terms.
+      const temp = this.plan.thermo ? tempOf(opt.item) : null;
+      const why: { id: LineId; vars: LineVars } = temp
+        ? { id: 'weather.temp.wrong', vars: { item: ITEM_WORDS[opt.item], temp } }
+        : { id: 'weather.wrong', vars: { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] } };
       if (this.plan.mode !== 'try') {
         this.misses++;
         this.wrong++;
         sfx.boing();
         if (this.wrong === 2) {
           this.hints++;
-          void this.ctx
-            .say('weather.wrong', { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] })
-            .then(() => this.ctx.say('weather.hint'));
-        } else void this.ctx.say('weather.wrong', { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] });
+          void this.ctx.say(why.id, why.vars).then(() => this.ctx.say('weather.hint'));
+        } else void this.ctx.say(why.id, why.vars);
       }
-      this.tryOn(opt);
+      this.tryOn(opt, temp ? (temp === 'cold' ? 'hot' : 'cold') : undefined);
       this.drawGlow();
       return;
     }
@@ -724,7 +734,7 @@ class WeatherWardrobe implements Game {
    * A wrong item goes on for under a second, shows what the weather does to it (drops on the lenses, sweat, a frosty cap),
    * then hops back to its tile. The tap that started it counts however the caller scores it.
    */
-  private tryOn(opt: Option) {
+  private tryOn(opt: Option, kind: Misfit = MISFIT[this.weather]) {
     const { ctx, pet } = this;
     this.busy = true;
     opt.node.alpha = 0.35;
@@ -735,13 +745,13 @@ class WeatherWardrobe implements Game {
       void ctx.tw.to(p.scale, { x: k, y: k }, { duration: 0.2, ease: ease.outBack });
     }
     sfx.pop(8);
-    const fx = this.misfitFx(MISFIT[this.weather]);
+    const fx = this.misfitFx(kind);
     // A shiver or a fan-wiggle on the pet's whole body, then back to where it stood.
     const x = pet.x;
     void (async () => {
       for (const dx of [-5, 5, -5, 5, 0]) await ctx.tw.to(pet, { x: x + dx }, { duration: 0.07 });
       pet.x = x;
-      if (MISFIT[this.weather] === 'blown') {
+      if (kind === 'blown') {
         // The wind takes it: the piece lifts off the pet, tumbles up and away, and its tile gets it back below.
         sfx.whoosh();
         await Promise.all(
@@ -969,6 +979,10 @@ class WeatherWardrobe implements Game {
 
   private drawForecast(o: Outfit) {
     this.forecast.removeChildren().forEach((c) => c.destroy());
+    if (this.plan.thermo && o.temp) {
+      this.forecast.addChild(thermometer(o.temp));
+      return;
+    }
     if (this.plan.mode !== 'trip') return;
     const card = new Graphics()
       .roundRect(-110, -55, 220, 110, 24)
@@ -998,9 +1012,11 @@ class WeatherWardrobe implements Game {
       v.h - (this.plan.mode === 'play' ? 70 : 178),
     );
     this.suitcase.position.set(v.w * 0.7, v.h - 178);
-    this.forecast.position.set(v.w / 2, 90);
+    // The thermometer stands in the top corner beside the sky; the trip's forecast card sits at the top centre.
+    if (this.plan.thermo) this.forecast.position.set(v.w - 80, 130);
+    else this.forecast.position.set(v.w / 2, 90);
     this.tray.clear();
-    if (this.plan.packLight) this.layoutLightTrip(v);
+    if (this.plan.packLight || this.plan.thermo) this.layoutLightTrip(v);
     else if (this.options.length && this.changePhase !== 'remove') {
       this.tray.roundRect(160, v.h - 160, v.w - 190, 148, 30).fill({ color: swatch.white.fill, alpha: 0.85 });
       const xs = spread(this.options.length, 175, v.w - 40, 150);
@@ -1247,6 +1263,33 @@ class WeatherWardrobe implements Game {
   }
 }
 
+/** A picture thermometer (level 13): a tube with a bulb, the red column high on a hot day and the blue one low on a cold day, with a snowflake or sun beside it. */
+function thermometer(temp: 'cold' | 'hot'): Container {
+  const c = new Container();
+  const hot = temp === 'hot';
+  const fill = hot ? swatch.red : swatch.blue;
+  const card = new Graphics()
+    .roundRect(-62, -100, 124, 200, 28)
+    .fill(swatch.white.fill)
+    .stroke(line(swatch.white.line, 4));
+  const tube = new Graphics()
+    .roundRect(-12, -78, 24, 130, 12)
+    .fill(swatch.white.fill)
+    .stroke(line(swatch.white.line, 4))
+    .circle(0, 62, 24)
+    .fill(fill.fill)
+    .stroke(line(fill.line, 4));
+  const top = hot ? -62 : 14;
+  const column = new Graphics().roundRect(-6, top, 12, 62 - top, 6).fill(fill.fill);
+  const mark = new Graphics();
+  for (const y of [-56, -28, 0, 28]) mark.moveTo(18, y).lineTo(34, y);
+  mark.stroke(line(swatch.white.line, 3));
+  const icon = weatherIcon(hot ? 'sunny' : 'snowy', 40);
+  icon.position.set(-44, hot ? -60 : 40);
+  c.addChild(card, tube, column, mark, icon);
+  return c;
+}
+
 function wardrobeArt(seed = 1): Container {
   const rng = new Rng(seed);
   // Pinned to the original three weathers and eight items: a seed's sticker looks as it did before wind.
@@ -1268,7 +1311,7 @@ export const weatherWardrobe: GameModule = {
   challenge: 'logic',
   skills: ['reasoning', 'vocabulary', 'everyday-life'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  uprightLevels: [12],
+  uprightLevels: [12, 13],
   levels: (b) => rangeFor(LEVELS, b),
   entryLevels: [8, 9],
   describeLevel: (l) => wardrobePlan(l).name,

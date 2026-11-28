@@ -129,6 +129,28 @@ describe.each(Object.entries(views))('Ribbon Workshop upright on %s', (name, v) 
     expect(f.trayLeft + ROW_TICKS * UNIT + 3 * 12).toBeLessThanOrEqual(f.view.w);
   });
 
+  it("keeps How Many Pieces Fit?'s answer cards whole, apart and off the corners", () => {
+    // Four 220 by 110 cards in a 2 by 2 grid where the tray stood, over the bench's four ticks and the buttons.
+    const out: Target[] = [];
+    for (let i = 0; i < 4; i++)
+      out.push(
+        real(
+          `answer card ${i}`,
+          f.trayLeft + 110 + (i % 2) * 236,
+          f.view.h - 90 - (1 - Math.floor(i / 2)) * 126,
+          220,
+          110,
+        ),
+      );
+    for (let i = 0; i < 4; i++) out.push(real(`bench tick ${i}`, f.x0 + (i + 0.5) * UNIT, 355, UNIT, 120));
+    for (const [what, x, y] of [
+      ['bow', f.view.w - 80, f.view.h - 90],
+      ['undo', f.view.w - 80, 82],
+    ] as const)
+      out.push(real(what, x, y, 120, 120));
+    expect(uprightProblems(v, out, 64)).toEqual([]);
+  });
+
   it('keeps every target a thumb wide on a 390-wide phone', () => {
     if (v !== UPRIGHT_VIEWS.phone) return;
     expect(name).toBe('phone');

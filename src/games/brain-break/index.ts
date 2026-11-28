@@ -317,6 +317,11 @@ class BrainBreak implements Game {
     this.hintButton.position.set(layout.hint.x, layout.hint.y);
     this.draw();
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     return { tap: { on: this.stones[hintIndex(this.board, this.next)] }, pause: 0.65 };

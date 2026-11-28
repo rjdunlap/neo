@@ -206,6 +206,17 @@ describe('Make my mix (D5a) on the home spot', () => {
     expect(host.consumeHold()).toBe(true);
     expect(host.consumeHold()).toBe(false);
   });
+  it("a shuffle (D7b) holds its lineup and shows it on the table without starting anything; only the spot's own games count", () => {
+    const { host, launched } = make();
+    expect(host.shufflePool(['fill-dump', 'not-a-game', 'bubble-pop'])).toEqual(['fill-dump', 'bubble-pop']);
+    expect(host.shuffleInto([])).toBe(false);
+    expect(host.shuffleInto(['fill-dump', 'bubble-pop'])).toBe(true);
+    expect(host.table!.lineup).toEqual(['fill-dump', 'bubble-pop']);
+    expect(mixMemory.lineup(store.data, 'lap')).toEqual(['fill-dump', 'bubble-pop']);
+    expect([mixMemory.live(store.data), launched]).toEqual([undefined, []]);
+    // A table is already open: a second shuffle changes nothing.
+    expect(host.shuffleInto(['sing-along-barn'])).toBe(false);
+  });
   it('a swipe or cancel before 0.6 s opens nothing', () => {
     const { host } = make();
     host.holdStart(new Container(), 0, 0, 40);

@@ -50,6 +50,8 @@ import {
   kitOf,
   NEIGHBORS,
   newCondition,
+  turnRound,
+  isTrade,
   nextMove,
   PARTS,
   planFor,
@@ -136,6 +138,8 @@ class GadgetBench implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.brief = briefFor(ctx.level, ctx.rng);
+    // The how-to card's demonstration shows level 7's first round (both friends) and stops: six builds would outlast it.
+    if (ctx.demo && this.brief.level === 7) this.brief.rounds.length = 1;
     this.backdrop = new Backdrop(
       {
         sky: [0xffd6e3, 0xfff6e0],
@@ -158,8 +162,11 @@ class GadgetBench implements Game {
     return this.brief.level;
   }
 
+  /** Level 7: 0 for the round's first friend, 1 once she has her cart and the second friend takes the same bench. */
+  private turn: 0 | 1 = 0;
+
   get round(): Round {
-    return this.brief.rounds[this.roundIndex];
+    return turnRound(this.brief.rounds[this.roundIndex], this.turn);
   }
 
   /** The neighbor shown on the request card now (level 2's first neighbor while the pet builds). */
@@ -185,11 +192,14 @@ class GadgetBench implements Game {
       5: 'bench.instruct.gate',
       6: 'bench.instruct.newkit',
     };
+    if (this.level === 7)
+      return this.round.path.includes('light') ? 'bench.instruct.light' : 'bench.instruct.strong';
     return lines[this.level] ?? 'bench.instruct.build';
   }
 
   /** The model for a round's start (the demo's cart stays as the pet built it at level 2). */
   private beginRound() {
+    this.turn = 0;
     this.gadget = {};
     this.tried = [false, false];
     this.okGadget = null;
@@ -336,7 +346,7 @@ class GadgetBench implements Game {
         : [...round.tray, ...shownParts];
       ids.forEach((id, slot) => {
         const node = new Container();
-        node.addChild(partInSocket(id));
+        node.addChild(partInSocket(id, this.level === 7));
         node.hitArea = new Rectangle(-SOCKET / 2, -SOCKET / 2, SOCKET, SOCKET);
         const at = SOCKETS.find((s) => this.gadget[s] === id) ?? null;
         const home = at ? this.socketCentre(at) : centre(l.tray[slot]);
@@ -509,7 +519,7 @@ class GadgetBench implements Game {
         sfx.clunk();
         await this.stopAt(runner, this.tileNodes[i], result.socket, which);
         if (!live()) return;
-        await this.ctx.say(`bench.fail.${failedAt}` as LineId);
+        await this.ctx.say(`bench.fail.${failedAt}` as LineId, { neighbor: this.shownNeighbor.name });
         if (!live()) return;
         // Not at the gate (the tall part works there, it is just too tall), nor from level 4 for a part in its own socket.
         const held = snapshot[result.socket];
@@ -629,7 +639,10 @@ class GadgetBench implements Game {
       return;
     }
     const h = this.help();
-    if (h.kind === 'out') await this.ctx.say('bench.fail.gate');
+    if (h.kind === 'out')
+      await this.ctx.say(isTrade(this.round.path) ? 'bench.hint.out' : 'bench.fail.gate', {
+        part: PARTS[h.part].name,
+      });
     else if (h.kind === 'install') await this.ctx.say('bench.glow', { part: PARTS[h.part].name });
   }
 
@@ -718,6 +731,11 @@ class GadgetBench implements Game {
     });
     await this.ctx.say('bench.give.ok', { neighbor: this.round.neighbor.name });
     if (!live()) return;
+    if (this.turn === 0 && this.brief.rounds[this.roundIndex].second) {
+      await this.ctx.tw.wait(0.4);
+      if (live()) this.nextTurn();
+      return;
+    }
     const gadget = this.round.pair ? this.round.pair.gadgets[this.round.pair.passing] : this.gadget;
     const others = NEIGHBORS.filter((n) => n !== this.round.neighbor).slice(0, 2);
     const y = l.strip.y - 10;
@@ -742,6 +760,26 @@ class GadgetBench implements Game {
     await this.ctx.tw.wait(0.6);
     if (!live()) return;
     this.nextRound();
+  }
+
+  /** Level 7: the first friend rode off with her cart; the same five parts come home and the second friend arrives. */
+  private nextTurn() {
+    this.turn = 1;
+    this.tally.nextTurn();
+    this.gadget = {};
+    this.tried = [false, false];
+    this.okGadget = null;
+    this.pending = null;
+    this.startUnmet = this.unmet();
+    this.busy = false;
+    this.build();
+    const line = this.round.path.includes('light') ? 'bench.next.light' : 'bench.next.strong';
+    void this.ctx
+      .say(line, { neighbor: this.round.neighbor.name })
+      .then(
+        () =>
+          this.alive && void this.ctx.instruct(this.instruction(), { neighbor: this.round.neighbor.name }),
+      );
   }
 
   private nextRound() {
@@ -1020,6 +1058,11 @@ class GadgetBench implements Game {
   }
 
   /** The ghost finger: level 1 tries the failing gadget, the passing one, then gives it; levels 2–3 drag what help names, Try, Give. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.showing || !this.layoutNow) return null;
     const m = nextMove(this.round, this.gadget, this.tried, this.triedOk, this.level);

@@ -49,6 +49,8 @@ export type ColorName = keyof typeof swatch;
 /** The six colors toddlers learn first, in rainbow order. */
 export const RAINBOW: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
 
+/** The leaf pet's soft sage (the guide pet and Pip in games): greener and quieter than teal, so it sits with the brown and cream animal friends. */
+export const petSage: Swatch = { fill: 0x8cc9a8, line: 0x548f74, light: 0xd3ecdd };
 export const ink = 0x2b2b3a;
 export const cream = 0xfff4e3;
 /** The ground shadow under a button or card (RW14 slice 7), drawn at low alpha. */

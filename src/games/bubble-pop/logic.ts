@@ -138,6 +138,8 @@ export const PLANS: BubblePlan[] = [
   // Lap, after level 1: she blows the bubbles herself (a touch or a dragged finger on empty space) and then pops them.
   // Few and slow, and big enough that a swipe leaves room between them (`BLOW_GAP`).
   { mode: 'free', goal: 8, speed: 40, most: 4, colors: 0, radius: [78, 98], blow: true },
+  // School, after 14: bonds to 20 through making ten (every pair except 10 + 10 is a small number and a teen).
+  { mode: 'bonds', goal: 5, speed: 32, most: 10, colors: 0, radius: [54, 62], sum: 20 },
 ];
 
 /** The two sizes must be told apart at a glance: the smallest big bubble is at least this many times the largest little one. */
@@ -152,8 +154,19 @@ export const LEVELS: BandLevels = {
   // the first level that shows her numerals, and before 8 counts further.
   preschool: { min: 4, max: 18, order: [4, 5, 6, 17, 7, 18, 8, 9] },
   prek: { min: 6, max: 12 },
-  school: { min: 10, max: 14 },
+  school: { min: 10, max: 20, order: [10, 11, 12, 13, 14, 20] },
 };
+
+/**
+ * Bonds to 20: splits `a` and its partner `20 - a` into the small number, the teen's ones that make 10 with it,
+ * and the teen (`small + ones === 10` and `small + big === 20`). Null for any other total, and for 10 + 10 (`ones` would be 0).
+ */
+export function tenFor(a: number, sum: number): { small: number; ones: number; big: number } | null {
+  if (sum !== 20 || !Number.isInteger(a) || a < 1 || a >= 20 || a === 10) return null;
+  const small = Math.min(a, 20 - a);
+  const big = 20 - small;
+  return { small, ones: big - 10, big };
+}
 
 /** Bonds mode: numbers for `pairs` pairs that each make `sum`, so every bubble has a partner. */
 export function bondNumbers(sum: number, pairs: number, rng: Rng): number[] {
@@ -612,6 +625,7 @@ export const MODE_CARDS: Record<number, BubbleModeCard> = {
   17: { name: 'Which has the dots?', line: 'bubble.mode.17', picture: { kind: 'pips', counts: [4, 2, 3] } },
   18: { name: 'Dots and numbers', line: 'bubble.mode.18', picture: { kind: 'match', n: 3, other: 2 } },
   19: { name: 'Blow, then pop', line: 'bubble.mode.19', picture: { kind: 'blow' } },
+  20: { name: 'Make 20', line: 'bubble.mode.20', picture: { kind: 'bond', numbers: [3, 17], sum: 20 } },
 };
 
 /** The card for a level, clamped like `planFor`. */

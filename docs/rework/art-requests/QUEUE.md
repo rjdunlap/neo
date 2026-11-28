@@ -264,7 +264,7 @@ Only the `base` gets a look here. If a look is adopted, its `blink`/`happy`/mood
 
 ## R16: Forms
 
-Optional branching forms (a blossom opening on the sprout, the glider's sunset wing as a form, Tote's shell garden) are [RW11](../WORK-ITEMS.md#rw11-optional-forms-and-useful-talents) work and need its definition first. **Blocked:** do not generate.
+Optional branching forms are [RW11](../WORK-ITEMS.md#rw11-optional-forms-and-useful-talents) work, [defined 2026-11-26](../FORMS-AND-TALENTS.md). The sprout's blossom shipped as code-drawn flowers, so it needs no art; the glider's sunset wing and Tote's shell garden stay concepts with no definition. **Do not generate.**
 
 ## R17: Glider portrait re-roll
 

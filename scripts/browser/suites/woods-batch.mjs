@@ -926,9 +926,343 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Level 18, Which pad lost its number? (pre-K): a leaf hides one numeral; a wrong card already on the run, a second for
+    // the lifted leaf and the glowing card, then the answers.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [18]).includes(18)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 18);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.missing');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.missingSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.missingSaid.push([String(id), vars?.m ?? vars?.n]), say(id, vars));
+      });
+      const tapCard = async (n) => {
+        await page.evaluate((n) => kit.tapOn(neo.scene.game.cards.find((c) => c.n === n).node), n);
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      const q = await page.evaluate(() => {
+        const { start, run, target, cards } = neo.scene.game.q;
+        return { start, run, target, cards };
+      });
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.pads.filter((p) => p.visible).length),
+        q.run,
+        'only the run is shown',
+      );
+      // The neighbour card is always on the run: "the number next to it".
+      const wrong = q.cards.find((c) => Math.abs(c - q.target) === 1);
+      await tapCard(wrong);
+      const said = await page.evaluate(() => missingSaid.map(([id, v]) => `${id}:${v}`));
+      assert.ok(said.includes(`hop.wrong.missing:${wrong}`), said.join(' '));
+      assert.ok(said.includes(`hop.missing.here:${wrong}`), said.join(' '));
+      await tapCard(wrong);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.glowing?.children[1]?.text),
+        String(q.target),
+        'two misses glow the answer card',
+      );
+      await screenshot('frog-hop-18-phone-hint');
+      await tapCard(q.target);
+      const counted = await page.evaluate(() =>
+        missingSaid.filter(([id]) => id === 'count').map(([, n]) => n),
+      );
+      assert.deepEqual(
+        counted,
+        Array.from({ length: q.run }, (_, i) => q.start + i),
+        'the frog says every number on the run',
+      );
+      for (let i = 1; i < 5; i++) await tapCard(await page.evaluate(() => neo.scene.game.q.target));
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 18: a run with one leaf, a wrong neighbour card named and "already here", two misses lift the leaf and glow the card, the run counted aloud, 2 misses 1 hint saved, phone screenshot',
+      );
+    }
+
+    // Level 17, Hop to the dots (toddler): the sign shows dots; one wrong pad, a second for the glow, then the supported finish.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [17]).includes(17)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 17);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.dots');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.dotsSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.dotsSaid.push([String(id), vars?.m, vars?.n]), say(id, vars));
+      });
+      const tapPad = async (k) => {
+        await page.evaluate((k) => kit.tapOn(neo.scene.game.pads[k - 1]), k);
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.pads.filter((p) => p.visible).length),
+        3,
+        'the first question shows pads 1 to 3',
+      );
+      const n = await page.evaluate(() => neo.scene.game.q.target);
+      const wrong = n === 1 ? 2 : 1;
+      await tapPad(wrong);
+      const miss = await page.evaluate(() => dotsSaid.find(([id]) => id.startsWith('hop.wrong.dots')));
+      assert.deepEqual(miss, [n > wrong ? 'hop.wrong.dots-forward' : 'hop.wrong.dots-back', wrong, n]);
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 0, 'a wrong pad leaps home');
+      await tapPad(wrong);
+      assert.equal(await page.evaluate(() => neo.scene.game.glowing), n, 'two misses glow the target');
+      await screenshot('frog-hop-17-phone-glow');
+      await tapPad(wrong);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.qi),
+        1,
+        'with the glow on the next tap finishes the question',
+      );
+      for (let i = 1; i < 5; i++) await tapPad(await page.evaluate(() => neo.scene.game.q.target));
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 17: dots-only sign, three pads then five, a wrong pad names itself and the way and leaps home, two misses glow, the third tap finishes, 2 misses 1 hint saved, phone screenshot',
+      );
+    }
+
+    // Level 16, Hop along (lap and toddler): six free taps on the pond, one on the bank; nothing is wrong.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [16]).includes(16)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 16);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.along');
+      const said = await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.alongSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.alongSaid.push([String(id), vars?.n]), say(id, vars));
+        return true;
+      });
+      assert.ok(said);
+      // A real tap at a place in the pond (near a pad, not on it), or on the bank.
+      const tapPad = async (k, dy = 0) => {
+        await page.evaluate(
+          ({ k, dy }) => {
+            const g = neo.scene.game;
+            const s = g.L.spots[k];
+            const p = g.pond.toGlobal({ x: s.x, y: s.y + dy });
+            kit.tap(p.x, p.y);
+          },
+          { k, dy },
+        );
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      await tapPad(3, 50);
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 3, 'a tap near pad 3 hops there');
+      assert.deepEqual(
+        await page.evaluate(() => alongSaid.filter(([id]) => id === 'count').map(([, n]) => n)),
+        [1, 2, 3],
+        'each landing says its number',
+      );
+      await screenshot('frog-hop-16-phone');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        const b = g.L.bank;
+        const p = g.bank.toGlobal({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
+        kit.tap(p.x, p.y);
+      });
+      await page.waitForTimeout(250);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 0, 'the bank sends the frog home');
+      assert.ok(await page.evaluate(() => alongSaid.some(([id, n]) => id === 'hop.along.home' && n === 3)));
+      await tapPad(5);
+      await tapPad(5);
+      await tapPad(2, -40);
+      assert.equal(await page.evaluate(() => neo.scene.finished), false, 'five taps do not end the round');
+      await tapPad(1);
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 16: pond taps hop pad by pad saying each number, the bank sends it home, the sixth tap ends with no misses, phone screenshot, saved sticker passed',
+      );
+    }
+
+    // Level 15, Where does it go?: three unscored guesses on a bare 0–100 line, then a ten placed on the line marked in tens.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [15]).includes(15)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 15);
+      await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy, null, {
+        timeout: 20000,
+      });
+      await page.waitForTimeout(150);
+      const idle = () =>
+        page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
+      // A place on the line, by a real tap on the band at that number's x (or a number's nearest place).
+      const tapAt = async (n) => {
+        await page.evaluate((n) => {
+          const g = neo.scene.game;
+          const p = g.band.toGlobal({ x: g.x(n), y: g.L.line.y });
+          kit.tap(p.x, p.y);
+        }, n);
+        await page.waitForTimeout(250);
+        await idle();
+      };
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.questions.map((q) => q.place)), [
+        'guess',
+        'guess',
+        'guess',
+        'ticks',
+      ]);
+      assert.equal(await page.evaluate(() => neo.scene.game.q.target), 37, 'the first guess is 37');
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.est');
+      // A far guess (80 for 37) is never a miss: the frog hops to the real place.
+      await tapAt(80);
+      await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, {
+        timeout: 30000,
+      });
+      const first = await page.evaluate(() => neo.scene.game.guesses[0]);
+      assert.equal(first.target, 37);
+      assert.ok(Math.abs(first.guess - 80) <= 1, `the guess reads where she tapped (${first.guess})`);
+      assert.deepEqual(await counts(), [0, 0], 'a guess is never a miss');
+      // A guess by sliding the frog: it rides the line and lets go near the number.
+      const second = await page.evaluate(() => neo.scene.game.q.target);
+      await page.evaluate((n) => {
+        const g = neo.scene.game;
+        const from = g.frog.toGlobal({ x: 0, y: -30 });
+        const to = g.band.toGlobal({ x: g.x(n), y: g.L.line.y - 30 });
+        return kit.drag(kit.line([from.x, from.y], [to.x, to.y], 20));
+      }, second);
+      await page.waitForTimeout(300);
+      await page.waitForFunction(() => neo.scene.game.index === 2 && !neo.scene.game.busy, null, {
+        timeout: 30000,
+      });
+      const slid = await page.evaluate(() => neo.scene.game.guesses[1]);
+      assert.ok(Math.abs(slid.guess - second) <= 2, `the slide lands near ${second} (${slid.guess})`);
+      await page.waitForTimeout(200);
+      await screenshot('frog-hop-15-guess-phone');
+      const third = await page.evaluate(() => neo.scene.game.q.target);
+      await tapAt(third);
+      await page.waitForFunction(() => neo.scene.game.index === 3 && !neo.scene.game.busy, null, {
+        timeout: 30000,
+      });
+      // The marked line: a wrong mark is one miss; Show a hint twice is one hint; the right mark ends the round.
+      const tens = await page.evaluate(() => neo.scene.game.q.target);
+      await tapAt(tens === 20 ? 30 : tens - 10);
+      assert.deepEqual(await counts(), [1, 0], 'a wrong mark is one miss');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.evaluate(() => neo.scene.game.askForHint());
+      assert.deepEqual(await counts(), [1, 1], 'Show a hint counts once');
+      assert.equal(await page.evaluate(() => neo.scene.game.glowAt), tens, 'the right mark glows');
+      await page.waitForTimeout(200);
+      await screenshot('frog-hop-15-marks-phone');
+      await tapAt(tens + 2);
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [1, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 15: a far guess with no miss, a slid guess, the marks by tens, a wrong mark one miss, one counted hint, a near tap snapping to the right mark, phone screenshots, saved score and sticker passed',
+      );
+    }
+    // Level 14, Big hops and little hops: an open line, a big lily (+10), a small lily (+1) and back.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [14]).includes(14)) {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('frog-hop', 14);
+      await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
+      await page.waitForTimeout(100);
+      const idle = () =>
+        page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 30000 });
+      const tap = async (lily) => {
+        await page.evaluate((l) => kit.tapOn(neo.scene.game[l]), lily);
+        await page.waitForTimeout(150);
+        await idle();
+      };
+      const state = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          return { index: g.index, at: g.index >= 0 && g.q ? g.at : null, route: [...g.route] };
+        });
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const q = neo.scene.game.q;
+          return [q.start, q.target];
+        }),
+        [47, 72],
+      );
+      // Two big hops, then one more big hop overshoots to 77: one miss, Back glows, back takes it away.
+      await tap('big');
+      await tap('big');
+      await tap('big');
+      assert.deepEqual(await counts(), [1, 0], 'an overshoot is one miss');
+      assert.equal(await page.evaluate(() => neo.scene.game.glowing === neo.scene.game.back), true);
+      await tap('back');
+      assert.equal((await state()).at, 67, 'back takes the last hop away');
+      assert.deepEqual(await counts(), [1, 0], 'back is free');
+      await screenshot('frog-hop-14-portrait');
+      // The pause sheet's hint: the shortest route is shown from here (one big hop short of 72 is not needed: 67 + 5).
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(300);
+      await idle();
+      assert.deepEqual(await counts(), [1, 1], 'a shown hint is one hint');
+      // Five little hops land on the flag; the next question opens.
+      for (let i = 0; i < 5; i++) await tap('small');
+      assert.equal((await state()).index, 1, 'landing on the flag opens the next question');
+      // Question 2: two overshoots show the fewest-hops route from the start and leave her at the start with no hops standing.
+      const before = await counts();
+      const second = await page.evaluate(() => {
+        const q = neo.scene.game.q;
+        return { start: q.start, bigs: q.bigs };
+      });
+      for (let i = 0; i < second.bigs; i++) await tap('big');
+      await tap('big');
+      await tap('back');
+      await tap('big');
+      await page.waitForTimeout(300);
+      await idle();
+      assert.deepEqual(
+        await counts(),
+        [before[0] + 2, before[1] + 1],
+        'two overshoots: two misses and one hint',
+      );
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.route.length, neo.scene.game.at]),
+        [0, second.start],
+        'the demonstration leaves her at the start with an empty route',
+      );
+      // Answer the rest straight through, by the fewest-hops route.
+      for (let guard = 0; guard < 40; guard++) {
+        const lily = await page.evaluate(() => {
+          const g = neo.scene.game;
+          if (g.finished || !g.q) return null;
+          const left = g.q.target - g.at;
+          return left >= 10 ? 'big' : 'small';
+        });
+        if (!lily) break;
+        await tap(lily);
+        if (await page.evaluate(() => neo.scene.game.finished)) break;
+      }
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [3, 2]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 14: big and small lilies, an overshoot, back, a hint, the fewest-hops route, saved score and sticker passed',
+      );
+    }
     if (!only || only === 'hop')
-      for (const level of process.env.HOP_LEVELS?.split(',').map(Number) ||
-        Array.from({ length: Math.max(0, 14 - fromLevel) }, (_, i) => fromLevel + i)) {
+      for (const level of (
+        process.env.HOP_LEVELS?.split(',').map(Number) ||
+        Array.from({ length: Math.max(0, 14 - fromLevel) }, (_, i) => fromLevel + i)
+      ).filter((n) => n < 14)) {
         await launch('frog-hop', level);
         await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
         await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
@@ -1322,6 +1656,113 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           assert.deepEqual(await score('market-stall'), [2, 1]);
           log(
             `Market Stall ${level} (purse): a coin heard, the coin-count and near cards missed, the counted hint, saved score and sticker passed`,
+          );
+          continue;
+        }
+        if (plan.mode === 'more') {
+          // Which costs more? (dive slice 9, level 15): no bell, coins or slate; the cheaper fruit twice (a miss that lays the
+          // dots side by side, then the hint that lights the dearer one), then the dearer; later orders straight away.
+          const good = (i) => `neo.scene.game.shelf[${i}].node`;
+          const settle = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const dear = await page.evaluate(() => {
+              const [a, b] = neo.scene.game.order.prices;
+              return a > b ? 0 : 1;
+            });
+            if (n === 0) {
+              assert.deepEqual(
+                await page.evaluate(() => [
+                  neo.scene.game.bell.visible,
+                  neo.scene.game.purse.length,
+                  neo.scene.game.shelf.length,
+                ]),
+                [false, 0, 2],
+                'no bell or coins; two things on the shelf',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await screenshot('market-stall-15-upright');
+              await tap(good(1 - dear));
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'the cheaper one is a miss');
+              assert.ok(await page.evaluate(() => !!neo.scene.game.compare), 'the dots lie side by side');
+              await screenshot('market-stall-15-dots-upright');
+              await tap(good(1 - dear));
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss is the hint');
+              assert.ok(
+                await page.evaluate(() => neo.scene.game.shelfGlow.bounds.width > 0),
+                'the dearer one glows',
+              );
+              await screenshot('market-stall-15-hint-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
+            await tap(good(dear));
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          log(
+            'Market Stall 15 (Which costs more?): no bell, two misses, the dots and the glow, saved score and sticker',
+          );
+          continue;
+        }
+        if (plan.mode === 'which') {
+          // Which coin? (dive slice 9, level 14): no bell or slate; two wrong coins (a miss each, the second glows the asked
+          // coin and counts one hint), then the asked coin; later orders are answered straight away.
+          const coin = (v) => `neo.scene.game.purse.find((p) => p.value === ${v}).node`;
+          const settle = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const ask = await page.evaluate(() => neo.scene.game.order.ask);
+            if (n === 0) {
+              assert.deepEqual(
+                await page.evaluate(() => [
+                  neo.scene.game.bell.visible,
+                  neo.scene.game.purse.map((p) => p.value),
+                  neo.scene.game.purse.every((p) => p.node.children.length === 3),
+                ]),
+                [false, [1, 2, 5], true],
+                'no bell; the 1, 2 and 5 coins in the purse, each with pips',
+              );
+              const others = plan.coins.filter((v) => v !== ask);
+              await tap(coin(others[0]));
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'a wrong coin is a miss');
+              assert.equal(await page.evaluate(() => neo.scene.game.coinGlow.visible), false);
+              await tap(coin(others[1]));
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss is the hint');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.coinGlow.visible),
+                true,
+                'the asked coin glows',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              assert.ok(
+                await page.evaluate(() => {
+                  const g = neo.scene.game;
+                  const right = g.purse.find((p) => p.value === g.order.ask).node;
+                  return g.coinGlow.x === right.x && g.coinGlow.y === right.y;
+                }),
+                'the glow follows the asked coin when the phone turns upright',
+              );
+              await screenshot('market-stall-14-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
+            await tap(coin(ask));
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          log(
+            'Market Stall 14 (Which coin?): no bell, pips, two wrong coins, the glowing hint, saved score and sticker',
           );
           continue;
         }
@@ -1794,10 +2235,149 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Garden Grow 12–13 (growing conditions): read a comparison with misses and a hint, then set a fair test.
+    if (!only || only === 'grow')
+      for (const level of [12, 13]) {
+        if (level < fromLevel) continue;
+        // Levels 12–13 are upright-ready: play them on an upright phone (the harness makes the context a touch phone when FROM_LEVEL is 12 or more).
+        if (fromLevel >= 12) await page.setViewportSize({ width: 390, height: 844 });
+        await launch('garden-grow', level, 'Mia', 'school');
+        const settle = async () => {
+          await page.waitForTimeout(250);
+          await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+            timeout: 30000,
+          });
+        };
+        const game = 'neo.scene.game';
+        const rounds = level === 12 ? 3 : 2;
+        for (let n = 0; n < rounds; n++) {
+          await settle();
+          await page.waitForTimeout(250);
+          if (n === 0 && level === 12) await screenshot('garden-grow-12');
+          if (level === 12) {
+            const changed = await page.evaluate(() => neo.scene.game.cur.compare.changed);
+            const same = changed === 'light' ? 'water' : 'light';
+            if (n === 0) {
+              // Two wrong pairs: two gentle misses, then the right pair glows (one hint).
+              await tap(`${game}.plots[0].cards.${same}`);
+              await settle();
+              await tap(`${game}.plots[1].cards.${same}`);
+              await settle();
+              assert.equal(await page.evaluate(() => neo.scene.game.hintOn), true);
+            }
+            await tap(`${game}.plots[1].cards.${changed}`);
+            await settle();
+            await tap(`${game}.token`);
+            await settle();
+            const taller = await page.evaluate(() => neo.scene.game.cur.compare.taller);
+            if (n === 0) await screenshot('garden-grow-12-grown');
+            if (n === 0) {
+              await tap(`${game}.plots[${taller === 'a' ? 1 : 0}].bed`);
+              await settle();
+            }
+            await tap(`${game}.plots[${taller === 'a' ? 0 : 1}].bed`);
+          } else {
+            const ask = await page.evaluate(() => neo.scene.game.cur.ask);
+            const other = ask === 'light' ? 'water' : 'light';
+            if (n === 0) {
+              // Nothing different, then only the other card, each a miss; the second lights the card to flip (one hint).
+              await tap(`${game}.token`);
+              await settle();
+              await tap(`${game}.plots[1].cards.${other}`);
+              await tap(`${game}.token`);
+              await settle();
+              assert.equal(await page.evaluate(() => neo.scene.game.hintOn), true);
+              await screenshot('garden-grow-13');
+              await tap(`${game}.undo`);
+            }
+            await tap(`${game}.plots[1].cards.${ask}`);
+            await tap(`${game}.token`);
+            await settle();
+            // Free after a fair test: change the other card too, grow again, no miss.
+            await tap(`${game}.plots[1].cards.${other}`);
+            await tap(`${game}.token`);
+            await settle();
+            await tap(`${game}.next`);
+          }
+        }
+        await finished('garden-grow');
+        assert.deepEqual(await score('garden-grow'), level === 12 ? [3, 1] : [2, 1]);
+        log(
+          `Garden Grow ${level} (${level === 12 ? 'compare' : 'fair'}): wrong taps, the glowing hint, ${level === 12 ? 'reading the taller bed' : 'the fair test and free exploration'}, saved score and sticker passed`,
+        );
+      }
+
+    // Garden Grow 14–15 (under the soil): lift the lid, name the parts, rain and a leaf's three pictures (14); lift both beds,
+    // grow, one wrong bed with a hint, then the longer roots or taller shoot (15). Upright phone viewport like 12–13.
+    if (!only || only === 'grow')
+      for (const level of [14, 15]) {
+        if (level < fromLevel) continue;
+        await page.setViewportSize({ width: 390, height: 844 });
+        await launch('garden-grow', level, 'Mia', level === 14 ? 'preschool' : 'school');
+        const settle = async () => {
+          await page.waitForTimeout(250);
+          await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+            timeout: 30000,
+          });
+        };
+        const game = 'neo.scene.game';
+        if (level === 14) {
+          await settle();
+          await screenshot('garden-grow-14');
+          await tap(`${game}.beds[0].hitKnob.node`);
+          await page.waitForTimeout(600);
+          await tap(`${game}.beds[0].hitSoil.node`);
+          await tap(`${game}.beds[0].hitShoot.node`);
+          await page.waitForTimeout(400);
+          await screenshot('garden-grow-14-open');
+          await tap(`${game}.token`);
+          await settle();
+          // The leaf round: lift the lid, then three taps on the leaf show every picture.
+          await tap(`${game}.beds[0].hitKnob.node`);
+          await page.waitForTimeout(600);
+          await screenshot('garden-grow-14-leaf');
+          for (let k = 0; k < 2; k++) {
+            await page.waitForTimeout(500);
+            await tap(`${game}.beds[0].hitShoot.node`);
+          }
+        } else
+          for (let n = 0; n < 2; n++) {
+            await settle();
+            await page.waitForTimeout(250);
+            if (n === 0) await screenshot('garden-grow-15');
+            const ask = await page.evaluate(() => neo.scene.game.cur.r15.ask);
+            const taller = await page.evaluate(() => neo.scene.game.cur.r15.taller);
+            // A bed tapped before growing is free; roots need both lids up first.
+            await tap(`${game}.beds[0].hitShoot.node`);
+            await settle();
+            await tap(`${game}.beds[0].hitKnob.node`);
+            await tap(`${game}.beds[1].hitKnob.node`);
+            await page.waitForTimeout(600);
+            await tap(`${game}.token`);
+            await settle();
+            if (n === 0) {
+              await screenshot('garden-grow-15-grown');
+              // Two wrong beds: two misses, the second lights the right one (one hint).
+              await tap(`${game}.beds[${taller === 'a' ? 1 : 0}].hitShoot.node`);
+              await settle();
+              await tap(`${game}.beds[${taller === 'a' ? 1 : 0}].hitShoot.node`);
+              await settle();
+              assert.equal(await page.evaluate(() => neo.scene.game.hintOn), true);
+            }
+            await tap(`${game}.beds[${taller === 'a' ? 0 : 1}].hitShoot.node`);
+            assert.ok(ask === 'roots' || ask === 'shoot');
+          }
+        await finished('garden-grow');
+        assert.deepEqual(await score('garden-grow'), level === 14 ? [0, 0] : [2, 1]);
+        log(
+          `Garden Grow ${level} (${level === 14 ? 'look' : 'under'}): ${level === 14 ? 'the lid, the parts, rain and the leaf' : 'both lids, growing, two wrong beds and the glowing hint, the right bed'}, saved score and sticker passed`,
+        );
+      }
+
     if (!only || only === 'clock')
       for (const level of process.env.CLOCK_LEVELS
         ? process.env.CLOCK_LEVELS.split(',').map(Number)
-        : Array.from({ length: 8 - fromLevel }, (_, i) => i + fromLevel)) {
+        : Array.from({ length: 11 - fromLevel }, (_, i) => i + fromLevel)) {
         await launch('clock-tower', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         // U7 R4: a right answer's line (`clock.yay`, `clock.itis`, level 6's example) never holds the tower. Each is
@@ -1823,7 +2403,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const prev = g.rightLines.at(-1);
             if (key === 'clock.done' && prev && prev.done === undefined)
               prev.done = performance.now() - prev.at;
-            if (key !== 'clock.yay' && key !== 'clock.itis' && key !== 'clock.later.example') return line;
+            if (
+              key !== 'clock.yay' &&
+              key !== 'clock.itis' &&
+              key !== 'clock.later.example' &&
+              key !== 'clock.earlier.example' &&
+              key !== 'clock.half-later.example'
+            )
+              return line;
             const index = g.index;
             const rec = { id: key, at: performance.now(), last: index + 1 >= g.tasks.length };
             g.rightLines.push(rec);
@@ -1844,6 +2431,68 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             timeout: 20000,
           });
         };
+        if (mode === 'how-long') {
+          // Level 10: two fixed clocks, an hours stepper and a half-hour toggle; two misses, one hint, then the bot's own answers.
+          const sees = () =>
+            page.evaluate(() => {
+              const g = neo.scene.game;
+              return {
+                face: g.face.visible,
+                picker: g.interval.visible,
+                hours: g.hours,
+                half: g.half,
+                summary: g.summary.text,
+                hops: g.hops.visible ? g.hops.text : '',
+                start: g.startTime.text,
+                end: g.endTime.text,
+                want: g.task.end - g.task.start,
+              };
+            });
+          const choose = async (hours, half) => {
+            for (;;) {
+              const now = await sees();
+              if (now.hours === hours) break;
+              await tap(now.hours < hours ? 'neo.scene.game.plusButton' : 'neo.scene.game.minusButton');
+            }
+            if ((await sees()).half !== half) await tap('neo.scene.game.halfToggle');
+          };
+          for (let n = 0; n < 4; n++) {
+            await page.waitForTimeout(300);
+            const at = await sees();
+            assert.equal(at.face, false, 'the hands face is replaced by the interval view');
+            assert.equal(at.picker, true);
+            assert.equal(at.hours + (at.half ? 1 : 0), 0, 'each task starts with nothing chosen');
+            if (n === 0) {
+              assert.deepEqual([at.start, at.end], ['3:00', '5:30']);
+              await tap('neo.scene.game.bell');
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'choosing nothing is a gentle miss');
+              await choose(1, false);
+              assert.match((await sees()).summary, /1 hour/);
+              await tap('neo.scene.game.bell');
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss gives the one hint');
+              const hinted = await sees();
+              assert.equal(hinted.hops, '3:00 → 4:00 → 5:00 → 5:30', 'the worked count is shown');
+              await page.setViewportSize({ width: 768, height: 1024 });
+              await page.waitForTimeout(200);
+              await screenshot('clock-tower-10-hint-portrait');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(200);
+              await screenshot('clock-tower-10-hint');
+            }
+            const want = (await sees()).want;
+            await choose(Math.floor(want / 60), want % 60 === 30);
+            await tap('neo.scene.game.bell');
+            await settle();
+          }
+          await finished('clock-tower');
+          assert.deepEqual(await score('clock-tower'), [2, 1]);
+          log(
+            'Clock Tower 10 (how-long): two fixed clocks, hours stepper and half-hour toggle, a miss and the worked-count hint, saved score and sticker passed',
+          );
+          continue;
+        }
         // Turn a hand with a finger: the long hand from the outer ring, the short one from the middle.
         const turn = async (radius, turns) => {
           const path = await page.evaluate(
@@ -1879,7 +2528,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const before = await counts();
             const shown = await page.evaluate(() => {
               const g = neo.scene.game;
-              return { text: g.requestTime.text, time: g.plan.mode === 'later' ? g.task.from : g.task.time };
+              return { text: g.requestTime.text, time: g.task.from ?? g.task.time };
             });
             assert.equal(
               shown.text,
@@ -1934,12 +2583,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await ring();
             await ring();
             assert.deepEqual(await counts(), [2, 1]);
-            if (level === 6 || level === 7) {
+            if (level === 6 || level === 7 || level === 8 || level === 9) {
               const evidence = await page.evaluate(() => {
                 const g = neo.scene.game;
                 const digital = (t) => `${Math.floor(t / 60) % 12 || 12}:${String(t % 60).padStart(2, '0')}`;
                 return {
                   comparing: g.comparison.visible,
+                  durationBadge: g.durationBadge.visible,
                   before: g.oldTime.text,
                   after: g.newTime.text,
                   from: digital(g.task.from ?? 0),
@@ -1947,18 +2597,33 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                   oldAlpha: g.oldClock.alpha,
                   hour: g.example.hour,
                   hourEnd:
-                    (Math.floor((g.task.from ?? 0) / 60) % 12) * 5 + ((g.task.from ?? 0) % 60) / 12 + 5,
+                    (Math.floor((g.task.from ?? 0) / 60) % 12) * 5 +
+                    ((g.task.from ?? 0) % 60) / 12 +
+                    (g.plan.mode === 'earlier' ? -5 : 5),
                   arc: g.example.arc,
+                  arcStart: g.example.arcStart,
+                  fromMinute: (g.task.from ?? 0) % 60,
                   minute: g.task.time % 60,
                   rim: g.face.children.filter((child) => 'text' in child).map((child) => child.text),
                 };
               });
-              if (level === 6) {
+              if (level === 6 || level === 8) {
                 assert.equal(evidence.comparing, true);
                 assert.equal(evidence.before, evidence.from);
                 assert.equal(evidence.after, evidence.target);
-                assert.equal(evidence.hour, evidence.hourEnd, 'worked example moves forwards one hour');
+                assert.equal(
+                  evidence.hour,
+                  evidence.hourEnd,
+                  level === 6
+                    ? 'worked example moves forwards one hour'
+                    : 'worked example moves backwards one hour',
+                );
                 assert.ok(evidence.oldAlpha < 1, 'old clock is faint');
+              } else if (level === 9) {
+                assert.equal(evidence.comparing, false);
+                assert.equal(evidence.durationBadge, true, 'duration sign (+30 min) is visible');
+                assert.equal(evidence.arc, 30, 'explanatory arc sweeps 30 minutes');
+                assert.equal(evidence.arcStart, evidence.fromMinute, 'arc starts at the starting minute');
               } else {
                 assert.equal(evidence.comparing, false);
                 assert.equal(evidence.arc, evidence.minute, 'help arc reaches the requested minute');
@@ -2569,7 +3234,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= Math.min(10, Number(process.env.TO_LEVEL || 10)); level++) {
+      for (let level = fromLevel; level <= Math.min(11, Number(process.env.TO_LEVEL || 11)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -2790,6 +3455,59 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           );
           assert.deepEqual(await counts(), [0, 0]);
           for (let k = 1; k < 6; k++) await tapSnack();
+        } else if (mode === 'diet') {
+          // Level 11, Plants, meat or both?: one animal at a time, three mats; two wrong mats glow the right one.
+          const right = async () =>
+            page.evaluate(async () => {
+              const L = await import('/src/games/animal-snack/logic.ts');
+              return L.MATS.indexOf(L.DIET[neo.scene.game.waiting.name].kind);
+            });
+          const tapMat = async (i) => {
+            await page.evaluate((i) => kit.tapOn(neo.scene.game.mats[i]), i);
+            await settle();
+          };
+          const total = await page.evaluate(() => neo.scene.game.round.animals.length);
+          assert.ok(total === 4 || total === 5, 'four or five animals to sort');
+          const first = await right();
+          const wrong = (first + 1) % 3;
+          await tapMat(wrong);
+          await tapMat(wrong);
+          assert.deepEqual(await counts(), [2, 1], 'two wrong mats: two misses, then a hint');
+          assert.ok(
+            await page.evaluate((i) => neo.scene.game.glowing === neo.scene.game.mats[i], first),
+            'the second miss glows the right mat',
+          );
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.sorted.length),
+            0,
+            'a wrong mat sorts nothing',
+          );
+          for (let k = 0; k < total; k++) {
+            await tapMat(await right());
+            if (k === 2) {
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              const ok = await page.evaluate(() => {
+                const g = neo.scene.game;
+                const b = g.mats.map((m) => m.getBounds());
+                const w = g.waiting?.node.getBounds();
+                return (
+                  b.every((r, i) => i === 0 || r.x >= b[i - 1].x + b[i - 1].width) &&
+                  b.every((r) => r.x >= 0 && r.x + r.width <= innerWidth && r.y + r.height <= innerHeight) &&
+                  (!w || w.y + w.height <= Math.min(...b.map((r) => r.y)) + 20)
+                );
+              });
+              assert.ok(ok, 'upright on a phone the mats sit apart on screen, under the waiting animal');
+              await screenshot('animal-snack-11-phone');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(300);
+            }
+          }
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.sorted.length),
+            total,
+            'every animal on a mat',
+          );
         } else if (mode === 'match') {
           const pairs = await page.evaluate(async () => {
             const L = await import('/src/games/animal-snack/logic.ts');
@@ -3341,9 +4059,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
 
     if (!only || only === 'bonds')
-      for (const level of [10, 11]) {
-        await launch('bubble-pop', level);
+      for (const level of [10, 11, 20].filter((l) => l >= fromLevel)) {
+        if (level === 20) {
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.waitForTimeout(300);
+        }
+        await launch('bubble-pop', level, 'Mia', level === 20 ? 'school' : undefined);
         await page.waitForTimeout(600);
+        if (level === 20) await screenshot('bubble-pop-20-portrait');
         // The total the pairs make is on a sign at the top, above where any bubble can drift, and takes no touches.
         assert.deepEqual(
           await page.evaluate(() => {
@@ -3366,18 +4089,48 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const live = () =>
           page.evaluate(() =>
             neo.scene.game.bubbles
-              .map((b, i) => ({ i, n: b.number, popped: b.popped, rainbow: b.rainbow }))
+              .map((b, i) => ({ i, n: b.number, popped: b.popped, rainbow: b.rainbow, glow: b.glow }))
               .filter((b) => !b.popped && !b.rainbow),
           );
         const sum = await page.evaluate(() => neo.scene.game.plan.sum);
+        if (level === 20) {
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            g._said = [];
+            const say = g.ctx.say.bind(g.ctx);
+            g.ctx.say = (id, vars) => {
+              g._said.push([id, vars]);
+              return say(id, vars);
+            };
+          });
+        }
+        let hintFirst = null;
         for (let k = 0; k < 2; k++) {
           const bs = await live();
           const a = bs[0];
           const b = bs.find((x) => x.i !== a.i && x.n + a.n !== sum);
+          hintFirst = a;
           await pop(a.i);
           await pop(b.i);
         }
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1]);
+        if (level === 20) {
+          const after = await live();
+          const glowing = after.filter((x) => x.glow > 0);
+          assert.equal(glowing.length, 2, 'Make 20 hint lights the tried bubble and its partner');
+          assert.ok(
+            glowing.some((x) => x.i === hintFirst.i) &&
+              glowing.some((x) => x.i !== hintFirst.i && x.n + hintFirst.n === 20),
+            'Make 20 hint lights the first bubble of her last try and its partner',
+          );
+          const said = await page.evaluate(() => neo.scene.game._said);
+          const hintLine = said.at(-1);
+          assert.equal(
+            hintLine[0],
+            hintFirst.n === 10 ? 'bubble.made' : 'bubble.ten20',
+            'Make 20 hint speaks ten20 (or made for 10+10) instead of notmade',
+          );
+        }
         await screenshot(`bubble-pop-${level}-hint`);
         for (let k = 0; k < 12; k++) {
           const bs = await live();
@@ -3396,6 +4149,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await page.evaluate(() => kit.tapOn(neo.scene.game.bubbles.find((b) => b.rainbow)));
         await finished('bubble-pop');
         assert.deepEqual(await score('bubble-pop'), [2, 1]);
+        if (level === 20) {
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(300);
+        }
         log(
           `Bubble Pop ${level}: pairs that make ${sum} popped together, wrong pairs as misses, glowing pair hint, rainbow bubble, saved score and sticker passed`,
         );
@@ -4259,6 +5016,48 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await settle();
             continue;
           }
+          if (level === 10) {
+            const offered = await page.evaluate(() => neo.scene.game.round.options);
+            assert.equal(offered.length, 3);
+            assert.equal(await page.evaluate(() => neo.scene.game.phase), 'choose');
+            if (n === 0) await screenshot('critter-sort-10-choose');
+            const tapSign = async (rule) => {
+              await tap(`neo.scene.game.options.find((x) => x.rule === '${rule}').node`);
+              await page.waitForTimeout(450);
+            };
+            const state = () => page.evaluate(() => [neo.scene.game.phase, [...neo.scene.game.chosen]]);
+            await tapSign(offered[0]);
+            await tapSign(offered[1]);
+            assert.deepEqual(await state(), ['sort', [offered[0], offered[1]]]);
+            // Taking a sign back before the first drop is free and reopens the choice.
+            await tapSign(offered[0]);
+            assert.deepEqual(await state(), ['choose', [null, offered[1]]]);
+            await tapSign(offered[2]);
+            assert.deepEqual(await state(), ['sort', [offered[2], offered[1]]]);
+            assert.deepEqual(await counts(), n === 0 ? [0, 0] : [2, 1]);
+            await settle();
+            const places = await page.evaluate(async () => {
+              const L = await import('/src/games/critter-sort/logic.ts');
+              const g = neo.scene.game;
+              return g.sorters.map((s) => L.placeOf(s.c, g.round.rules));
+            });
+            if (n === 0) {
+              const wrong = places[0] === 'left' ? 'right' : 'left';
+              await dropTo(0, wrong);
+              // Her signs lock at the first drop.
+              await tapSign(offered[1]);
+              assert.deepEqual(await state(), ['sort', [offered[2], offered[1]]]);
+              await dropTo(0, wrong);
+              assert.deepEqual(await counts(), [2, 1]);
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.hinting === neo.scene.game.sorters[0]),
+                true,
+              );
+              await screenshot('critter-sort-10-hint');
+            }
+            for (const [i, place] of places.entries()) await dropTo(i, place);
+            continue;
+          }
           if (level === 9) {
             const data = await page.evaluate(async () => {
               const L = await import('/src/games/critter-sort/logic.ts');
@@ -4778,8 +5577,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
 
     if (!only || only === 'opp')
-      // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between, 8 Line them up, 9 school's Only the word.
-      for (const level of [1, 2, 3, 4, 5, 7, 8, 9].filter((l) => l >= fromLevel)) {
+      // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between, 8 Line them up, 9 school's Only
+      // the word, 10 Un- words, 11 Two answers, 12 One pair (lap; nothing to get wrong).
+      for (const level of [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12].filter((l) => l >= fromLevel)) {
         await launch('opposites', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const card = async (i) => {
@@ -4825,12 +5625,42 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             }
             continue;
           }
+          if (mode === 'two') {
+            // Two answers: both opposites are taps; the word's own picture is no miss, the unrelated one is.
+            const sort = await page.evaluate(() => {
+              const cs = neo.scene.game.round.cards;
+              const at = (f) => cs.map((c, i) => i).filter((i) => f(cs[i]));
+              return {
+                rights: at((c) => c.two?.kind === 'right'),
+                same: at((c) => c.two?.kind === 'same')[0],
+                loose: at((c) => !c.two)[0],
+              };
+            });
+            if (n === 0) {
+              // The first round on a phone held upright (two by two), the ask replayed, then a same-word tap that is no miss.
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(600);
+              await tap('neo.scene.game.shown');
+              await card(sort.same);
+              assert.deepEqual(await counts(), [0, 0]);
+              await screenshot('opposites-11-same-phone');
+              await card(sort.loose);
+              await card(sort.loose);
+              assert.deepEqual(await counts(), [2, 1]);
+              await screenshot('opposites-11-hint-phone');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(400);
+            }
+            await card(sort.rights[0]);
+            await card(sort.rights[1]);
+            continue;
+          }
           const { right, others, pairs } = await page.evaluate(async () => {
             const L = await import('/src/games/opposites/logic.ts');
             const g = neo.scene.game;
             const r = g.round;
             const ok = (c) =>
-              g.plan.mode === 'find'
+              g.plan.mode === 'find' || g.plan.mode === 'un'
                 ? L.word(c) === L.word(r.ask)
                 : g.plan.mode === 'between'
                   ? !!c.mid
@@ -4911,9 +5741,17 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await page.setViewportSize({ width: 1024, height: 768 });
             await page.waitForTimeout(400);
           } else if (n === 0) {
+            if (mode === 'un') {
+              // Un- words: the printed word replays the heard word and is never a miss.
+              await tap('neo.scene.game.shown');
+              await page.waitForTimeout(300);
+              assert.deepEqual(await counts(), [0, 0]);
+              await screenshot('opposites-10-ask');
+            }
             await card(others[0]);
             await card(others[others.length - 1]);
             assert.deepEqual(await counts(), [2, 1]);
+            if (mode === 'un') await screenshot('opposites-10-hint');
             if (mode === 'between') {
               // The cards stand in true order: the glowing middle is the one between the two ends.
               const xs = await page.evaluate(() => neo.scene.game.cards.map((c) => c.node.x));

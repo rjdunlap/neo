@@ -212,6 +212,143 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(await score('stamp-studio'), [2, 1], 'stamp a duck records 2 misses and 1 hint');
       await page.setViewportSize({ width: 1024, height: 768 });
     }
+    if ((!only || only === 'stamps') && stampAt(12)) {
+      // Level 12, Where does it go? (preschool and up): three place words on the Farm; a stamp elsewhere is no miss, the named
+      // place glows after a quiet spell, and a place not found by the green arrow counts as one hint.
+      await launch('stamp-studio', 12);
+      await page.evaluate(() => {
+        if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+      });
+      await page.waitForTimeout(500);
+      await page.evaluate(async () => {
+        const { placeTarget } = await import('/src/games/stamp-studio/logic.ts');
+        const g = neo.scene.game;
+        if (g.invites.length !== 3 || new Set(g.invites.map((i) => i.word)).size !== 3)
+          throw new Error(`Expected three distinct place words, got ${JSON.stringify(g.invites)}`);
+        if (g.scene !== 'farm') throw new Error(`Level 12 is on ${g.scene}, not the farm`);
+        const tapAt = async (word) => {
+          const t = placeTarget(word, g.width, g.height);
+          const p = g.paper.toGlobal(t);
+          kit.tap(p.x, p.y);
+          await kit.sleep(350);
+        };
+        // A stamp in another place is part of the picture: no miss, the invitation stays open.
+        const other = ['sky', 'grass', 'water'].find((w) => w !== g.invites[0].word);
+        await tapAt(other);
+        if (g.stamps.length !== 1 || g.inviteIndex !== 0 || g.misses !== 0)
+          throw new Error(
+            `Off-place stamp: stamps=${g.stamps.length} met=${g.inviteIndex} misses=${g.misses}`,
+          );
+        if (!g.finish.visible) throw new Error('The green arrow is hidden while invitations are open');
+        // A quiet spell lights the named place (not a hint).
+        g.idleTime = 12.5;
+        await kit.sleep(200);
+        if (!g.placeGlow.visible || g.hints !== 0)
+          throw new Error('No idle glow of the named place, or it counted');
+        for (let i = 0; i < 2; i++) {
+          kit.tapOn(g.choices[g.activeKinds.indexOf(g.invites[i].kind)]);
+          await kit.sleep(400);
+          await tapAt(g.invites[i].word);
+          if (g.inviteIndex !== i + 1) throw new Error(`Invitation ${i + 1} (${g.invites[i].word}) not met`);
+          if (g.placeGlow.visible) throw new Error('The place glow stayed on after a stamp');
+        }
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+      await screenshot('stamp-studio-12-portrait');
+      await page.evaluate(() => kit.tapOn(neo.scene.game.finish));
+      await finished('stamp-studio');
+      assert.deepEqual(await score('stamp-studio'), [0, 1], 'one place not found counts one hint, no misses');
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
+    if ((!only || only === 'stamps') && stampAt(13)) {
+      // Level 13, Next to, between, above (pre-K and up): two animals printed on plain paper and three spoken relations; a
+      // stamp elsewhere is no miss, the relation's zone glows after a quiet spell, and one not met by the arrow is one hint.
+      await launch('stamp-studio', 13);
+      await page.evaluate(() => {
+        if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+      });
+      await page.waitForTimeout(500);
+      await page.evaluate(async () => {
+        const { anchorPixel, meetsRelation, relationTarget } =
+          await import('/src/games/stamp-studio/logic.ts');
+        const g = neo.scene.game;
+        if (g.invites.length !== 3 || g.anchors.length !== 2 || g.anchorMarks.length !== 2)
+          throw new Error(
+            `Expected two animals and three relations, got ${JSON.stringify([g.anchors, g.invites])}`,
+          );
+        if (g.scene) throw new Error(`Level 13 is on ${g.scene}, not plain paper`);
+        const pts = () => g.anchors.map((a) => anchorPixel(a, g.width, g.height));
+        const tapAt = async (t) => {
+          const p = g.paper.toGlobal(t);
+          kit.tap(p.x, p.y);
+          await kit.sleep(350);
+        };
+        // A stamp far from what the first relation asks is part of the picture: no miss, the invitation stays open.
+        const corner = { x: 80, y: 80 };
+        if (meetsRelation(g.invites[0].relation, corner.x, corner.y, pts()))
+          throw new Error('The corner unexpectedly meets the first relation');
+        await tapAt(corner);
+        if (g.stamps.length !== 1 || g.inviteIndex !== 0 || g.misses !== 0)
+          throw new Error(
+            `Off-relation stamp: stamps=${g.stamps.length} met=${g.inviteIndex} misses=${g.misses}`,
+          );
+        if (!g.finish.visible) throw new Error('The green arrow is hidden while invitations are open');
+        // A tap on a printed animal stamps on the paper there; the animal itself never moves or goes away.
+        const before = JSON.stringify(g.anchorMarks.map((m) => m.data));
+        await tapAt(pts()[0]);
+        kit.tapOn(g.undo);
+        await kit.sleep(300);
+        if (g.stamps.length !== 1 || JSON.stringify(g.anchorMarks.map((m) => m.data)) !== before)
+          throw new Error('Pressing on an animal or undoing moved or removed a printed animal');
+        g.idleTime = 12.5;
+        await kit.sleep(200);
+        if (!g.placeGlow.visible || g.hints !== 0)
+          throw new Error('No idle glow of the relation, or it counted');
+        for (let i = 0; i < 2; i++) {
+          kit.tapOn(g.choices[g.activeKinds.indexOf(g.invites[i].kind)]);
+          await kit.sleep(400);
+          await tapAt(relationTarget(g.invites[i].relation, pts()));
+          if (g.inviteIndex !== i + 1)
+            throw new Error(`Invitation ${i + 1} (${JSON.stringify(g.invites[i].relation)}) not met`);
+          if (g.placeGlow.visible) throw new Error('The relation glow stayed on after a stamp');
+        }
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+      await screenshot('stamp-studio-13-portrait');
+      // Each relation's glow at phone portrait, kept on the paper, then the round as it was.
+      for (let i = 0; i < 3; i++) {
+        await page.evaluate((i) => {
+          const g = neo.scene.game;
+          g.inviteIndex = i;
+          g.drawPlaceGlow();
+          g.idleTime = 12.5;
+        }, i);
+        await page.waitForTimeout(250);
+        await screenshot(`stamp-studio-13-glow-${i}`);
+      }
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        g.inviteIndex = 2;
+        g.drawPlaceGlow();
+        g.idleTime = 0;
+      });
+      const kept = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        kit.tapOn(g.finish);
+        await kit.sleep(100);
+        return g.wake?.creation.stamps.length ?? -1;
+      });
+      assert.equal(kept, 5, 'the kept picture holds the two animals and her three stamps');
+      await finished('stamp-studio');
+      assert.deepEqual(
+        await score('stamp-studio'),
+        [0, 1],
+        'one relation not met counts one hint, no misses',
+      );
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
     if ((!only || only === 'stamps') && stampAt(7)) {
       // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
       // The teal around the paper presses too, at the nearest place on it, and no star button or arrow is shown.
@@ -446,6 +583,90 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           });
           await finished('stamp-studio');
           assert.deepEqual(await score('stamp-studio'), [0, 0]);
+        }
+        if (level === 4) {
+          // Sets button & Farm set (dive slice 6): switch sets, mix stamps, keep last backdrop, verify landscape & portrait.
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await launch('stamp-studio', 4);
+          await page.evaluate(() => {
+            if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+          });
+          await page.waitForTimeout(500);
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const p0 = g.paper.toGlobal({ x: 180, y: 180 });
+            kit.tap(p0.x, p0.y);
+            await kit.sleep(200);
+            if (!g.setsButton.visible || g.setsOpen) throw new Error('Sets button missing or open early');
+            kit.tapOn(g.setsButton);
+            await kit.sleep(450);
+            if (!g.setsOpen || !g.setButtons[2].visible) throw new Error('Sets row did not open');
+            kit.tapOn(g.setButtons[2]); // Farm
+            await kit.sleep(450);
+            if (g.setsOpen || g.choices.length !== 6) throw new Error('Farm set did not apply');
+            kit.tapOn(g.choices[1]); // Cow
+            await kit.sleep(450);
+            const p1 = g.paper.toGlobal({ x: 360, y: 260 });
+            kit.tap(p1.x, p1.y);
+            await kit.sleep(200);
+            kit.tapOn(g.choices[5]); // Barn
+            await kit.sleep(450);
+            const p2 = g.paper.toGlobal({ x: 240, y: 160 });
+            kit.tap(p2.x, p2.y);
+            await kit.sleep(200);
+            if (g.stamps.length !== 3) throw new Error('Mixed set picture did not keep earlier stamp');
+          });
+          await screenshot('stamp-studio-4-farm');
+          // Garden, Space, Picnic then Town (indexes 3-6): their stamps join the same picture, the backdrop follows the last set.
+          for (const [setIndex, stampIndex, name] of [
+            [3, 1, 'garden'],
+            [4, 1, 'space'],
+            [5, 0, 'picnic'],
+            [6, 3, 'town'],
+          ]) {
+            await page.evaluate(
+              async ([si, ci, nx]) => {
+                const g = neo.scene.game;
+                kit.tapOn(g.setsButton);
+                await kit.sleep(450);
+                kit.tapOn(g.setButtons[si]);
+                await kit.sleep(450);
+                kit.tapOn(g.choices[ci]);
+                await kit.sleep(450);
+                const p = g.paper.toGlobal({ x: 420 + nx * 70, y: 200 });
+                kit.tap(p.x, p.y);
+                await kit.sleep(200);
+              },
+              [setIndex, stampIndex, setIndex - 3],
+            );
+            await screenshot(`stamp-studio-4-${name}`);
+          }
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(350);
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            kit.tapOn(g.setsButton);
+            await kit.sleep(450);
+            if (!g.setsOpen) throw new Error('Sets row did not open in portrait');
+          });
+          await screenshot('stamp-studio-4-farm-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            kit.tapOn(g.setsButton);
+            await kit.sleep(450);
+            kit.tapOn(g.finish);
+          });
+          await finished('stamp-studio');
+          await page.waitForFunction(() => !!neo.scene.after?.keep, null, { timeout: 25000 });
+          await page.waitForTimeout(800);
+          await tap('neo.scene.after.keep');
+          const saved = await page.evaluate(() => kit.store.data.creations.picture.current);
+          assert.equal(saved.scene, 'town', 'kept picture remembers the last set chosen (Town)');
+          assert.deepEqual(
+            saved.stamps.map((s) => s.kind),
+            ['star', 'cow', 'barn', 'butterfly', 'moon', 'apple', 'bike'],
+            'kept picture preserves mixed stamps from Plain, Farm, Garden, Space, Picnic and Town',
+          );
         }
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
@@ -746,9 +967,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
       }
     if (!only || only === 'rhythm')
-      for (let level = fromLevel; level <= 10; level++) {
+      for (let level = fromLevel; level <= 12; level++) {
         await launch('rhythm-neighbors', level);
-        if (level === 6 || level === 7 || level === 9 || level === 10) {
+        if (level === 6 || level === 7 || level === 9 || level === 10 || level === 11 || level === 12) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);
         }
@@ -884,11 +1105,51 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!g.done || !g.finale) throw new Error('Rhythm free play did not end after eight taps');
             return;
           }
+          if (g.plan.own) {
+            // Level 11: one note is nudged and kept, the call's own rhythm is an echo and asked again, a help sample is not a
+            // hint, and her own rhythm is sung back; three answers finish with no miss and no hint.
+            const { GAP_SECONDS } = await import('/src/games/rhythm-neighbors/logic.ts');
+            await ready();
+            kit.tapOn(g.frogs[0]);
+            await kit.sleep(200);
+            kit.tapOn(g.submit);
+            await kit.sleep(300);
+            if (g.taps.length !== 1 || g.phrase !== 0 || g.busy) throw new Error('Level 11 one-note nudge');
+            g.taps.length = 0;
+            const call = g.phrases[0].call;
+            for (let i = 0; i <= call.length; i++) {
+              kit.tapOn(g.frogs[0]);
+              await kit.sleep(i < call.length ? 1000 * GAP_SECONDS[call[i]] : 200);
+            }
+            kit.tapOn(g.submit);
+            await kit.sleep(200);
+            if (g.phrase !== 0 || g.taps.length !== 0 || !g.busy)
+              throw new Error('Level 11 echo not asked again');
+            await ready();
+            kit.tapOn(g.help);
+            await kit.sleep(200);
+            if (!g.busy || g.hints !== 0) throw new Error('Level 11 sample');
+            await ready();
+            while (!g.done) {
+              await ready();
+              if (g.done) break;
+              const p = g.phrases[g.phrase];
+              for (let i = 0; i < p.voices.length; i++) {
+                kit.tapOn(g.frogs[p.voices[i]]);
+                await kit.sleep(i < p.gaps.length ? 1000 * GAP_SECONDS[p.gaps[i]] : 450);
+              }
+              kit.tapOn(g.submit);
+              await kit.sleep(300);
+              if (!g.busy && !g.done) throw new Error('Level 11 answer not sung back');
+            }
+            return;
+          }
           await ready();
           if (g.plan.timing) {
             // A thinking pause in the middle of a reply empties it with no miss.
             kit.tapOn(g.frogs[g.phrases[0].voices[0]]);
-            await kit.sleep(3000);
+            // The game's own clock can run slow on a busy machine, so wait for the reply to empty rather than for 3 real seconds.
+            await kit.until(() => g.taps.length === 0, 9000);
             if (g.taps.length !== 0 || g.misses !== 0)
               throw new Error(`Rhythm pause ${g.taps.length}/${g.misses}`);
           }
@@ -915,7 +1176,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await finished('rhythm-neighbors');
         assert.deepEqual(
           await score('rhythm-neighbors'),
-          level <= 2 || (level >= 7 && level <= 9) ? [0, 0] : [2, 1],
+          level <= 2 || (level >= 7 && level <= 9) || level === 11 ? [0, 0] : [2, 1],
         );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
@@ -1057,8 +1318,73 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       );
     }
     if ((!only || only === 'tangram') && tangramTap !== 'only')
-      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
+      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 11); level++) {
         await launch('tangram-town', level);
+        if (level === 11) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(350);
+          await screenshot('tangram-town-11-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            if (g.pieces.length !== 2 || g.filled.filter(Boolean).length !== 1)
+              throw new Error('Pick the missing piece starts with one shape placed and two in the tray');
+            const i = g.filled.indexOf(false),
+              t = g.plan.targets[i],
+              right = g.pieces.find((p) => p.piece.shape === t.shape),
+              wrong = g.pieces.find((p) => p !== right);
+            if (!right || !wrong || wrong.piece.shape === t.shape)
+              throw new Error('One right and one wrong shape');
+            // The wrong shape on the shadow bounces back as a miss.
+            await kit.dragTo(wrong.node, g.board.toGlobal({ x: t.x, y: t.y }), 18);
+            await kit.sleep(600);
+            if (wrong.placed || g.misses !== 1) throw new Error('The wrong shape on the shadow is one miss');
+            kit.tapOn(g.help);
+            await kit.sleep(200);
+            if (g.hints !== 1 || g.selected !== right) throw new Error('The help hand holds the right shape');
+            await kit.dragTo(right.node, g.board.toGlobal({ x: t.x + 70, y: t.y + 70 }), 18);
+            await kit.sleep(300);
+            if (!right.placed || !g.done || wrong.placed)
+              throw new Error('The right shape goes home and finishes');
+          });
+          await finished('tangram-town');
+          assert.deepEqual(await score('tangram-town'), [1, 1]);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            'Tangram Town 11: pick the missing piece, wrong drop a miss, help held the right shape, finished, portrait passed',
+          );
+          continue;
+        }
+        if (level === 10) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(350);
+          await screenshot('tangram-town-10-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            if (g.pieces.length !== 1 || g.filled.filter(Boolean).length !== 1)
+              throw new Error('One piece home starts with one shape placed and one in the tray');
+            const c = g.pieces[0],
+              i = g.filled.indexOf(false),
+              t = g.plan.targets[i];
+            // A drop well away from the shadow just comes back: no boing, no miss.
+            await kit.dragTo(c.node, g.board.toGlobal({ x: t.x + 160, y: t.y - 160 }), 18);
+            await kit.sleep(600);
+            if (c.placed || g.misses !== 0) throw new Error('A far drop is never a miss');
+            kit.tapOn(g.help);
+            await kit.sleep(200);
+            if (g.hints !== 1) throw new Error('The help hand counts as help');
+            // About 100 from the shadow is still home at this level (76 elsewhere).
+            await kit.dragTo(c.node, g.board.toGlobal({ x: t.x + 70, y: t.y + 70 }), 18);
+            await kit.sleep(300);
+            if (!c.placed || !g.done) throw new Error('A drop within 110 places the one piece and finishes');
+          });
+          await finished('tangram-town');
+          assert.deepEqual(await score('tangram-town'), [0, 1]);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            'Tangram Town 10: one piece home, far drop free, help counted, wide snap finished, portrait passed',
+          );
+          continue;
+        }
         if (level === 9) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);

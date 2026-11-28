@@ -141,6 +141,31 @@ export interface Pictured {
   cast: [CritterName, CritterName];
   picture: StampPicture;
   theme: BannerTheme;
+  /** Level 5: the picture the new idea asks for. */
+  renewed?: StampPicture;
+}
+
+/** A spilled puddle of paint, centred, about `size` across (nobody's fault: just a spill). */
+export function puddleArt(size: number): Graphics {
+  const g = new Graphics();
+  g.ellipse(0, size * 0.05, size * 0.42, size * 0.3).fill({ color: swatch.purple.fill, alpha: 0.85 });
+  g.circle(-size * 0.3, -size * 0.18, size * 0.1).fill({ color: swatch.purple.fill, alpha: 0.85 });
+  g.circle(size * 0.34, size * 0.22, size * 0.08).fill({ color: swatch.purple.fill, alpha: 0.85 });
+  g.ellipse(-size * 0.14, -size * 0.04, size * 0.1, size * 0.05).fill({ color: 0xffffff, alpha: 0.55 });
+  return g;
+}
+
+/** A small bell: a friend's request has changed. */
+export function bellArt(size: number): Graphics {
+  const g = new Graphics();
+  g.moveTo(-size * 0.4, size * 0.3)
+    .quadraticCurveTo(-size * 0.4, -size * 0.4, 0, -size * 0.4)
+    .quadraticCurveTo(size * 0.4, -size * 0.4, size * 0.4, size * 0.3)
+    .closePath()
+    .fill(swatch.yellow.fill)
+    .stroke(line(swatch.yellow.line, 4));
+  g.circle(0, size * 0.42, size * 0.1).fill(swatch.yellow.line);
+  return g;
 }
 
 /** A tiny page with a stamp and its owner's face. */
@@ -155,16 +180,30 @@ function miniPage(p: Pictured, f: Friend, size: number, stamped = true): Contain
 }
 
 /** A tiny banner of `n` stamped cells with both faces under it. */
-function miniBanner(p: Pictured, n: number, w: number): Container {
+function miniBanner(
+  p: Pictured,
+  n: number,
+  w: number,
+  opts: { smudge?: number; renewedFrom?: number; blank?: boolean } = {},
+): Container {
   const c = new Container();
   const cell = Math.min(46, (w - (n - 1) * 4) / n);
   const x0 = -((n - 1) * (cell + 4)) / 2;
   for (let i = 0; i < n; i++) {
     const g = cellArt(cell, THEME[p.theme]);
     g.position.set(x0 + i * (cell + 4), 0);
-    const s = stampArt(p.picture, cell * 0.55, FRIEND_SWATCH[i % 2 ? 'B' : 'A'].fill);
+    c.addChild(g);
+    if (opts.blank) continue;
+    const s =
+      i === opts.smudge
+        ? puddleArt(cell * 0.85)
+        : stampArt(
+            opts.renewedFrom !== undefined && i >= opts.renewedFrom && p.renewed ? p.renewed : p.picture,
+            cell * 0.55,
+            FRIEND_SWATCH[i % 2 ? 'B' : 'A'].fill,
+          );
     s.position.copyFrom(g.position);
-    c.addChild(g, s);
+    c.addChild(s);
   }
   return c;
 }
@@ -184,7 +223,37 @@ export function requestPicture(req: RequestId, f: Friend, p: Pictured, w: number
   if (req === 'page' || req === 'own') {
     const page = miniPage(p, f, Math.min(90, h - 40));
     c.addChild(page);
-  } else if (req === 'banner') {
+  } else if (req === 'spill') {
+    const b = miniBanner(p, 4, w - 50);
+    b.y = -14;
+    const faces = both();
+    faces.y = 34;
+    c.addChild(b, faces);
+  } else if (req === 'keepMade') {
+    const b = miniBanner(p, 4, w - 50, { smudge: 2 });
+    b.y = -14;
+    const face = faceArt(p.cast[f === 'A' ? 0 : 1], 15);
+    face.y = 34;
+    c.addChild(b, face);
+  } else if (req === 'flowers') {
+    const b = miniBanner(p, 4, w - 50, { renewedFrom: 2 });
+    b.y = -14;
+    const face = faceArt(p.cast[f === 'A' ? 0 : 1], 15);
+    face.y = 34;
+    c.addChild(b, face);
+  } else if (req === 'keepOurs') {
+    const b = miniBanner(p, 2, w * 0.4);
+    b.y = -14;
+    const face = faceArt(p.cast[f === 'A' ? 0 : 1], 15);
+    face.y = 34;
+    c.addChild(b, face);
+  } else if (req === 'help') {
+    const b = miniBanner(p, 2, w * 0.45);
+    b.y = -14;
+    const face = faceArt(p.cast[f === 'A' ? 0 : 1], 15);
+    face.y = 34;
+    c.addChild(b, face);
+  } else if (req === 'banner' || req === 'start') {
     const b = miniBanner(p, 4, w - 50);
     b.y = -14;
     const faces = both();
@@ -325,6 +394,39 @@ export function cardPicture(id: PlanId, p: Pictured, own: Friend, w: number, h: 
     c.addChild(b);
     face(0, -24, h * 0.28);
     face(1, 24, h * 0.28);
+  } else if (id === 'stampOver' || id === 'rollOver') {
+    const b = miniBanner(p, 4, w - 40, { smudge: 2 });
+    b.y = -h * 0.18;
+    c.addChild(b);
+    if (id === 'stampOver') {
+      tool('pad', 0, h * 0.24, 46);
+      face(0, -50, h * 0.22);
+      face(1, 50, h * 0.22);
+    } else {
+      tool('roller', 0, h * 0.26, 90);
+      face(0, -40, h * 0.12);
+      face(1, 40, h * 0.12);
+    }
+  } else if (id === 'fresh') {
+    const b = miniBanner(p, 4, w - 40, { blank: true });
+    b.y = -h * 0.18;
+    c.addChild(b);
+    tool('pad', 0, h * 0.24, 46);
+    face(0, -50, h * 0.22);
+  } else if (id === 'turnsTwo') {
+    const b = miniBanner(p, 2, w - 120);
+    b.y = -h * 0.18;
+    c.addChild(b);
+    face(0, -50, h * 0.22);
+    tool('pad', 0, h * 0.24, 46);
+    face(1, 50, h * 0.22);
+  } else if (id === 'flowersStamp' || id === 'flowersRoll' || id === 'keepGoing') {
+    const b = miniBanner(p, 4, w - 40, id === 'keepGoing' ? {} : { renewedFrom: 2 });
+    b.y = -h * 0.18;
+    c.addChild(b);
+    tool(id === 'flowersRoll' ? 'roller' : 'pad', 0, h * 0.26, id === 'flowersRoll' ? 90 : 46);
+    face(0, -50, h * 0.22);
+    face(1, 50, h * 0.22);
   } else {
     const pa = miniPage(p, 'A', 64);
     pa.position.set(-48, 0);
@@ -396,6 +498,30 @@ export function makeIcon(): Graphics {
   return g;
 }
 
+/** A big question mark: the request nobody has spoken yet. */
+export function questionArt(size: number): Graphics {
+  const g = new Graphics();
+  const r = size * 0.28;
+  g.arc(0, -size * 0.2, r, Math.PI * 1.05, Math.PI * 2.55).stroke(line(ink, Math.max(6, size * 0.1)));
+  g.moveTo(Math.cos(Math.PI * 0.55) * r, -size * 0.2 + Math.sin(Math.PI * 0.55) * r).lineTo(0, size * 0.12);
+  g.stroke(line(ink, Math.max(6, size * 0.1)));
+  g.circle(0, size * 0.3, Math.max(5, size * 0.07)).fill(ink);
+  return g;
+}
+
+/** The Ask button's picture: a speech bubble holding a question mark. */
+export function askIcon(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-30, -26, 60, 44, 14).fill(0xffffff);
+  g.poly([-14, 16, -4, 16, -18, 32]).fill(0xffffff);
+  c.addChild(g);
+  const q = questionArt(34);
+  q.position.set(0, -3);
+  c.addChild(q);
+  return c;
+}
+
 export function bulbIcon(): Graphics {
   const g = new Graphics();
   g.circle(0, -8, 20).fill(0xffffff);
@@ -414,6 +540,23 @@ export function finishIcon(): Graphics {
   const t = checkIcon(0xffffff);
   t.scale.set(1.6);
   return t;
+}
+
+/** Try the other way: two arrows swapping. */
+export function otherIcon(): Graphics {
+  const g = new Graphics();
+  g.moveTo(-28, -12)
+    .lineTo(24, -12)
+    .moveTo(12, -26)
+    .lineTo(26, -12)
+    .lineTo(12, 2)
+    .moveTo(28, 14)
+    .lineTo(-24, 14)
+    .moveTo(-12, 0)
+    .lineTo(-26, 14)
+    .lineTo(-12, 28)
+    .stroke(line(0xffffff, 7));
+  return g;
 }
 
 export function watchIcon(): Graphics {

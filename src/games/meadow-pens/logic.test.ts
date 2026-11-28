@@ -401,7 +401,7 @@ describe('rounds', () => {
     for (const p of PLANS.filter((p) => p.level <= 3))
       expect(makeTasks(p, new Rng(7))).toEqual(makeTasks(p, new Rng(7)));
     expect(planFor(0).level).toBe(1);
-    expect(planFor(9).level).toBe(5);
+    expect(planFor(9).level).toBe(7);
   });
   it('every task is solvable on the grid', () => {
     for (const p of PLANS.filter((p) => p.level <= 3)) {

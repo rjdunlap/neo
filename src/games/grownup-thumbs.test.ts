@@ -20,6 +20,15 @@ import {
   planFor as bridgePlan,
   touchLayout as bridgeLayout,
 } from './island-bridges/logic';
+import {
+  AGAIN_RADIUS as JELLY_AGAIN_R,
+  CHOICE_RADIUS as JELLY_CHOICE_R,
+  HALF_WIDTHS as JELLY_HW,
+  jellyHit,
+  jellyLayout,
+  ORDER_HW as JELLY_ORDER_HW,
+  orderJellyHit,
+} from './jelly-drums/layout';
 import { pondLayout } from './lantern-lights';
 import { LEVELS as lanternLevels, planFor as lanternPlan } from './lantern-lights/logic';
 import { BUTTON_SIZE, DIRECTION_SIZE, logRollLayout } from './log-roll';
@@ -50,17 +59,24 @@ import { LEVELS as bedLevels, planFor as bedPlan } from './sudoku-garden/logic';
 import { shadowLayout, turnArea } from './shadow-play/layout';
 import { layout as fenceLayout } from './fence-the-field/layout';
 import { layout as jarLayout } from './jar-clues/layout';
-import { END as KEY_END, layout as keyLayout } from './key-it-out/layout';
+import { layout as keyLayout, END as KEY_END } from './key-it-out/layout';
+import { SPOT_SIZE as LAST_PEBBLE_SPOT } from './last-pebble/logic';
 import { tableLayout } from './tide-tables/layout';
 import { bridgeLayout as truthBridgeLayout } from './truth-bridge/layout';
 import { benchLayout as workshopDetectiveLayout } from './workshop-detective/layout';
 import { tilePairsLayout } from './tile-pairs';
 import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
+import { waveLayout } from './wave-ribbon/layout';
 import { thumbPx, UPRIGHT_VIEWS } from './upright-check';
 import { BUTTON as bunnyButton, bunnyLayout } from './bunny-patches/layout';
 import { sizeOf as bunnySize } from './bunny-patches/logic';
 import { BUTTON as sumButton, crateLayout as sumLayout } from './sum-crates/layout';
 import { specOf as sumSpec } from './sum-crates/logic';
+import { layout as ballotsLayout } from './count-the-ballots/layout';
+import { roomLayout as commonGroundLayout } from './common-ground/layout';
+import { marketLayout } from './market-days/layout';
+import { tabletsLayout } from './two-tablets/layout';
+import { plannerLayout } from './village-planner/layout';
 import { outcropLayout } from './outcrop-detective/layout';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
@@ -172,6 +188,16 @@ const MEASURE: Record<string, () => Size[]> = {
         ...fit.slots.map((s): Size => ['button', side(s)]),
       ] as Size[];
     }),
+  'jelly-drums': () => {
+    // The grown-up band's levels: the five jellies (every level), the listen-again and same/different buttons, and level 13's line-up.
+    const l = jellyLayout(v);
+    return [
+      ...JELLY_HW.map((_, i): Size => ['jelly', side(jellyHit(l, i))]),
+      ...l.orderRow.map((p, i): Size => ['line-up jelly', side(orderJellyHit(l, i, JELLY_ORDER_HW, p))]),
+      ['listen-again button', 2 * JELLY_AGAIN_R],
+      ['same or different button', 2 * JELLY_CHOICE_R],
+    ];
+  },
   'lantern-lights': () => [
     ...grown(lanternLevels.grownup!).map((level): Size => [
       'lantern',
@@ -179,6 +205,7 @@ const MEASURE: Record<string, () => Size[]> = {
     ]),
     ['button', 100],
   ],
+  'last-pebble': () => [['stepping spot', LAST_PEBBLE_SPOT]],
   'log-roll': () =>
     // The log rolls by the direction buttons; the stones are not tapped.
     FLOORS.flat().flatMap((floor) => {
@@ -202,6 +229,47 @@ const MEASURE: Record<string, () => Size[]> = {
     ['hole', MARBLE_HOLE_SIZE],
     ['button', MARBLE_BUTTON_H],
   ],
+  'count-the-ballots': () => {
+    const l = ballotsLayout(v);
+    return [
+      ['ballot card', Math.min(l.card.w, l.card.h)],
+      ['pile', Math.min(l.tray.w, l.tray.h)],
+      ['button', Math.min(l.help.w, l.help.h)],
+    ];
+  },
+  'market-days': () => {
+    const l = marketLayout(v, 4);
+    return [
+      ['banner', l.banner],
+      ['button', l.button],
+      ['town', l.town],
+    ];
+  },
+  'common-ground': () => {
+    // Level 3, the grown-up band's only level: the 3 × 2 floor cells, the 110-unit pieces, the request cards and the round buttons.
+    const l = commonGroundLayout(v, 140);
+    return [
+      ['floor cell', l.floor.cell],
+      ['piece', 110],
+      ['request card', Math.min(l.bubbles[0].w, l.bubbles[0].h)],
+      ['button', 112],
+    ];
+  },
+  'two-tablets': () => {
+    const l = tabletsLayout(v, 4, 1);
+    return [
+      ['sign', l.cell],
+      ['button', l.button],
+    ];
+  },
+  'village-planner': () => {
+    const l = plannerLayout(v, 5, 6);
+    return [
+      ['slot', l.slot],
+      ['tile', l.tile],
+      ['button', l.button],
+    ];
+  },
   'number-nook': () =>
     grown(nookLevels.grownup!).map((level) => {
       const { rows, cols } = nookPlan(level);
@@ -337,6 +405,14 @@ const MEASURE: Record<string, () => Size[]> = {
       ['button', side(l.check)],
     ];
   },
+  'wave-ribbon': () => {
+    const l = waveLayout(v, true, true);
+    return [
+      ['button', 100],
+      ['lane toggle', side(l.laneSize)],
+      ['hypothesis card', side(l.card)],
+    ];
+  },
   'tile-pairs': () =>
     grown(tileLevels.grownup!).flatMap((level) => {
       tilePairsLayout(v, makeBoard(level, new Rng(1)));
@@ -384,11 +460,18 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'jar-clues': { px: 37.6, what: 'number cell' },
   'key-it-out': { px: 44.7, what: 'branch end and name plate' },
   'island-bridges': { px: 44.7, what: 'sea square', slides: 43.7 },
+  'jelly-drums': { px: 56.9, what: 'listen-again button' },
   'lantern-lights': { px: 50.8, what: 'button' },
+  'last-pebble': { px: 65, what: 'stepping spot' },
   'log-roll': { px: 50.8, what: 'direction button' },
   'logic-grid': { px: 44.7, what: 'case-file clue card', slides: 44.7 },
   'marble-jump': { px: 44.7, what: 'hole' },
   'number-nook': { px: 43.7, what: 'tile' },
+  'count-the-ballots': { px: 50.8, what: 'button' },
+  'market-days': { px: 50.8, what: 'banner' },
+  'two-tablets': { px: 50.8, what: 'sign' },
+  'village-planner': { px: 50.8, what: 'button' },
+  'common-ground': { px: 55.9, what: 'piece' },
   'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
   'pond-conga': { px: 44.7, what: 'button' },
@@ -404,6 +487,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'tide-tables': { px: 48.8, what: 'time row' },
   'tile-pairs': { px: 50.8, what: 'button' },
   'truth-bridge': { px: 52.8, what: 'plank' },
+  'wave-ribbon': { px: 50.8, what: 'button' },
   'word-code': { px: 44.7, what: 'key' },
   'word-search': { px: 44.2, what: 'letter square', slides: 32.5 },
   'workshop-detective': { px: 45.7, what: 'mark toggle' },
@@ -413,8 +497,8 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
 const COMFORT = 44;
 /** The games with a fixed target under the comfort line: each is named on the READY fix lines until it is fixed or eased. */
 const UNDER = ['jar-clues', 'sudoku-garden'];
-/** Under the line but eased: a lens lifts the touched number above the thumb (Jar Clues, 2026-11-24), so READY no longer queues a fix for it. */
-const LENSED = ['jar-clues'];
+/** Under the line but eased: a lens lifts the touched number above the thumb (Jar Clues and Sudoku Garden, 2026-11-24), so READY no longer queues a fix for it. */
+const LENSED = ['jar-clues', 'sudoku-garden'];
 
 describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
   const games = GAMES.filter((g) => g.upright && g.bands.includes('grownup')).map((g) => g.id);
@@ -443,6 +527,6 @@ describe('Thumb sizes of the upright grown-up games at 390 × 844', () => {
     for (const t of Object.values(THUMBS))
       expect(Math.min(t.px, t.slides ?? t.px)).toBeGreaterThanOrEqual(thumbPx(64));
     expect(Object.keys(THUMBS).filter((id) => THUMBS[id].px < COMFORT - 0.5)).toEqual(UNDER);
-    expect(UNDER.filter((id) => !LENSED.includes(id))).toEqual(['sudoku-garden']);
+    expect(UNDER.filter((id) => !LENSED.includes(id))).toEqual([]);
   });
 });

@@ -29,6 +29,9 @@ import {
   friendFor,
   ALSO,
   suits,
+  COLD_ITEMS,
+  HOT_ITEMS,
+  tempOf,
 } from './logic';
 import { PARTS } from '../../creatures/parts';
 import { SPECIES_IDS } from '../../creatures/species';
@@ -76,7 +79,7 @@ describe('Weather Wardrobe', () => {
 
   it('offers the right things to wear among distinct choices from other weathers', () => {
     for (const plan of WARDROBE_PLANS.filter(
-      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight,
+      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight && !p.thermo,
     )) {
       for (let seed = 1; seed <= 300; seed++) {
         const rounds = outfits(plan, new Rng(seed));
@@ -123,7 +126,7 @@ describe('Weather Wardrobe', () => {
         expect(new Set(slotsOf(outfit))).toEqual(new Set(slotsOf(itemsFor(w))));
       }
       for (const plan of WARDROBE_PLANS.filter(
-        (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight,
+        (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight && !p.thermo,
       )) {
         for (const o of outfits(plan, new Rng(seed))) {
           const sets =
@@ -162,7 +165,7 @@ describe('Weather Wardrobe', () => {
 
   it("gives the ghost finger's bot only things that fit the weather, each once, until the outfit is complete", () => {
     for (const plan of WARDROBE_PLANS.filter(
-      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight,
+      (p) => !['play', 'sky', 'friends'].includes(p.mode) && !p.keep && !p.packLight && !p.thermo,
     )) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const o of outfits(plan, new Rng(seed))) {
@@ -290,7 +293,7 @@ describe('Weather Wardrobe', () => {
     for (const sp of SPECIES_IDS) {
       const wear = WARDROBE[sp];
       WARDROBE_PLANS.forEach((plan, i) => {
-        if (plan.mode === 'friends' || plan.keep || plan.packLight) return; // These modes have their own tests.
+        if (plan.mode === 'friends' || plan.keep || plan.packLight || plan.thermo) return; // These modes have their own tests.
         for (let seed = 1; seed <= 40; seed++) {
           const rounds = outfits(plan, new Rng(seed), wear);
           expect(rounds.length, `${sp} level ${i + 1}`).toBe(plan.rounds);
@@ -420,8 +423,8 @@ describe('Weather Wardrobe', () => {
         }
     }
   });
-  it('opens the school ladder with the existing trips and finishes it with Pack light', () => {
-    expect(LEVELS.school?.order).toEqual([6, 7, 11, 12]);
+  it('opens the school ladder with the existing trips and ends with Pack light and Warm or cold?', () => {
+    expect(LEVELS.school?.order).toEqual([6, 7, 11, 12, 13]);
     const plan = wardrobePlan(12);
     expect(plan.mode).toBe('trip');
     expect(plan.packLight).toBe(true);
@@ -501,5 +504,69 @@ describe('Weather Wardrobe', () => {
         }
       }
     }
+  });
+});
+
+describe('level 13, Warm or cold?', () => {
+  const plan = wardrobePlan(13);
+
+  it('is school-only, last in the school order, and has a thermometer plan', () => {
+    expect(plan.thermo).toBe(true);
+    expect(LEVELS.school?.order).toEqual([6, 7, 11, 12, 13]);
+    expect(LEVELS.prek?.max).toBe(11);
+  });
+
+  it('asks for exactly one thing for the sky and one for the temperature, with no other right answer', () => {
+    for (const species of SPECIES_IDS)
+      for (let seed = 1; seed <= 60; seed++) {
+        const rounds = outfits(plan, new Rng(seed), WARDROBE[species]);
+        const label = `${species} seed ${seed}`;
+        expect(rounds, label).toHaveLength(3);
+        expect(new Set(rounds.map((o) => o.weathers[0])).size, label).toBe(3);
+        for (const o of rounds) {
+          const [weather] = o.weathers;
+          expect(weather, label).not.toBe('snowy');
+          expect(o.options, label).toHaveLength(5);
+          expect(new Set(o.options).size, label).toBe(5);
+          for (const item of o.options) expect(WARDROBE[species], label).toContain(item);
+          const sky = o.needed.filter((i) => suits(i, weather) && !tempOf(i));
+          const warm = o.needed.filter((i) => tempOf(i) === o.temp);
+          expect(o.needed, label).toHaveLength(2);
+          expect(sky, label).toHaveLength(1);
+          expect(warm, label).toHaveLength(1);
+          expect(SLOTS[sky[0]], label).not.toBe(SLOTS[warm[0]]);
+          // Of everything offered, only those two suit the sky or the temperature.
+          const right = o.options.filter((i) => suits(i, weather) || tempOf(i) === o.temp);
+          expect([...right].sort(), label).toEqual([...o.needed].sort());
+        }
+      }
+  });
+
+  it("gives the ghost finger's bot both things, once each", () => {
+    for (let seed = 1; seed <= 40; seed++)
+      for (const o of outfits(plan, new Rng(seed))) {
+        const used = new Set<Item>();
+        for (let item = itemToTap(o, used); item; item = itemToTap(o, used)) {
+          expect(o.options).toContain(item);
+          used.add(item);
+        }
+        expect([...used].sort()).toEqual([...o.needed].sort());
+      }
+  });
+
+  it('shows both a cold and a hot day to a pet that can wear sandals, and cold days only to one that cannot', () => {
+    for (const species of SPECIES_IDS) {
+      const temps = new Set<string>();
+      for (let seed = 1; seed <= 60; seed++)
+        for (const o of outfits(plan, new Rng(seed), WARDROBE[species])) temps.add(o.temp!);
+      const sandals = WARDROBE[species].some((i) => HOT_ITEMS.includes(i));
+      expect([...temps].sort(), species).toEqual(sandals ? ['cold', 'hot'] : ['cold']);
+    }
+  });
+
+  it('keeps the temperature lists apart from the weather items and each other', () => {
+    for (const i of COLD_ITEMS) expect(ITEMS[i]).toBe('snowy');
+    for (const i of HOT_ITEMS) expect(COLD_ITEMS).not.toContain(i);
+    expect(tempOf('umbrella')).toBeNull();
   });
 });

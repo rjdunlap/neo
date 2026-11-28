@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
-import { cream, ink } from '../art/palette';
+import { cream, ink, toward } from '../art/palette';
 import { onTap } from '../engine/input';
 import type { Tweener } from '../engine/tween';
 import {
@@ -19,13 +19,18 @@ const WOBBLE_S = 0.36;
 /** A line said in between is set in a lighter ink than the instruction. */
 const ASIDE_INK = 0.66;
 
-/** A small speaker: the band repeats the line, as the guide does. */
-function speakerIcon(): Graphics {
+/** A small speaker: the band repeats the line, as the hear-again button does. */
+export function speakerIcon(color = ink): Graphics {
+  // Each wave starts with its own moveTo: an arc straight after the cone's fill would otherwise draw a stray line from
+  // the cone into the first wave. One solid colour, no alpha on the whole Graphics: Pixi fades each piece on its own, so
+  // a faded icon shows darker blotches where the paper pass lays its crayon outline over the cone.
   const g = new Graphics();
-  g.poly([-14, -6, -6, -6, 4, -15, 4, 15, -6, 6, -14, 6]).fill(ink);
-  g.arc(4, 0, 9, -0.9, 0.9).stroke({ color: ink, width: 3, cap: 'round' });
-  g.arc(4, 0, 16, -0.9, 0.9).stroke({ color: ink, width: 3, cap: 'round' });
-  g.alpha = 0.7;
+  g.poly([-14, -6, -6, -6, 4, -15, 4, 15, -6, 6, -14, 6]).fill(color);
+  for (const r of [9, 16]) {
+    g.moveTo(4 + Math.cos(-0.9) * r, Math.sin(-0.9) * r)
+      .arc(4, 0, r, -0.9, 0.9)
+      .stroke({ color, width: 3, cap: 'round' });
+  }
   return g;
 }
 
@@ -40,7 +45,7 @@ function speakerIcon(): Graphics {
 export class CaptionBand extends Container {
   private readonly bubble = new Graphics();
   private readonly words: Text;
-  private readonly speaker = speakerIcon();
+  private readonly speaker = speakerIcon(toward(ink, cream, 0.3));
   /** The bubble and its words, scaled about the bubble's middle for the squash and the pulse. */
   private readonly body = new Container();
   private place: CaptionPlace | null = null;

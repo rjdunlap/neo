@@ -1,6 +1,7 @@
 import { Container, Graphics, Point } from 'pixi.js';
 import { gaze } from '../engine/input';
-import { cheek, ink, swatch, type ColorName, type Swatch } from './palette';
+import { cheek, ink, petSage, swatch, toward, type ColorName, type Swatch } from './palette';
+import { densify, ellipsePoints, paperPoints, U } from './paper';
 import { bodyPath } from './shapes';
 
 export type Ears = 'round' | 'pointy' | 'floppy' | 'long' | 'big' | 'none';
@@ -35,7 +36,17 @@ export interface CritterSpec {
   tail?: boolean;
   /** A muzzle colour other than the cow's pink (the horse's tan). */
   muzzleShade?: { fill: number; line: number; dark: number };
+  /**
+   * A species' own cut: its silhouette, eyes and the small things that tell it apart (a bear's muzzle patch, a cat's
+   * stripes and tail, a bunny's chest fluff and tail puff, a chick's feather tuft, a pig's curly tail). Without one
+   * the critter keeps the shared soft-toy body. The face keeps its places (eyes, nose, cheeks, ears), so games that
+   * point at parts still land on them.
+   */
+  form?: Form;
 }
+
+export type Form =
+  'bear' | 'cat' | 'bunny' | 'chick' | 'cow' | 'pig' | 'dog' | 'sheep' | 'horse' | 'hen' | 'mouse' | 'pip';
 
 /** Body colours the palette's names lack; `color` names each one's family. */
 const CHESTNUT: Swatch = { fill: 0xb8774a, line: 0x7d4a2a, light: 0xe8c3a3 };
@@ -45,14 +56,38 @@ const TAN_MUZZLE = { fill: 0xecd2b8, line: 0x9c6b4a, dark: 0x6e4224 };
 const FLEECE: Swatch = { fill: 0xfffaf0, line: 0x9c9484, light: 0xffffff };
 
 export const CRITTERS = {
-  pip: { color: 'teal', ears: 'round', sprout: true, belly: true },
-  cow: { color: 'white', ears: 'floppy', snout: 'muzzle', spots: true, horns: true, feet: 'hoof' },
-  duck: { color: 'yellow', snout: 'bill', tuft: true, wings: true, feet: 'orange' },
-  pig: { color: 'pink', ears: 'pointy', snout: 'pig' },
-  cat: { color: 'orange', ears: 'pointy', snout: 'nose', noseColor: 0xff8fa3, whiskers: true, belly: true },
-  bear: { color: 'brown', ears: 'round', snout: 'nose', noseColor: ink, belly: true },
-  dog: { color: 'brown', ears: 'floppy', earColor: 'orange', snout: 'nose', noseColor: ink, belly: true },
-  bunny: { color: 'white', ears: 'long', snout: 'nose', noseColor: 0xff8fa3, whiskers: true },
+  pip: { color: 'teal', ears: 'round', sprout: true, belly: true, form: 'pip' },
+  cow: {
+    color: 'white',
+    ears: 'floppy',
+    snout: 'muzzle',
+    spots: true,
+    horns: true,
+    feet: 'hoof',
+    form: 'cow',
+  },
+  duck: { color: 'yellow', snout: 'bill', tuft: true, wings: true, feet: 'orange', form: 'chick' },
+  pig: { color: 'pink', ears: 'pointy', snout: 'pig', form: 'pig' },
+  cat: {
+    color: 'orange',
+    ears: 'pointy',
+    snout: 'nose',
+    noseColor: 0xff8fa3,
+    whiskers: true,
+    belly: true,
+    form: 'cat',
+  },
+  bear: { color: 'brown', ears: 'round', snout: 'nose', noseColor: ink, belly: true, form: 'bear' },
+  dog: {
+    color: 'brown',
+    ears: 'floppy',
+    earColor: 'orange',
+    snout: 'nose',
+    noseColor: ink,
+    belly: true,
+    form: 'dog',
+  },
+  bunny: { color: 'white', ears: 'long', snout: 'nose', noseColor: 0xff8fa3, whiskers: true, form: 'bunny' },
   sheep: {
     color: 'white',
     shade: FLEECE,
@@ -61,6 +96,7 @@ export const CRITTERS = {
     noseColor: ink,
     wool: true,
     feet: 'hoof',
+    form: 'sheep',
   },
   horse: {
     color: 'brown',
@@ -70,8 +106,17 @@ export const CRITTERS = {
     muzzleShade: TAN_MUZZLE,
     mane: true,
     feet: 'hoof',
+    form: 'horse',
   },
-  hen: { color: 'orange', shade: RUSSET, snout: 'beak', comb: true, wings: true, feet: 'yellow' },
+  hen: {
+    color: 'orange',
+    shade: RUSSET,
+    snout: 'beak',
+    comb: true,
+    wings: true,
+    feet: 'yellow',
+    form: 'hen',
+  },
   mouse: {
     color: 'white',
     shade: MOUSE_GREY,
@@ -81,6 +126,7 @@ export const CRITTERS = {
     whiskers: true,
     tail: true,
     belly: true,
+    form: 'mouse',
   },
 } satisfies Record<string, CritterSpec>;
 
@@ -98,6 +144,114 @@ const HOOF = { fill: 0x8c7b6b, line: 0x5e5248 };
 const MANE = { fill: 0x5a3420, line: 0x3a2014 };
 const BEAK = swatch.yellow;
 const TAIL = 0xf7a8b8;
+
+type Pt = [number, number];
+
+/** The body outline (`bodyPath` at its default size) as points, for drawing it as paper on purpose. */
+function bodyPoints(): Pt[] {
+  const segs: Pt[][] = [
+    [
+      [0, -250],
+      [100, -250],
+      [130, -160],
+      [130, -100],
+    ],
+    [
+      [130, -100],
+      [130, -30],
+      [80, 0],
+      [0, 0],
+    ],
+    [
+      [0, 0],
+      [-80, 0],
+      [-130, -30],
+      [-130, -100],
+    ],
+    [
+      [-130, -100],
+      [-130, -160],
+      [-100, -250],
+      [0, -250],
+    ],
+  ];
+  const out: Pt[] = [];
+  for (const [p0, p1, p2, p3] of segs)
+    for (let k = 0; k < 16; k++) {
+      const t = k / 16,
+        u = 1 - t;
+      out.push([
+        u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+        u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+      ]);
+    }
+  return out;
+}
+
+/**
+ * Each form's pieces, body first and head last, as ellipses [cx, cy, rx, ry]: a head cut separately and laid over the
+ * body reads as an animal, not a bean. The face keeps its places, so every head covers the eyes, nose and mouth.
+ */
+const PIECES: Record<Form, [number, number, number, number][]> = {
+  // A big round head on a chunky body.
+  bear: [
+    [0, -54, 102, 58],
+    [0, -158, 118, 96],
+  ],
+  // A wide face with fluffed cheeks, on a slimmer body.
+  cat: [
+    [0, -52, 86, 54],
+    [0, -160, 128, 90],
+  ],
+  // A round head on a small, soft pear of a body: narrower than the head, so it never looks broad-shouldered.
+  bunny: [
+    [0, -50, 88, 56],
+    [0, -164, 110, 90],
+  ],
+  // One egg.
+  chick: [[0, -127, 130, 128]],
+  // A wide, long head on a smaller body.
+  cow: [
+    [0, -48, 98, 50],
+    [0, -150, 130, 102],
+  ],
+  // One round pudding, wider than tall.
+  pig: [[0, -120, 140, 120]],
+  // A broad head over a sitting body, a little longer than the bear's.
+  dog: [
+    [0, -52, 106, 56],
+    [0, -156, 124, 94],
+  ],
+  // A big round fleece (the wool puffs ring it); the face is its own darker piece on top.
+  sheep: [[0, -116, 128, 116]],
+  // A long, narrow head on a deep chest.
+  horse: [
+    [0, -46, 96, 50],
+    [0, -150, 104, 104],
+  ],
+  // A taller, narrower egg than the chick's.
+  hen: [[0, -130, 118, 130]],
+  // A round head with room for big ears, on a small pear body.
+  mouse: [
+    [0, -50, 92, 52],
+    [0, -152, 110, 94],
+  ],
+  // The pet: a round head on a soft round body.
+  pip: [
+    [0, -56, 110, 58],
+    [0, -160, 120, 92],
+  ],
+};
+
+/** A darker or lighter step of a colour, for markings cut from a neighbouring sheet. */
+const shade = (c: number, t: number) => toward(c, t < 0 ? 0xffffff : 0x1d1a22, Math.abs(t));
+
+/**
+ * The paper pass's default torn edge (4.4 units) makes a big soft body look lumpy and nicks the tips of small pointed
+ * ears, so the body and pointy ears are drawn as paper here with a gentler edge.
+ */
+const BODY_AMP = 0.7 * U;
+const EAR_AMP = 0.4 * U;
 
 const stroke = (color: number, width = 6) => ({
   width,
@@ -147,7 +301,8 @@ export class Critter extends Container {
   constructor(spec: CritterSpec) {
     super();
     this.spec = spec;
-    this.sw = spec.shade ?? swatch[spec.color];
+    // Pip in its own teal is the leaf pet's sage, so it matches the guide pet; a game that recolours Pip still gets its colour.
+    this.sw = spec.shade ?? (spec.form === 'pip' && spec.color === 'teal' ? petSage : swatch[spec.color]);
     this.eyeY = spec.snout === 'muzzle' ? -150 : -142;
     this.eyeX = spec.snout === 'muzzle' ? 35 : 40;
     this.mouthAt =
@@ -278,7 +433,8 @@ export class Critter extends Container {
     if (!Number.isFinite(this.look.x) || !Number.isFinite(this.look.y)) this.look.x = this.look.y = 0;
     this.look.x += (tx - this.look.x) * f;
     this.look.y += (ty - this.look.y) * f;
-    for (const p of this.pupils) p.position.set(this.look.x, 4 + this.look.y);
+    const k = this.spec.form ? 0.45 : 1;
+    for (const p of this.pupils) p.position.set(this.look.x * k, 4 + this.look.y * k);
   }
 
   private buildBack() {
@@ -286,6 +442,7 @@ export class Critter extends Container {
     const ear = s.earColor ? swatch[s.earColor] : this.sw;
     const back = new Graphics();
     this.body.addChild(back);
+    if (s.form) this.formBack(s.form, back);
 
     if (s.sprout) {
       back.moveTo(0, -248).quadraticCurveTo(-8, -278, 10, -296).stroke(stroke(this.sw.line, 5));
@@ -297,7 +454,22 @@ export class Critter extends Container {
       leaf.rotation = -0.52;
       this.body.addChild(leaf);
     }
-    if (s.tuft) {
+    if (s.tuft && s.form) {
+      // Three snipped feathers standing up off the crown.
+      for (const [x, lean, h] of [
+        [-14, -0.35, 30],
+        [2, 0.05, 40],
+        [18, 0.4, 30],
+      ]) {
+        const tip: Pt = [x + Math.sin(lean) * h, -244 - Math.cos(lean) * h];
+        back
+          .moveTo(x - 7, -240)
+          .quadraticCurveTo(tip[0] - 10, (tip[1] - 240) / 2, tip[0], tip[1])
+          .quadraticCurveTo(tip[0] + 10, (tip[1] - 240) / 2, x + 7, -240)
+          .closePath()
+          .fill(shade(this.sw.fill, 0.12));
+      }
+    } else if (s.tuft) {
       back.moveTo(-10, -234).quadraticCurveTo(-20, -260, -4, -268).stroke(stroke(this.sw.line, 5));
       back.moveTo(6, -234).quadraticCurveTo(10, -260, 26, -264).stroke(stroke(this.sw.line, 5));
     }
@@ -380,15 +552,24 @@ export class Critter extends Container {
             .circle(side * 72, -222, 34)
             .fill(ear.fill)
             .stroke(stroke(ear.line));
-          back.circle(side * 72, -222, 16).fill({ color: cheek, alpha: 0.7 });
-          break;
-        case 'pointy':
           back
-            .poly([side * 30, -236, side * 88, -292, side * 112, -196])
-            .fill(ear.fill)
-            .stroke(stroke(ear.line));
-          back.poly([side * 52, -232, side * 86, -268, side * 98, -214]).fill({ color: cheek, alpha: 0.7 });
+            .circle(side * 72, -222, 16)
+            .fill(s.form ? shade(ear.fill, 0.25) : { color: cheek, alpha: 0.7 });
           break;
+        case 'pointy': {
+          const tri = (flat: number[]): Pt[] =>
+            densify(
+              [0, 2, 4].map((i) => [side * flat[i], flat[i + 1]] as Pt),
+              6 * U,
+            );
+          paperPoints(back, tri([30, -236, 88, -292, 112, -196]), ear.fill, {
+            amp: EAR_AMP,
+            seed: side,
+          });
+          // The inner ear lies flat inside the ear: no edge, shadow or outline of its own.
+          paperPoints(back, tri([52, -232, 86, -268, 98, -214]), cheek, { flat: true, alpha: 0.7 });
+          break;
+        }
         case 'floppy': {
           const g = new Graphics()
             .ellipse(0, 0, 42, 19)
@@ -426,19 +607,201 @@ export class Critter extends Container {
     }
   }
 
+  /** The body as paper: a species' own pieces, or the shared soft-toy shape. */
+  private drawBody(g: Graphics) {
+    const form = this.spec.form;
+    if (!form) return paperPoints(g, bodyPoints(), this.sw.fill, { amp: BODY_AMP, seed: 1 });
+    PIECES[form].forEach(([x, y, rx, ry], i) =>
+      paperPoints(g, ellipsePoints(x, y, rx, ry), this.sw.fill, { amp: BODY_AMP, seed: 1 + i }),
+    );
+    return g;
+  }
+
+  /** A mask the size of the body, for markings printed on it (the cow's patches). */
+  private bodyMask(): Graphics {
+    const form = this.spec.form;
+    if (!form) return bodyPath(new Graphics()).fill(0xffffff);
+    const m = new Graphics();
+    for (const [x, y, rx, ry] of PIECES[form]) m.ellipse(x, y, rx, ry);
+    return m.fill(0xffffff);
+  }
+
+  /** Pieces behind a species' body: tails. */
+  private formBack(form: Form, back: Graphics) {
+    const sw = this.sw;
+    if (form === 'cat') {
+      // A tail curling up past the right hip: a tapering cut piece, darker at the tip.
+      back
+        .moveTo(70, -22)
+        .bezierCurveTo(130, -14, 160, -50, 156, -104)
+        .quadraticCurveTo(156, -126, 140, -128)
+        .quadraticCurveTo(136, -114, 140, -104)
+        .bezierCurveTo(142, -62, 118, -40, 74, -44)
+        .closePath()
+        .fill(sw.fill);
+      back
+        .moveTo(156, -104)
+        .quadraticCurveTo(156, -126, 140, -128)
+        .quadraticCurveTo(136, -114, 140, -104)
+        .closePath()
+        .fill(shade(sw.fill, 0.22));
+    } else if (form === 'bunny') {
+      back.circle(96, -34, 24).fill(0xfffdf8);
+    } else if (form === 'pig') {
+      back
+        .moveTo(126, -70)
+        .bezierCurveTo(160, -80, 168, -40, 148, -36)
+        .bezierCurveTo(132, -34, 134, -58, 152, -56)
+        .stroke(stroke(shade(sw.fill, 0.2), 7));
+    } else if (form === 'dog') {
+      // A short tail up off the right hip, wagging-shaped.
+      back
+        .moveTo(84, -40)
+        .quadraticCurveTo(140, -50, 150, -110)
+        .quadraticCurveTo(160, -112, 160, -100)
+        .quadraticCurveTo(150, -36, 90, -22)
+        .closePath()
+        .fill(shade(sw.fill, 0.08));
+    } else if (form === 'hen') {
+      // Tail feathers fanned up behind the right side, a darker russet.
+      for (const [a, len] of [
+        [-1.25, 96],
+        [-0.95, 104],
+        [-0.65, 92],
+      ]) {
+        const tip: Pt = [80 + Math.cos(a) * len, -110 + Math.sin(a) * len];
+        back
+          .moveTo(70, -96)
+          .quadraticCurveTo(tip[0] - 26, tip[1] + 10, tip[0], tip[1])
+          .quadraticCurveTo(tip[0] + 4, tip[1] + 36, 96, -70)
+          .closePath()
+          .fill(shade(sw.fill, 0.2));
+      }
+    } else if (form === 'horse') {
+      // A swishing tail of three dark locks off the right hip.
+      for (const dx of [0, 12, 24])
+        back
+          .moveTo(90, -60)
+          .bezierCurveTo(140 + dx, -60, 150 + dx, -20, 136 + dx, 6)
+          .quadraticCurveTo(128 + dx, -24, 96, -40)
+          .closePath()
+          .fill(MANE.fill);
+    }
+  }
+
+  /** Markings on a species' front: a bear's muzzle patch, a cat's stripes, a bunny's chest fluff, a chick's feathers. */
+  private formFront(form: Form) {
+    const sw = this.sw;
+    const g = new Graphics();
+    if (form === 'bear') {
+      paperPoints(g, ellipsePoints(0, -100, 38, 27), sw.light, { amp: 0.5 * U, seed: 3 });
+    } else if (form === 'cat') {
+      const dark = shade(sw.fill, 0.22);
+      // Three forehead stripes, cut as tapering slivers.
+      for (const [x, y, len, a] of [
+        [-18, -246, 32, 0.12],
+        [0, -248, 38, 0],
+        [18, -246, 32, -0.12],
+      ])
+        g.moveTo(x - 6, y)
+          .quadraticCurveTo(x + Math.sin(a) * len * 0.5 - 2, y + len * 0.6, x + Math.sin(a) * len, y + len)
+          .quadraticCurveTo(x + Math.sin(a) * len * 0.5 + 2, y + len * 0.6, x + 6, y)
+          .closePath()
+          .fill(dark);
+    } else if (form === 'bunny') {
+      // A soft cream tummy patch.
+      paperPoints(g, ellipsePoints(0, -42, 46, 32), 0xf6ecdc, { amp: 0.5 * U, seed: 4 });
+    } else if (form === 'chick') {
+      // A few feather scallops on the tummy.
+      const line = shade(sw.fill, 0.28);
+      for (const [x, y] of [
+        [-30, -50],
+        [0, -42],
+        [30, -50],
+        [-15, -24],
+        [15, -24],
+      ])
+        g.moveTo(x - 12, y)
+          .quadraticCurveTo(x, y + 12, x + 12, y)
+          .stroke(stroke(line, 3));
+    } else if (form === 'dog') {
+      // A darker patch round one eye.
+      paperPoints(g, ellipsePoints(-44, -146, 36, 32), shade(sw.fill, 0.18), { amp: 0.5 * U, seed: 5 });
+      paperPoints(g, ellipsePoints(0, -98, 40, 28), sw.light, { amp: 0.5 * U, seed: 6 });
+    } else if (form === 'sheep') {
+      // The face: a smooth, darker oval laid over the fleece.
+      paperPoints(g, ellipsePoints(0, -132, 76, 92), 0xd9c8b4, { amp: 0.5 * U, seed: 7 });
+    } else if (form === 'hen') {
+      // Feather scallops down the breast.
+      const line = shade(sw.fill, 0.25);
+      for (const [x, y] of [
+        [-30, -54],
+        [0, -46],
+        [30, -54],
+        [-15, -26],
+        [15, -26],
+      ])
+        g.moveTo(x - 12, y)
+          .quadraticCurveTo(x, y + 12, x + 12, y)
+          .stroke(stroke(line, 3));
+    } else if (form === 'mouse') {
+      paperPoints(g, ellipsePoints(0, -100, 36, 24), sw.light, { amp: 0.5 * U, seed: 8 });
+    }
+    this.body.addChild(g);
+  }
+
+  /** A species' eyes: small shiny beads (a cat's are amber, with slit pupils) instead of big white ovals. */
+  private formEye(form: Form, eye: Container, pupil: Container, side: number) {
+    if (form === 'cat') {
+      eye.addChild(
+        new Graphics()
+          .moveTo(-20, 2)
+          .quadraticCurveTo(0, -22, 20, -2)
+          .quadraticCurveTo(0, 20, -20, 2)
+          .closePath()
+          .fill(0xf2c14e)
+          .stroke(stroke(0x5a3a1a, 3)),
+      );
+      pupil.addChild(
+        new Graphics().ellipse(0, -4, 5, 14).fill(ink),
+        new Graphics().circle(4, -10, 3).fill(0xffffff),
+      );
+      return;
+    }
+    const r = form === 'bunny' ? 14 : form === 'cow' ? 13 : 12;
+    pupil.addChild(
+      new Graphics().ellipse(0, -4, r, r * 1.15).fill(ink),
+      new Graphics().circle(r * 0.35, -4 - r * 0.45, r * 0.38).fill(0xffffff),
+    );
+    if (form === 'cow')
+      // Lashes over each eye.
+      eye.addChild(
+        new Graphics()
+          .moveTo(-side * 4, -22)
+          .lineTo(-side * 8, -32)
+          .moveTo(side * 6, -21)
+          .lineTo(side * 12, -30)
+          .stroke(stroke(ink, 3)),
+      );
+  }
+
   private buildBody() {
     const s = this.spec;
     const sw = this.sw;
     if (s.spots) {
-      this.body.addChild(bodyPath(new Graphics()).fill(sw.fill));
-      const mask = bodyPath(new Graphics()).fill(0xffffff);
-      const spots = new Graphics()
-        .ellipse(-86, -172, 44, 32)
-        .ellipse(112, -65, 36, 50)
-        .ellipse(62, -214, 20, 14)
-        .fill(0x3d3d4d);
+      // The same gentle paper body as everyone else, with the patches printed flat on it (clipped to the body), so the
+      // cow is not the one lumpy critter.
+      this.body.addChild(this.drawBody(new Graphics()));
+      const mask = this.bodyMask();
+      const spots = new Graphics();
+      for (const [x, y, rx, ry] of [
+        [-86, -172, 44, 32],
+        [112, -65, 36, 50],
+        [62, -214, 20, 14],
+      ])
+        paperPoints(spots, ellipsePoints(x, y, rx, ry), 0x3d3d4d, { flat: true });
       spots.mask = mask;
-      this.body.addChild(mask, spots, bodyPath(new Graphics()).stroke(stroke(sw.line)));
+      this.body.addChild(mask, spots);
       this.body.addChild(
         new Graphics()
           .moveTo(-18, -244)
@@ -448,9 +811,19 @@ export class Critter extends Container {
           .fill(0x3d3d4d),
       );
     } else {
-      this.body.addChild(bodyPath(new Graphics()).fill(sw.fill).stroke(stroke(sw.line)));
+      this.body.addChild(this.drawBody(new Graphics()));
     }
-    if (s.belly) this.body.addChild(new Graphics().ellipse(0, -65, 80, 54).fill(sw.light));
+    // A species' tummy sits on its own body piece, below the chin.
+    if (s.belly)
+      this.body.addChild(
+        paperPoints(
+          new Graphics(),
+          s.form ? ellipsePoints(0, -40, 62, 32) : ellipsePoints(0, -65, 80, 54),
+          sw.light,
+          { amp: BODY_AMP, seed: 2 },
+        ),
+      );
+    if (s.form) this.formFront(s.form);
     if (s.wool) {
       const curl = new Graphics();
       for (const [x, y, r] of [
@@ -497,12 +870,15 @@ export class Critter extends Container {
     for (const side of [-1, 1]) {
       const eye = new Container();
       eye.position.set(side * eyeX, this.eyeY);
-      eye.addChild(new Graphics().ellipse(0, 0, 25, 29).fill(0xffffff).stroke(stroke(sw.line, 4)));
       const pupil = new Container();
-      pupil.addChild(
-        new Graphics().circle(0, 0, 15).fill(ink),
-        new Graphics().circle(5, -7, 5).fill(0xffffff),
-      );
+      if (s.form) this.formEye(s.form, eye, pupil, side);
+      else {
+        eye.addChild(new Graphics().ellipse(0, 0, 25, 29).fill(0xffffff).stroke(stroke(sw.line, 4)));
+        pupil.addChild(
+          new Graphics().circle(0, 0, 15).fill(ink),
+          new Graphics().circle(5, -7, 5).fill(0xffffff),
+        );
+      }
       pupil.y = 4;
       eye.addChild(pupil);
       this.eyes.push(eye);
@@ -516,7 +892,8 @@ export class Critter extends Container {
     }
 
     const g = new Graphics();
-    if (s.snout !== 'muzzle') {
+    // The shared soft toys keep their blush; a species' own cut does without (it read as a sticker).
+    if (s.snout !== 'muzzle' && !s.form) {
       for (const side of [-1, 1]) g.ellipse(side * 74, -98, 16, 10).fill({ color: cheek, alpha: 0.55 });
     }
     if (s.whiskers) {

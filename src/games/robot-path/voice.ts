@@ -1,6 +1,13 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.robot-path': ['Robot Path!'],
+  // Drive the robot (level 16): slotted or reused lines, so they stay on device speech or an existing clip.
+  'robot.drive': ['Tap an arrow to move the robot, {name}. Drive it to the star!'],
+  'robot.drive.rock': ['Oops, a rock, {name}! Let us go around.'],
+  'robot.drive.star': ['Right on the star!'],
+  // One step, then play (level 17): slotted lines, so they stay on device speech.
+  'robot.one': ['Put one arrow in the program, {name}, then press play to send the robot to the star!'],
+  'robot.one.wrong': ['The robot went another way, {name}. Try a different arrow!'],
   'robot.counts': ['Tap an arrow again to go further: tap it four times for four steps! Then press play.'],
   'robot.loop': [
     'The purple loop button repeats your whole program. Make one part of the path, then loop it!',

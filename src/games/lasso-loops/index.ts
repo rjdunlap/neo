@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
+import { paperRect, U } from '../../art/paper';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -93,6 +94,10 @@ class Firefly extends Container {
   }
 }
 
+/** The jar's pale paper and its crayon edge. */
+const JAR_GLASS = 0xe4f0f4;
+const JAR_EDGE = 0x8fb0c0;
+
 class Jar extends Container {
   readonly glow = new Graphics()
     .roundRect(-JAR_W / 2 - 14, -JAR_H - 34, JAR_W + 28, JAR_H + 48, 26)
@@ -103,16 +108,12 @@ class Jar extends Container {
   constructor(readonly want: number) {
     super();
     this.glow.visible = false;
-    const g = new Graphics()
-      .roundRect(-JAR_W / 2, -JAR_H, JAR_W, JAR_H, 22)
-      .fill({ color: swatch.blue.light, alpha: 0.35 })
-      .stroke(line(swatch.white.fill, 5))
-      .roundRect(-JAR_W / 2 + 8, -JAR_H - 22, JAR_W - 16, 24, 8)
-      .fill(wood.fill)
-      .stroke(line(wood.line, 4))
-      .moveTo(-JAR_W / 2 + 16, -JAR_H + 20)
-      .lineTo(-JAR_W / 2 + 16, -30)
-      .stroke({ width: 6, color: 0xffffff, alpha: 0.5, cap: 'round' });
+    // A paper jar: a pale sheet with a soft blue crayon edge and a flat paper strip for the shine (not glossy glass),
+    // so it sits with the paper hills; the fireflies fly in front of it.
+    const g = new Graphics();
+    paperRect(g, -JAR_W / 2, -JAR_H, JAR_W, JAR_H, 22, JAR_GLASS, { line: JAR_EDGE, amp: 0.8 * U });
+    paperRect(g, -JAR_W / 2 + 12, -JAR_H + 18, 10, JAR_H - 46, 5, 0xffffff, { flat: true, alpha: 0.7 });
+    paperRect(g, -JAR_W / 2 + 8, -JAR_H - 22, JAR_W - 16, 24, 8, wood.fill);
     this.addChild(this.glow, g, this.tag);
     this.setTag(want ? String(want) : '');
   }
@@ -438,6 +439,11 @@ class LassoLoops implements Game {
   }
 
   update() {}
+
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.touch) return null;

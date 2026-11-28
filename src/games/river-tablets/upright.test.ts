@@ -4,7 +4,7 @@ import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import { tabletLayout, UPRIGHT_FLOOR, type Rect } from './logic';
 
 const views = { ...UPRIGHT_VIEWS, minimum: computeView(768, 1024, NO_INSETS, true) };
-const LEVELS = [1, 2, 3, 4, 5, 6];
+const LEVELS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 const box = (what: string, r: Rect): Target => ({ what, x: r.x + r.w / 2, y: r.y + r.h / 2, w: r.w, h: r.h });
 

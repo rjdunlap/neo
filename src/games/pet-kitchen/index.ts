@@ -1,6 +1,7 @@
 import { Circle, Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, swatch } from '../../art/palette';
+import { lighten, paperCircle } from '../../art/paper';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -76,6 +77,19 @@ import {
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 import { entryId } from '../../content/journal';
+
+/** A plate: a pale blue rim round a white middle, paper with a gentle edge so a big pale disc stays round. */
+function plateArt(): Graphics {
+  const g = new Graphics();
+  paperCircle(g, 0, 0, 76, swatch.blue.light, { amp: 1.4, line: swatch.blue.line, seed: 'kitchen-plate' });
+  paperCircle(g, 0, 0, 58, swatch.white.fill, {
+    amp: 1,
+    noShadow: true,
+    line: lighten(swatch.blue.line, 0.45),
+    seed: 'kitchen-plate-in',
+  });
+  return g;
+}
 
 function sandwich(parts = 1) {
   if (parts === 3) {
@@ -483,19 +497,14 @@ class PetKitchen implements Game {
       this.names.push(...names);
       for (let i = 0; i < this.plan.friends; i++) {
         const p = new Container();
-        p.addChild(
-          new Graphics()
-            .circle(0, 0, 76)
-            .fill(swatch.white.fill)
-            .stroke({ width: 6, color: swatch.blue.line }),
-        );
-        // A friend above each plate makes the recipient visible without reading; calm until fed, then happy.
+        // A friend above each plate makes the recipient visible without reading; calm until fed, then happy. The
+        // friend sits behind the plate, so the plate reads as a dish in front of them (not a body under them).
         const friend = new Critter(CRITTERS[names[i]]);
         friend.scale.set(0.45);
         friend.position.set(0, -62);
         friend.setMood('calm');
         friend.eventMode = 'none';
-        p.addChild(friend);
+        p.addChild(friend, plateArt());
         ctx.track(friend);
         this.friends.push(friend);
         ctx.stage.addChildAt(p, 1);
@@ -1389,6 +1398,11 @@ class PetKitchen implements Game {
     if (this.done) this.meal.rotation = Math.sin(this.clock * 7) * 0.04;
   }
   /** The ghost finger on the how-to card: cut fairly, give each plate a piece in turn, serve; or add fruit until the recipe is doubled, serve. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.tapDeal) {

@@ -32,11 +32,29 @@ import {
   THREE_LEVEL,
   LITTLE_LEVEL,
   MAGIC_LEVEL,
+  HOOKS_LEVEL,
+  OVER_LEVEL,
+  BIG_LEVEL,
+  LAST_LEVEL,
   LITTLE_TOLERANCE,
   inFrame,
+  LITTLE_WORD_LEVEL,
+  MY_NAME_LEVEL,
+  nameLevel,
+  signName,
+  writtenName,
 } from './logic';
 import { PICTURE_WORDS } from '../word-monsters/logic';
-import { FRAME, FRAME_X, LOWER, isLower, strokesOf } from '../../learning/tracing/lowercase';
+import {
+  CAPITAL_IN_FRAME,
+  FRAME,
+  FRAME_X,
+  LOWER,
+  frameStrokesOf,
+  framedCapital,
+  isLower,
+  strokesOf,
+} from '../../learning/tracing/lowercase';
 import { traceWaypoints } from '../../learning/tracing/strokes';
 
 describe('Letter Trails plans', () => {
@@ -56,6 +74,8 @@ describe('Letter Trails plans', () => {
         if (level <= 6) expect(PLANS[level - 1].letters).toContain(word);
         if (level === 7) expect(SHORT_WORDS).toContain(word.toLowerCase());
         if (level === 8) expect(word).toBe('ZOEROSE');
+        if (level === LITTLE_WORD_LEVEL) expect(SHORT_WORDS).toContain(word);
+        if (level === MY_NAME_LEVEL) expect(word).toBe('Zoerose');
         expect(word).toBe(trailWord(level, 'Zoë-Rose', new Rng(seed)));
       }
   });
@@ -63,7 +83,7 @@ describe('Letter Trails plans', () => {
     expect(trailLevel(0)).toBe(1);
     expect(trailLevel(100)).toBe(PLANS.length);
     expect(trailWord(8, 'Mia', new Rng(2))).toBe('MIA');
-    expect(trailWord(100, 'Mia', new Rng(2))).toHaveLength(1);
+    expect(trailWord(100, 'Mia', new Rng(2))).toBe(trailWord(PLANS.length, 'Mia', new Rng(2)));
     for (let level = 1; level <= PLANS.length; level++)
       expect(trailTolerance(level)).toBe(inFrame(level) ? LITTLE_TOLERANCE : level <= 2 ? 0.095 : 0.075);
   });
@@ -245,7 +265,9 @@ describe('Level 10, little letters in a four-line frame', () => {
   const eps = 1e-9;
 
   it("draws one of the programme's first group, c o s v w t, each with its capital's picture", () => {
-    expect(Object.keys(LOWER).sort().join('')).toBe([...group, ...'adg'].sort().join(''));
+    expect(Object.keys(LOWER).sort().join('')).toBe(
+      [...group, ...'adg', ...'uielkyj', ...'prnmhb', ...'fqxz'].sort().join(''),
+    );
     const seen = new Set<string>();
     for (let seed = 0; seed < 300; seed++) {
       const word = trailWord(LITTLE_LEVEL, 'Ana', new Rng(seed));
@@ -357,7 +379,7 @@ describe('Level 11, Magic c: a, d and g', () => {
   it('draws a, d or g, each with its capital’s picture, in the frame, for school', () => {
     expect(MAGIC_LEVEL).toBe(11);
     expect(inFrame(MAGIC_LEVEL)).toBe(true);
-    expect(LEVELS.school!.max).toBe(MAGIC_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
     expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
     expect(guidesFor(MAGIC_LEVEL)).toEqual(['solid']);
     expect(severalLetters(MAGIC_LEVEL)).toBe(false);
@@ -413,5 +435,417 @@ describe('Level 11, Magic c: a, d and g', () => {
     const curve = sampleStroke(strokesOf('a')[0]);
     const nearest = Math.min(...curve.map((p) => Math.hypot(p[0] - centre[0], p[1] - centre[1])));
     expect(tol * 2).toBeLessThan(nearest);
+  });
+});
+
+describe('Level 12, Lines and hooks: u i e l k y j', () => {
+  const group = 'uielkyj';
+  const pts = (l: string) => strokesOf(l).flatMap((s) => sampleStroke(s));
+  const eps = 1e-9;
+
+  it('draws one of the seven, each with its capital’s picture, in the frame, for school only', () => {
+    expect(HOOKS_LEVEL).toBe(12);
+    expect(inFrame(HOOKS_LEVEL)).toBe(true);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(HOOKS_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(HOOKS_LEVEL)).toBe(false);
+    expect(trailTolerance(HOOKS_LEVEL)).toBe(LITTLE_TOLERANCE);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 300; seed++) {
+      const word = trailWord(HOOKS_LEVEL, 'Ana', new Rng(seed));
+      expect(group).toContain(word);
+      expect(WORDS[word.toUpperCase()]).toBeTruthy();
+      seen.add(word);
+    }
+    expect(seen.size).toBe(group.length);
+  });
+
+  it('keeps every stroke in the frame, each letter reaching its own lines', () => {
+    const tall = 'lk';
+    const below = 'yj';
+    for (const l of group) {
+      const ys = pts(l).map((p) => p[1]);
+      for (const [x, y] of pts(l)) {
+        expect(x).toBeGreaterThanOrEqual(FRAME_X[0]);
+        expect(x).toBeLessThanOrEqual(FRAME_X[1]);
+        expect(y).toBeGreaterThanOrEqual(FRAME.top - eps);
+        expect(y).toBeLessThanOrEqual(FRAME.bottom + eps);
+      }
+      if (tall.includes(l)) expect(Math.min(...ys)).toBeCloseTo(FRAME.top, 2);
+      else if (l === 'i' || l === 'j')
+        expect(Math.min(...ys)).toBeLessThan(FRAME.mid - 0.05); // the dot
+      else expect(Math.min(...ys)).toBeGreaterThanOrEqual(FRAME.mid - eps);
+      expect(Math.max(...ys)).toBeCloseTo(below.includes(l) ? FRAME.bottom : FRAME.base, 1);
+    }
+  });
+
+  it('starts each letter at the top of its first stroke, except e, which starts mid-round', () => {
+    for (const l of group.replace('e', '')) {
+      const first = strokesOf(l)[0];
+      const top = 'lk'.includes(l) ? FRAME.top : FRAME.mid;
+      expect(first[0][1] - top).toBeLessThanOrEqual(0.02);
+    }
+    const e = strokesOf('e')[0];
+    expect(e[0][1]).toBeCloseTo(FRAME.mid + (FRAME.base - FRAME.mid) / 2, 5);
+    expect(e[1][0]).toBeGreaterThan(e[0][0]); // across to the right first
+    expect(e.at(-1)![1]).toBeGreaterThan(FRAME.mid + (FRAME.base - FRAME.mid) / 2); // and ends low on the right
+    expect(e.at(-1)![0]).toBeGreaterThan(0.5);
+  });
+
+  it('dots i and j over their lines, after the line, and turns j’s tail left', () => {
+    for (const l of 'ij') {
+      const [line, dot] = strokesOf(l);
+      expect(strokesOf(l)).toHaveLength(2);
+      expect(dot[0][0]).toBeCloseTo(line[0][0], 5);
+      expect(dot.at(-1)![1]).toBeLessThan(FRAME.mid);
+    }
+    const j = strokesOf('j')[0];
+    expect(j.at(-1)![0]).toBeLessThan(j[0][0] - 0.05);
+  });
+
+  it('writes k with a tall line then one in-and-out stroke, y with two slides, u with a curve then a line', () => {
+    const [stem, kick] = strokesOf('k');
+    expect(stem[0][0]).toBe(stem[1][0]);
+    expect(kick[0][0]).toBeGreaterThan(stem[0][0]);
+    expect(kick[1][0]).toBeCloseTo(stem[0][0], 2);
+    expect(kick.at(-1)![0]).toBeGreaterThan(stem[0][0]);
+    expect(kick[1][1]).toBeGreaterThan(kick[0][1]);
+    expect(kick.at(-1)![1]).toBeGreaterThan(kick[1][1]);
+    expect(strokesOf('y')).toHaveLength(2);
+    const [left, right] = strokesOf('y');
+    expect(right[0][0]).toBeGreaterThan(left[0][0]);
+    expect(right.at(-1)![0]).toBeLessThan(right[0][0]);
+    expect(strokesOf('u')).toHaveLength(2);
+    const [bowl, line] = strokesOf('u');
+    expect(bowl.at(-1)![0]).toBeCloseTo(line[0][0], 5);
+  });
+
+  it('accepts each stroke in order at the little corridor', () => {
+    const tol = trailTolerance(HOOKS_LEVEL);
+    for (const l of group)
+      for (const stroke of strokesOf(l)) {
+        const points = sampleStroke(stroke);
+        for (let i = 1; i < points.length; i++) expect(offTrail(points[i], points[i - 1], tol)).toBe(false);
+      }
+  });
+});
+
+describe('Level 13, Down, up and over: p r n m h b', () => {
+  const group = 'prnmhb';
+  const pts = (l: string) => strokesOf(l).flatMap((s) => sampleStroke(s));
+  const eps = 1e-9;
+
+  it('draws one of the six, each with its capital’s picture, in the frame, for school only', () => {
+    expect(OVER_LEVEL).toBe(13);
+    expect(inFrame(OVER_LEVEL)).toBe(true);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(OVER_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(OVER_LEVEL)).toBe(false);
+    expect(trailTolerance(OVER_LEVEL)).toBe(LITTLE_TOLERANCE);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 300; seed++) {
+      const word = trailWord(OVER_LEVEL, 'Ana', new Rng(seed));
+      expect(group).toContain(word);
+      expect(WORDS[word.toUpperCase()]).toBeTruthy();
+      seen.add(word);
+    }
+    expect(seen.size).toBe(group.length);
+  });
+
+  it('keeps every stroke in the frame, each letter reaching its own lines', () => {
+    for (const l of group) {
+      const ys = pts(l).map((p) => p[1]);
+      for (const [x, y] of pts(l)) {
+        expect(x).toBeGreaterThanOrEqual(FRAME_X[0]);
+        expect(x).toBeLessThanOrEqual(FRAME_X[1]);
+        expect(y).toBeGreaterThanOrEqual(FRAME.top - eps);
+        expect(y).toBeLessThanOrEqual(FRAME.bottom + eps);
+      }
+      expect(Math.min(...ys)).toBeCloseTo('hb'.includes(l) ? FRAME.top : FRAME.mid, 2);
+      expect(Math.max(...ys)).toBeCloseTo(l === 'p' ? FRAME.bottom : FRAME.base, 1);
+      expect(strokesOf(l)).toHaveLength(1);
+    }
+  });
+
+  it('starts each letter on its stem, at the top of it, and goes down first', () => {
+    for (const l of group) {
+      const [a, b] = strokesOf(l)[0];
+      expect(a[1]).toBeCloseTo('hb'.includes(l) ? FRAME.top : FRAME.mid, 5);
+      expect(b[0]).toBeCloseTo(a[0], 5);
+      expect(b[1]).toBeGreaterThan(a[1]);
+    }
+  });
+
+  it('goes back up the stem before it goes over, ending a hump on the right', () => {
+    for (const l of group) {
+      const s = strokesOf(l)[0];
+      const down = s[1];
+      const back = s[2];
+      expect(back[0]).toBeCloseTo(down[0], 5);
+      expect(back[1]).toBeLessThan(down[1]);
+      expect(s[3][0]).toBeGreaterThanOrEqual(back[0] - eps);
+    }
+    for (const l of 'nhm') expect(strokesOf(l)[0].at(-1)![1]).toBeCloseTo(FRAME.base, 5);
+    // r stops at the top of its hump, with no leg.
+    expect(strokesOf('r')[0].at(-1)![1]).toBeLessThan(FRAME.mid + 0.1);
+  });
+
+  it('makes m two humps and gives p and b a closed bowl on the right of their stem', () => {
+    const m = strokesOf('m')[0];
+    const tops = m.filter(
+      (p, i) =>
+        i > 0 && i < m.length - 1 && p[1] < m[i - 1][1] && p[1] <= m[i + 1][1] && p[1] < FRAME.mid + 0.03,
+    );
+    expect(tops.length).toBe(2);
+    for (const l of 'pb') {
+      const s = strokesOf(l)[0];
+      const stemX = s[0][0];
+      const bowl = s.slice(2);
+      expect(Math.min(...bowl.map((q) => q[0]))).toBeGreaterThanOrEqual(stemX - 1e-6);
+      expect(Math.max(...bowl.map((q) => q[0]))).toBeGreaterThan(stemX + 0.2);
+      expect(bowl.at(-1)![0]).toBeCloseTo(bowl[0][0], 5);
+      expect(bowl.at(-1)![1]).toBeCloseTo(bowl[0][1], 5);
+      expect(Math.min(...bowl.map((q) => q[1]))).toBeCloseTo(FRAME.mid, 2);
+      expect(Math.max(...bowl.map((q) => q[1]))).toBeCloseTo(FRAME.base, 2);
+    }
+    // p's stem goes below the base line; b's stops on it, so b stays apart from d (stem on the left, bowl on the right) and p has no tail.
+    expect(Math.max(...strokesOf('p')[0].map((q) => q[1]))).toBeCloseTo(FRAME.bottom, 5);
+    expect(strokesOf('p')[0].every((q) => q[0] <= strokesOf('p')[0][0][0] + 0.25)).toBe(true);
+  });
+
+  it('accepts each stroke in order at the little corridor', () => {
+    const tol = trailTolerance(OVER_LEVEL);
+    for (const l of group)
+      for (const stroke of strokesOf(l)) {
+        const points = sampleStroke(stroke);
+        for (let i = 1; i < points.length; i++) expect(offTrail(points[i], points[i - 1], tol)).toBe(false);
+      }
+  });
+});
+
+describe('Level 14, The last four: f q x z', () => {
+  const group = 'fqxz';
+  const pts = (l: string) => strokesOf(l).flatMap((s) => sampleStroke(s));
+  const eps = 1e-9;
+
+  it('draws one of the four, each with its capital’s picture, in the frame, for school only', () => {
+    expect(LAST_LEVEL).toBe(14);
+    expect(inFrame(LAST_LEVEL)).toBe(true);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(LAST_LEVEL);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(LAST_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(LAST_LEVEL)).toBe(false);
+    expect(trailTolerance(LAST_LEVEL)).toBe(LITTLE_TOLERANCE);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 300; seed++) {
+      const word = trailWord(LAST_LEVEL, 'Ana', new Rng(seed));
+      expect(group).toContain(word);
+      expect(WORDS[word.toUpperCase()]).toBeTruthy();
+      seen.add(word);
+    }
+    expect(seen.size).toBe(group.length);
+  });
+
+  it('with levels 10–13 covers all 26 little letters exactly once', () => {
+    const all = PLANS.slice(LITTLE_LEVEL - 1, LAST_LEVEL)
+      .map((p) => p.letters)
+      .join('');
+    expect([...all].sort().join('')).toBe('abcdefghijklmnopqrstuvwxyz');
+  });
+
+  it('keeps every stroke in the frame, each letter reaching its own lines', () => {
+    for (const l of group) {
+      const ys = pts(l).map((p) => p[1]);
+      for (const [x, y] of pts(l)) {
+        expect(x).toBeGreaterThanOrEqual(FRAME_X[0]);
+        expect(x).toBeLessThanOrEqual(FRAME_X[1]);
+        expect(y).toBeGreaterThanOrEqual(FRAME.top - eps);
+        expect(y).toBeLessThanOrEqual(FRAME.bottom + eps);
+      }
+      expect(Math.min(...ys)).toBeCloseTo(l === 'f' ? FRAME.top : FRAME.mid, 2);
+      expect(Math.max(...ys)).toBeCloseTo(l === 'q' ? FRAME.bottom : FRAME.base, 1);
+    }
+  });
+
+  it('gives f a hook and a bar, x two crossing slides and z one zigzag', () => {
+    const f = strokesOf('f');
+    expect(f).toHaveLength(2);
+    expect(f[0][0][1]).toBeGreaterThan(FRAME.top);
+    expect(f[0].at(-1)![1]).toBeCloseTo(FRAME.base, 5);
+    expect(f[0].at(-1)![0]).toBeLessThan(f[0][0][0]);
+    expect(f[1][0][1]).toBeCloseTo(FRAME.mid, 5);
+    expect(f[1][1][1]).toBeCloseTo(FRAME.mid, 5);
+    const x = strokesOf('x');
+    expect(x).toHaveLength(2);
+    for (const s of x) {
+      expect(s[0][1]).toBeCloseTo(FRAME.mid, 5);
+      expect(s[1][1]).toBeCloseTo(FRAME.base, 5);
+    }
+    expect(Math.sign(x[0][1][0] - x[0][0][0])).toBe(-Math.sign(x[1][1][0] - x[1][0][0]));
+    const z = strokesOf('z');
+    expect(z).toHaveLength(1);
+    expect(z[0]).toHaveLength(4);
+    expect(z[0][1][1]).toBeCloseTo(FRAME.mid, 5);
+    expect(z[0][2][1]).toBeCloseTo(FRAME.base, 5);
+    expect(z[0][1][0]).toBeGreaterThan(z[0][0][0]);
+    expect(z[0][2][0]).toBeCloseTo(z[0][0][0], 5);
+  });
+
+  it('turns q’s tail right where g’s turns left, and starts both with the magic c', () => {
+    const q = strokesOf('q');
+    const g = strokesOf('g');
+    expect(q[0]).toEqual(g[0]);
+    const stemX = q[1][0][0];
+    expect(Math.max(...q[1].map((p) => p[0]))).toBeGreaterThan(stemX + 0.05);
+    expect(Math.min(...q[1].map((p) => p[0]))).toBeGreaterThanOrEqual(stemX - eps);
+    expect(Math.min(...g[1].map((p) => p[0]))).toBeLessThan(stemX - 0.05);
+    expect(q[1].at(-1)![1]).toBeCloseTo(FRAME.bottom, 5);
+  });
+
+  it('accepts each stroke in order at the little corridor', () => {
+    const tol = trailTolerance(LAST_LEVEL);
+    for (const l of group)
+      for (const stroke of strokesOf(l)) {
+        const points = sampleStroke(stroke);
+        for (let i = 1; i < points.length; i++) expect(offTrail(points[i], points[i - 1], tol)).toBe(false);
+      }
+  });
+});
+
+describe('Level 15, Big and little: any little letter beside its capital', () => {
+  it('draws any of the 26 little letters in the frame, for school only', () => {
+    expect(BIG_LEVEL).toBe(15);
+    expect(inFrame(BIG_LEVEL)).toBe(true);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(BIG_LEVEL);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(BIG_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(BIG_LEVEL)).toBe(false);
+    expect(trailTolerance(BIG_LEVEL)).toBe(LITTLE_TOLERANCE);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 2000; seed++) seen.add(trailWord(BIG_LEVEL, 'Ana', new Rng(seed)));
+    expect([...seen].sort().join('')).toBe('abcdefghijklmnopqrstuvwxyz');
+  });
+
+  it('has a little-letter table and a capital with a picture and strokes for every letter', () => {
+    for (const l of PLANS[BIG_LEVEL - 1].letters) {
+      expect(strokesOf(l).length).toBeGreaterThan(0);
+      expect(strokesOf(l.toUpperCase()).length).toBeGreaterThan(0);
+      expect(WORDS[l.toUpperCase()]).toBeTruthy();
+    }
+  });
+});
+
+describe('Level 16, Little words', () => {
+  it('traces one of level 7’s pictured words in little letters, in the frame, for school only', () => {
+    expect(LITTLE_WORD_LEVEL).toBe(16);
+    expect(inFrame(LITTLE_WORD_LEVEL)).toBe(true);
+    expect(severalLetters(LITTLE_WORD_LEVEL)).toBe(true);
+    expect(nameLevel(LITTLE_WORD_LEVEL)).toBe(false);
+    expect(guidesFor(LITTLE_WORD_LEVEL)).toEqual(['solid']);
+    expect(trailTolerance(LITTLE_WORD_LEVEL)).toBe(LITTLE_TOLERANCE);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 400; seed++) {
+      const word = trailWord(LITTLE_WORD_LEVEL, 'Mia', new Rng(seed));
+      expect(word).toBe(word.toLowerCase());
+      expect(word.length).toBeLessThanOrEqual(5);
+      expect((PICTURE_WORDS as readonly string[]).includes(word)).toBe(true);
+      for (const l of word) {
+        expect(isLower(l)).toBe(true);
+        expect(frameStrokesOf(l)).toBe(LOWER[l]);
+      }
+      seen.add(word);
+    }
+    expect(seen.size).toBe(SHORT_WORDS.length);
+  });
+
+  it('counts at most one miss and one hint per letter, as level 7 does', () => {
+    const rough = [
+      { misses: 5, hints: 2 },
+      { misses: 0, hints: 0 },
+      { misses: 1, hints: 0 },
+    ];
+    expect(roundTally(LITTLE_WORD_LEVEL, rough)).toEqual({ misses: 2, hints: 1 });
+  });
+
+  it('accepts each letter of every word in order at the little corridor, and the bot route completes it', () => {
+    for (const word of SHORT_WORDS)
+      for (const l of word)
+        for (const stroke of frameStrokesOf(l)) {
+          const points = sampleStroke(stroke);
+          let at = 0,
+            prev = points[0];
+          for (const p of traceWaypoints(points)) {
+            at = advanceTrace(points, at, prev, p, LITTLE_TOLERANCE);
+            prev = p;
+          }
+          expect(at).toBe(points.length - 1);
+        }
+  });
+});
+
+describe('Level 17, My name, the way it is written', () => {
+  it('traces a capital first, then little letters, capped at eight, for school only', () => {
+    expect(MY_NAME_LEVEL).toBe(17);
+    expect(LEVELS.school!.max).toBe(MY_NAME_LEVEL);
+    expect(PLANS).toHaveLength(MY_NAME_LEVEL);
+    expect(inFrame(MY_NAME_LEVEL)).toBe(true);
+    expect(nameLevel(MY_NAME_LEVEL)).toBe(true);
+    expect(nameLevel(8)).toBe(true);
+    expect(severalLetters(MY_NAME_LEVEL)).toBe(true);
+    expect(trailWord(MY_NAME_LEVEL, 'Dana', new Rng(1))).toBe('Dana');
+    expect(trailWord(MY_NAME_LEVEL, 'DANA', new Rng(1))).toBe('Dana');
+    expect(trailWord(MY_NAME_LEVEL, 'zoë', new Rng(1))).toBe('Zoe');
+    expect(trailWord(MY_NAME_LEVEL, 'Maximiliana', new Rng(1))).toBe('Maximili');
+    expect(trailWord(MY_NAME_LEVEL, '李', new Rng(1))).toBe('Pip');
+    expect(trailWord(MY_NAME_LEVEL, '', new Rng(1))).toBe('Pip');
+    for (const name of ['Mia', 'Anne-Marie Josephine', 'W'.repeat(60), 'Ēlla', 'o']) {
+      const traced = trailWord(MY_NAME_LEVEL, name, new Rng(3));
+      expect(traced.length).toBeLessThanOrEqual(NAME_CAP);
+      expect(traced[0]).toMatch(/[A-Z]/);
+      expect(traced.slice(1)).toMatch(/^[a-z]*$/);
+      expect(writtenName(name).startsWith(traced)).toBe(true);
+      for (const l of traced) expect(frameStrokesOf(l).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('signs the whole name as it is written at 17, and in capitals at 8', () => {
+    expect(signName(MY_NAME_LEVEL, 'Maximiliana')).toBe('Maximiliana');
+    expect(signName(8, 'Maximiliana')).toBe('MAXIMILIANA');
+    expect(signName(MY_NAME_LEVEL, '')).toBe('Pip');
+  });
+
+  it('stands every capital in the frame: top line to base line, inside the lines, same strokes and order', () => {
+    for (const cap of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+      const framed = framedCapital(cap);
+      expect(frameStrokesOf(cap)).toBe(framed);
+      expect(framed).toHaveLength(LETTERS[cap].length);
+      const ys = framed.flat().map((p) => p[1]);
+      const xs = framed.flat().map((p) => p[0]);
+      expect(Math.min(...ys)).toBeGreaterThanOrEqual(FRAME.top - 1e-9);
+      expect(Math.max(...ys)).toBeLessThanOrEqual(FRAME.base + 1e-9);
+      expect(Math.min(...xs)).toBeGreaterThanOrEqual(FRAME_X[0]);
+      expect(Math.max(...xs)).toBeLessThanOrEqual(FRAME_X[1]);
+      // It starts where the capital starts, shrunk: at the top of the frame for every capital.
+      expect(framed[0][0][1]).toBeLessThan(FRAME.top + CAPITAL_IN_FRAME / 4);
+      // A capital is taller than a little letter's middle space: it reaches the top line, not the middle one.
+      expect(Math.min(...ys)).toBeLessThan(FRAME.mid);
+    }
+  });
+
+  it('accepts each framed capital stroke in order at the little corridor, and the bot route completes it', () => {
+    for (const cap of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+      for (const stroke of framedCapital(cap)) {
+        const points = sampleStroke(stroke);
+        let at = 0,
+          prev = points[0];
+        for (const p of traceWaypoints(points)) {
+          at = advanceTrace(points, at, prev, p, LITTLE_TOLERANCE);
+          prev = p;
+        }
+        expect(at).toBe(points.length - 1);
+      }
   });
 });

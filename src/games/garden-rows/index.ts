@@ -318,6 +318,11 @@ class GardenRows implements Game {
   }
 
   /** The ghost finger: pick up the seeds for the tightest spot, then plant it. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     const puzzle = this.puzzles[this.index];
     if (this.busy || this.finished || !puzzle) return null;

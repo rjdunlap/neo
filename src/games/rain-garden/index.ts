@@ -49,6 +49,7 @@ import {
   type Surface,
   type Trial,
 } from './logic';
+import { RainMystery } from './mystery-scene';
 import { RainRoute } from './route';
 
 /** Each level's authored first round leads its first round of a session. */
@@ -554,6 +555,11 @@ class RainGarden implements Game {
     } else if (this.leaf.visible && this.saidEnough) ring(this.leaf, LEAF, LEAF, swatch.yellow.fill);
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     const s = this.s;
@@ -633,6 +639,9 @@ export const rainGarden: GameModule = {
     'Next time it rains, look out the window together: where does the water go on the path, and where on the grass?',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
-  create: (ctx) => (planFor(ctx.level).level >= 4 ? new RainRoute(ctx) : new RainGarden(ctx)),
+  create: (ctx) => {
+    const level = planFor(ctx.level).level;
+    return level >= 8 ? new RainMystery(ctx) : level >= 4 ? new RainRoute(ctx) : new RainGarden(ctx);
+  },
   touchDemo: true,
 };

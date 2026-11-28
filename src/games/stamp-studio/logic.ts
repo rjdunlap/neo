@@ -1,12 +1,13 @@
 import { spread } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 import type { ColorName } from '../../art/palette';
-import { STAMP_KINDS, type StampKindId } from '../../content/creations';
+import { STAMP_KINDS, type SceneId, type StampKindId } from '../../content/creations';
 import { Rng } from '../../engine/random';
 import { stepFromUnit } from '../../audio/notes';
 import type { AnimalSound } from '../../audio/sfx';
 import { leafOutline } from '../fossil-dig/logic';
 export { STAMP_KINDS };
+export type { SceneId };
 export type StampKind = StampKindId;
 export const STAMP_NAMES: Record<StampKind, string> = {
   star: 'A star',
@@ -14,9 +15,120 @@ export const STAMP_NAMES: Record<StampKind, string> = {
   fish: 'A fish',
   cat: 'A cat',
   duck: 'A duck',
+  whale: 'A whale',
+  crab: 'A crab',
+  starfish: 'A starfish',
+  shell: 'A shell',
+  boat: 'A boat',
+  cow: 'A cow',
+  pig: 'A pig',
+  hen: 'A hen',
+  barn: 'A barn',
+  butterfly: 'A butterfly',
+  ladybug: 'A ladybug',
+  snail: 'A snail',
+  sunflower: 'A sunflower',
+  tree: 'A tree',
+  moon: 'A moon',
+  rocket: 'A rocket',
+  planet: 'A planet',
+  comet: 'A comet',
+  ufo: 'A UFO',
+  apple: 'An apple',
+  cupcake: 'A cupcake',
+  basket: 'A basket',
+  kite: 'A kite',
+  balloon: 'A balloon',
+  ant: 'An ant',
+  house: 'A house',
+  car: 'A car',
+  bus: 'A bus',
+  bike: 'A bike',
+  lamp: 'A lamp',
+  cloud: 'A cloud',
 };
+
+/**
+ * A stamp set: six stamps that belong together and the scene they stand on. Sets are all open from the start, nothing
+ * unlocks. The four original stamps each joined a set (fish Sea, cat Farm, flower Garden, star Space); Plain stays as
+ * blank paper with the classic four, in the sets row only.
+ */
+export interface StampSet {
+  name: string;
+  kinds: readonly StampKind[];
+  scene: SceneId;
+}
+export const SETS = {
+  sea: {
+    name: 'Sea',
+    kinds: ['fish', 'whale', 'crab', 'starfish', 'shell', 'boat'],
+    scene: 'sea',
+  },
+  farm: {
+    name: 'Farm',
+    kinds: ['cat', 'cow', 'pig', 'duck', 'hen', 'barn'],
+    scene: 'farm',
+  },
+  garden: {
+    name: 'Garden',
+    kinds: ['flower', 'butterfly', 'ladybug', 'snail', 'sunflower', 'tree'],
+    scene: 'garden',
+  },
+  space: {
+    name: 'Space',
+    kinds: ['star', 'moon', 'rocket', 'planet', 'comet', 'ufo'],
+    scene: 'space',
+  },
+  picnic: {
+    name: 'Picnic',
+    kinds: ['apple', 'cupcake', 'basket', 'kite', 'balloon', 'ant'],
+    scene: 'picnic',
+  },
+  town: {
+    name: 'Town',
+    kinds: ['house', 'car', 'bus', 'bike', 'lamp', 'cloud'],
+    scene: 'town',
+  },
+} as const satisfies Record<string, StampSet>;
+export type SetId = keyof typeof SETS;
+export type SetChoice = 'plain' | SetId;
+/** The sets a level 4–6 player can switch between from the sets button. */
+export const SET_CHOICES: readonly SetChoice[] = [
+  'plain',
+  'sea',
+  'farm',
+  'garden',
+  'space',
+  'picnic',
+  'town',
+];
+/** The classic four stamps shown on plain paper at levels 4–6 before switching sets. */
+export const CLASSIC_KINDS: readonly StampKind[] = ['star', 'flower', 'fish', 'cat'];
+/** What a choice in the sets row shows: its label, stamp palette, and optional backdrop. */
+export function setChoiceInfo(choice: SetChoice): {
+  name: string;
+  kinds: readonly StampKind[];
+  scene?: SceneId;
+} {
+  if (choice === 'plain') return { name: 'Plain', kinds: CLASSIC_KINDS };
+  const s = SETS[choice];
+  return { name: s.name, kinds: s.kinds, scene: s.scene };
+}
+/** The backdrop each scene paints behind the stamps: where its horizon sits on the paper (0 top to 1 bottom). */
+export const SCENES = {
+  sea: { name: 'The sea', horizon: 0.82 },
+  farm: { name: 'The farm', horizon: 0.42 },
+  garden: { name: 'The garden', horizon: 0.5 },
+  space: { name: 'Space', horizon: 0.88 },
+  picnic: { name: 'The picnic', horizon: 0.4 },
+  town: { name: 'The town', horizon: 0.62 },
+} as const satisfies Record<SceneId, { name: string; horizon: number }>;
+/** The sets a seeded round at levels 1–3 draws from: every set has its backdrop, so Plain gives way there. */
+export const SEEDED_SETS: readonly SetId[] = ['sea', 'farm', 'garden', 'space', 'picnic', 'town'];
+/** The stamps from before sets existed, which Follow the sparkle (level 10) still draws from on plain paper. */
+export const PLAIN_KINDS: readonly StampKind[] = STAMP_KINDS.slice(0, 5);
 /** Plain noun for a stamp kind ("duck", "cat", "fish"), used inside spoken prompts. */
-export const animalWord = (kind: StampKind) => STAMP_NAMES[kind].slice(2);
+export const animalWord = (kind: StampKind) => STAMP_NAMES[kind].replace(/^An? /, '');
 
 /** Saved sticker seeds always use these original four kinds and colors, in their historical order. */
 const STICKER_KINDS = STAMP_KINDS.slice(0, 4);
@@ -49,7 +161,8 @@ export interface StampPlan {
     | 'story'
     | 'leaf'
     | 'feet'
-    | 'ask';
+    | 'ask'
+    | 'places';
   name: string;
   /** Every stamp is pressed at this size, and this many of them finish the picture (the lap level). */
   pat?: { size: number; count: number };
@@ -57,10 +170,16 @@ export interface StampPlan {
   follow?: { count: number };
   /** Stamp a duck! (level 11): the voice asks for this many distinct animals in turn, then free play. */
   ask?: { count: number };
+  /** Where does it go? (level 12): on the Farm scene, this many place invitations in a row, met by where a stamp lands. */
+  invite?: { count: number };
+  /** Next to, between, above (level 13): two animals fixed on plain paper, this many relation invitations in a row. */
+  relate?: { count: number };
   /** A music-note button plays the picture back, left to right. */
   play?: boolean;
   /** The stamps on the paper are counted aloud, one to ten, each number once (levels 1–3, dive slice 3). */
   count?: boolean;
+  /** Levels 4–6: a sets button lets her switch stamp sets and scenes freely (dive slice 6). */
+  sets?: boolean;
   /** Trace Prints (levels 8–9): the paper is mud, and each maker presses its own shape; `count` prints finish the round. */
   trace?: { makers: readonly TraceMakerId[]; count: number; tilt: boolean };
 }
@@ -102,6 +221,7 @@ export const PLANS = [
     transform: true,
     prompt: 'sizes',
     play: true,
+    sets: true,
     name: 'Turn stamps and make them big or small',
   },
   {
@@ -111,6 +231,7 @@ export const PLANS = [
     transform: true,
     prompt: 'garden',
     play: true,
+    sets: true,
     name: 'Make an imaginary garden, then tell its story',
   },
   {
@@ -120,6 +241,7 @@ export const PLANS = [
     transform: true,
     prompt: 'story',
     play: true,
+    sets: true,
     name: 'Make two friends on an adventure; every story is welcome',
   },
   // Easiest of all: placed first for lap by `order`, so it has the highest ID.
@@ -171,6 +293,27 @@ export const PLANS = [
     name: 'Stamp a duck!: find the animal the voice asks for',
     ask: { count: 3 },
   },
+  // Where does it go?: three spoken place words on the Farm scene, any stamp meets one by where it lands; then free.
+  {
+    kinds: ['cloud', 'cow', 'duck'],
+    color: true,
+    move: true,
+    transform: false,
+    prompt: 'places',
+    name: 'Where does it go?: put a stamp up in the sky, on the grass or in the water',
+    invite: { count: 3 },
+  },
+  // Next to, between, above: two animals printed on plain paper; three spoken relations, met by where any stamp lands.
+  {
+    kinds: ['star', 'flower', 'kite'],
+    color: true,
+    move: true,
+    transform: false,
+    // An invitation level: its first line is the open invitation's, as at level 12.
+    prompt: 'places',
+    name: 'Next to, between, above: put a stamp beside, between, above or below two animals',
+    relate: { count: 3 },
+  },
 ] as const satisfies readonly StampPlan[];
 export const planFor = (level: number): StampPlan =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -220,6 +363,37 @@ export const STAMP_SOUNDS: Record<StampKind, StampSound> = {
   fish: { play: 'splash' },
   cat: { play: 'animal', animal: 'meow' },
   duck: { play: 'animal', animal: 'quack' },
+  whale: { play: 'splash' },
+  crab: { play: 'splash' },
+  starfish: { play: 'bell', from: 5 },
+  shell: { play: 'marimba', from: 6 },
+  boat: { play: 'marimba', from: 2 },
+  cow: { play: 'animal', animal: 'moo' },
+  pig: { play: 'animal', animal: 'oink' },
+  hen: { play: 'animal', animal: 'cluck' },
+  barn: { play: 'marimba', from: 1 },
+  butterfly: { play: 'marimba', from: 7 },
+  ladybug: { play: 'marimba', from: 4 },
+  snail: { play: 'marimba', from: 0 },
+  sunflower: { play: 'bell', from: 3 },
+  tree: { play: 'marimba', from: 2 },
+  moon: { play: 'bell', from: 4 },
+  rocket: { play: 'marimba', from: 5 },
+  planet: { play: 'bell', from: 1 },
+  comet: { play: 'bell', from: 6 },
+  ufo: { play: 'bell', from: 0 },
+  apple: { play: 'marimba', from: 3 },
+  cupcake: { play: 'bell', from: 5 },
+  basket: { play: 'marimba', from: 1 },
+  kite: { play: 'bell', from: 2 },
+  balloon: { play: 'bell', from: 7 },
+  ant: { play: 'marimba', from: 6 },
+  house: { play: 'marimba', from: 0 },
+  car: { play: 'marimba', from: 4 },
+  bus: { play: 'marimba', from: 2 },
+  bike: { play: 'bell', from: 3 },
+  lamp: { play: 'bell', from: 4 },
+  cloud: { play: 'bell', from: 1 },
 };
 /** The scale step a pitched stamp rings on its `press`-th press (counting from 1), or null for an unpitched sound. */
 export function stampStep(kind: StampKind, press: number): number | null {
@@ -352,9 +526,166 @@ export function animalAsks(kinds: readonly StampKind[], selected: StampKind, rng
   return [first, ...rest];
 }
 
+/** Where does it go? (level 12): the place words a Farm round invites, and how each is said after its stamp. */
+export type PlaceWord = 'sky' | 'grass' | 'water';
+export const PLACE_WORDS: readonly PlaceWord[] = ['sky', 'grass', 'water'];
+export const PLACE_PHRASES: Record<PlaceWord, string> = {
+  sky: 'up in the sky',
+  grass: 'on the grass',
+  water: 'in the water',
+};
+/** The stamps a round suggests for each place (one of each is offered); any stamp meets a word by where it lands. */
+export const PLACE_KINDS: Record<PlaceWord, readonly StampKind[]> = {
+  sky: ['cloud', 'kite', 'balloon'],
+  grass: ['cow', 'pig', 'hen'],
+  water: ['duck', 'fish'],
+};
+/**
+ * The pond the Farm backdrop paints (`sceneArt`), as fractions of the paper: centre and radii. `POND_REACH` units more on
+ * each radius still count as in the water, so a stamp half on the bank is in it and the zone is wide enough at every view.
+ */
+export const POND = { x: 0.72, y: 0.76, rx: 0.18, ry: 0.13 } as const;
+export const POND_REACH = 40;
+/** Idle seconds before the named place glows softly (not a hint). */
+export const PLACE_GLOW_AFTER = 12;
+/** Whether a stamp at this pixel (its centre, on a paper of this size) meets the place word. Only the position counts. */
+export function meetsWord(word: PlaceWord, x: number, y: number, w: number, h: number): boolean {
+  const horizon = h * SCENES.farm.horizon;
+  const dx = (x - w * POND.x) / (w * POND.rx + POND_REACH);
+  const dy = (y - h * POND.y) / (h * POND.ry + POND_REACH);
+  const wet = dx * dx + dy * dy <= 1;
+  if (word === 'water') return wet;
+  if (word === 'sky') return y < horizon;
+  return y >= horizon && !wet;
+}
+/** Where the ghost finger presses for a word, as a pixel on a paper of this size: well inside the place at every view. */
+export function placeTarget(word: PlaceWord, w: number, h: number): Pt {
+  if (word === 'sky') return { x: w * 0.3, y: Math.max(80, h * SCENES.farm.horizon * 0.55) };
+  if (word === 'grass') return { x: w * 0.22, y: h * 0.72 };
+  return { x: w * POND.x, y: Math.min(h * POND.y, h - 80) };
+}
+/** One Where does it go? round: the three place words in a seeded order, each with the stamp the voice suggests. */
+export function placeInvites(rng: Rng): { word: PlaceWord; kind: StampKind }[] {
+  return rng.shuffle([...PLACE_WORDS]).map((word) => ({ word, kind: rng.pick(PLACE_KINDS[word]) }));
+}
+
+/**
+ * Next to, between, above (level 13): the two animals printed on the paper. Each sits at a fixed offset in units from the
+ * paper's centre (not a fraction of it), so the gap between them and the room around them are the same on every device.
+ */
+export interface Anchor {
+  kind: StampKind;
+  /** Offset of the centre from the paper's centre, in units. */
+  dx: number;
+  dy: number;
+}
+export const ANCHOR_KINDS: readonly StampKind[] = ['cat', 'fish', 'cow', 'duck', 'pig', 'hen'];
+/** Half the gap between the anchors' centres, and how far each may sit above or below the middle line. */
+export const ANCHOR_SPREAD = 170;
+export const ANCHOR_RISE = 30;
+/** A stamp centred this close to an animal is on it, and meets no relation. */
+export const ON_ANCHOR = 60;
+/** `next to`: a centre within this of the animal's. `between`: at most this far from the line joining them. */
+export const NEXT_TO = 160;
+export const BETWEEN_REACH = 70;
+/** `above` and `below`: at most this far to either side of the animal's centre. */
+export const ABOVE_REACH = 90;
+/** The stamps a round suggests for its three relations (three different ones are offered); any stamp meets a relation. */
+export const RELATION_KINDS: readonly StampKind[] = [
+  'star',
+  'flower',
+  'kite',
+  'balloon',
+  'butterfly',
+  'cloud',
+];
+export type Relation = { rel: 'next' | 'above' | 'below'; anchor: 0 | 1 } | { rel: 'between' };
+/** One invitation of an invitation level: a place word on the Farm (level 12) or a relation to the animals (level 13). */
+export type Invite = { word: PlaceWord; kind: StampKind } | { relation: Relation; kind: StampKind };
+
+export function anchorPixel(a: Pick<Anchor, 'dx' | 'dy'>, w: number, h: number): Pt {
+  return { x: w / 2 + a.dx, y: h / 2 + a.dy };
+}
+/** A round's two animals: two different kinds, one left and one right of the middle, each nudged up or down a little. */
+export function relationAnchors(rng: Rng): [Anchor, Anchor] {
+  const [a, b] = rng.shuffle([...ANCHOR_KINDS]);
+  const rise = () => rng.pick([-ANCHOR_RISE, 0, ANCHOR_RISE]);
+  return [
+    { kind: a, dx: -ANCHOR_SPREAD, dy: rise() },
+    { kind: b, dx: ANCHOR_SPREAD, dy: rise() },
+  ];
+}
+/** A round's three relations in a seeded order: next to one animal, between both, above or below the other. */
+export function relationInvites(rng: Rng): { relation: Relation; kind: StampKind }[] {
+  const near = rng.pick([0, 1] as const);
+  const far = (1 - near) as 0 | 1;
+  const relations: Relation[] = [
+    { rel: 'next', anchor: near },
+    { rel: 'between' },
+    { rel: rng.pick(['above', 'below'] as const), anchor: far },
+  ];
+  const kinds = rng.shuffle([...RELATION_KINDS]);
+  return rng.shuffle(relations).map((relation, i) => ({ relation, kind: kinds[i] }));
+}
+/** How a relation is said after its stamp: "next to the cat", "between the cat and the fish", "above the fish". */
+export function relationPhrase(r: Relation, anchors: readonly Pick<Anchor, 'kind'>[]): string {
+  if (r.rel === 'between')
+    return `between the ${animalWord(anchors[0].kind)} and the ${animalWord(anchors[1].kind)}`;
+  const word = r.rel === 'next' ? 'next to' : r.rel;
+  return `${word} the ${animalWord(anchors[r.anchor].kind)}`;
+}
+/** Whether a stamp centred at this pixel meets the relation. Only its position counts; on an animal meets nothing. */
+export function meetsRelation(r: Relation, x: number, y: number, anchors: readonly Pt[]): boolean {
+  const d = anchors.map((a) => Math.hypot(x - a.x, y - a.y));
+  if (Math.min(...d) < ON_ANCHOR) return false;
+  if (r.rel === 'next') return d[r.anchor] <= NEXT_TO;
+  if (r.rel === 'between') {
+    const [a, b] = anchors;
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const t = ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / len;
+    const off = Math.abs((x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x)) / len;
+    return t >= 0 && t <= len && off <= BETWEEN_REACH;
+  }
+  const a = anchors[r.anchor];
+  if (Math.abs(x - a.x) > ABOVE_REACH) return false;
+  return r.rel === 'above' ? a.y - y >= ON_ANCHOR : y - a.y >= ON_ANCHOR;
+}
+/** Where the ghost finger presses for a relation, as a pixel: well inside it at every view. */
+export function relationTarget(r: Relation, anchors: readonly Pt[]): Pt {
+  if (r.rel === 'between')
+    return { x: (anchors[0].x + anchors[1].x) / 2, y: (anchors[0].y + anchors[1].y) / 2 };
+  const a = anchors[r.anchor];
+  if (r.rel === 'next') return { x: a.x + (r.anchor === 0 ? 1 : -1) * 115, y: a.y };
+  return { x: a.x, y: a.y + (r.rel === 'above' ? -110 : 110) };
+}
+
 /** Early rounds vary their existing tools without adding simultaneous choices. */
-export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName } {
+export function roundPlan(
+  level: number,
+  rng: Rng,
+): { plan: StampPlan; color: ColorName; scene?: SceneId; invites?: Invite[]; anchors?: [Anchor, Anchor] } {
   const base = planFor(level);
+  if (base.relate) {
+    // Plain paper, two animals fixed on it, and one suggested stamp for each relation, shown in a seeded order.
+    const anchors = relationAnchors(rng);
+    const invites = relationInvites(rng);
+    return {
+      plan: { ...base, kinds: rng.shuffle(invites.map((i) => i.kind)) },
+      color: rng.pick(STAMP_COLORS),
+      invites,
+      anchors,
+    };
+  }
+  if (base.invite) {
+    // The Farm scene, and one suggested stamp for each place in the round, shown in a seeded order.
+    const invites = placeInvites(rng);
+    return {
+      plan: { ...base, kinds: rng.shuffle(invites.map((i) => i.kind)) },
+      color: rng.pick(STAMP_COLORS),
+      scene: 'farm',
+      invites,
+    };
+  }
   if (base.ask) {
     return {
       plan: { ...base, kinds: rng.shuffle([...base.kinds]) },
@@ -362,9 +693,14 @@ export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: Co
     };
   }
   if (level > 3 && !base.follow) return { plan: base, color: 'purple' };
+  // Levels 1–3 draw from one seeded set (Sea, Farm, Garden, Space, Picnic or Town); Follow the sparkle (level 10) keeps Plain.
+  const picked = level <= 3 ? rng.pick(SEEDED_SETS) : undefined;
+  const pool = picked ? SETS[picked].kinds : PLAIN_KINDS;
+  const scene = picked ? SETS[picked].scene : undefined;
   return {
-    plan: { ...base, kinds: rng.shuffle([...STAMP_KINDS]).slice(0, base.kinds.length) },
+    plan: { ...base, kinds: rng.shuffle([...pool]).slice(0, base.kinds.length) },
     color: rng.pick(STAMP_COLORS),
+    ...(scene ? { scene } : {}),
   };
 }
 
@@ -378,6 +714,8 @@ export interface StampState {
   sparkle?: Pt;
   /** Stamp a duck!: the animal currently asked for, while asks remain. */
   ask?: StampKind;
+  /** Where does it go? and Next to, between, above: the stamp suggested for the open invitation and where to press (0 to 1). */
+  invite?: { kind: StampKind; at: Pt };
 }
 
 export type StampMove =
@@ -419,6 +757,11 @@ export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   if (plan.pat) return n < plan.pat.count ? { do: 'stamp', ...PAT_SPOTS[n] } : { do: 'finish' };
   if (plan.follow)
     return n < plan.follow.count && st.sparkle ? { do: 'stamp', ...st.sparkle } : { do: 'finish' };
+  if (plan.invite || plan.relate) {
+    if (!st.invite) return { do: 'finish' };
+    if (st.kind !== st.invite.kind) return { do: 'kind', kind: st.invite.kind };
+    return { do: 'stamp', ...st.invite.at };
+  }
   if (plan.ask && st.ask) {
     if (st.kind !== st.ask) return { do: 'kind', kind: st.ask };
     return { do: 'stamp', ...DEMO_SPOTS[n % DEMO_SPOTS.length] };
@@ -624,16 +967,27 @@ export function traceDemo(
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [7, 8, 1, 10, 2] },
   toddler: { min: 2, max: 11, order: [9, 10, 2, 11, 3] },
-  preschool: { min: 3, max: 5 },
-  prek: { min: 4, max: 6 },
-  school: { min: 5, max: 6 },
+  // Where does it go? (12) closes the preschool 3–7, pre-K 4–9 and school 5–11 windows decided 2026-10-23 (old numbering).
+  // Next to, between, above (13) starts at pre-K: a three-year-old's "between" is a person check.
+  preschool: { min: 3, max: 12, order: [3, 4, 5, 6, 12] },
+  prek: { min: 4, max: 13, order: [4, 5, 6, 12, 13] },
+  school: { min: 5, max: 13, order: [5, 6, 12, 13] },
 };
 
 /** A round button's touch radius (`RoundButton`: its 48 radius and 14 more). */
 export const BUTTON_REACH = 62;
+/** A set-row button's radius and touch reach (116 across >= 100). */
+export const SET_RADIUS = 44;
+export const SET_REACH = SET_RADIUS + 14;
 /** A color disc's radius; its touch radius is 14 more, so each disc is a target 108 units across. */
 export const COLOR_RADIUS = 40;
 export const COLOR_REACH = COLOR_RADIUS + 14;
+
+/** Stamp choice button radius: 48 up to four stamps; 40 sideways or 36 upright for a six-stamp set (still >= 100 across). */
+export function choiceButtonRadius(choices: number, upright?: true) {
+  if (choices <= 4) return 48;
+  return upright ? 36 : COLOR_RADIUS;
+}
 
 /**
  * Where the seven color discs sit along the top, between Home and "?" (their column ends at x 115) and the green arrow
@@ -657,27 +1011,54 @@ export function colorSpots(w: number) {
 }
 
 /**
- * Where the paper and the buttons sit in a view. Sideways: the paper between the left column (Home, "?", Play, the pet)
+ * Where the paper and the buttons sit in a view. Sideways: the paper between the left column (Home, "?", Sets, Play, the pet)
  * and the right one (Finish, Bin, Turn, Grow, Undo), the colours above it and the stamps below. On the narrow upright area
- * (chunk 31) the paper runs from the left edge below Home and "?", Play and Undo join the right column, and the stamps
+ * (chunk 31) the paper runs from the left edge below Home and "?", Play, Sets and Undo join the right column, and the stamps
  * take the whole bottom row right of the guide; the colours start 45 further left, clear of Finish.
  */
 export function stampLayout(
   v: { w: number; h: number; upright?: true },
   choices: number,
   transform: boolean,
+  setsCount = SET_CHOICES.length,
 ) {
   const tall = v.upright === true;
   const paper = tall
     ? { x: 20, y: 230, w: v.w - 190, h: v.h - 230 - 180 }
     : { x: 180, y: 135, w: v.w - 350, h: v.h - 290 };
   const col = v.w - 77;
+  const choiceRadius = choiceButtonRadius(choices, v.upright);
+  const choiceReach = choiceRadius + 14;
+  const choiceXs =
+    tall && choices > 4
+      ? (() => {
+          const left = 165 + choiceReach;
+          const right = v.w - choiceReach;
+          const step = (right - left) / Math.max(1, choices - 1);
+          return Array.from({ length: choices }, (_, i) => left + i * step);
+        })()
+      : tall
+        ? spread(choices, 165, v.w - 20, 135)
+        : spread(choices, 185, v.w - 180, 135);
+  const sets = tall ? { x: col, y: 340 } : { x: 88, y: 274 };
+  const setStep = SET_REACH * 2 + 4;
+  const setRow = tall
+    ? Array.from({ length: setsCount }, (_, i) => {
+        const cols = Math.min(3, setsCount);
+        const colIdx = i % cols;
+        const rowIdx = Math.floor(i / cols);
+        const right = col - BUTTON_REACH - 8 - SET_REACH;
+        return { x: right - (cols - 1 - colIdx) * setStep, y: sets.y + rowIdx * setStep };
+      })
+    : Array.from({ length: setsCount }, (_, i) => {
+        // One row while it clears the right-hand buttons; a long row wraps onto a second one below.
+        const perRow = Math.max(1, Math.floor((col - BUTTON_REACH - SET_REACH - 225) / setStep) + 1);
+        return { x: 225 + (i % perRow) * setStep, y: sets.y + Math.floor(i / perRow) * setStep };
+      });
   return {
     paper,
-    choices: (tall ? spread(choices, 165, v.w - 20, 135) : spread(choices, 185, v.w - 180, 135)).map((x) => ({
-      x,
-      y: v.h - 77,
-    })),
+    choiceRadius,
+    choices: choiceXs.map((x) => ({ x, y: v.h - 77 })),
     colors: colorSpots(v.w),
     finish: { x: col, y: 65 },
     undo: { x: col, y: tall ? v.h - 237 : v.h - 77 },
@@ -686,5 +1067,7 @@ export function stampLayout(
     grow: { x: col, y: v.h / 2 + 130 },
     // Sideways: left of the paper, between the hold-to-open help (y 160) and the pet.
     play: tall ? { x: col, y: 200 } : { x: 88, y: v.h / 2 + 20 },
+    sets,
+    setRow,
   };
 }

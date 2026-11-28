@@ -25,8 +25,8 @@ import {
   ageCopy,
   bandSmall,
   bandWhere,
-  findingCopy,
   friendHeading,
+  startCopy,
   playingCopy,
   weekCopy,
   type PanelApp,
@@ -76,7 +76,7 @@ export function openParentPanel(
 ) {
   if (current) return;
   const playing = playingCopy(app);
-  const finding = findingCopy(app);
+  const start = startCopy(app);
   const openedFor = store.activeId;
   const root = document.createElement('div');
   current = root;
@@ -138,22 +138,26 @@ export function openParentPanel(
         <input id="p-howto" type="checkbox" />
       </div>
       <div class="parent__row">
+        <label for="p-intro">Show a shorter reminder for a game she has just been shown (needs the how-to cards)</label>
+        <input id="p-intro" type="checkbox" />
+      </div>
+      <div class="parent__row">
+        <label for="p-brief">Show a shorter result after a round (Bubble Pop and Jar Sort)</label>
+        <input id="p-brief" type="checkbox" />
+      </div>
+      <div class="parent__row">
         <label for="p-words">Show the words (ages 6 and up)</label>
         <input id="p-words" type="checkbox" />
       </div>
       <p class="muted">The guide's question is written beside the round, for a phone on silent. A grown-up's own games always show it; younger games never do.</p>
       ${playing.after.map((line) => `<p class="muted">${esc(line)}</p>`).join('')}
-${
-  finding
-    ? `
+
       <h2>Finding games</h2>
       <div class="parent__row">
-        <label for="p-layout">${esc(finding.label)}</label>
-        <select id="p-layout"><option value="path">Swiping path (original)</option><option value="subjects">Subject cards (try on iPad)</option></select>
+        <label for="p-start">${esc(start.label)}</label>
+        <select id="p-start"><option value="explore">${esc(start.explore)}</option><option value="six">${esc(start.six)}</option></select>
       </div>
-      <p class="muted">${esc(finding.note)}</p>`
-    : ''
-}
+      <p class="muted">${esc(start.note)}</p>
 
       <h2>Sound</h2>
       <p class="muted">Kept for each player.</p>
@@ -218,8 +222,10 @@ ${
   const petColor = $<HTMLSelectElement>('#p-pet-color');
   const tips = $<HTMLInputElement>('#p-tips');
   const howto = $<HTMLInputElement>('#p-howto');
+  const brief = $<HTMLInputElement>('#p-brief');
+  const intro = $<HTMLInputElement>('#p-intro');
   const words = $<HTMLInputElement>('#p-words');
-  const layout = root.querySelector<HTMLSelectElement>('#p-layout');
+  const startView = $<HTMLSelectElement>('#p-start');
   const volume = $<HTMLInputElement>('#p-volume');
   const speechBox = $<HTMLInputElement>('#p-speech');
   const language2 = $<HTMLSelectElement>('#p-language2');
@@ -269,9 +275,11 @@ ${
     year.value = birth ? String(birth.year) : '';
     $('[data-age]').textContent = ageNote();
     $('[data-follow]').toggleAttribute('hidden', startBand === null);
-    if (layout) layout.value = d.settings.placeLayout;
+    startView.value = d.settings.startView;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
+    brief.checked = d.settings.briefResults;
+    intro.checked = d.settings.briefIntros;
     words.checked = d.settings.showWords;
     volume.value = String(d.settings.volume);
     speechBox.checked = d.settings.speech;
@@ -396,12 +404,20 @@ ${
     store.data.settings.howToCards = howto.checked;
     store.save();
   });
+  intro.addEventListener('change', () => {
+    store.data.settings.briefIntros = intro.checked;
+    store.save();
+  });
+  brief.addEventListener('change', () => {
+    store.data.settings.briefResults = brief.checked;
+    store.save();
+  });
   words.addEventListener('change', () => {
     store.data.settings.showWords = words.checked;
     store.save();
   });
-  layout?.addEventListener('change', () => {
-    store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path';
+  startView.addEventListener('change', () => {
+    store.data.settings.startView = startView.value === 'six' ? 'six' : 'explore';
     store.save();
   });
   volume.addEventListener('input', () => {

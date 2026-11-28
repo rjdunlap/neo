@@ -224,6 +224,45 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         );
         continue;
       }
+      if (level === 8) {
+        // Daylight records: two supplied pretend records of five bars, two questions; free hearing, then a wrong pick twice.
+        assert.equal(await page.evaluate(() => neo.scene.game.round.questions.length), 2);
+        assert.equal(await page.evaluate(() => neo.scene.game.panels.length), 2);
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(300);
+        await screenshot('day-by-day-8-daylight-portrait');
+        await tap('neo.scene.game.panels[1]');
+        assert.equal(await page.evaluate(() => neo.scene.game.busy), false);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+        for (let i = 0; i < 2; i++) {
+          await tap('neo.scene.game.choices[1 - neo.scene.game.answer].node');
+          await tap('neo.scene.game.confirm');
+          await wait();
+        }
+        assert.deepEqual(
+          await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted]),
+          [2, 1, true],
+        );
+        await page.setViewportSize({ width: 1024, height: 768 });
+        for (let guard = 0; guard < 24; guard++) {
+          if (await page.evaluate(() => neo.scene.finished)) break;
+          await gesture();
+          await page.waitForTimeout(180);
+          await wait();
+        }
+        await finished('day-by-day');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('day-by-day').history.at(-1);
+            return [r.level, r.misses, r.hints];
+          }),
+          [8, 2, 1],
+        );
+        log(
+          'Day by Day 8: two pretend daylight records, free hearing, two wrong confirms and one hint, two questions to a finish passed',
+        );
+        continue;
+      }
       if (level === 10) {
         const before = await page.evaluate(() => ({
           week: [...neo.scene.game.week],

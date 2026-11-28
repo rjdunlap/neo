@@ -1,12 +1,12 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { swatch } from '../../art/palette';
-import type { AnimalSound } from '../../audio/sfx';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { symbol, tile } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
+import { trainCar, VOICE } from './pieces';
 import { label } from '../../ui/text';
 import {
   ANIMAL_TRIOS,
@@ -18,15 +18,6 @@ import {
   type PatternPlan,
 } from './logic';
 
-const VOICE: Record<string, AnimalSound | undefined> = {
-  cow: 'moo',
-  duck: 'quack',
-  pig: 'oink',
-  cat: 'meow',
-  dog: 'woof',
-  bear: 'growl',
-  bunny: 'hop',
-};
 const CAR = 0.62;
 const STEP = 70;
 
@@ -105,9 +96,7 @@ export class PatternMatch implements Game {
 
   /** A train car at the match levels' small size, holding `art`. */
   private car(art: Container): Container {
-    const car = new Container();
-    car.addChild(tile(100, 108, 'white'), art);
-    car.addChild(new Graphics().circle(-27, 65, 12).circle(27, 65, 12).fill(swatch.brown.line));
+    const car = trainCar(art);
     car.scale.set(CAR);
     car.eventMode = 'none';
     return car;

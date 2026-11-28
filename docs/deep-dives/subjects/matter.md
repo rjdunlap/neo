@@ -82,7 +82,7 @@ Effort: S = bounded extension or definition; M = a new interaction across severa
 | Candidate | Fun action / specific learning | Audiences | Effort / infrastructure | Recommendation |
 | --- | --- | --- | --- | --- |
 | **Melt and Freeze** | Warm and cool a tray of things; which changes can be undone; states of one substance; fair heat choices | L–G | M; a small finite state table per substance in `logic.ts`, code-drawn objects. No physics engine, no persistence beyond discoveries | **First definition**, ladder below |
-| **Stir and See** | Stir something into clear water and see it vanish, settle or float; mixing and solubility; predict then test | P–G | M; a finite outcome table, code-drawn cups. Reuses Sink or Float's unscored prediction | **Second definition**, after Melt and Freeze exists or at least has a frozen table |
+| **Stir and See** | Stir something into clear water and see it vanish, settle or float; mixing and solubility; predict then test | P–G | M; a finite outcome table, code-drawn cups. Reuses Sink or Float's unscored prediction | **Second definition**, [defined 2026-11-27](../../definitions/stir-and-see.md) (levels 1–5) |
 | **Particle Lens**, a mode of Melt and Freeze | A magnifier toggle shows dots for a solid, liquid or gas; match a scene to its dots; predict | U–G | M–L; a dot renderer (Pixi `Graphics`) and a reviewed script | **Top levels of the first game**, after a science review of the dot picture |
 | **Material Match**, a mode of an existing sorting game | Sort things by soft, hard, bendy and see-through (2-PS1-1) | T–S | S; check Critter Sort, Opposites and Shape Buddies first for an existing home | **Small option**, not a new game |
 | **Weigh It**, a Seesaw Balance mode | A sealed jar on the scale before and after warming; the pan stays level | U–M | S–M; a Seesaw Balance extension and the conservation rule | **After Melt and Freeze level 8**, to avoid a second scale |
@@ -136,7 +136,7 @@ All slices are future work, each separate. Definition tiers use links and `git d
 3. **Levels 5–6**: predictions and the reversible sort; the journal entries. **Defined 2026-11-17** as level IDs 6 and 7 ([definition](../../definitions/melt-and-freeze-predictions.md); ID 5 is the lap opening *One big ice cube*). **Level 6 built 2026-11-18** ([PR #1803](https://github.com/rjdunlap/neo/pull/1803)); **level 7 built 2026-11-18** ([PR #1806](https://github.com/rjdunlap/neo/pull/1806)).
 4. **Levels 7–9**: three states, the sealed-jar scale (shared with Seesaw Balance if possible) and the fair dial.
 5. **Particle Lens (levels 10–11)** after a science review of the dot picture.
-6. **Stir and See** definition, then the same ladder shape for dissolve, settle and float.
+6. **Stir and See** (**defined 2026-11-27**; **levels 1–5 built** (PR #2312), [definition](../../definitions/stir-and-see.md), levels 1–5; the saturation count waits on a named reviewer): dissolve, settle and float.
 7. **Grown-up forms**: Substance Mystery after Forecast Detective, and an unplugged card once a reviewer is named.
 
 ## What was built and what ran

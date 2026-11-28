@@ -1,11 +1,9 @@
-import { discoveryMemory, mixMemory } from './discovery';
+import { discoveryMemory, introMemory, mixMemory, pickMemory } from './discovery';
 import { store } from '../progress/store';
 import { forgetArcade } from '../content/arcade';
 import { forgetExplore } from '../content/explore';
 import { forgetJournalPage } from './scenes/JournalScene';
 import { forgetLands } from './scenes/LandScene';
-import { forgetPlaces } from './scenes/PlaceScene';
-import { forgetSubjects } from './scenes/SubjectPlaceScene';
 import { applySettings } from './settings';
 
 /**
@@ -25,9 +23,9 @@ export async function selectPlayer(id: string): Promise<boolean> {
 /** Whoever is active just changed (a switch, or the active player was removed or restored): forget the last one's place. */
 export function playerChanged() {
   discoveryMemory.clear();
+  introMemory.clear();
   mixMemory.forget();
-  forgetPlaces();
-  forgetSubjects();
+  pickMemory.forget();
   forgetLands();
   forgetExplore();
   forgetArcade();

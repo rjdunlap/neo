@@ -617,6 +617,11 @@ class TreasureMap implements Game {
   }
 
   /** The ghost finger digs in the middle of the square asked for, once the last dig has finished. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.find || this.unasked) return null;
     if (this.plan.mode === 'write') {

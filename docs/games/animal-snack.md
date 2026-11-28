@@ -12,7 +12,7 @@
 | toddler | 2–4 |
 | preschool | 3–5 |
 | pre-K | 5–8 |
-| school | 8–10 |
+| school | 8–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,14 +26,17 @@
 | 8 | Their own snacks: give two animals 1 to 4 each of their own food, then ring the bell |
 | 9 | The menu board: read an animal, a numeral 4 to 9 and a food word, give that many, ring the bell |
 | 10 | The long menu: read two lines, numeral and food word, and give each animal its own number |
+| 11 | Plants, meat or both: tap the mat each animal belongs on |
 
 <!-- end generated -->
 
 **Starts as:** one big animal; a touch anywhere gives it a snack, and two friends walk in
 
-**Grows into:** eleven animals from level 3 (sheep, horse, hen and mouse join the first seven); snacks float to their eaters, "who eats grass?" or "who says moo?", drag each snack to its animal, give 2 to 4 with a numeral and countable dots, give two animals their own different snacks and amounts; read a chalkboard menu (a numeral 4 to 9 and a food word, then two lines) and give exactly that many; four seeded scenes (meadow, orchard, kitchen garden, dusk) with a far barn on the horizon
+**Grows into:** eleven animals from level 3 (sheep, horse, hen and mouse join the first seven); snacks float to their eaters, "who eats grass?" or "who says moo?", drag each snack to its animal, give 2 to 4 with a numeral and countable dots, give two animals their own different snacks and amounts; read a chalkboard menu (a numeral 4 to 9 and a food word, then two lines) and give exactly that many; sort each animal onto a plants, both or meat mat by what it truly eats; four seeded scenes (meadow, orchard, kitchen garden, dusk) with a far barn on the horizon
 
 ## Design notes
+
+**Level 11, Plants, meat or both? (2026-11-28, dive slice 11; [definition](../definitions/animal-snack-diet-sort.md)).** The `diet` mode tops the school window (`LEVELS.school` 8–11). One sort per round: two plant eaters and two that eat both, plus the cat on a fair coin (never first), walk up one at a time; `snack.dietintro` opens and `snack.diet` asks each ("Plants, meat, or both? Tap its mat."); tapping the waiting animal asks again, free. Three mats replace the feeding spot (`dietMats`: at least 160 by 120, 32 apart, a 12-unit tap margin), with a green outline round *plants* and *both* and a red one round *both* and *meat*, so the middle mat reads as the overlap; a sorted animal hops on, shrinks to `MAT_SCALE` (two fit a mat), nibbles once with its bite sound and is no longer a target. `DIET` in `logic.ts` gives each of the eleven a kind and two spoken foods with a source per row; each new source (MSD Veterinary Manual for the dog, feral-hog extension for the pig's earthworms, All About Birds for the duck's snails, poultry extension for the hen, Animal Diversity Web for the mouse) was opened once on 2026-11-28 and confirmed, so no animal was left out. The dog's bone and the bear's honey are never said. A wrong mat boings and shakes its head and says one true food with a question (`dietalso`, `dietnomeat`, `dietnoplants`) without naming the right mat; the second miss on one animal glows its mat (one hint), later misses only repeat. The finish says `dietdone` ("All {n} on their mats: plant eaters, meat eaters, and both!"), or `dietdonenomeat` when no cat came, then the pet's turn. The intro and both closing lines carry a slot (`{meat}`, `{n}`) so they stay on device speech, as the voice-clip coverage test allows, instead of needing new rendered clips (the definition's wording had none). Nothing files a journal discovery. Upright on a 390×844 phone the mats sit apart at the bottom under the waiting animal ([screenshot run](../verification/2026-11-28-animal-snack-level-11-plants-meat-or-both.md)); the empty space between the waiting animal and the mats on a tall upright view is the usual `friendFeet` height, kept as defined.
 
 **One word in European Portuguese (WL2, 2026-11-22).** With the setting on, the pet adds the animal's word in the munch (level 1) and *who* (level 3) modes and the food's word in the float (level 2) and match (level 4) modes; the later modes and the four later animals with their foods add none. The word table is `src/content/words/pt-PT.ts`; the setting is *A word in another language* on the grown-ups' page, per profile, off by default, and only a local pt-PT voice speaks it. See [the definition](../definitions/additional-languages.md#as-built-2026-11-22).
 

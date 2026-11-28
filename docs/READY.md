@@ -24,6 +24,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
+
 ### Phone play
 
 A playtest fix goes in Next ten under the phone lines.
@@ -58,10 +59,19 @@ Each was skipped as gated by the refill and is settled in the [record](archive/D
 
 From the 2026-11-23 reconciliation of the dives' slice lists (each checked against the game's level table and `git log origin/main`); the tier is the dive's where it states one.
 
-- **`robot-path` level 15 starts on the first board** (it is a seeded pick today; existing-game bug fix). [Dive](deep-dives/robot-path.md#build-slices-in-order)
-- **`critter-crossing` and `critter-sort` the scarf** (the shared third critter feature; both games' rule tests plus the fairness test across the larger pool). [Dive](deep-dives/critter-crossing.md#build-slices-in-order)
-- **`weather-wardrobe` school level 13, Warm or cold?** (decision 3 settled, after the school window and Pack light): add a picture thermometer beside the sky so temperature and weather both inform the outfit. [Dive](deep-dives/weather-wardrobe.md#build-slices-in-order)
-- **`puzzle-pals` level 10, Two pictures, one tray** (pre-K, school; new interaction; after Turn it round, built). [Dive](deep-dives/puzzle-pals.md#build-slices-in-order)
+(Refilled into Next ten 2026-11-26; `frog-hop` level 18, Define Duck Pond and the `market-stall` bakery stall moved there 2026-11-28; `stamp-studio` *The pet tells it back* and `frog-hop` level 19 moved there the same day.)
+
+Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs (`day-by-day` level 8 moved to Next ten 2026-11-27; `clock-tower` level 11 and `letter-trails` level 16 moved there the same day):
+
+
+Refilled 2026-11-28 from the dives' slice lists, each checked against the game's level table in `docs/games/` and `LEVELS` on `origin/main` and the open pull requests (stale slice lines in the dives were marked built the same day). A line that follows another of the same game waits for that one to merge, since both take the next free ID:
+
+- **`frog-hop`, level 20 G1 *Hops of a hundred*** (new-levels tier plus the `grownup` band audit): after level 19 merges; build its section of the [definition](definitions/frog-hop-entries-and-g1.md#20-g1-hops-of-a-hundred-grown-up) (grown-up 13, 14, 15, 20; `padValue` gains the question's offset). [Dive slice 11](deep-dives/frog-hop.md#build-slices-in-order).
+- **`market-stall`, G1 *Odd coins*** (new-levels tier plus the `grownup` band audit): after *Which costs more?*; coins 1, 3 and 4 with a true-minimum (dynamic programming) `fewest` (gap 8); rounds include prices where greedy is not minimal. [Dive slice 11](deep-dives/market-stall.md#build-slices-in-order).
+- **`market-stall`, *Is it enough?* (the sell stall)** (new-interaction tier): build the [definition](definitions/market-stall-sell-and-bakery.md#level-is-it-enough-a-round-step-by-step) at the next free ID: a customer pays, she sells or taps *More, please* and the customer counts on; school, after level 8 in `order`. [Dive slice 12](deep-dives/market-stall.md#build-slices-in-order).
+- **`story-steps`, level 0b *Press the picture to watch*** (new-levels tier): after 0a, at the next free ID, lap; three cards that play in order when tapped, a story told, not asked. [Dive slice 7](deep-dives/story-steps.md#build-slices-in-order).
+- **`clock-tower`, preschool 1–1** (younger-band opening tier): after level 11's pull request merges; copy a visible model with one hand (decided 2026-10-23), band and inventory counts, a scoped card, registry and lands rules. [Dive slice 8](deep-dives/clock-tower.md#build-slices-in-order).
+
 
 
 
@@ -122,7 +132,7 @@ From the [Pok Pok review](reviews/POK-POK.md#proposals), queued at the developer
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate:
+Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows and dive slices whose next action is a definition with no person or device gate (refilled into Next ten 2026-11-26).
 
 
 ### Subject research (docs only)
@@ -132,7 +142,6 @@ Refilled 2026-11-17 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains. Every game has a dive or a study row (Pyramid Solitaire's dive, 2026-11-11, was the last of the tracker's waves), but a game built from a definition can still have no plan for its next levels; those found 2026-11-17 are below; Brain Break's dive is done (2026-11-18, [dive](deep-dives/brain-break.md)):
 
 
-- **A shared sliding-board helper** (restructuring, typecheck and unit tests plus one filtered play per game it moves; the [thumb-fix line](definitions/phone-portrait.md#thumb-sizes-of-the-upright-grown-up-games-measured-2026-11-18) left it): Word Search (`layout.ts`), Island Bridges (`touchLayout`, `slideToShow`, `inWindow` in `logic.ts`) and Logic Grid / Picture Logic each carry their own window, clamp, drag threshold and edge-arrow code; move what is common into one engine helper (check the [reuse map](DESIGN.md#reuse-map) first) and keep every game's layout test passing, without changing any size.
 
 ## Blocked work (not routine picks)
 

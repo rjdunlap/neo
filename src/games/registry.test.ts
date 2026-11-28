@@ -134,20 +134,21 @@ describe('game registry', () => {
     expect(stepLevel(10, 1, g.levels('school'))).toBe(11);
   });
 
-  it('adds Planet Hop at the end of school, Between two flights after 6 and Where on the line? after 9, without moving existing Launch pins', () => {
+  it('adds Planet Hop after Where on the line? and Pick a spring at the end of school, without moving existing Launch pins', () => {
     const g = gameById('bouncy-launch')!;
     expect(g.bands).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school']);
-    expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 10, 12] });
+    expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 10, 12, 11] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 7, order: [3, 4, 7, 5] });
-    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1] });
+    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1, 2] });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 8, order: [1, 2, 8, 3] });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 8, 3, 4] });
-    for (const level of [4, 5, 7, 6, 9, 10, 12])
+    for (const level of [4, 5, 7, 6, 9, 10, 12, 11])
       expect(landing(level, g.levels('school'), g.entryLevels)).toBe(level);
     expect(stepLevel(6, 1, g.levels('school'))).toBe(9);
     expect(stepLevel(9, 1, g.levels('school'))).toBe(10);
     expect(stepLevel(10, 1, g.levels('school'))).toBe(12);
-    expect(stepLevel(12, 1, g.levels('school'))).toBe(12);
+    expect(stepLevel(12, 1, g.levels('school'))).toBe(11);
+    expect(stepLevel(11, 1, g.levels('school'))).toBe(11);
   });
 
   it('places Bouncy Launch Near or far (8) before the star level for toddler and preschool as an entry', () => {
@@ -265,7 +266,8 @@ describe('game registry', () => {
     expect(levelsInOrder(g.levels('preschool'))).toEqual([1]);
     expect(landing(8, g.levels('preschool'), g.entryLevels)).toBe(1);
     expect(levelsInOrder(prek)).toEqual([1, 8, 2, 3]);
-    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 7, 9]);
+    expect(stepLevel(7, 1, school)).toBe(9);
     expect(g.entryLevels).toEqual([8]);
     expect(stepLevel(1, 1, prek)).toBe(8);
     expect(stepLevel(8, 1, prek)).toBe(2);
@@ -348,7 +350,7 @@ describe('game registry', () => {
     const g = gameById('day-by-day')!;
     const school = g.levels('school'),
       prek = g.levels('prek');
-    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6, 7]);
+    expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6, 7, 8]);
     expect(levelsInOrder(prek)).toEqual([1, 2, 4]);
     expect(g.entryLevels).toEqual([10, 9]);
     expect(stepLevel(4, 1, school)).toBe(10);
@@ -420,11 +422,14 @@ describe('game registry', () => {
     expect(game.levels('prek')).toEqual({ min: 5, max: 10 });
   });
 
-  it('opens only Robot Path’s small step boards to preschool and preserves older ranges', () => {
+  it('opens only Robot Path’s Drive the robot and One step entries and small step boards to preschool and preserves older ranges', () => {
     const game = gameById('robot-path')!;
     expect(game.bands).toEqual(['preschool', 'prek', 'school']);
     const range = game.levels('preschool');
-    expect(range).toEqual({ min: 1, max: 2 });
+    expect(range).toEqual({ min: 1, max: 17, order: [16, 17, 1, 2] });
+    expect(game.entryLevels).toEqual([16, 17]);
+    expect(stepLevel(16, 1, range)).toBe(17);
+    expect(stepLevel(17, 1, range)).toBe(1);
     expect(game.levels('prek')).toEqual({ min: 1, max: 6 });
     expect(game.levels('school')).toEqual({ min: 4, max: 15 });
     expect(playBand(game.bands, 'preschool')).toBe('preschool');
@@ -595,6 +600,8 @@ describe('game registry', () => {
       'circuit-garden',
       'clap-syllables',
       'clock-tower',
+      'common-ground',
+      'count-the-ballots',
       'critter-crossing',
       'critter-sort',
       'crossword',
@@ -603,6 +610,8 @@ describe('game registry', () => {
       'day-by-day',
       'domino-pond',
       'domino-run',
+      'draw-a-ramp',
+      'dream-cards',
       'drift-cards',
       'drops-journey',
       'duck-pond',
@@ -632,6 +641,7 @@ describe('game registry', () => {
       'key-it-out',
       'lantern-lights',
       'lasso-loops',
+      'last-pebble',
       'lemonade-stand',
       'lift-it',
       'light-lab',
@@ -644,6 +654,7 @@ describe('game registry', () => {
       'mail-carrier',
       'maker-lane',
       'marble-jump',
+      'market-days',
       'market-stall',
       'meadow-pens',
       'measuring-post',
@@ -668,6 +679,7 @@ describe('game registry', () => {
       'pile-match',
       'pixel-pictures',
       'pond-conga',
+      'pond-merge',
       'puddle-lens',
       'puppet-stage',
       'puzzle-pals',
@@ -683,6 +695,7 @@ describe('game registry', () => {
       'river-tablets',
       'robot-path',
       'rule-machine',
+      'sand-table',
       'scoop-shop',
       'second-chance-shed',
       'secret-code',
@@ -700,6 +713,7 @@ describe('game registry', () => {
       'spinner-fair',
       'sprout-shuffle',
       'stamp-studio',
+      'stir-see',
       'story-steps',
       'story-weaver',
       'sudoku-garden',
@@ -712,10 +726,14 @@ describe('game registry', () => {
       'tide-tables',
       'tile-pairs',
       'timeline-trail',
+      'toy-drawer',
       'trackway-tales',
       'truth-bridge',
+      'two-tablets',
+      'village-planner',
       'village-vote',
       'water-road',
+      'wave-ribbon',
       'welcome-ways',
       'who-am-i',
       'word-code',

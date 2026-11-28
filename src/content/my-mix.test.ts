@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BrowserEventTarget } from '../test-support/events';
 import { GAMES } from '../games/registry';
+import type { Band } from '../progress/bands';
+import { allGames } from './explore';
+import { LANDS } from './lands';
 import { defaults } from '../progress/save';
 import { store } from '../progress/store';
 import { MixMemory } from '../app/discovery';
-import { gamesFor } from '../app/scenes/PlaceScene';
 import { Tweener } from '../engine/tween';
 import { inlineFits } from '../ui/howto-card';
 import { sheetPlaces, sheetTiles } from '../ui/mix';
@@ -22,6 +24,9 @@ import {
   startMix,
   step,
 } from './mix';
+
+/** The pool's source at the root: Explore's every game for her age (`ExploreScene`'s mix). */
+const gamesFor = (band: Band) => allGames(band, GAMES, LANDS);
 
 const finishAt = (s: ReturnType<typeof startMix>, p: number, seed: number) => {
   const launched = step(s, { type: 'launch', p });

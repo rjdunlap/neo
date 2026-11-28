@@ -1,0 +1,5 @@
+# 2026-11-26 — Count the Ballots Undo, Restart, keys and dragging (PR #2241)
+
+**Changed:** `count-the-ballots` gains a one-step Undo and a same-seed Restart (round buttons beside Help; neither counts as a miss or a hint), arrow keys with 1–3 and Enter (Backspace undoes), and dragging a ballot to a pile through `engine/drag.ts`; layout, how-to card and game page updated.
+**Ran:** `npm run typecheck`; targeted vitest (`src/games/count-the-ballots`, barrels, game-docs, lands: the undo history, the arrow-key grid walk, and the upright layout now including Undo and Restart at 100 units at every view); `BROWSER_SUITE=countballots` extended with an undone move, a wrong drag (a miss, floats home), a right drag, a key move and a Restart that keeps the seed and earned misses and hints, with a short-phone screenshot; `FINGER_ONLY=count-the-ballots FINGER_LEVELS=1,2 FINGER_BAND=school` `fingerdemo`.
+**Not run:** the full `npm test` (left to PR CI), `npm run build`, offline, a real phone or a controller.

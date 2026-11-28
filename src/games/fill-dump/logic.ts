@@ -60,7 +60,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 6, order: [1, 2, 6, 3, 4] },
   preschool: { min: 1, max: 7, order: [1, 2, 6, 3, 4, 5, 7] },
   // Pre-K opens at the pouring level and takes the capacity levels, ending on pairs where the eye misleads.
-  prek: { min: 5, max: 8, order: [5, 7, 8] },
+  prek: { min: 5, max: 9, order: [5, 7, 8, 9] },
 };
 
 /** The number she is asked to put in, drawn from the plan's range. Null in the tip-out levels. */
@@ -68,7 +68,7 @@ export const targetFor = (plan: FillPlan, rng: Rng): number | null =>
   plan.count ? rng.int(plan.count[0], plan.count[1]) : null;
 
 /** What each level ID plays: the one basket (tip-out and counting), the jug, or a full and an empty basket to tell apart. */
-export type FillKind = 'basket' | 'pour' | 'pair' | 'capacity';
+export type FillKind = 'basket' | 'pour' | 'pair' | 'capacity' | 'cups';
 export const FILL_LEVELS: Readonly<Record<number, FillKind>> = {
   1: 'basket',
   2: 'basket',
@@ -78,6 +78,7 @@ export const FILL_LEVELS: Readonly<Record<number, FillKind>> = {
   6: 'pair',
   7: 'capacity',
   8: 'capacity',
+  9: 'cups',
 };
 export const kindFor = (level: number): FillKind => FILL_LEVELS[level] ?? 'basket';
 /** Level 8, Tricky pairs: the same guess, pour and answer as level 7, with a tall thin and a short wide container. */
@@ -85,6 +86,8 @@ export const isTrickyLevel = (level: number): boolean => level === 8;
 
 export const describeFill = (level: number): string => {
   const kind = kindFor(level);
+  if (kind === 'cups')
+    return `How many cups? Scoop cupfuls into two bowls, count them, then tap the bowl that took more: ${CUPS_PAIRS} pairs`;
   if (isTrickyLevel(level))
     return 'Tricky pairs: tall and thin or short and wide; guess which holds more, pour to test';
   if (kind === 'capacity')
@@ -354,6 +357,19 @@ export function pour(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>, amount
   s.cup += intoCup;
   s.tray += moved - intoCup;
 }
+/**
+ * Where water leaving the jug lands: `'cup'` while the cup has room, `'tray'` once it is already full (the spill is
+ * seen as it starts), `null` when the jug holds nothing. Whether the jug is tipped is the caller's question.
+ */
+export function pourLanding(s: Pick<PourState, 'jug' | 'cup'>, capacity = 1): 'cup' | 'tray' | null {
+  if (!Number.isFinite(s.jug) || !Number.isFinite(s.cup) || s.jug <= 1e-9) return null;
+  return s.cup >= capacity - 1e-9 ? 'tray' : 'cup';
+}
+/** The stream's drawn thickness: 6 as the jug first tips, widening to 14 at the full tilt (0.85). Never decreasing. */
+export function streamWidth(tilt: number): number {
+  if (!Number.isFinite(tilt)) return 6;
+  return 6 + 8 * Math.min(1, Math.max(0, (tilt - 0.15) / 0.7));
+}
 export function emptyCup(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>) {
   if (s.done) return;
   s.tray += s.cup;
@@ -605,3 +621,165 @@ export function capacityLayout(w: number, h: number) {
     tick: { x: w * 0.3, y: h * 0.53 + 150 },
   };
 }
+
+// ---- How many cups? (level 9): count cupfuls into two bowls, then compare the counts ------------------------------
+
+/** Pairs of bowls in a round. Each pair takes up to twenty-two taps to fill, so two keep the round short. */
+export const CUPS_PAIRS = 2;
+/** The fewest and most cupfuls a bowl holds. */
+export const CUPS_RANGE = [2, 6] as const;
+/** Straight-sided bowls again: one cupful covers this many square logical units, so a bowl's height is cups × this ÷ width. */
+export const CUP_AREA = 4500;
+/** The narrowest and widest bowl, and its least and greatest height, in logical units. */
+export const BOWL_WIDTH = [140, 230] as const;
+export const BOWL_HEIGHT = [45, 185] as const;
+
+export interface Bowl {
+  /** Cupfuls it takes to fill. */
+  cups: number;
+  width: number;
+}
+export type BowlPair = [Bowl, Bowl];
+
+export const bowlHeight = (b: Bowl, cups: number = b.cups) => (cups * CUP_AREA) / b.width;
+
+/** A width that keeps a bowl of `cups` between the least and greatest height, seeded, so size alone is not the answer. */
+function bowlFor(rng: Rng, cups: number): Bowl {
+  const lo = Math.max(BOWL_WIDTH[0], (cups * CUP_AREA) / BOWL_HEIGHT[1]);
+  const hi = Math.min(BOWL_WIDTH[1], (cups * CUP_AREA) / BOWL_HEIGHT[0]);
+  return { cups, width: Math.round(rng.range(lo, hi)) };
+}
+
+/** Two pairs, each two different whole counts from 2 to 6; the bowl that takes more is on each side once, in a seeded order. */
+export function cupsPairs(rng: Rng): BowlPair[] {
+  const sides = rng.shuffle<0 | 1>([0, 1]);
+  return sides.map((more) => {
+    const big = rng.int(CUPS_RANGE[0] + 1, CUPS_RANGE[1]);
+    const small = rng.int(CUPS_RANGE[0], big - 1);
+    const pair: BowlPair = [bowlFor(rng, big), bowlFor(rng, small)];
+    return more === 0 ? pair : [pair[1], pair[0]];
+  });
+}
+
+export interface CupsState extends RequestTally {
+  pairs: BowlPair[];
+  round: number;
+  /** Filling the bowls (nothing judged), or the question: which took more? */
+  phase: 'fill' | 'answer';
+  /** Cupfuls poured into each bowl so far: the tallies. */
+  poured: [number, number];
+  /** The scoop holds water. */
+  scooped: boolean;
+  done: boolean;
+}
+
+export function startCups(rng: Rng): CupsState {
+  return {
+    pairs: cupsPairs(rng),
+    round: 0,
+    phase: 'fill',
+    poured: [0, 0],
+    scooped: false,
+    misses: 0,
+    hints: 0,
+    roundMisses: 0,
+    helped: false,
+    done: false,
+  };
+}
+
+export const cupsPair = (s: CupsState): BowlPair => s.pairs[Math.min(s.round, s.pairs.length - 1)];
+/** The bowl that took more cups. */
+export const cupsMore = (p: BowlPair): 0 | 1 => (p[0].cups > p[1].cups ? 0 : 1);
+export const bowlFull = (s: CupsState, side: 0 | 1) => s.poured[side] >= cupsPair(s)[side].cups;
+
+export type CupsEvent =
+  | { kind: 'ignored' }
+  /** The cup dipped into the tub and came up full. */
+  | { kind: 'scoop' }
+  /** The cup was already full: nothing changes. */
+  | { kind: 'held' }
+  /** A bowl was tapped with an empty cup: a reminder, never a miss. */
+  | { kind: 'empty' }
+  /** A bowl that is already full: a reminder to pour into the other, never a miss; the cup stays full. */
+  | { kind: 'brim'; side: 0 | 1 }
+  /** One cupful into `side`; `n` is its tally now. `full`: that filled it. `ask`: both are full, so the question comes. */
+  | { kind: 'pour'; side: 0 | 1; n: number; full: boolean; ask: boolean }
+  /** The bowl that took fewer: one miss; `hint` the first time this pair reaches two. */
+  | { kind: 'wrong'; hint: boolean }
+  /** The bowl that took more: the next pair, or the end. */
+  | { kind: 'right'; side: 0 | 1; more: number; fewer: number; done: boolean };
+
+/** A tap on the tub: scoop a cupful. Only the question is judged, so filling taps never miss. */
+export function cupsTub(s: CupsState): CupsEvent {
+  if (s.done || s.phase !== 'fill') return { kind: 'ignored' };
+  if (s.scooped) return { kind: 'held' };
+  s.scooped = true;
+  return { kind: 'scoop' };
+}
+
+/** A tap on bowl `side`: pour while filling; answer once both are full. */
+export function cupsBowl(s: CupsState, side: 0 | 1): CupsEvent {
+  if (s.done) return { kind: 'ignored' };
+  const p = cupsPair(s);
+  if (s.phase === 'fill') {
+    if (!s.scooped) return { kind: 'empty' };
+    if (bowlFull(s, side)) return { kind: 'brim', side };
+    s.scooped = false;
+    const n = ++s.poured[side];
+    const full = n === p[side].cups;
+    const ask = bowlFull(s, 0) && bowlFull(s, 1);
+    if (ask) s.phase = 'answer';
+    return { kind: 'pour', side, n, full, ask };
+  }
+  const more = cupsMore(p);
+  if (side !== more) {
+    const hint = missOnRequest(s);
+    if (hint) hinted(s);
+    return { kind: 'wrong', hint };
+  }
+  const event: CupsEvent = {
+    kind: 'right',
+    side,
+    more: p[more].cups,
+    fewer: p[more === 0 ? 1 : 0].cups,
+    done: false,
+  };
+  s.round++;
+  if (s.round === s.pairs.length) {
+    s.done = event.done = true;
+    return event;
+  }
+  nextRequest(s);
+  s.phase = 'fill';
+  s.poured = [0, 0];
+  s.scooped = false;
+  return event;
+}
+
+/** What a capable child touches next, for the ghost finger: scoop, pour into the first bowl with room, then the bowl that took more. */
+export function cupsNext(s: CupsState): 'tub' | 0 | 1 | null {
+  if (s.done) return null;
+  if (s.phase === 'answer') return cupsMore(cupsPair(s));
+  if (!s.scooped) return 'tub';
+  return bowlFull(s, 0) ? 1 : 0;
+}
+
+/** Where things stand in a view of `w` by `h`: the tub and its resting cup on the left, the two bowls' feet, and their tallies below. */
+export function cupsLayout(w: number, h: number) {
+  const feetY = h * 0.6;
+  return {
+    tub: { x: w * 0.25, y: feetY },
+    cup: { x: w * 0.25, y: feetY - 175 },
+    bowls: [
+      { x: w * 0.53, y: feetY },
+      { x: w * 0.8, y: feetY },
+    ] as const,
+    tally: feetY + 80,
+  };
+}
+/** Touch boxes, relative to each thing's feet: the tub, and each bowl (wide and tall enough for the biggest bowl). */
+export const TUB_HIT = { x: -95, y: -130, w: 190, h: 140 } as const;
+export const BOWL_HIT = { x: -130, y: -205, w: 260, h: 215 } as const;
+/** The tally card under each bowl: decoration only. */
+export const TALLY_CARD = { w: 200, h: 90 } as const;
