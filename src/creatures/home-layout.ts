@@ -467,8 +467,13 @@ export function yardLayout(v: { w: number; h: number }, young: boolean, project 
     // path's end on the right, the blanket in front of the board; her friend in the middle, right of the guide corner.
     // A tall phone (the area runs to about 1,660 units) scales the backdrop up, so the yard's things grow with it.
     const k = Math.min(1.35, backdrop.scale);
-    const stage = { x: 390, y: v.h - 60, scale: 1.2 };
-    const ball = young ? ballSpot(stage) : null;
+    // Her friend stands a little smaller here than on a wide screen, so the grass in front keeps room for the basket,
+    // the flowers and every name pill (the yard's phone pass, 2026-11-28).
+    // A short phone (the grass under about 420 units) stands her smaller still, and the blanket and signpost step in.
+    const short = v.h - g < 420;
+    const stage = { x: short ? 400 : 410, y: v.h - 40, scale: short ? 0.85 : 1 };
+    // On a short phone the ball waits in the bottom corner, clear of the signpost's name.
+    const ball = young ? (short ? { x: 700, y: v.h - 70 } : ballSpot(stage)) : null;
     return {
       backdrop,
       who: { x: BACK.x, y: BACK.y },
@@ -478,15 +483,24 @@ export function yardLayout(v: { w: number; h: number }, young: boolean, project 
       arcade: { x: 425, y: Math.round(g - 25 * k), scale: 0.85 * k },
       // The youngest have no blanket: the signpost stands in its place, and the ball has the bottom right.
       signpost: young
-        ? { x: 640, y: Math.round(g + 200 * k), scale: 0.85 }
-        : { x: 672, y: v.h - 60, scale: 0.85 },
+        ? short
+          ? { x: 600, y: Math.round(g + 175 * k), scale: 0.7 }
+          : { x: 640, y: Math.round(g + 200 * k), scale: 0.85 }
+        : { x: 672, y: v.h - (short ? 50 : 60), scale: short ? 0.7 : 0.85 },
       // On a short upright screen (a tablet held upright) the grass is shallow: the blanket steps left of the signpost.
-      blanket: young ? null : { x: k < 1.2 ? 540 : 610, y: Math.round(g + 110 * k), scale: 0.85 * k },
-      basket: project && !young ? { x: 265, y: Math.round(g + 120 * k), scale: 0.85 } : null,
+      blanket: young
+        ? null
+        : {
+            x: k < 1.2 ? 540 : short ? 590 : 640,
+            y: Math.round(g + (short ? 95 : 110) * k),
+            scale: 0.85 * k,
+          },
+      // Bottom left, in front of the bush and clear of the treehouse's name.
+      basket: project && !young ? { x: 110, y: v.h - 100, scale: 0.85 } : null,
       // High enough that its name pill stays over the sky, clear of the treehouse's canopy.
       kite: { x: 300, y: Math.round(Math.max(330, g - 560 * k)), scale: 0.9 * k },
-      bush: { x: 60, y: Math.round(g + 150 * k), scale: 0.7 * k },
-      flowers: { x: 205, y: Math.round(g + 170 * k), scale: 0.8 },
+      bush: { x: 40, y: Math.round(g + 215 * k), scale: 0.7 * k },
+      flowers: { x: 300, y: Math.round(g + 110 * k), scale: 0.7 },
       lodge: { x: 640, y: Math.round(g - 270 * k), scale: 0.75 * k },
       sun: { x: 600, y: Math.round(Math.max(260, g - 520 * k)), scale: k },
       ball,

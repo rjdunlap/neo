@@ -457,6 +457,51 @@ describe("Home's yard (2026-11-28)", () => {
     Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
   const area = (a: Rect) => (a.x1 - a.x0) * (a.y1 - a.y0);
 
+  it('keeps every name pill on an upright phone clear of her friend, the basket and the flowers (the yard phone pass)', () => {
+    // Her friend at scale 1 is about 280 × 270 units, feet at the stage; a pill is at least 140 × 44 under its thing's foot.
+    const friend = (st: { x: number; y: number; scale: number }): Rect => ({
+      x0: st.x - 140 * st.scale,
+      x1: st.x + 140 * st.scale,
+      y0: st.y - 270 * st.scale,
+      y1: st.y,
+    });
+    const pill = (at: YardSpot): Rect => ({
+      x0: at.x - 70,
+      x1: at.x + 70,
+      y0: at.y + 26 * at.scale,
+      y1: at.y + 26 * at.scale + 44,
+    });
+    const art = (at: YardSpot, size: { w: number; h: number }): Rect => ({
+      x0: at.x - (size.w * at.scale) / 2,
+      x1: at.x + (size.w * at.scale) / 2,
+      y0: at.y - size.h * at.scale,
+      y1: at.y,
+    });
+    for (const [name, v] of Object.entries(UPRIGHT_SCREENS))
+      for (const [young, project] of [
+        [true, false],
+        [false, false],
+        [false, true],
+      ]) {
+        const l = yardLayout(v, young, project);
+        const named = [l.treehouse, l.signpost, l.blanket, l.basket].filter((s): s is YardSpot => !!s);
+        const covers: [YardSpot | null, Rect][] = [
+          [null, friend(l.stage)],
+          [l.flowers, art(l.flowers, YARD_SIZE.flowers)],
+        ];
+        if (l.basket) covers.push([l.basket, art(l.basket, YARD_SIZE.basket)]);
+        for (const at of named)
+          for (const [of, box] of covers) {
+            if (of === at) continue;
+            const p = pill(at);
+            expect(
+              overlap(p, box) / area(p),
+              `${name} young=${young} project=${project}: pill at ${at.x},${at.y}`,
+            ).toBeLessThan(0.1);
+          }
+      }
+  });
+
   it('stands every way out on screen, at least 100 units to touch, clear of the corners and mostly clear of each other', () => {
     for (const v of [
       ...WITH_UPRIGHT,
