@@ -1,6 +1,6 @@
 import { PT_PT, type WordKey } from '../../content/words/pt-PT';
 import { Lifetime } from '../../engine/lifetime';
-import { Circle, Container, Graphics, Point, Text } from 'pixi.js';
+import { Container, Graphics, Point, Text } from 'pixi.js';
 import { FORM_FLOWER, formForFlower, type FormId } from '../../creatures/forms';
 import { GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
@@ -77,7 +77,7 @@ import { isParentPanelOpen } from '../../parent/panel';
 import { Scene } from '../Scene';
 import { HeldLines } from '../held-line';
 import { LEAVE_BEAT } from '../leave';
-import { CaptionBand } from '../../ui/caption-band';
+import { CaptionBand, speakerIcon } from '../../ui/caption-band';
 import { captionPlace, captionShows, type CaptionPlace } from '../../ui/caption-layout';
 
 /**
@@ -93,6 +93,12 @@ export class GameScene extends Scene {
   /** The island house or the root's Back to the round's origin. */
   private readonly home: RoundButton;
   private readonly help = new RoundButton(questionIcon(), swatch.white, 38, () => this.openHelp());
+  /**
+   * The guide no longer stands in game scenes (Robert, 2026-11-27): a hear-again button in its corner does what tapping
+   * it did, for a child who cannot read the caption (or has none). The guide object stays, off screen, for the games'
+   * `ctx.pet` calls.
+   */
+  private readonly hearAgain = new RoundButton(speakerIcon(), swatch.white, 38, () => this.repeat());
   private helpCard: HowToPanel | null = null;
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
@@ -237,11 +243,10 @@ export class GameScene extends Scene {
     this.content.addChild(this.stage);
 
     this.pet.scale.set(GUIDE_SCALE);
-    onTap(this.pet, () => this.repeat());
-    this.pet.hitArea = new Circle(0, -125, 170);
+    this.pet.visible = false;
     this.track(this.pet);
     this.help.alpha = 0.6;
-    this.ui.addChild(this.caption, this.pet, this.home, this.help);
+    this.ui.addChild(this.caption, this.hearAgain, this.home, this.help);
     this.place = captionPlace(this.view, this.captionOn());
     onBoing(this.sawBoing);
     this.ring.visible = false;
@@ -377,8 +382,6 @@ export class GameScene extends Scene {
 
   /** The guide, or the caption, was tapped: the waiting ask if the game has one, otherwise the instruction again. */
   private repeat() {
-    this.pet.poke();
-    sfx.giggle();
     if (this.game?.sayWaitingAsk?.()) return;
     if (!this.instruction) return;
     const text = voice.line(this.instruction.id, this.instruction.vars);
@@ -388,7 +391,6 @@ export class GameScene extends Scene {
   /** A wrong answer's boing, for a reader who cannot hear it: the guide tilts and the band wobbles. Nothing is counted. */
   private readonly sawBoing = () => {
     if (!this.caption.placed || !this.game || this.helpCard || this.finished) return;
-    this.pet.tilt();
     this.caption.wobble();
   };
 
@@ -403,6 +405,7 @@ export class GameScene extends Scene {
     this.stage.x = this.particles.x = place.dx;
     this.game?.resize(place.game);
     this.pet.position.set(place.dx + 74, place.game.h - 18);
+    this.hearAgain.position.set(place.dx + 62, place.game.h - 62);
     this.home.position.set(place.dx + 62, 62);
     this.help.position.set(place.dx + 62, 172);
     if (this.tip) this.placeTip(this.tip);
@@ -569,7 +572,7 @@ export class GameScene extends Scene {
     const at = new Point();
     this.app.renderer.events.mapPositionToPoint(at, e.clientX, e.clientY);
     // The bubble lies over the board and takes no touch, so a touch on it is a touch on the board.
-    const buttons = [this.pet, this.home, this.help, ...(this.caption.overBoard ? [] : [this.caption])];
+    const buttons = [this.hearAgain, this.home, this.help, ...(this.caption.overBoard ? [] : [this.caption])];
     return buttons.some((b) => b.visible && b.getBounds().containsPoint(at.x, at.y));
   }
 
@@ -928,7 +931,7 @@ export class GameScene extends Scene {
     this.ui.addChild(layer);
     this.home.visible = false;
     this.help.visible = false;
-    this.pet.visible = false;
+    this.hearAgain.visible = false;
     this.tip?.destroy({ children: true });
     this.tip = null;
 

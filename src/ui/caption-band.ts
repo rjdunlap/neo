@@ -19,8 +19,8 @@ const WOBBLE_S = 0.36;
 /** A line said in between is set in a lighter ink than the instruction. */
 const ASIDE_INK = 0.66;
 
-/** A small speaker: the band repeats the line, as the guide does. */
-function speakerIcon(): Graphics {
+/** A small speaker: the band repeats the line, as the hear-again button does. */
+export function speakerIcon(): Graphics {
   const g = new Graphics();
   g.poly([-14, -6, -6, -6, 4, -15, 4, 15, -6, 6, -14, 6]).fill(ink);
   g.arc(4, 0, 9, -0.9, 0.9).stroke({ color: ink, width: 3, cap: 'round' });
