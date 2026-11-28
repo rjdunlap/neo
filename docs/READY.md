@@ -29,6 +29,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 A playtest fix goes in Next ten under the phone lines.
 
+- **Browser harness after the cutover** (shell tier; found 2026-11-28 by the Duck Pond 18 and Market Stall 15 runs): since [PR #2336](https://github.com/rjdunlap/neo/pull/2336) picking a player lands on `HomeScene`, but the generic setup in `scripts/browser/registry.mjs` (and `fingerdemo`'s own setup) still waits for `MapScene`, so every generic suite times out before a game launches. Wait for the scene a pick now opens (or go straight to the map through `go.*`), then rerun `woods` and `fingerdemo` filtered to one game.
+
 
 ### Puzzle-page follow-ups
 

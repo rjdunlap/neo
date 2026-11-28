@@ -1543,6 +1543,63 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           );
           continue;
         }
+        if (plan.mode === 'more') {
+          // Which costs more? (dive slice 9, level 15): two tagged goods, no coins, bell or slate. On the first order two taps on
+          // the cheaper good (a miss each: the first lays the dots side by side, the second glows the dearer good and counts
+          // one hint), then the dearer good; later orders are answered straight away.
+          const good = (i) => `neo.scene.game.shelf[${i}].node`;
+          const dearer = () =>
+            page.evaluate(() => {
+              const p = neo.scene.game.order.prices;
+              return p[0] > p[1] ? 0 : 1;
+            });
+          const settle = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const right = await dearer();
+            if (n === 0) {
+              assert.deepEqual(
+                await page.evaluate(() => [
+                  neo.scene.game.bell.visible,
+                  neo.scene.game.purse.length,
+                  neo.scene.game.shelf.length,
+                  neo.scene.game.compareView.children.length,
+                ]),
+                [false, 0, 2, 0],
+                'no bell or coins; two goods on the shelf; no dots on the counter yet',
+              );
+              await tap(good(1 - right));
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'the cheaper good is a miss');
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.compareView.children.length),
+                3,
+                'a wrong tap lays the two rows of dots side by side, each with its numeral',
+              );
+              await tap(good(1 - right));
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss is the hint');
+              assert.ok(
+                await page.evaluate(() => neo.scene.game.shelfGlow.getLocalBounds().width > 0),
+                'the dearer good glows',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await screenshot('market-stall-15-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
+            await tap(good(right));
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          log(
+            'Market Stall 15 (Which costs more?): two tagged goods, the dots side by side, the glowing hint, saved score and sticker',
+          );
+          continue;
+        }
         if (plan.mode === 'trade') {
           const counter = 'neo.scene.game.tradeCounter';
           const bell = 'neo.scene.game.bell';
