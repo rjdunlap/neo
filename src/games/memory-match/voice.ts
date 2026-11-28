@@ -10,7 +10,7 @@ export const VOICE = {
   'memory.clock-hint': [
     'You have seen {card}. Look at the glowing card. The long hand points to {minute}, and the short hand is {hour}.',
   ],
-  'memory.total': ['Find the two groups of dots and the number they make together.'],
+  'memory.total': ['Find {count} pairs: two groups of dots and the number they make together.'],
   'memory.total-pair': ['{groups} make {total}. A pair!'],
   'memory.total-mix': ['{groups} make {total}, not {other}.'],
   'memory.total-two': ['{groups} make {total}. {others} make {other}.'],

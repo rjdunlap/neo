@@ -283,6 +283,9 @@ class MemoryMatch implements Game {
   }
 
   start() {
+    // Level 13's instruction names its pair count, so it stays on device speech and needs no rendered clip.
+    if (this.plan.mode === 'totals')
+      return void this.ctx.instruct('memory.total', { count: numberWord(this.plan.pairs - 1) });
     if (this.course) {
       this.report();
       void this.ctx.instruct('memory.start');
@@ -291,17 +294,15 @@ class MemoryMatch implements Game {
     void this.ctx.instruct(
       this.plan.mode === 'clocks'
         ? 'memory.clock'
-        : this.plan.mode === 'totals'
-          ? 'memory.total'
-          : this.plan.mode === 'numbers'
-            ? 'memory.number'
-            : this.plan.mode === 'letters'
-              ? 'memory.letter'
-              : this.plan.mode === 'number-words'
-                ? 'memory.number-word'
-                : this.plan.mode === 'fractions'
-                  ? 'memory.fraction'
-                  : 'memory.start',
+        : this.plan.mode === 'numbers'
+          ? 'memory.number'
+          : this.plan.mode === 'letters'
+            ? 'memory.letter'
+            : this.plan.mode === 'number-words'
+              ? 'memory.number-word'
+              : this.plan.mode === 'fractions'
+                ? 'memory.fraction'
+                : 'memory.start',
     );
   }
 
