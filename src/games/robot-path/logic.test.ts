@@ -10,6 +10,8 @@ import {
   driveNext,
   driveStep,
   LEVELS,
+  ONE_STEP_LEVEL,
+  ONE_STEP_PLANS,
   expand,
   FIX_PLANS,
   MEND_PLANS,
@@ -423,7 +425,7 @@ describe('level 14: mend the loop', () => {
 
 describe('Drive the robot (level 16)', () => {
   it('is the preschool entry, played first without renumbering any level', () => {
-    expect(LEVELS.preschool!.order).toEqual([DRIVE_LEVEL, 1, 2]);
+    expect(LEVELS.preschool!.order).toEqual([DRIVE_LEVEL, ONE_STEP_LEVEL, 1, 2]);
     expect(LEVELS.prek!.max).toBeLessThan(DRIVE_LEVEL);
     expect(LEVELS.school!.max).toBeLessThan(DRIVE_LEVEL);
   });
@@ -476,5 +478,40 @@ describe('Drive the robot (level 16)', () => {
           expect(at).toEqual(plan.goal);
           expect(taps).toBe(best);
         }
+  });
+});
+
+describe('One step, then play (level 17)', () => {
+  it('comes right after Drive the robot in preschool, and nowhere else', () => {
+    const order = LEVELS.preschool!.order!;
+    expect(order.indexOf(ONE_STEP_LEVEL)).toBe(order.indexOf(DRIVE_LEVEL) + 1);
+    expect(LEVELS.prek!.max).toBeLessThan(ONE_STEP_LEVEL);
+    expect(LEVELS.school!.max).toBeLessThan(ONE_STEP_LEVEL);
+  });
+
+  it('has one slot and a star one step away on a small open board', () => {
+    for (const plan of ONE_STEP_PLANS) {
+      expect(plan.size).toBe(3);
+      expect(plan.limit).toBe(1);
+      expect(plan.mode ?? 'steps').toBe('steps');
+      expect(shortestPath(plan)).toHaveLength(1);
+    }
+  });
+
+  it('reaches the star with exactly one arrow, and every other arrow is a miss', () => {
+    for (const plan of ONE_STEP_PLANS) {
+      const right = shortestPath(plan)[0];
+      for (const dir of DIRECTIONS) expect(runPath(plan, [dir]).success, dir).toBe(dir === right);
+      // A second arrow never fits: the program holds one step.
+      expect(runPath(plan, [right, right]).path).toHaveLength(2);
+    }
+  });
+
+  it('points the hint at the right arrow from an empty program, then at play', () => {
+    for (const plan of ONE_STEP_PLANS) {
+      const right = shortestPath(plan)[0];
+      expect(routePress(plan, [], 1)).toEqual({ arrow: right });
+      expect(routePress(plan, [{ dir: right, n: 1 }], 1)).toEqual({ play: true });
+    }
   });
 });

@@ -421,13 +421,14 @@ describe('game registry', () => {
     expect(game.levels('prek')).toEqual({ min: 5, max: 10 });
   });
 
-  it('opens only Robot Path’s Drive the robot entry and small step boards to preschool and preserves older ranges', () => {
+  it('opens only Robot Path’s Drive the robot and One step entries and small step boards to preschool and preserves older ranges', () => {
     const game = gameById('robot-path')!;
     expect(game.bands).toEqual(['preschool', 'prek', 'school']);
     const range = game.levels('preschool');
-    expect(range).toEqual({ min: 1, max: 16, order: [16, 1, 2] });
-    expect(game.entryLevels).toEqual([16]);
-    expect(stepLevel(16, 1, range)).toBe(1);
+    expect(range).toEqual({ min: 1, max: 17, order: [16, 17, 1, 2] });
+    expect(game.entryLevels).toEqual([16, 17]);
+    expect(stepLevel(16, 1, range)).toBe(17);
+    expect(stepLevel(17, 1, range)).toBe(1);
     expect(game.levels('prek')).toEqual({ min: 1, max: 6 });
     expect(game.levels('school')).toEqual({ min: 4, max: 15 });
     expect(playBand(game.bands, 'preschool')).toBe('preschool');
