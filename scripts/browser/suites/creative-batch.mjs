@@ -212,6 +212,55 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(await score('stamp-studio'), [2, 1], 'stamp a duck records 2 misses and 1 hint');
       await page.setViewportSize({ width: 1024, height: 768 });
     }
+    if ((!only || only === 'stamps') && stampAt(12)) {
+      // Level 12, Where does it go? (preschool and up): three place words on the Farm; a stamp elsewhere is no miss, the named
+      // place glows after a quiet spell, and a place not found by the green arrow counts as one hint.
+      await launch('stamp-studio', 12);
+      await page.evaluate(() => {
+        if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+      });
+      await page.waitForTimeout(500);
+      await page.evaluate(async () => {
+        const { placeTarget } = await import('/src/games/stamp-studio/logic.ts');
+        const g = neo.scene.game;
+        if (g.invites.length !== 3 || new Set(g.invites.map((i) => i.word)).size !== 3)
+          throw new Error(`Expected three distinct place words, got ${JSON.stringify(g.invites)}`);
+        if (g.scene !== 'farm') throw new Error(`Level 12 is on ${g.scene}, not the farm`);
+        const tapAt = async (word) => {
+          const t = placeTarget(word, g.width, g.height);
+          const p = g.paper.toGlobal(t);
+          kit.tap(p.x, p.y);
+          await kit.sleep(350);
+        };
+        // A stamp in another place is part of the picture: no miss, the invitation stays open.
+        const other = ['sky', 'grass', 'water'].find((w) => w !== g.invites[0].word);
+        await tapAt(other);
+        if (g.stamps.length !== 1 || g.inviteIndex !== 0 || g.misses !== 0)
+          throw new Error(
+            `Off-place stamp: stamps=${g.stamps.length} met=${g.inviteIndex} misses=${g.misses}`,
+          );
+        if (!g.finish.visible) throw new Error('The green arrow is hidden while invitations are open');
+        // A quiet spell lights the named place (not a hint).
+        g.idleTime = 12.5;
+        await kit.sleep(200);
+        if (!g.placeGlow.visible || g.hints !== 0)
+          throw new Error('No idle glow of the named place, or it counted');
+        for (let i = 0; i < 2; i++) {
+          kit.tapOn(g.choices[g.activeKinds.indexOf(g.invites[i].kind)]);
+          await kit.sleep(400);
+          await tapAt(g.invites[i].word);
+          if (g.inviteIndex !== i + 1) throw new Error(`Invitation ${i + 1} (${g.invites[i].word}) not met`);
+          if (g.placeGlow.visible) throw new Error('The place glow stayed on after a stamp');
+        }
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+      await screenshot('stamp-studio-12-portrait');
+      await page.evaluate(() => kit.tapOn(neo.scene.game.finish));
+      await finished('stamp-studio');
+      assert.deepEqual(await score('stamp-studio'), [0, 1], 'one place not found counts one hint, no misses');
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
     if ((!only || only === 'stamps') && stampAt(7)) {
       // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
       // The teal around the paper presses too, at the nearest place on it, and no star button or arrow is shown.

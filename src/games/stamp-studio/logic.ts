@@ -161,7 +161,8 @@ export interface StampPlan {
     | 'story'
     | 'leaf'
     | 'feet'
-    | 'ask';
+    | 'ask'
+    | 'places';
   name: string;
   /** Every stamp is pressed at this size, and this many of them finish the picture (the lap level). */
   pat?: { size: number; count: number };
@@ -169,6 +170,8 @@ export interface StampPlan {
   follow?: { count: number };
   /** Stamp a duck! (level 11): the voice asks for this many distinct animals in turn, then free play. */
   ask?: { count: number };
+  /** Where does it go? (level 12): on the Farm scene, this many place invitations in a row, met by where a stamp lands. */
+  invite?: { count: number };
   /** A music-note button plays the picture back, left to right. */
   play?: boolean;
   /** The stamps on the paper are counted aloud, one to ten, each number once (levels 1–3, dive slice 3). */
@@ -287,6 +290,16 @@ export const PLANS = [
     prompt: 'ask',
     name: 'Stamp a duck!: find the animal the voice asks for',
     ask: { count: 3 },
+  },
+  // Where does it go?: three spoken place words on the Farm scene, any stamp meets one by where it lands; then free.
+  {
+    kinds: ['cloud', 'cow', 'duck'],
+    color: true,
+    move: true,
+    transform: false,
+    prompt: 'places',
+    name: 'Where does it go?: put a stamp up in the sky, on the grass or in the water',
+    invite: { count: 3 },
   },
 ] as const satisfies readonly StampPlan[];
 export const planFor = (level: number): StampPlan =>
@@ -500,9 +513,65 @@ export function animalAsks(kinds: readonly StampKind[], selected: StampKind, rng
   return [first, ...rest];
 }
 
+/** Where does it go? (level 12): the place words a Farm round invites, and how each is said after its stamp. */
+export type PlaceWord = 'sky' | 'grass' | 'water';
+export const PLACE_WORDS: readonly PlaceWord[] = ['sky', 'grass', 'water'];
+export const PLACE_PHRASES: Record<PlaceWord, string> = {
+  sky: 'up in the sky',
+  grass: 'on the grass',
+  water: 'in the water',
+};
+/** The stamps a round suggests for each place (one of each is offered); any stamp meets a word by where it lands. */
+export const PLACE_KINDS: Record<PlaceWord, readonly StampKind[]> = {
+  sky: ['cloud', 'kite', 'balloon'],
+  grass: ['cow', 'pig', 'hen'],
+  water: ['duck', 'fish'],
+};
+/**
+ * The pond the Farm backdrop paints (`sceneArt`), as fractions of the paper: centre and radii. `POND_REACH` units more on
+ * each radius still count as in the water, so a stamp half on the bank is in it and the zone is wide enough at every view.
+ */
+export const POND = { x: 0.72, y: 0.76, rx: 0.18, ry: 0.13 } as const;
+export const POND_REACH = 40;
+/** Idle seconds before the named place glows softly (not a hint). */
+export const PLACE_GLOW_AFTER = 12;
+/** Whether a stamp at this pixel (its centre, on a paper of this size) meets the place word. Only the position counts. */
+export function meetsWord(word: PlaceWord, x: number, y: number, w: number, h: number): boolean {
+  const horizon = h * SCENES.farm.horizon;
+  const dx = (x - w * POND.x) / (w * POND.rx + POND_REACH);
+  const dy = (y - h * POND.y) / (h * POND.ry + POND_REACH);
+  const wet = dx * dx + dy * dy <= 1;
+  if (word === 'water') return wet;
+  if (word === 'sky') return y < horizon;
+  return y >= horizon && !wet;
+}
+/** Where the ghost finger presses for a word, as a pixel on a paper of this size: well inside the place at every view. */
+export function placeTarget(word: PlaceWord, w: number, h: number): Pt {
+  if (word === 'sky') return { x: w * 0.3, y: Math.max(80, h * SCENES.farm.horizon * 0.55) };
+  if (word === 'grass') return { x: w * 0.22, y: h * 0.72 };
+  return { x: w * POND.x, y: Math.min(h * POND.y, h - 80) };
+}
+/** One Where does it go? round: the three place words in a seeded order, each with the stamp the voice suggests. */
+export function placeInvites(rng: Rng): { word: PlaceWord; kind: StampKind }[] {
+  return rng.shuffle([...PLACE_WORDS]).map((word) => ({ word, kind: rng.pick(PLACE_KINDS[word]) }));
+}
+
 /** Early rounds vary their existing tools without adding simultaneous choices. */
-export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName; scene?: SceneId } {
+export function roundPlan(
+  level: number,
+  rng: Rng,
+): { plan: StampPlan; color: ColorName; scene?: SceneId; invites?: { word: PlaceWord; kind: StampKind }[] } {
   const base = planFor(level);
+  if (base.invite) {
+    // The Farm scene, and one suggested stamp for each place in the round, shown in a seeded order.
+    const invites = placeInvites(rng);
+    return {
+      plan: { ...base, kinds: rng.shuffle(invites.map((i) => i.kind)) },
+      color: rng.pick(STAMP_COLORS),
+      scene: 'farm',
+      invites,
+    };
+  }
   if (base.ask) {
     return {
       plan: { ...base, kinds: rng.shuffle([...base.kinds]) },
@@ -531,6 +600,8 @@ export interface StampState {
   sparkle?: Pt;
   /** Stamp a duck!: the animal currently asked for, while asks remain. */
   ask?: StampKind;
+  /** Where does it go?: the stamp suggested for the open invitation and where to press for its place (0 to 1). */
+  invite?: { kind: StampKind; at: Pt };
 }
 
 export type StampMove =
@@ -572,6 +643,11 @@ export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   if (plan.pat) return n < plan.pat.count ? { do: 'stamp', ...PAT_SPOTS[n] } : { do: 'finish' };
   if (plan.follow)
     return n < plan.follow.count && st.sparkle ? { do: 'stamp', ...st.sparkle } : { do: 'finish' };
+  if (plan.invite) {
+    if (!st.invite) return { do: 'finish' };
+    if (st.kind !== st.invite.kind) return { do: 'kind', kind: st.invite.kind };
+    return { do: 'stamp', ...st.invite.at };
+  }
   if (plan.ask && st.ask) {
     if (st.kind !== st.ask) return { do: 'kind', kind: st.ask };
     return { do: 'stamp', ...DEMO_SPOTS[n % DEMO_SPOTS.length] };
@@ -777,9 +853,10 @@ export function traceDemo(
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [7, 8, 1, 10, 2] },
   toddler: { min: 2, max: 11, order: [9, 10, 2, 11, 3] },
-  preschool: { min: 3, max: 5 },
-  prek: { min: 4, max: 6 },
-  school: { min: 5, max: 6 },
+  // Where does it go? (12) closes the preschool 3–7, pre-K 4–9 and school 5–11 windows decided 2026-10-23 (old numbering).
+  preschool: { min: 3, max: 12, order: [3, 4, 5, 6, 12] },
+  prek: { min: 4, max: 12, order: [4, 5, 6, 12] },
+  school: { min: 5, max: 12, order: [5, 6, 12] },
 };
 
 /** A round button's touch radius (`RoundButton`: its 48 radius and 14 more). */

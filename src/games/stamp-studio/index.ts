@@ -21,7 +21,15 @@ import {
   choiceButtonRadius,
   COLOR_RADIUS,
   LEVELS,
+  meetsWord,
   nextSize,
+  PLACE_GLOW_AFTER,
+  PLACE_PHRASES,
+  placeTarget,
+  POND,
+  POND_REACH,
+  SCENES,
+  type PlaceWord,
   stampLine,
   LIMIT,
   pixel,
@@ -112,6 +120,12 @@ class StampStudio implements Game {
   askIndex = 0;
   hintKind: StampKind | null = null;
   readonly choiceGlow = new Graphics();
+  /** Where does it go? (level 12): the round's place invitations, how many are met, and the named place's idle glow. */
+  readonly invites: { word: PlaceWord; kind: StampKind }[] = [];
+  inviteIndex = 0;
+  private elsewhereSaid = false;
+  readonly placeGlow = new Graphics();
+  private idleTime = 0;
   private readonly tally = newRequestTally();
   get misses() {
     return this.tally.misses;
@@ -134,11 +148,22 @@ class StampStudio implements Game {
     this.plan = round.plan;
     this.color = round.color;
     this.scene = round.scene;
+    if (round.invites) this.invites.push(...round.invites);
     this.activeKinds = [...this.plan.kinds];
     this.kind = this.activeKinds[0];
     this.backdrop.eventMode = 'none';
     this.backdrop.mask = this.backdropMask;
-    this.paper.addChild(this.sheet, this.backdrop, this.backdropMask, this.glow, this.selection, this.bar);
+    this.paper.addChild(
+      this.sheet,
+      this.backdrop,
+      this.backdropMask,
+      this.placeGlow,
+      this.glow,
+      this.selection,
+      this.bar,
+    );
+    this.placeGlow.eventMode = 'none';
+    this.placeGlow.visible = false;
     if (this.plan.follow) {
       this.spots.push(...sparkleSpots(ctx.rng));
       const gold = swatch.yellow;
@@ -328,6 +353,9 @@ class StampStudio implements Game {
     this.choiceGlow.visible = false;
     this.finish.rotation = 0;
     this.stopScan();
+    this.placeGlow.visible = false;
+    // Where does it go?: each invitation not met when she finishes counts as one hint (never spoken as a failure).
+    for (let i = this.inviteIndex; i < this.invites.length; i++) hinted(this.tally);
     this.play.visible = false;
     this.setsButton.visible = false;
     this.setTray.visible = false;
@@ -481,6 +509,7 @@ class StampStudio implements Game {
         onDrop: (x, y) => {
           Object.assign(data, place(x, y, this.width, this.height));
           this.layoutStamp(mark);
+          this.checkInvite(data);
           this.drawSelection();
           return true;
         },
@@ -495,6 +524,7 @@ class StampStudio implements Game {
       if (n) void this.ctx.say('stamp.count', { n });
     }
     this.checkAsk(data.kind);
+    this.checkInvite(data);
     this.drawSelection();
     if (
       (this.ctx.level <= 2 && this.stamps.length === LIMIT) ||
@@ -502,6 +532,66 @@ class StampStudio implements Game {
       (this.plan.follow && this.stamps.length >= this.plan.follow.count)
     )
       this.complete();
+  }
+  /** The place invitation still open (Where does it go?, level 12), or null once all are met. */
+  private currentInvite() {
+    return this.invites[this.inviteIndex] ?? null;
+  }
+  private sayInvite(line: 'stamp.places' | 'stamp.elsewhere') {
+    const invite = this.currentInvite();
+    if (!invite) return;
+    const params = { kind: animalWord(invite.kind), place: PLACE_PHRASES[invite.word] };
+    if (line === 'stamp.places') void this.ctx.instruct(line, params);
+    else void this.ctx.say(line, params);
+  }
+  /**
+   * A stamp pressed or carried to the open invitation's place meets it: a sparkle, then the next word. A stamp anywhere
+   * else is just part of the picture (no boing, no miss); the invitation is said again once, gently.
+   */
+  private checkInvite(stamp: Stamp) {
+    const invite = this.currentInvite();
+    if (!invite || this.done) return;
+    this.idleTime = 0;
+    this.placeGlow.visible = false;
+    const p = pixel(stamp, this.width, this.height);
+    if (!meetsWord(invite.word, p.x, p.y, this.width, this.height)) {
+      if (!this.elsewhereSaid) {
+        this.elsewhereSaid = true;
+        this.sayInvite('stamp.elsewhere');
+      }
+      return;
+    }
+    this.inviteIndex++;
+    this.elsewhereSaid = false;
+    sfx.sparkle();
+    this.ctx.particles.burst(this.paper.x + p.x, this.paper.y + p.y, {
+      kind: 'dot',
+      colors: [0xfff3a0, 0xffffff, swatch.yellow.fill],
+      count: 14,
+      speed: [80, 200],
+      gravity: 160,
+      life: [0.4, 0.7],
+    });
+    if (this.currentInvite()) this.sayInvite('stamp.places');
+    else void this.ctx.instruct('stamp.placesdone', { count: 'three' });
+    this.drawPlaceGlow();
+  }
+  /** The soft glow over the open invitation's place, drawn for this paper size (shown after `PLACE_GLOW_AFTER` idle). */
+  private drawPlaceGlow() {
+    const g = this.placeGlow.clear();
+    const invite = this.currentInvite();
+    if (!invite) return;
+    const w = this.width;
+    const h = this.height;
+    const horizon = h * SCENES.farm.horizon;
+    const pond = () => g.ellipse(w * POND.x, h * POND.y, w * POND.rx + POND_REACH, h * POND.ry + POND_REACH);
+    const fill = { color: 0xfff3a0, alpha: 0.45 };
+    if (invite.word === 'sky') g.rect(4, 4, w - 8, horizon - 4).fill(fill);
+    else if (invite.word === 'water') pond().fill(fill).stroke({ width: 5, color: swatch.yellow.line });
+    else {
+      g.rect(4, horizon, w - 8, h - horizon - 4).fill(fill);
+      pond().cut();
+    }
   }
   private checkAsk(stamped: StampKind) {
     const ask = this.currentAsk();
@@ -571,7 +661,8 @@ class StampStudio implements Game {
   }
   start() {
     const ask = this.currentAsk();
-    if (ask) void this.ctx.instruct('stamp.ask', { animal: animalWord(ask) });
+    if (this.currentInvite()) this.sayInvite('stamp.places');
+    else if (ask) void this.ctx.instruct('stamp.ask', { animal: animalWord(ask) });
     else void this.ctx.instruct(`stamp.${this.plan.prompt}`);
   }
   resize(v: View) {
@@ -597,6 +688,7 @@ class StampStudio implements Game {
       .roundRect(3.5, 3.5, this.width - 7, this.height - 7, 20.5)
       .fill(0xffffff);
     this.drawBackdrop();
+    this.drawPlaceGlow();
     this.choices.forEach((b, i) => b.position.set(l.choices[i].x, l.choices[i].y));
     this.colors.forEach((b, i) => b.position.set(l.colors[i].x, l.colors[i].y));
     for (const k of ['finish', 'undo', 'bin', 'turn', 'grow', 'play', 'sets'] as const)
@@ -623,6 +715,12 @@ class StampStudio implements Game {
   }
   update(dt: number) {
     if (this.scan) this.stepScan(dt);
+    if (!this.done && this.currentInvite()) {
+      // A free glow of the named place after a quiet spell; any stamp resets it. Not a hint.
+      this.idleTime += dt;
+      this.placeGlow.visible = this.idleTime >= PLACE_GLOW_AFTER;
+      if (this.placeGlow.visible) this.placeGlow.alpha = 0.7 + 0.3 * Math.sin(this.idleTime * 3);
+    }
     if (this.wake) this.stepWake(dt);
     if (this.glow.visible || this.choiceGlow.visible) {
       this.glowTime += dt;
@@ -673,6 +771,7 @@ class StampStudio implements Game {
       color: this.color,
       sparkle: at ? place(at.x, at.y, this.width, this.height) : undefined,
       ask: this.currentAsk() ?? undefined,
+      invite: this.inviteFor(),
     });
     switch (move.do) {
       case 'kind':
@@ -693,6 +792,13 @@ class StampStudio implements Game {
       default:
         return { tap: { on: this.finish } };
     }
+  }
+  /** The ghost finger's open invitation: its suggested stamp and a press well inside its place. */
+  private inviteFor() {
+    const invite = this.currentInvite();
+    if (!invite) return undefined;
+    const at = placeTarget(invite.word, this.width, this.height);
+    return { kind: invite.kind, at: place(at.x, at.y, this.width, this.height) };
   }
   destroy() {
     this.stamps.forEach((s) => s.drag?.destroy());
