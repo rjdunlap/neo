@@ -45,7 +45,7 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 2. **Shells for grown-ups.** Defined below. Built.
 3. **Stamps** (from option A; defined below, built): three to five named goals per grown-up game (reach a level, a level with no hint, the top level, one trick of the game's own), each written beforehand, earned once and paying a one-time shell bonus. A stamp page per land, and Lantern Lake shows one lit paper lantern per stamp, so the lake fills up as the total grows.
 4. **The friend's page and shop** (defined below, built): colours and wearables for the player's own friend at shown prices, on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
-5. **Today's six extras** (from option C): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
+5. **Today's six extras** (from option C; defined below, built): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
 6. **Seasons** (from option C): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
 7. **Lantern Lodge** (from option B): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
 8. **A daily gift** for grown-ups (never stacking or shown as missed), then the `school` band with the prices grown-up play has set.
@@ -82,3 +82,12 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 - **Save.** `SaveData.shop: { owned: ShopId[] }` (`wear:<item>` or `color:<colour>`), repaired by `cleanShop` (known ids, once each). `store.buy(id)` refuses a band that does not earn, an unknown or owned id, or a short balance, changing nothing. `store.recolor` also accepts a bought colour.
 - **Children.** Dress keeps every item and colour free; a child's profile has no shop and no prices.
 - **Later.** More things to sell as new wearables are drawn; Lantern Lodge (slice 7) is the larger thing to save for.
+
+### Slice 5: Today's six extras
+
+**Built 2026-11-28.** Robert, the same day: "merge each as you go, don't need me".
+
+- **All six.** When a grown-up comes back to the six with every card ticked, the day is recorded and, the first time that day, **25 shells** are paid. A pill under the title says "+25 shells · all six" for a few seconds, and the balance beside the date updates. The same day again pays nothing.
+- **Calendar.** The lantern button's sheet is now "Lanterns". Under "Today" is the share line, then a month calendar (weeks from Monday, ‹ and › to turn the month) with a lit lantern on each day all six were done and today outlined. Then come the stamps, as before. Empty days are only their number; nothing counts a run of days or marks a day missed.
+- **Share line.** Wordle-style, with no game names: "Puddle Island · Today's six · Nov 28", then one square per card in card order (green: a round today with no misses or hints; yellow: a round with some; white: not played) and "N/6". Copy opens the phone's share sheet, or copies where there is none.
+- **Save.** `SaveData.sixes: { days: string[] }` (`src/content/sixes.ts`), repaired by `cleanSixes` (real days, once each, in order, at most 2,400). `store.recordAllSix(day)` returns the bonus; it records nothing for a band that does not earn.

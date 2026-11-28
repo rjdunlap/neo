@@ -1220,3 +1220,21 @@ describe('the friend shop (the progression loop)', () => {
     expect(again.data.shells.balance).toBe(500);
   });
 });
+
+describe("Today's six extras (the progression loop)", () => {
+  it('records a grown-up day of all six once, with its bonus, and keeps it', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    expect(store.recordAllSix('2026-11-28')).toBe(25);
+    expect(store.recordAllSix('2026-11-28')).toBe(0);
+    expect(store.data.shells.balance).toBe(25);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.sixes.days).toEqual(['2026-11-28']);
+    again.setBand('prek');
+    expect(again.recordAllSix('2026-11-29')).toBe(0);
+    expect(again.data.sixes.days).toEqual(['2026-11-28']);
+  });
+});

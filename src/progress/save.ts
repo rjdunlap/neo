@@ -25,6 +25,7 @@ import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
 import { cleanShells, emptyShells, type ShellsSave } from '../content/shells';
 import { cleanStamps, type Stamp } from '../content/stamps';
 import { cleanShop, emptyShop, type ShopSave } from '../content/shop';
+import { cleanSixes, emptySixes, type SixesSave } from '../content/sixes';
 
 /** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
 export type Language2 = 'none' | 'pt-PT';
@@ -168,6 +169,8 @@ export interface SaveData {
   stamps: Stamp[];
   /** The progression loop's shop (`src/content/shop.ts`): the looks a grown-up has bought for their friend with shells. */
   shop: ShopSave;
+  /** The progression loop's six extras (`src/content/sixes.ts`): the days a grown-up finished all of Today's six. */
+  sixes: SixesSave;
 }
 
 export const HISTORY_LENGTH = 10;
@@ -214,6 +217,7 @@ export function defaults(): SaveData {
     shells: emptyShells(),
     stamps: [],
     shop: emptyShop(),
+    sixes: emptySixes(),
   };
 }
 
@@ -432,6 +436,7 @@ export function migrate(raw: unknown): SaveData {
     shells: cleanShells(raw.shells),
     stamps: cleanStamps(raw.stamps),
     shop: cleanShop(raw.shop),
+    sixes: cleanSixes(raw.sixes),
   };
 }
 
