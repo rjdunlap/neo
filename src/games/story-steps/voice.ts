@@ -4,6 +4,8 @@ export const VOICE = {
   'story.start': [
     '{story}! Drag the picture that comes next into the glowing space. The music button tells the pictures we have placed.',
   ],
+  // One picture grows (level 15): slotted, so it stays on device speech.
+  'story.grow': ['Put the picture in the space, {name}, and watch it grow!'],
   'story.wrong': ['What happened before this picture? Let us try another one.'],
   'story.hint': ['Try this glowing picture next!'],
   'story.step': ['{step}'],

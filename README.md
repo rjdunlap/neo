@@ -199,7 +199,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Campsite](docs/games/campsite.md) | school | Puzzle Peaks | 1 | one authored 4×4 camp with three trees: she pitches a tent beside each tree so every row and column matches its count sign and no two tents touch, even at a corner, then taps Check camp. The counts and the corner rule rule squares out until each tree has one place left. |
 | [Silly Scene](docs/games/silly-scene.md) | preschool–school | Puzzle Peaks | 3 | Tap the fish in the tree to hear why it belongs in the pond and watch it splash back into the water. |
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 17 | follow a firefly along capital strokes |
-| [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 14 | finish a two-picture story |
+| [Story Steps](docs/games/story-steps.md) | lap–school | Story Grove | 15 | lap opens with one picture that grows in when it is put in the space; toddlers meet it first too, then finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 18 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
 | [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 15 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
 | [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
