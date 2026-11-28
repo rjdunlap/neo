@@ -32,7 +32,7 @@ describe('seasons', () => {
   });
 
   it('count rounds and games for a grown-up only', () => {
-    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as Band[]) {
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as Band[]) {
       const r = countRound(emptySeasons(), emptyShells(), 'tile-pairs', band, DAY, [], [], 1);
       expect(r.seasons).toEqual(emptySeasons());
     }

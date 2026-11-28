@@ -37,7 +37,7 @@ describe('Lantern Lodge', () => {
   });
 
   it('builds nothing for a child', () => {
-    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as Band[])
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as Band[])
       expect(build(emptyLodge(), rich(999), 'dock', band)).toEqual({ refused: 'band' });
   });
 

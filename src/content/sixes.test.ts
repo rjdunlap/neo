@@ -27,7 +27,7 @@ describe("Today's six extras", () => {
     expect(again.sixes).toBe(first.sixes);
     const next = recordAllSix(first.sixes, first.shells, '2026-11-30', 'grownup');
     expect(next.sixes.days).toEqual([DAY, '2026-11-30']);
-    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as Band[])
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as Band[])
       expect(recordAllSix(emptySixes(), emptyShells(), DAY, band).bonus).toBe(0);
     expect(
       recordAllSix(emptySixes(), { ...emptyShells(), balance: MAX_BALANCE - 5 }, DAY, 'grownup').bonus,

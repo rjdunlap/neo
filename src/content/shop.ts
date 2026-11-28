@@ -28,6 +28,12 @@ export const WEAR_PRICE: Record<WearableId, number> = {
 export const COLOR_PRICE = 50;
 export const MIXED_COLOR_PRICE = 120;
 
+/**
+ * The bands whose friend's things are sold: grown-ups. A child's friend already wears every thing and colour it has for free
+ * in Dress, so a school-age child spends shells in the lodge instead, and the shop never sells a child what Dress gives.
+ */
+export const sellsLooks = (band: Band): boolean => band === 'grownup';
+
 export const wearId = (w: WearableId): ShopId => `wear:${w}`;
 export const colorId = (c: PetColor): ShopId => `color:${c}`;
 
@@ -88,7 +94,7 @@ export function buy(
   id: string,
   band: Band,
 ): { shop: ShopSave; shells: ShellsSave } | { refused: BuyRefusal } {
-  if (!earnsShells(band)) return { refused: 'band' };
+  if (!earnsShells(band) || !sellsLooks(band)) return { refused: 'band' };
   if (!isShopId(id)) return { refused: 'unknown' };
   if (shop.owned.includes(id)) return { refused: 'owned' };
   const price = priceOf(id);

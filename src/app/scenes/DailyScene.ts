@@ -27,6 +27,7 @@ import { lantern, shellTag } from '../../ui/shells';
 import { openStampsSheet, type StampsSheet } from '../../ui/stamps-sheet';
 import { resultOn } from '../../content/sixes';
 import { earnsShells } from '../../content/shells';
+import { sellsLooks } from '../../content/shop';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 import { WayOut } from '../leave';
@@ -103,8 +104,8 @@ export class DailyScene extends Scene {
   purse = earnsShells(store.data.profile.band) ? shellTag(String(store.data.shells.balance), 20) : null;
   /** The pet in the bottom-left corner the cards keep clear of: a poke repeats the page's line, and it cheers when all six are done. */
   readonly pip = makeCompanion();
-  /** Over the friend for a band that earns shells: a tap on either opens the friend's own page and shop. */
-  readonly shopTag = earnsShells(store.data.profile.band)
+  /** Over the friend for a band whose friend's looks are sold (grown-ups): a tap on either opens its page and shop. */
+  readonly shopTag = sellsLooks(store.data.profile.band)
     ? namePill(store.companion ? `${store.companion.name}'s shop` : 'Choose a friend')
     : null;
   readonly day = dayKey(new Date());
@@ -386,12 +387,14 @@ export class DailyScene extends Scene {
     // under the cards is clear).
     const step = CORNER_RADIUS * 2 + 20;
     // The lodge goes one further along: above the stamps when wide, left of them when tall.
+    // Without the notes (a school-age six), the stamps take the corner and the lodge moves up beside them.
+    const n = this.notes ? 1 : 0;
     if (wide) {
-      this.stamps?.position.set(v.w - BACK.x, v.h - BACK.y - step);
-      this.lodge?.position.set(v.w - BACK.x, v.h - BACK.y - 2 * step);
+      this.stamps?.position.set(v.w - BACK.x, v.h - BACK.y - n * step);
+      this.lodge?.position.set(v.w - BACK.x, v.h - BACK.y - (n + 1) * step);
     } else {
-      this.stamps?.position.set(v.w - BACK.x - step, v.h - BACK.y);
-      this.lodge?.position.set(v.w - BACK.x - 2 * step, v.h - BACK.y);
+      this.stamps?.position.set(v.w - BACK.x - n * step, v.h - BACK.y);
+      this.lodge?.position.set(v.w - BACK.x - (n + 1) * step, v.h - BACK.y);
     }
     this.cards.forEach((c, i) => {
       const col = i % cols;

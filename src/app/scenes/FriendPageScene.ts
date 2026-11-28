@@ -3,8 +3,7 @@ import { cream, grass, ink, swatch } from '../../art/palette';
 import { changeWorn, SLOT, type WearableId } from '../../art/creatures/wear-slots';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { earnsShells } from '../../content/shells';
-import { colorId, hasLook, priceOf, shopName, wearId, type ShopId } from '../../content/shop';
+import { colorId, hasLook, priceOf, sellsLooks, shopName, wearId, type ShopId } from '../../content/shop';
 import { ALL_PET_COLORS, type PetColor } from '../../content/world';
 import {
   itemTexture,
@@ -206,7 +205,7 @@ export class FriendPageScene extends Scene {
   }
 
   choose(species: SpeciesId) {
-    if (this.who || !earnsShells(store.data.profile.band)) return;
+    if (this.who || !sellsLooks(store.data.profile.band)) return;
     const sp = SPECIES[species];
     if (!store.meet(species, sp.names[0], sp.color, GROWNUP_FRIEND)) return;
     sfx.sparkle();
@@ -422,7 +421,7 @@ export class FriendPageScene extends Scene {
 
   async enter() {
     voice.stop();
-    if (!earnsShells(store.data.profile.band)) this.app.go.daily();
+    if (!sellsLooks(store.data.profile.band)) this.app.go.daily();
   }
 }
 

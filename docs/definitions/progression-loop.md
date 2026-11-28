@@ -24,10 +24,10 @@ Neopets is one loop: play games to earn Neopoints, spend them on a pet and its h
 | --- | --- | --- | --- |
 | `lap`, `toddler` | Nothing: one sticker per round, as always | Nothing | Stickers, friends met |
 | `preschool`, `prek` | No currency | A grown-up may give a named gift | Stamp pages (later slice) |
-| `school` | Shells, once the grown-up pacing is known | Shop at shown prices | Stamps, trophies, journal |
+| `school` | Shells, the six's bonus, seasons and the daily gift, at grown-up prices (switched on 2026-11-28) | Lantern Lodge (a child's friend already has every look free in Dress, so the shop is grown-ups' only) | Stamps from their own band's ladder, keepsakes, journal |
 | `grownup` | Shells, then the daily gift | Shop for their own friend, then Lantern Lodge | Stamps, trophies, records, a calendar of days played |
 
-Grown-ups come first because they play now, on phones, through [Today's six](todays-six.md); their pacing sets the prices before the school band switches on.
+Grown-ups come first because they play now, on phones, through [Today's six](todays-six.md); their pacing set the prices, and the developer switched the school band on 2026-11-28 (slice 9).
 
 ## Rules for every band
 
@@ -48,7 +48,7 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 5. **Today's six extras** (from option C; defined below, built): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
 6. **Seasons** (from option C; defined below, built): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
 7. **Lantern Lodge** (from option B; defined below, built): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
-8. **A daily gift** for grown-ups (never stacking or shown as missed; defined below, built), then the `school` band with the prices grown-up play has set (waits for the developer).
+8. **A daily gift** for grown-ups (never stacking or shown as missed; defined below, built), then the `school` band with the prices grown-up play has set (slice 9, built).
 
 ### Slice 2: shells for grown-ups
 
@@ -124,4 +124,14 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 - **Gift.** The first time a grown-up opens Today's six on a local day, 10 shells arrive by themselves, with a pill under the title for a moment ("+10 shells · today's gift") and the balance updated. There is nothing to tap or remember.
 - **Never stacking.** One gift a day at most; days away bring one gift on the next visit, not one per day missed, and nothing shows a day without one.
 - **Save.** `SaveData.gift: { day }` (`src/content/gift.ts`), the last day a gift arrived, repaired by `cleanGift`. `store.claimGift(day)` gives nothing to a band that does not earn.
-- **The school band** stays off: the definition switches it on once grown-up play has set the prices, so it waits for the developer to say when.
+- **The school band** came next, in slice 9.
+
+### Slice 9: the school band
+
+**Built 2026-11-28.** The developer, 2026-11-28: "I'm fine with school age kids getting it, yes."
+
+- **Earning.** `earnsShells` is true for `school` as well as `grownup`: shells per round with the same daily cap, the all-six bonus, seasons and the daily gift, at the same prices.
+- **Stamps** come from the player's own band: a school-age child's stamps are the school games' goals on the school ladder (`GameScene` and the Lanterns sheet read `store.data.profile.band`); a grown-up's stay as they were.
+- **Spending** is the lodge. The friend's page and shop stay grown-ups' only (`sellsLooks`): a child's friend already wears every thing and colour it has for free in Dress, and the shop must never sell what Dress gives. Today's six shows a school-age child the balance, the lantern button and the lodge (moved into the corner where a grown-up's notes button sits), and no shop pill.
+- **Way in.** Home's board opens Today's six for every band; Home's yard shows the lodge to every band that earns (the island-games thread's `earnsShells` check).
+- **Pre-K and younger** are unchanged: no shells, nothing to buy.

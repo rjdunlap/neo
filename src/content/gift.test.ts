@@ -17,7 +17,7 @@ describe('the daily gift', () => {
   });
 
   it('gives a child nothing', () => {
-    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as Band[])
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as Band[])
       expect(claimGift(emptyGift(), emptyShells(), '2026-11-28', band).amount).toBe(0);
   });
 

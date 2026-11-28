@@ -56,8 +56,8 @@ describe('stamps', () => {
     expect(newStamps([], 'tile-pairs', 'grownup', { min: 3, max: 9 }, round(1))).toEqual(['first']);
   });
 
-  it('only grown-ups earn them for now', () => {
-    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as const)
+  it('only school age and grown-ups earn them', () => {
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(newStamps([], 'tile-pairs', band, LADDER, round(9))).toEqual([]);
   });
 

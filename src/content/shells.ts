@@ -24,7 +24,7 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const GAME_ID = /^[a-z0-9-]{1,60}$/;
 
 /** The bands that earn shells now: grown-ups only, until their pacing sets the prices for school age. */
-export const earnsShells = (band: Band): boolean => band === 'grownup';
+export const earnsShells = (band: Band): boolean => band === 'school' || band === 'grownup';
 
 export const emptyShells = (): ShellsSave => ({ balance: 0, day: '', earned: {} });
 

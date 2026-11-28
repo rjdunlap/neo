@@ -14,10 +14,11 @@ import type { Band } from '../progress/bands';
 const DAY = '2026-11-25';
 
 describe('shells', () => {
-  it('only grown-ups earn them for now', () => {
+  it('only school age and grown-ups earn them', () => {
     const bands: Band[] = ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup'];
-    expect(bands.filter(earnsShells)).toEqual(['grownup']);
-    for (const band of bands.filter((b) => b !== 'grownup')) {
+    expect(bands.filter(earnsShells)).toEqual(['school', 'grownup']);
+    expect(earnShells(emptyShells(), 'sudoku-garden', 'school', DAY).shells).toBe(5);
+    for (const band of bands.filter((b) => !earnsShells(b))) {
       const r = earnShells(emptyShells(), 'sudoku-garden', band, DAY);
       expect(r.shells).toBe(0);
       expect(r.next).toEqual(emptyShells());

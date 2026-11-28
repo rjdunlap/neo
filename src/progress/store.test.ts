@@ -1191,7 +1191,7 @@ describe('stamps (the progression loop)', () => {
       kinds: [],
       bonus: 0,
     });
-    store.setBand('school');
+    store.setBand('prek');
     expect(store.earnStamps('word-code', range, { level: 1, misses: 0, hints: 0 }).kinds).toEqual([]);
   });
 });
@@ -1214,7 +1214,7 @@ describe('the friend shop (the progression loop)', () => {
     const again = make();
     await again.load();
     expect(again.data.shop.owned).toEqual(['color:lilac']);
-    again.setBand('school');
+    again.setBand('prek');
     again.data.shells.balance = 500;
     expect(again.buy('wear:scarf')).toBe('band');
     expect(again.data.shells.balance).toBe(500);
@@ -1270,7 +1270,7 @@ describe('the daily gift (the progression loop)', () => {
     await again.load();
     expect(again.data.gift.day).toBe('2026-11-28');
     expect(again.data.shells.balance).toBe(10);
-    again.setBand('school');
+    again.setBand('prek');
     expect(again.claimGift('2026-11-29')).toBe(0);
   });
 });
