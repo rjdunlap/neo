@@ -1160,8 +1160,9 @@ class DuckPond implements Game {
     this.cardRow.reset(0);
     await this.swimAway();
     this.round++;
-    // The how-to card's demonstration shows the first two totals of level 16, so it ends inside its time.
-    const rounds = this.plan.mode === 'every' && this.ctx.demo ? 2 : this.plan.rounds;
+    // The how-to card's demonstration shows the first two totals of level 16 (two rounds of level 18), so it ends inside its time.
+    const short = this.plan.mode === 'every' || this.plan.mode === 'compare';
+    const rounds = short && this.ctx.demo ? 2 : this.plan.rounds;
     if (this.round >= rounds) void this.finale();
     else void this.nextRound();
   }
