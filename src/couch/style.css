@@ -1274,14 +1274,6 @@
 .couch .couch-card {
   --paper-radius: 20;
 }
-.couch .is-paper {
-  background-color: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  background-size: 100% 100% !important;
-  background-repeat: no-repeat !important;
-  background-position: 0 0 !important;
-}
 .couch button.is-paper:hover {
   filter: brightness(1.04) saturate(1.05);
 }

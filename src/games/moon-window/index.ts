@@ -177,6 +177,15 @@ class MoonWindow implements Game {
   }
 
   /** The ghost finger: Later, with one free replay of the first thumbnail after the second view; the right card on a board. */
+  /** Guided first play: its demonstration replays a picture once, so the hand shows the next real step. The bot's own flags are put back. */
+  showMove(): TouchIntent | null {
+    const demoReplayed = this.demoReplayed;
+    this.demoReplayed = true;
+    const move = this.autotouch();
+    this.demoReplayed = demoReplayed;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.unasked) return null;
     if (isBig(this.ctx.level)) {

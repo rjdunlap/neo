@@ -536,3 +536,11 @@
     min-height: 100px;
   }
 }
+
+/* Paper and crayon (docs/ART-STYLE.md): the PaperSkin draws these as torn paper in their own colours. */
+.chooser {
+  --paper-radius: 26;
+}
+.chooser .chooser__add {
+  background-color: #eef7f2 !important;
+}

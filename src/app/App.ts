@@ -258,7 +258,7 @@ export class App {
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
     // The paper look (docs/ART-STYLE.md): new or redrawn flat shapes become paper cut-outs before the frame is drawn.
     // `?nopaper` leaves every drawing flat, to compare the frame rate on a phone.
-    if (PAPER_ON) this.pixi.ticker.add(() => paperPass(this.pixi.stage));
+    if (PAPER_ON) this.pixi.ticker.add(() => paperPass(this.pixi.stage, this.pixi.renderer.resolution));
   }
 
   /**

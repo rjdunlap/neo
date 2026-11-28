@@ -64,21 +64,16 @@ export function createSuite({ page, errors, log, ready, scene, chooserEnter, scr
     await screenIs('courses');
     assert.equal(await page.locator('h1').innerText(), 'Puzzle shelf');
     const marks = await page.locator('.couch-course-card small').allInnerTexts();
-    assert.deepEqual(marks, [
-      'Not finished yet · par 18',
-      'Not finished yet · par 30',
-      'Not finished yet · par 12',
-      'Not finished yet · par 124',
-      'Not finished yet · par 149',
-      'Not finished yet · par 36',
-      'Not finished yet · par 182',
-      'Not finished yet · par 230',
-      'Not finished yet · par 64',
-      'Not finished yet · par 25',
-      'Not finished yet · par 24',
-      'Not finished yet · par 120',
-      'Not finished yet · par 259',
-    ]);
+    // One card per course on the shelf, in the catalog's order, each with its par (read from the catalog, so a new
+    // course needs no edit here).
+    const pars = await page.evaluate(async () => {
+      const { COURSE_IDS, courseInfo } = await import('/src/couch/courses.ts');
+      return COURSE_IDS.map((id) => courseInfo(id).minimum);
+    });
+    assert.deepEqual(
+      marks,
+      pars.map((par) => `Not finished yet · par ${par}`),
+    );
     assert.doesNotMatch(await text(), /Player/);
     await screenshot('couch-solo-shelf');
     // A course page has one card of marks, par, and no answer to peek at.
@@ -104,18 +99,7 @@ export function createSuite({ page, errors, log, ready, scene, chooserEnter, scr
     await screenIs('courses');
     assert.deepEqual(await page.locator('.couch-course-card small').allInnerTexts(), [
       '21 slides · 3 above par (18)',
-      'Not finished yet · par 30',
-      'Not finished yet · par 12',
-      'Not finished yet · par 124',
-      'Not finished yet · par 149',
-      'Not finished yet · par 36',
-      'Not finished yet · par 182',
-      'Not finished yet · par 230',
-      'Not finished yet · par 64',
-      'Not finished yet · par 25',
-      'Not finished yet · par 24',
-      'Not finished yet · par 120',
-      'Not finished yet · par 259',
+      ...pars.slice(1).map((par) => `Not finished yet · par ${par}`),
     ]);
     await page.locator('[data-course="practice"]').click();
     await screenIs('course');

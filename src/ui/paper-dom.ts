@@ -195,7 +195,8 @@ export class PaperSkin {
       if (!url) continue;
       el.dataset.paperKey = key;
       el.classList.add('is-paper');
-      el.style.backgroundImage = `url(${url})`;
+      // Important, so a stylesheet's `background` shorthand (often itself !important) cannot clear the picture.
+      el.style.setProperty('background-image', `url(${url})`, 'important');
     }
     // The class flips above are the skin's own changes, not the screen's: drop them so they do not paint again.
     this.changes.takeRecords();
