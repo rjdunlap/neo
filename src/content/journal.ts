@@ -457,7 +457,7 @@ export const JOURNAL: readonly JournalEntry[] = [
     game: 'stir-see',
     key: k,
     name: STIR_NAMES[k],
-    line: `journal.stir.${k}` as LineId,
+    line: `stirsee.journal.${k}` as LineId,
     source: STIR_SOURCES[k],
   })),
 ];

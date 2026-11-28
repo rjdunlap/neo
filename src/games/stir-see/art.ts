@@ -118,8 +118,8 @@ export class CupView extends Container {
   ) {
     super();
     this.addChild(this.water, this.heap, this.shimmer, this.floating, this.swirl, this.glass);
-    this.resizeTo(cw, ch);
     this.swirl.visible = false;
+    this.resizeTo(cw, ch);
   }
 
   /** A new size: the glass and water are redrawn; call `show` again for the contents. */

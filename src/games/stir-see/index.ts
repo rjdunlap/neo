@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { swatch } from '../../art/palette';
+import { cream, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { entryId } from '../../content/journal';
@@ -113,7 +113,7 @@ class StirSee implements Game {
       this.addCup(emptyCup(), null);
     } else if (mode === 'find') {
       this.find = new FindRound(findRound(ctx.rng, authored));
-      this.card.addChild(tile(150, 150));
+      this.card.addChild(tile(150, 150, 'blue'));
       ctx.stage.addChild(this.card);
       this.showQuestion();
     } else if (mode === 'guess') {
@@ -713,9 +713,11 @@ class StirSee implements Game {
     this.background
       .clear()
       .rect(0, 0, v.w, v.h)
-      .fill(swatch.blue.light)
+      .fill(cream)
       .rect(0, tableY - 6, v.w, v.h - tableY + 6)
-      .fill({ color: swatch.teal.light, alpha: 0.9 });
+      .fill(wood.light)
+      .rect(0, tableY - 6, v.w, 14)
+      .fill(wood.fill);
     this.cups.forEach((c, i) => {
       const b = L.cups[Math.min(i, L.cups.length - 1)];
       if (this.ctx.tw.busy(c.view) || !c.view.visible) return;
@@ -809,7 +811,7 @@ class StirSee implements Game {
 export const stirSee: GameModule = {
   id: 'stir-see',
   name: 'Stir and See',
-  titleLine: 'game.stir-see',
+  titleLine: 'stirsee.title',
   region: 'tinker-lab',
   challenge: 'noticing',
   skills: ['mixtures', 'cause-and-effect', 'observation', 'prediction'],

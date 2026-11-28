@@ -1,7 +1,7 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 // Levels 1–5 never say react, reaction, chemical, melt, taste, eat, drink, sweet, fizz or dissolve (a test checks).
 export const VOICE = {
-  'game.stir-see': ['Stir and see!'],
+  'stirsee.title': ['Stir and see!'],
   'stirsee.intro': ['A cup of water and a spoon. What will happen?'],
   'stirsee.instruct.stir': ['Tap the spoon. Stir it in!'],
   'stirsee.instruct.find': ['Which cup has the {thing} in it? Tap it.'],
@@ -29,4 +29,11 @@ export const VOICE = {
   'stirsee.filed.float': ['It floated. It goes on top.'],
   'stirsee.done': ['Some things vanish, some sink, some float!', 'Stir and see. Lovely!'],
   'stirsee.done.guess': ["You guessed, and then you looked. That's how we find out!"],
+  // The journal's cards (src/content/journal.ts). Kept under this game's prefix, so they play by device speech.
+  'stirsee.journal.vanishes': ['Sugar and salt vanish into the water when you stir them in.'],
+  'stirsee.journal.settles': ['Sand and a pebble sink to the bottom of the water and stay there.'],
+  'stirsee.journal.floats': ['A leaf and a drop of oil float on top of the water.'],
+  'stirsee.journal.still-there': [
+    "You can't see the sugar, but it's still in the water. Look for the shimmer!",
+  ],
 } satisfies Record<string, string[]>;

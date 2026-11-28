@@ -23,11 +23,20 @@
 
 <!-- end generated -->
 
-**Starts as:** TODO: the first fun action and learning purpose.
+**Starts as:** a clear cup of water and a big spoon: each tap stirs something in, and she sees sugar vanish into the water (a faint shimmer says it is still in there) and sand sink to the bottom and stay.
 
-**Grows into:** TODO: the supported ladder and meaningful choices.
+**Grows into:** three spoons with one of each outcome (a leaf floats on top), finding the cup a picture asks for, guessing what a thing will do before stirring it in (never scored), and sorting six just-stirred cups into vanished, sank and floated.
 
 ## Design notes
 
-Scaffold only: implement the approved definition, mistakes/help, completion and demonstration.
-Run `npm run game-docs` to add the generated inventory block. Complete the game's verification tier before publishing.
+Built from [the definition](../definitions/stir-and-see.md) (levels 1–5); level 6, How many spoons?, waits on its science reviewer and IDs from 6 are kept for it.
+
+- **The model** (`logic.ts`): an authored outcome table for six materials, and `stir()`, which keeps a vanished thing as a shimmer, grows a heap in spoons and keeps a floater in one piece. The water level is not state.
+- **Level 3 accounting:** a wrong cup is one miss, counted once per question per cup (the same wrong cup again shows it again but counts nothing). Every wrong tap gives the clue for the outcome asked for; the second wrong tap makes the right cup glow and counts one hint; the third is a supported finish (the pet taps the right cup). With only two wrong cups per question, "third wrong tap" counts repeats.
+- **Level 5:** a cup arrives still swirling from the stir, so what it holds is hidden until she taps it (always free). Filing before looking is allowed: the cup settles first, then the tray is judged. A wrong tray is one miss each time, the right tray glows from the second (one hint per cup), the pet files it on the third.
+- **Levels 1, 2 and 4** count nothing. At levels 1–2 a long rest makes the pet tap the spoon, so the round always finishes.
+- **Journal:** one entry per outcome she saw (`vanishes`, `settles`, `floats`) and `still-there` when she tapped a cup with a shimmer.
+- **Look:** upright-ready; upright the cup, cards and spoon are drawn larger than sideways. Shimmer and sparkles stay below the paper pass's alpha so they stay soft.
+- **Words:** levels 1–5 never say react, reaction, chemical, melt, taste, eat, drink, sweet, fizz or dissolve (tested).
+- **Speech:** the title and the four journal lines sit under `stirsee.*`, which the rendered-clip set does not include, so they play by device speech (a cloud session cannot render Kokoro clips; rendering on the Mac needs a chosen prefix).
+- **Controller:** like the other island touch games, it has no pad controls; pads play only the couch catalog's games.

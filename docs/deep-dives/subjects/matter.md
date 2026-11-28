@@ -136,7 +136,7 @@ All slices are future work, each separate. Definition tiers use links and `git d
 3. **Levels 5–6**: predictions and the reversible sort; the journal entries. **Defined 2026-11-17** as level IDs 6 and 7 ([definition](../../definitions/melt-and-freeze-predictions.md); ID 5 is the lap opening *One big ice cube*). **Level 6 built 2026-11-18** ([PR #1803](https://github.com/rjdunlap/neo/pull/1803)); **level 7 built 2026-11-18** ([PR #1806](https://github.com/rjdunlap/neo/pull/1806)).
 4. **Levels 7–9**: three states, the sealed-jar scale (shared with Seesaw Balance if possible) and the fair dial.
 5. **Particle Lens (levels 10–11)** after a science review of the dot picture.
-6. **Stir and See** (**defined 2026-11-27**; **claimed 2026-11-28 (`claude/project-thread-n5bdgt`): levels 1–5**, [definition](../../definitions/stir-and-see.md), levels 1–5; the saturation count waits on a named reviewer): dissolve, settle and float.
+6. **Stir and See** (**defined 2026-11-27**; **levels 1–5 built** (PR #2312), [definition](../../definitions/stir-and-see.md), levels 1–5; the saturation count waits on a named reviewer): dissolve, settle and float.
 7. **Grown-up forms**: Substance Mystery after Forecast Detective, and an unplugged card once a reviewer is named.
 
 ## What was built and what ran
