@@ -1,1 +1,0 @@
-**`clock-tower`, level 10 *How long?*** (new-interaction tier): hours/half-hours picker, interval arithmetic, worked help, bot; after level 9. [Dive slice 6](../../deep-dives/clock-tower.md#build-slices-in-order).

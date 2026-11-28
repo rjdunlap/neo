@@ -17,14 +17,21 @@ import {
   LEVELS,
   appointmentFor,
   demoAction,
+  digital,
   EVENT_WORDS,
   fiveExample,
   halfLaterExample,
   hasFrom,
+  hopsFor,
   hourOf,
+  isInterval,
   isShift,
   laterExample,
+  lengthOf,
+  lengthWords,
+  durationOf,
   makeTasks,
+  MAX_HOURS,
   minuteChoices,
   planFor,
   requestFor,
@@ -112,6 +119,23 @@ class ClockTower implements Game {
   private readonly newTime = label('', 22, ink);
   private readonly example = { hour: 0, arc: 0, arcStart: 0 };
   private readonly minuteArc = new Graphics();
+  /** The interval level (10): fixed start and end clocks, an hours stepper and a half-hour toggle. */
+  private readonly interval = new Container();
+  private readonly startClock = new Container();
+  private readonly endClock = new Container();
+  private readonly startTime = label('', 30, ink);
+  private readonly endTime = label('', 30, ink);
+  private readonly hoursLabel = label('', 34, ink);
+  private readonly summary = label('', 26, ink);
+  private readonly hops = label('', 24, ink);
+  private readonly halfToggle = new Container();
+  private readonly halfBack = new Graphics();
+  private readonly halfWord = label('+ half an hour', 28, ink);
+  private readonly minusButton: RoundButton;
+  private readonly plusButton: RoundButton;
+  /** The hours chosen on the picker (0–3) and whether the half hour is on. */
+  hours = 0;
+  half = false;
   readonly bell: RoundButton;
   readonly choices: { id: string; node: Container; replay: Container; card: Container }[] = [];
   private readonly appointmentHeading = label("A friend's pretend plan", 28, ink);
@@ -235,6 +259,9 @@ class ClockTower implements Game {
     this.comparison.addChild(before, after, this.oldClock, this.newClock, this.oldTime, this.newTime);
     this.bell = new RoundButton(this.bellArt(), swatch.white, 60, () => void this.check());
     this.bell.visible = this.plan.mode !== 'read';
+    this.minusButton = new RoundButton(stepArt(false), swatch.white, 55, () => this.step(-1));
+    this.plusButton = new RoundButton(stepArt(true), swatch.white, 55, () => this.step(1));
+    this.buildInterval();
     ctx.stage.addChild(
       this.backdrop,
       this.tower,
@@ -245,7 +272,89 @@ class ClockTower implements Game {
       this.handKey,
       this.appointmentHeading,
       this.comparison,
+      this.interval,
     );
+  }
+
+  /** The level-10 picture: both clocks and the picker sit where the face would, inside the tower. */
+  private buildInterval() {
+    const on = isInterval(this.plan.mode);
+    this.interval.visible = on;
+    this.face.visible = !on;
+    this.handKey.visible = this.handKey.visible && !on;
+    if (!on) return;
+    this.requestTime.text = '';
+    this.startClock.position.set(-105, -120);
+    this.endClock.position.set(105, -120);
+    const starts = label('Starts', 24, ink);
+    starts.position.set(-105, -236);
+    const ends = label('Ends', 24, ink);
+    ends.position.set(105, -236);
+    this.startTime.position.set(-105, -6);
+    this.endTime.position.set(105, -6);
+    const arrow = new Graphics()
+      .moveTo(-14, -120)
+      .lineTo(14, -120)
+      .stroke({ width: 6, color: wood.line, cap: 'round' })
+      .poly([14, -132, 28, -120, 14, -108])
+      .fill(wood.line);
+    this.hops.position.set(0, 34);
+    this.hops.visible = false;
+    this.minusButton.position.set(-150, 100);
+    this.plusButton.position.set(150, 100);
+    this.hoursLabel.position.set(0, 100);
+    this.halfBack.eventMode = 'none';
+    this.halfWord.eventMode = 'none';
+    this.halfToggle.position.set(0, 205);
+    this.halfToggle.addChild(this.halfBack, this.halfWord);
+    this.halfToggle.hitArea = new Rectangle(-170, -50, 340, 100);
+    onTap(this.halfToggle, () => this.toggleHalf(), { cooldown: 200 });
+    this.summary.position.set(0, 285);
+    this.interval.addChild(
+      starts,
+      ends,
+      this.startClock,
+      this.endClock,
+      arrow,
+      this.startTime,
+      this.endTime,
+      this.hops,
+      this.minusButton,
+      this.hoursLabel,
+      this.plusButton,
+      this.halfToggle,
+      this.summary,
+    );
+    this.refreshPicker();
+  }
+
+  /** Redraws the picker to the choices, so the words, the toggle and the sum always agree. */
+  private refreshPicker() {
+    this.hoursLabel.text = this.hours === 1 ? '1 hour' : `${this.hours} hours`;
+    this.halfBack
+      .clear()
+      .roundRect(-170, -50, 340, 100, 24)
+      .fill(this.half ? swatch.yellow.light : cream)
+      .stroke({ width: this.half ? 6 : 4, color: this.half ? swatch.yellow.line : wood.line });
+    this.halfWord.text = this.half ? '✓ half an hour' : '+ half an hour';
+    this.summary.text = `That is ${lengthWords(lengthOf(this.hours, this.half))}`;
+    this.minusButton.alpha = this.hours > 0 ? 1 : 0.4;
+    this.plusButton.alpha = this.hours < MAX_HOURS ? 1 : 0.4;
+  }
+
+  private step(by: number) {
+    if (this.busy || this.finished || !isInterval(this.plan.mode)) return;
+    this.askNow();
+    this.hours = Math.min(MAX_HOURS, Math.max(0, this.hours + by));
+    this.refreshPicker();
+  }
+
+  private toggleHalf() {
+    if (this.busy || this.finished) return;
+    this.askNow();
+    sfx.tick();
+    this.half = !this.half;
+    this.refreshPicker();
   }
 
   private bellArt() {
@@ -308,6 +417,7 @@ class ClockTower implements Game {
     const { x: cx, y: cy, s } = l.face;
     this.face.position.set(cx, cy);
     this.face.scale.set(s);
+    this.interval.position.set(cx, cy);
     // A little tower around the clock.
     this.tower
       .clear()
@@ -368,6 +478,18 @@ class ClockTower implements Game {
         .stroke({ width: 3, color: swatch.yellow.line });
     }
     const g = this.glow.clear();
+    if (this.hinted && isInterval(this.plan.mode) && this.task && !this.busy) {
+      // The controls she still has to set glow: the stepper for the hours, the toggle for the half hour.
+      const length = durationOf(this.task);
+      const pulse = 5 + 2 * Math.sin(this.clock * 6);
+      const at = (n: Container, w: number, h: number) =>
+        g
+          .roundRect(this.interval.x + n.x - w / 2, this.interval.y + n.y - h / 2, w, h, 26)
+          .stroke({ width: pulse, color: swatch.yellow.fill });
+      if (this.hours !== Math.floor(length / 60))
+        at(this.hours < Math.floor(length / 60) ? this.plusButton : this.minusButton, 130, 130);
+      if (this.half !== (length % 60 === 30)) at(this.halfToggle, 350, 110);
+    }
     if (this.hinted && this.plan.mode === 'read' && !this.busy) {
       const right = this.choices.find((c) => this.isRight(c.id));
       if (right)
@@ -381,7 +503,16 @@ class ClockTower implements Game {
   autotouch(): TouchIntent | null {
     // The demo waits for the right answer's line and the next instruction, as a child hearing them would.
     if (this.busy || this.finished || this.grab || !this.task || this.unasked) return null;
-    const action = demoAction(this.plan.mode, this.hour, this.minute, this.task);
+    const interval = isInterval(this.plan.mode);
+    const action = demoAction(
+      this.plan.mode,
+      interval ? this.hours : this.hour,
+      interval ? (this.half ? 30 : 0) : this.minute,
+      this.task,
+    );
+    if (action.kind === 'hours')
+      return { tap: { on: this.hours < action.hours ? this.plusButton : this.minusButton }, pause: 0.25 };
+    if (action.kind === 'half') return { tap: { on: this.halfToggle }, pause: 0.25 };
     if (action.kind === 'pick') {
       const choice = this.choices.find((c) => c.id === action.id);
       return choice ? { tap: { on: choice.node }, pause: 0.12 } : null;
@@ -446,7 +577,7 @@ class ClockTower implements Game {
   }
 
   private canTurn(hand: 'hour' | 'minute') {
-    if (this.plan.mode === 'read') return false;
+    if (this.plan.mode === 'read' || isInterval(this.plan.mode)) return false;
     return hand === 'hour' || this.plan.mode !== 'hour';
   }
 
@@ -512,7 +643,18 @@ class ClockTower implements Game {
     this.example.arcStart = 0;
     if (this.index >= this.tasks.length) return void this.finale();
     const t = this.task;
-    if (this.plan.mode === 'read') {
+    if (isInterval(this.plan.mode)) {
+      this.hours = 0;
+      this.half = false;
+      this.hops.visible = false;
+      this.startClock.removeChildren().forEach((n) => n.destroy({ children: true }));
+      this.endClock.removeChildren().forEach((n) => n.destroy({ children: true }));
+      this.startClock.addChild(miniClock(hourOf(t.from!), t.from! % 60, 78));
+      this.endClock.addChild(miniClock(hourOf(t.time), t.time % 60, 78));
+      this.startTime.text = digital(t.from!);
+      this.endTime.text = digital(t.time);
+      this.refreshPicker();
+    } else if (this.plan.mode === 'read') {
       this.hour = hourOf(t.time);
       this.minute = t.time % 60;
       this.buildChoices(t.options!);
@@ -558,6 +700,8 @@ class ClockTower implements Game {
   private instruction() {
     const t = this.task;
     if (this.plan.mode === 'read') return this.ctx.instruct('clock.read');
+    if (isInterval(this.plan.mode))
+      return this.ctx.instruct('clock.how-long', { from: spoken(t.from!), time: spoken(t.time) });
     if (hasFrom(this.plan.mode))
       return this.ctx.instruct(`clock.${this.plan.mode}`, { time: spoken(t.from!) });
     return this.ctx.instruct(this.plan.mode === 'hour' ? 'clock.hour' : 'clock.set', {
@@ -629,6 +773,16 @@ class ClockTower implements Game {
   private async check() {
     if (this.busy || this.finished) return;
     this.askNow();
+    if (isInterval(this.plan.mode)) {
+      const chosen = lengthOf(this.hours, this.half);
+      if (chosen === durationOf(this.task)) return void this.right();
+      return void this.wrong(chosen === 0 ? 'clock.how-long.zero' : 'clock.how-long.wrong', {
+        chosen: lengthWords(chosen),
+        end: spoken((((this.task.start! + chosen) % 720) + 720) % 720),
+        from: spoken(this.task.from!),
+        time: spoken(this.task.time),
+      });
+    }
     if (this.shown === this.task.time) return void this.right();
     if (isShift(this.plan.mode))
       return void this.wrong(`clock.${this.plan.mode}.wrong`, {
@@ -653,6 +807,8 @@ class ClockTower implements Game {
       | 'clock.earlier.wrong'
       | 'clock.half-later.wrong'
       | 'clock.half-later.wrong.cross'
+      | 'clock.how-long.wrong'
+      | 'clock.how-long.zero'
       | 'clock.shows',
     vars: Record<string, string>,
   ) {
@@ -678,6 +834,12 @@ class ClockTower implements Game {
           this.ctx.tw.to(this.example, { arc: this.task.time % 60 }, { duration: 0.8, ease: ease.linear }),
           this.ctx.say('clock.five.help', { counts: example.counts, time: example.time }),
         ]);
+      } else if (isInterval(this.plan.mode)) {
+        // Worked help: the hour hops from the start, then the half hour, written on the strip and counted aloud.
+        const worked = hopsFor(this.task);
+        this.hops.text = worked.strip;
+        this.hops.visible = true;
+        void this.ctx.say('clock.how-long.help', { count: worked.count });
       } else void this.ctx.say(this.plan.mode === 'read' ? 'clock.hint.read' : 'clock.hint');
     }
     this.busy = false;
@@ -762,8 +924,9 @@ class ClockTower implements Game {
     if (event) line = this.ctx.say('clock.itis', { time: spoken(t), event: EVENT_WORDS[event] });
     else if (!hasFrom(this.plan.mode)) line = this.ctx.say('clock.yay');
     if (this.index + 1 >= this.tasks.length) await line;
-    await this.ctx.tw.to(this.face.scale, { x: 1.04, y: 1.04 }, { duration: 0.12, ease: ease.outQuad });
-    await this.ctx.tw.to(this.face.scale, { x: 1, y: 1 }, { duration: 0.15 });
+    const body = isInterval(this.plan.mode) ? this.interval : this.face;
+    await this.ctx.tw.to(body.scale, { x: 1.04, y: 1.04 }, { duration: 0.12, ease: ease.outQuad });
+    await this.ctx.tw.to(body.scale, { x: 1, y: 1 }, { duration: 0.15 });
     await this.next(line);
   }
 
@@ -775,6 +938,13 @@ class ClockTower implements Game {
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
+}
+
+/** The picker's two stepper faces: a bar, with a second bar across it for plus. */
+function stepArt(plus: boolean): Graphics {
+  const g = new Graphics().roundRect(-24, -5, 48, 10, 5).fill(swatch.blue.line);
+  if (plus) g.roundRect(-5, -24, 10, 48, 5).fill(swatch.blue.line);
+  return g;
 }
 
 /** A small clock face for the hub icon and sticker. */
