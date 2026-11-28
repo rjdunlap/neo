@@ -46,7 +46,7 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 3. **Stamps** (from option A; defined below, built): three to five named goals per grown-up game (reach a level, a level with no hint, the top level, one trick of the game's own), each written beforehand, earned once and paying a one-time shell bonus. A stamp page per land, and Lantern Lake shows one lit paper lantern per stamp, so the lake fills up as the total grows.
 4. **The friend's page and shop** (defined below, built): colours and wearables for the player's own friend at shown prices, on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
 5. **Today's six extras** (from option C; defined below, built): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
-6. **Seasons** (from option C): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
+6. **Seasons** (from option C; defined below, built): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
 7. **Lantern Lodge** (from option B): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
 8. **A daily gift** for grown-ups (never stacking or shown as missed), then the `school` band with the prices grown-up play has set.
 
@@ -91,3 +91,17 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 - **Calendar.** The lantern button's sheet is now "Lanterns". Under "Today" is the share line, then a month calendar (weeks from Monday, ‹ and › to turn the month) with a lit lantern on each day all six were done and today outlined. Then come the stamps, as before. Empty days are only their number; nothing counts a run of days or marks a day missed.
 - **Share line.** Wordle-style, with no game names: "Puddle Island · Today's six · Nov 28", then one square per card in card order (green: a round today with no misses or hints; yellow: a round with some; white: not played) and "N/6". Copy opens the phone's share sheet, or copies where there is none.
 - **Save.** `SaveData.sixes: { days: string[] }` (`src/content/sixes.ts`), repaired by `cleanSixes` (real days, once each, in order, at most 2,400). `store.recordAllSix(day)` returns the bonus; it records nothing for a band that does not earn.
+
+### Slice 6: seasons
+
+**Built 2026-11-28.**
+
+- **Seasons.** Four weeks each, Monday to Sunday, counted from Monday 5 January 2026 (`src/content/seasons.ts`). Every season has the same four goals, written out beforehand:
+  - Finish all six on 10 days: 60 shells.
+  - Play 12 different games: 40 shells.
+  - Finish 50 rounds: 40 shells.
+  - Earn 6 new stamps: 40 shells.
+- **Paying.** Each goal pays once a season, as soon as it is met: at the end of a round (`store.countSeasonRound`, after the round's shells and stamps, so the result's "+N shells" includes it and a lantern pill says "Season goal: 50 rounds", or counts two or more), or when an all-six day is recorded (`store.recordAllSix` settles the season too). Meeting all four adds that season's dated keepsake.
+- **Ending.** A new season starts its rounds, games and payments again from nothing; all-six days and stamps count in the season they are dated in. A season that ends unfinished simply ends: nothing is lost, nothing is shown missed, and keepsakes stay.
+- **Shown.** The Lanterns sheet has "This season" with its dates after the calendar: each goal with its count ("8 of 10"), its shells, and a lantern lit once met, then the keepsakes (each season's dates).
+- **Save.** `SaveData.seasons: { season, rounds, games, paid, keepsakes }`, repaired by `cleanSeasons`. A band that does not earn shells counts nothing.
