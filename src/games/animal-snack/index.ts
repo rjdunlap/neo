@@ -17,6 +17,7 @@ import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
+import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -813,7 +814,7 @@ class AnimalSnack implements Game {
       if (this.index > 0) return void this.finale();
       this.setFriends([]);
       this.queue = 0;
-      await this.ctx.say('snack.dietintro');
+      await this.ctx.say('snack.dietintro', { meat: 'fish and bugs' });
       return this.walkUp();
     }
     if (mode === 'munch' || mode === 'float' || mode === 'match') {
@@ -1505,7 +1506,9 @@ class AnimalSnack implements Game {
     await this.ctx.say(line.id, vars);
     this.queue++;
     if (this.queue < this.round.animals.length) return this.walkUp();
-    return void this.finale(this.round.animals.includes('cat') ? 'snack.dietdone' : 'snack.dietdonenomeat');
+    // The closing lines carry the count, so they stay on device speech like the other filled-in lines.
+    const done = this.round.animals.includes('cat') ? 'snack.dietdone' : 'snack.dietdonenomeat';
+    return void this.finale(done, { n: this.round.animals.length });
   }
 
   /** Count levels: the bell says "that's how many". Too many come back to the basket. */
@@ -1544,14 +1547,14 @@ class AnimalSnack implements Game {
     this.busy = false;
   }
 
-  private async finale(line: LineId = 'snack.done') {
+  private async finale(line: LineId = 'snack.done', vars?: LineVars) {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
     sfx.tada();
     for (const f of this.friends) f.node.cheer();
     for (const s of this.sorted) s.node.cheer();
-    await this.ctx.say(line);
+    await this.ctx.say(line, vars);
     const turn = {
       saved: companion() !== null,
       guideShown: this.ctx.pet.visible,
