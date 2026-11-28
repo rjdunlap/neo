@@ -266,7 +266,8 @@ describe('game registry', () => {
     expect(levelsInOrder(g.levels('preschool'))).toEqual([1]);
     expect(landing(8, g.levels('preschool'), g.entryLevels)).toBe(1);
     expect(levelsInOrder(prek)).toEqual([1, 8, 2, 3]);
-    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 7, 9]);
+    expect(stepLevel(7, 1, school)).toBe(9);
     expect(g.entryLevels).toEqual([8]);
     expect(stepLevel(1, 1, prek)).toBe(8);
     expect(stepLevel(8, 1, prek)).toBe(2);

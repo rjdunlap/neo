@@ -10,6 +10,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
+import { RoundButton } from '../../ui/buttons';
+import { oneArt, twoArt } from '../../art/seats';
 import { WigglyIcon } from '../shared';
 import { hatArt, scarfArt } from '../../art/props';
 import { KIND_WORDS } from '../../learning/sorting/rules';
@@ -21,6 +23,7 @@ import {
   bestTest,
   consistent,
   gateKey,
+  gateSwapResult,
   gateWords,
   makeRound,
   nextStep,
@@ -122,6 +125,29 @@ class CritterCrossing implements Game {
   private sames = 0;
   private hinting: { kind: 'test'; slot: Slot } | { kind: 'option'; gate: Gate } | null = null;
   private cards: { gate: Gate; node: Container }[] = [];
+  /** Be the gate: who is playing (chosen once, before round 1), and what the round is waiting for. */
+  seats: 'two' | 'solo' | null = null;
+  phase: 'play' | 'seats' | 'pick-rule' | 'judge' | 'solve' = 'play';
+  /** Be the gate: the critter at the gate, waiting for her Cross or Wait. */
+  pendingSlot: Slot | null = null;
+  readonly together = new RoundButton(twoArt(), swatch.white, 56, () => this.chooseSeats('two'));
+  readonly alone = new RoundButton(oneArt(), swatch.white, 56, () => this.chooseSeats('solo'));
+  readonly crossBtn = new RoundButton(
+    CritterCrossing.badge(true),
+    swatch.white,
+    56,
+    () => void this.judge(true),
+  );
+  readonly waitBtn = new RoundButton(
+    CritterCrossing.badge(false),
+    swatch.white,
+    56,
+    () => void this.judge(false),
+  );
+  /** The wooden lid over a secret sign; a tap on it in the first half lifts it for a free peek. */
+  private readonly lid = new Container();
+  private readonly lidBoard = new Graphics();
+  private judgeHint: boolean | null = null;
   private open = false;
   private clock = 0;
   private lastGate: string | undefined;
@@ -159,6 +185,14 @@ class CritterCrossing implements Game {
     bulb.hitArea = new Circle(0, 0, 70);
     onTap(bulb, () => this.toggleGuess(), { cooldown: 300 });
     this.bulb = bulb;
+    for (const b of [this.together, this.alone, this.crossBtn, this.waitBtn]) {
+      b.visible = false;
+      b.children[1].scale.set(b === this.crossBtn || b === this.waitBtn ? 1.9 : 1.8);
+    }
+    this.lid.visible = false;
+    this.lid.addChild(this.lidBoard);
+    this.lid.hitArea = new Rectangle(-80, -74, 160, 148);
+    onTap(this.lid, () => this.peek(), { cooldown: 300 });
     ctx.stage.addChild(
       this.backdrop,
       this.scenery,
@@ -168,7 +202,12 @@ class CritterCrossing implements Game {
       this.dots,
       this.shelf,
       this.bulb,
+      this.lid,
       this.panel,
+      this.together,
+      this.alone,
+      this.crossBtn,
+      this.waitBtn,
     );
   }
 
@@ -176,8 +215,24 @@ class CritterCrossing implements Game {
     void this.next();
   }
 
+  /** The rule is not on the sign for the one guessing it: the bank shelf, the dots and the lid show. */
   get hidden() {
-    return this.plan.mode === 'hidden';
+    return this.plan.mode !== 'visible';
+  }
+
+  get keeper() {
+    return this.plan.mode === 'keeper';
+  }
+
+  /** The light bulb is in play: on a secret rule, and on Be the gate while a partner (or she) is the detective. */
+  get bulbOn() {
+    if (!this.keeper) return this.plan.mode === 'hidden';
+    return this.seats === 'two' && (this.phase === 'judge' || this.phase === 'solve');
+  }
+
+  /** The partner guesses in the first half of Two of us: unscored, as the second seat always is. */
+  private get partnerGuessing() {
+    return this.keeper && this.seats === 'two' && this.index === 0;
   }
 
   // --- geometry ---
@@ -220,6 +275,9 @@ class CritterCrossing implements Game {
         .stroke({ width: 3, color: wood.line, alpha: 0.6 });
     this.drawGate(false);
     this.sign.position.set(this.gatePoint().x, by - 150);
+    this.lid.position.copyFrom(this.sign.position);
+    [this.together, this.alone].forEach((b, i) => b.position.set(L.seats[i].x, L.seats[i].y));
+    [this.crossBtn, this.waitBtn].forEach((b, i) => b.position.set(L.judge[i].x, L.judge[i].y));
     this.bulb.position.set(L.bulb.x, L.bulb.y);
     this.dots.position.set(L.dots.x, L.dots.y);
     this.drawDots();
@@ -230,7 +288,8 @@ class CritterCrossing implements Game {
           ? this.rightSlot(this.slots.filter((x, j) => j < i && x.state === 'crossed').length)
           : this.leftSlot(i);
       s.home = home;
-      s.node.position.set(home.x, home.y);
+      if (s === this.pendingSlot) s.node.position.set(this.gatePoint().x - 70, this.gatePoint().y + 10);
+      else s.node.position.set(home.x, home.y);
     }
     this.layoutPanel();
   }
@@ -257,13 +316,17 @@ class CritterCrossing implements Game {
     this.clock += dt;
     const g = this.glow.clear();
     // The guess button wakes up once enough critters have been tried, and pulses to say so.
-    const ready = this.hidden && this.testsDone() >= this.plan.minTests && !this.finished;
-    this.bulb.alpha = this.hidden ? (ready ? 1 : 0.4) : 0;
-    this.bulb.visible = this.hidden;
+    const on = this.bulbOn;
+    const ready = on && this.testsDone() >= this.plan.minTests && !this.finished;
+    this.bulb.alpha = on ? (ready ? 1 : 0.4) : 0;
+    this.bulb.visible = on;
     this.bulb.scale.set(ready && !this.open ? 1 + 0.05 * Math.sin(this.clock * 4) : 1);
     if (this.busy) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
-    if (this.hinting?.kind === 'test') {
+    if (this.judgeHint !== null && this.pendingSlot) {
+      const b = this.judgeHint ? this.crossBtn : this.waitBtn;
+      g.circle(b.x, b.y, 72).stroke({ width: pulse, color: swatch.yellow.fill });
+    } else if (this.hinting?.kind === 'test') {
       const s = this.hinting.slot;
       g.circle(s.node.x, s.node.y - 50, 74).stroke({ width: pulse, color: swatch.yellow.fill });
     } else if (this.hinting?.kind === 'option' && this.open) {
@@ -289,7 +352,14 @@ class CritterCrossing implements Game {
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.round) return null;
+    if (this.finished) return null;
+    if (this.phase === 'seats') return { tap: { on: this.together }, pause: 0.6 };
+    if (this.busy || !this.round) return null;
+    if (this.phase === 'pick-rule') return this.cards[0] ? { tap: { on: this.cards[0].node } } : null;
+    if (this.pendingSlot)
+      return { tap: { on: passes(this.pendingSlot.c, this.round.gate) ? this.crossBtn : this.waitBtn } };
+    // Just me: the pet is the detective, and she only answers it.
+    if (this.phase === 'judge' && this.seats === 'solo') return null;
     const step = nextStep(this.round, this.plan, this.evidence());
     if (!step) return null;
     if (step.do === 'try') {
@@ -317,13 +387,42 @@ class CritterCrossing implements Game {
     this.hinting = null;
     this.closeGuess();
     if (this.index >= this.plan.rounds) return void this.finale();
+    if (this.keeper && !this.seats) return this.showSeats();
+    return this.setupRound();
+  }
+
+  /** Be the gate, before round 1: only the bridge and the two seat buttons, until she says who is playing. */
+  private showSeats() {
+    this.phase = 'seats';
+    this.together.visible = true;
+    this.alone.visible = true;
+    this.resize(this.view);
+    this.busy = false;
+    return this.ctx.instruct('cross.seats', { name: this.ctx.childName });
+  }
+
+  private chooseSeats(seats: 'two' | 'solo') {
+    if (this.phase !== 'seats' || this.seats) return;
+    this.seats = seats;
+    this.together.visible = false;
+    this.alone.visible = false;
+    void this.setupRound();
+  }
+
+  private async setupRound() {
+    this.busy = true;
+    this.pendingSlot = null;
+    this.judgeHint = null;
+    this.crossBtn.visible = false;
+    this.waitBtn.visible = false;
+    this.lid.visible = false;
     for (const s of this.slots.splice(0)) {
       this.ctx.untrack(s.node);
       s.node.destroy({ children: true });
     }
     this.tried = [];
     this.round = makeRound(this.plan, this.ctx.rng, this.lastGate);
-    this.lastGate = gateKey(this.round.gate);
+    if (!this.keeper) this.lastGate = gateKey(this.round.gate);
     this.round.critters.forEach((c, i) => {
       const node = new Critter(CRITTERS[c.kind]);
       node.scale.set(SCALE);
@@ -342,9 +441,26 @@ class CritterCrossing implements Game {
       slot.state = t.passed ? 'crossed' : 'turned';
       this.mark(slot, t.passed);
     }
+    this.drawSign(this.hidden ? null : this.round.gate);
+    this.drawGate(false);
+    this.resize(this.view);
+    this.drawDots();
+    this.drawShelf();
+    if (this.keeper) return this.pickRule();
+    this.phase = 'play';
+    this.busy = false;
+    if (this.plan.settle) return this.ctx.instruct('cross.settle');
+    if (this.index > 0) return;
+    if (this.hidden) return this.ctx.instruct('cross.hidden');
+    return this.ctx.instruct('cross.visible', { rule: gateWords(this.round.gate) });
+  }
+
+  /** The gate's sign: the rule's picture, or a "?" while it is a secret. */
+  private drawSign(gate: Gate | null) {
     this.sign.removeChildren().forEach((c) => c.destroy({ children: true }));
     const card = new Container();
-    const w = this.hidden ? 130 : cardWidth(this.round.gate) - 20;
+    const w = gate ? cardWidth(gate) - 20 : 130;
+    this.signW = w;
     card.addChild(
       // A soft tan card, not white: the rule pictures' pale heads (pointy ears, floppy ears, whiskers) and a white
       // critter's blob would vanish into a white card.
@@ -353,17 +469,158 @@ class CritterCrossing implements Game {
         .fill(SIGN_CARD)
         .stroke({ width: 7, color: wood.line }),
     );
-    card.addChild(this.hidden ? label('?', 76, ink) : gateIcon(this.round.gate));
+    card.addChild(gate ? gateIcon(gate) : label('?', 76, ink));
     this.sign.addChild(card);
-    this.drawGate(false);
-    this.resize(this.view);
-    this.drawDots();
-    this.drawShelf();
+  }
+
+  // --- Be the gate ---
+
+  /** The four rule cards across the top: she (or, after the swap, her partner) picks the gate's rule. A pick is free. */
+  private pickRule() {
+    this.phase = 'pick-rule';
+    this.showCards((gate) => this.ruleChosen(gate));
     this.busy = false;
-    if (this.plan.settle) return this.ctx.instruct('cross.settle');
-    if (this.index > 0) return;
-    if (this.hidden) return this.ctx.instruct('cross.hidden');
-    return this.ctx.instruct('cross.visible', { rule: gateWords(this.round.gate) });
+    if (this.seats === 'solo') return this.ctx.instruct('cross.pick-own', { name: this.ctx.childName });
+    return this.ctx.instruct(this.index === 0 ? 'cross.lookaway' : 'cross.swap', {
+      name: this.ctx.childName,
+    });
+  }
+
+  private ruleChosen(gate: Gate) {
+    if (this.busy || this.phase !== 'pick-rule') return;
+    this.closeGuess();
+    this.round = { ...this.round, gate };
+    this.lastGate = gateKey(gate);
+    this.drawSign(gate);
+    if (this.seats === 'two') this.closeLid(true);
+    this.resize(this.view);
+    if (this.seats === 'solo') {
+      this.phase = 'judge';
+      return void this.petTurn();
+    }
+    if (this.index === 0) {
+      this.phase = 'judge';
+      return void this.ctx.instruct('cross.keeper-go', { name: this.ctx.childName });
+    }
+    this.phase = 'solve';
+    return void this.ctx.instruct('cross.crackit', { name: this.ctx.childName });
+  }
+
+  /** The wooden lid over the sign: shut (a "?" on planks) or lifted aside for a peek. */
+  private closeLid(shut: boolean) {
+    // A little wider than the sign under it, so no edge of the rule shows.
+    const w = this.signW + 12;
+    this.lid.hitArea = new Rectangle(-w / 2 - 6, -74, w + 12, 148);
+    const g = this.lidBoard.clear();
+    this.lid.visible = true;
+    if (shut) {
+      g.roundRect(-w / 2, -66, w, 132, 22)
+        .fill(wood.fill)
+        .stroke({ width: 7, color: wood.line });
+      for (const y of [-22, 22])
+        g.moveTo(-w / 2 + 10, y)
+          .lineTo(w / 2 - 10, y)
+          .stroke({ width: 4, color: wood.line, alpha: 0.6 });
+      if (this.lidBoard.children.length === 0) {
+        const q = label('?', 70, ink);
+        this.lidBoard.addChild(q);
+      }
+      this.lidBoard.children[0].visible = true;
+    } else {
+      // Lifted: a thin plank above the sign, so the rule shows and the lid can be tapped shut again.
+      g.roundRect(-w / 2, -96, w, 26, 10)
+        .fill(wood.fill)
+        .stroke({ width: 5, color: wood.line });
+      if (this.lidBoard.children[0]) this.lidBoard.children[0].visible = false;
+    }
+    this.lidShut = shut;
+  }
+
+  private lidShut = false;
+  private signW = 130;
+
+  /** A free peek at her own secret rule (first half of Two of us only); never a miss or a hint. */
+  private peek() {
+    if (!this.partnerGuessing || this.phase !== 'judge' || this.finished || !this.lid.visible) return;
+    sfx.tick();
+    this.closeLid(!this.lidShut);
+  }
+
+  private lift() {
+    this.lid.visible = false;
+    this.lidShut = false;
+  }
+
+  /** Just me: the pet sends the most telling critter to the gate, or names her rule once it is sure. */
+  private async petTurn() {
+    if (this.finished || this.pendingSlot || this.phase !== 'judge') return;
+    this.busy = true;
+    const evidence = this.evidence();
+    const left = consistent(this.round.options, evidence);
+    const waiting = this.slots.filter((s) => s.state === 'waiting');
+    if ((this.testsDone() >= 2 && left.length === 1) || !waiting.length) {
+      this.ctx.pet.cheer();
+      await this.ctx.say('cross.pet-guess', { rule: gateWords(this.round.gate) });
+      return this.reveal(false);
+    }
+    await this.ctx.tw.wait(0.4);
+    const pick = bestTest(
+      this.round.critters,
+      this.slots.filter((s) => s.state !== 'waiting').map((s) => s.c),
+      this.round.options,
+      evidence,
+    );
+    const slot = this.slots.find((s) => s.c === pick) ?? waiting[0];
+    void this.ctx.say('cross.pet-try', { who: KIND_WORDS[slot.c.kind] });
+    this.busy = false;
+    await this.tryCritter(slot, true);
+  }
+
+  /**
+   * Her Cross or Wait for the critter at the gate. Agreeing with her own rule sends it on; disagreeing is a gentle miss
+   * (the rule is spoken only when she plays alone, so a partner is never told), and two misses light the right button.
+   */
+  private async judge(pass: boolean) {
+    const slot = this.pendingSlot;
+    if (this.busy || this.finished || !slot) return;
+    const truth = passes(slot.c, this.round.gate);
+    if (pass !== truth) {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      void this.wobbleSign();
+      if (this.seats === 'two') void this.ctx.say('cross.check-sign', { name: this.ctx.childName });
+      else
+        void this.ctx.say(truth ? 'cross.gate-fits' : 'cross.gate-notfit', {
+          who: KIND_WORDS[slot.c.kind],
+          rule: gateWords(this.round.gate),
+        });
+      if (this.wrongs >= 2 && this.judgeHint === null) {
+        this.hints++;
+        this.wrongs = 0;
+        this.judgeHint = truth;
+      }
+      return;
+    }
+    this.busy = true;
+    this.pendingSlot = null;
+    this.judgeHint = null;
+    this.wrongs = 0;
+    this.crossBtn.visible = false;
+    this.waitBtn.visible = false;
+    if (this.seats === 'two' && !this.lidShut) this.closeLid(true);
+    await this.answer(slot, truth);
+    this.drawDots();
+    this.busy = false;
+    if (this.seats === 'solo') void this.petTurn();
+  }
+
+  private async wobbleSign() {
+    for (const r of [0.12, -0.12, 0.07, -0.07, 0]) {
+      this.sign.rotation = r;
+      this.lid.rotation = r;
+      await this.ctx.tw.wait(0.05);
+    }
   }
 
   private evidence() {
@@ -444,44 +701,36 @@ class CritterCrossing implements Game {
   }
 
   /** A critter walks to the gate; it opens for a critter that fits and stays shut for one that does not. */
-  private async tryCritter(slot: Slot) {
-    if (this.busy || this.finished || slot.state !== 'waiting') return;
+  private async tryCritter(slot: Slot, byPet = false) {
+    if (this.busy || this.finished || slot.state !== 'waiting' || this.pendingSlot) return;
+    if (this.keeper && this.phase !== 'judge' && this.phase !== 'solve') return;
+    if (this.phase === 'judge' && this.seats === 'solo' && !byPet) return;
     this.closeGuess();
     this.busy = true;
-    const who = KIND_WORDS[slot.c.kind];
+    if (this.phase === 'judge') {
+      // Be the gate: the critter waits at the bar for her Cross or Wait.
+      await this.walkTo(slot, this.gatePoint().x - 70, this.gatePoint().y + 10);
+      this.pendingSlot = slot;
+      this.crossBtn.visible = true;
+      this.waitBtn.visible = true;
+      this.busy = false;
+      if (!byPet) void this.ctx.say('cross.judge', { who: KIND_WORDS[slot.c.kind] });
+      return;
+    }
     const passed = passes(slot.c, this.round.gate);
     const visibleMiss = !this.hidden && !passed;
     await this.walkTo(slot, this.gatePoint().x - 70, this.gatePoint().y + 10);
-    if (passed) {
-      this.drawGate(true);
-      sfx.bell(6, 0.3);
-      slot.state = 'crossed';
-      const right = this.rightSlot(this.slots.filter((s) => s.state === 'crossed').length - 1);
-      slot.home = right;
-      void this.ctx.say('cross.yes', { who });
-      await this.walkTo(slot, crossLayout(this.view).riverR + 40, this.gatePoint().y + 10);
-      await this.walkTo(slot, right.x, right.y);
-      this.drawGate(false);
-      slot.node.cheer();
-      this.mark(slot, true);
-      if (this.hinting?.kind === 'test' && this.hinting.slot === slot) this.hinting = null;
-      this.wrongs = 0;
-    } else {
+    if (!visibleMiss) await this.answer(slot, passed);
+    else {
       sfx.clunk();
       void this.shakeGate();
       slot.node.setMood('sad', 1);
-      if (visibleMiss) {
-        this.misses++;
-        this.wrongs++;
-        sfx.boing();
-        void this.ctx.say('cross.notfit', { who, rule: gateWords(this.round.gate) });
-      } else {
-        slot.state = 'turned';
-        void this.ctx.say('cross.no', { who });
-      }
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      void this.ctx.say('cross.notfit', { who: KIND_WORDS[slot.c.kind], rule: gateWords(this.round.gate) });
       await this.walkTo(slot, slot.home.x, slot.home.y);
-      if (!visibleMiss) this.mark(slot, false);
-      if (visibleMiss && this.wrongs >= 2 && !this.hinting) {
+      if (this.wrongs >= 2 && !this.hinting) {
         const fit = this.slots.find((s) => s.state === 'waiting' && passes(s.c, this.round.gate));
         if (fit) {
           this.hints++;
@@ -494,6 +743,35 @@ class CritterCrossing implements Game {
     this.busy = false;
     if (!this.hidden && this.slots.every((s) => s.state === 'crossed' || !passes(s.c, this.round.gate)))
       void this.roundDone();
+  }
+
+  /** The gate's answer for a critter standing at it: across the bridge with a tick, or back to the bank with a cross. */
+  private async answer(slot: Slot, passed: boolean) {
+    const who = KIND_WORDS[slot.c.kind];
+    // A glowing critter that has now been tried has said what it had to say, whichever way the gate went.
+    if (this.hinting?.kind === 'test' && this.hinting.slot === slot) this.hinting = null;
+    if (passed) {
+      this.drawGate(true);
+      sfx.bell(6, 0.3);
+      slot.state = 'crossed';
+      const right = this.rightSlot(this.slots.filter((s) => s.state === 'crossed').length - 1);
+      slot.home = right;
+      void this.ctx.say('cross.yes', { who });
+      await this.walkTo(slot, crossLayout(this.view).riverR + 40, this.gatePoint().y + 10);
+      await this.walkTo(slot, right.x, right.y);
+      this.drawGate(false);
+      slot.node.cheer();
+      this.mark(slot, true);
+      this.wrongs = 0;
+    } else {
+      sfx.clunk();
+      void this.shakeGate();
+      slot.node.setMood('sad', 1);
+      slot.state = 'turned';
+      void this.ctx.say('cross.no', { who });
+      await this.walkTo(slot, slot.home.x, slot.home.y);
+      this.mark(slot, false);
+    }
   }
 
   /**
@@ -539,7 +817,8 @@ class CritterCrossing implements Game {
 
   private drawDots() {
     const g = this.dots.clear();
-    if (!this.hidden) return;
+    // The dots count toward the light bulb, so they show only while it is in play.
+    if (!this.hidden || (this.keeper && !this.bulbOn)) return;
     const n = this.plan.minTests;
     const done = this.testsDone();
     for (let i = 0; i < n; i++)
@@ -551,7 +830,7 @@ class CritterCrossing implements Game {
   // --- guessing ---
 
   private toggleGuess() {
-    if (!this.hidden || this.busy || this.finished) return;
+    if (!this.bulbOn || this.busy || this.finished || this.pendingSlot) return;
     if (this.open) return this.closeGuess();
     if (this.testsDone() < this.plan.minTests) {
       this.bulb.scale.set(0.9);
@@ -563,6 +842,12 @@ class CritterCrossing implements Game {
 
   private openGuess() {
     this.open = true;
+    this.showCards((gate) => void this.guess(gate));
+    void this.ctx.say('cross.pick');
+  }
+
+  /** The round's picture cards across the top, each doing `onPick` when tapped. */
+  private showCards(onPick: (gate: Gate) => void) {
     this.panel.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.cards = [];
     for (const gate of this.round.options) {
@@ -576,13 +861,12 @@ class CritterCrossing implements Game {
         gateIcon(gate),
       );
       node.hitArea = new Rectangle(-w / 2 - 6, -70, w + 12, 140);
-      onTap(node, () => void this.guess(gate), { cooldown: 350 });
+      onTap(node, () => onPick(gate), { cooldown: 350 });
       this.cards.push({ gate, node });
       this.panel.addChild(node);
     }
     this.layoutPanel();
     this.panel.visible = true;
-    void this.ctx.say('cross.pick');
   }
 
   private closeGuess() {
@@ -627,6 +911,7 @@ class CritterCrossing implements Game {
     if (this.busy || this.finished) return;
     if (sameGate(gate, this.round.gate)) {
       this.closeGuess();
+      this.lift();
       return void this.reveal();
     }
     const evidence = this.evidence();
@@ -634,9 +919,13 @@ class CritterCrossing implements Game {
     this.closeGuess();
     this.busy = true;
     if (witness) {
-      // The guess disagrees with something the child saw: that is a wrong answer, and the critter shows why.
-      this.misses++;
-      this.wrongs++;
+      // The guess disagrees with something the child saw: that is a wrong answer, and the critter shows why. A
+      // partner's guess (first half of Two of us) gets the same why, but is theirs and never counts.
+      const scored = !this.partnerGuessing;
+      if (scored) {
+        this.misses++;
+        this.wrongs++;
+      }
       sfx.boing();
       const slot = this.slots.find((s) => s.c === witness.c)!;
       slot.node.hop(0.9);
@@ -673,12 +962,13 @@ class CritterCrossing implements Game {
   }
 
   /** The rule is found: everyone who has not been tried walks up and the gate does what it does. */
-  private async reveal() {
+  private async reveal(say = true) {
     this.busy = true;
     this.hinting = null;
+    this.lift();
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.ctx.say('cross.right', { rule: gateWords(this.round.gate) });
+    if (say) await this.ctx.say('cross.right', { rule: gateWords(this.round.gate) });
     for (const slot of this.slots.filter((s) => s.state === 'waiting')) {
       const passed = passes(slot.c, this.round.gate);
       await this.walkTo(slot, this.gatePoint().x - 70, this.gatePoint().y + 10);
@@ -718,7 +1008,8 @@ class CritterCrossing implements Game {
     sfx.tada();
     await this.ctx.say('cross.done');
     await this.ctx.tw.wait(0.4);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    // Be the gate with a partner counts as played together (supported); everything else stands as played.
+    this.ctx.finish(gateSwapResult(this.seats === 'two', this.misses, this.hints));
   }
 }
 
@@ -786,7 +1077,8 @@ export const critterCrossing: GameModule = {
   entryLevels: [8],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Ask: who crossed, and who had to wait? What do the ones who crossed have in common?',
+  coplayHint:
+    'Ask: who crossed, and who had to wait? What do the ones who crossed have in common? On Be the gate, take turns picking the secret rule.',
   offScreen:
     'Make up a secret rule ("only toys with wheels") and let her try toys at a "bridge"; say yes or no, then let her guess.',
   hubIcon: () => new CrossingIcon(),

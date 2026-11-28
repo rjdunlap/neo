@@ -32,6 +32,16 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'Two pictures are still in the running after two tries. Choose the critter that the two pictures would answer differently, then tap the light bulb for the one that is left. A critter they would answer the same way is a free try, never a mistake.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'Choose Two of us or Just me, then pick one of the four rule pictures: you are the gate. When a critter walks up, tap the check if it fits your rule, or the cross if it waits.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Two of us: your partner tries critters and guesses your rule with the light bulb, then you swap and find theirs. Just me: the pet tries critters and guesses.',
+    },
   ],
   finish: [
     {
@@ -45,6 +55,7 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'The round ends when the secret rule is guessed; the critters not yet tried then cross or wait by the rule.',
     },
+    { from: 9, to: 9, text: 'The match ends when the rule is guessed in both rounds.' },
   ],
   note: [
     {
@@ -56,6 +67,11 @@ export const HOW_TO: GameHowTo = {
       from: 2,
       to: 7,
       text: 'Trying a critter is never a mistake. A guess only counts as one if it disagrees with something you saw; a fair guess that is not yet proven just says to try another critter.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: "Picking a rule and peeking under the sign's lid are free. A check or cross against your own rule is a gentle mistake; after two the right one glows. A partner's guesses never count, and a match with a partner counts as played together.",
     },
   ],
 };

@@ -5,7 +5,10 @@ import {
   bestTest,
   consistent,
   gateKey,
+  gateSwapResult,
   gateWords,
+  LEVELS,
+  makeKeeperRound,
   makeRound,
   nextStep,
   passes,
@@ -340,7 +343,7 @@ describe('Critter Crossing scarf', () => {
   const scarfLevels = PLANS.map((p, i) => ({ p, level: i + 1 })).filter(({ p }) => p.scarf);
 
   it('is the third look on the later hidden levels only, and the scarf rule fits only a scarf', () => {
-    expect(scarfLevels.map((s) => s.level)).toEqual([5, 6, 7]);
+    expect(scarfLevels.map((s) => s.level)).toEqual([5, 6, 7, 9]);
     expect(fits({ kind: 'cow', hat: false, scarf: true }, 'scarf')).toBe(true);
     expect(fits({ kind: 'cow', hat: true }, 'scarf')).toBe(false);
     expect(gateWords({ kind: 'and', rules: ['hat', 'scarf'] })).toBe('wearing a hat and wearing a scarf');
@@ -380,5 +383,87 @@ describe('Critter Crossing scarf', () => {
       }
     }
     expect(sawScarfRule).toBe(true);
+  });
+});
+
+describe('Critter Crossing level 9, Be the gate', () => {
+  const plan = planFor(9);
+  const allEvidence = (r: CrossRound, g: Gate) => r.critters.map((c) => ({ c, passed: passes(c, g) }));
+
+  it('is a keeper plan at the top of school, leaving the older ladders and plans as they were', () => {
+    expect(plan).toMatchObject({
+      mode: 'keeper',
+      gates: 'mixed',
+      critters: 6,
+      options: 4,
+      minTests: 3,
+      rounds: 2,
+    });
+    expect(PLANS).toHaveLength(9);
+    expect(LEVELS.school).toEqual({ min: 2, max: 9, order: [2, 3, 4, 5, 6, 7, 9] });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 8, order: [1, 8, 2, 3] });
+    expect(LEVELS.preschool).toEqual({ min: 1, max: 1 });
+    expect(planFor(8).mode).toBe('visible');
+  });
+
+  it('offers four different cards, one of each kind, and whichever is chosen is fair and can be worked out', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = makeKeeperRound(plan, new Rng(seed));
+      expect(r.critters).toHaveLength(6);
+      expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}${!!c.scarf}`)).size).toBe(6);
+      expect(r.options).toHaveLength(4);
+      expect(new Set(r.options.map(gateKey)).size).toBe(4);
+      expect(r.options.map((g) => g.kind).sort()).toEqual(['and', 'not', 'one', 'or']);
+      expect(r.options.some((g) => sameGate(g, r.gate))).toBe(true);
+      for (const g of r.options) {
+        const yes = r.critters.filter((c) => passes(c, g)).length;
+        expect(yes, `#${seed} ${gateKey(g)}`).toBeGreaterThan(g.kind === 'or' ? 1 : 0);
+        expect(yes, `#${seed} ${gateKey(g)}`).toBeLessThan(6);
+        const left = consistent(r.options, allEvidence(r, g));
+        expect(left, `#${seed} ${gateKey(g)}`).toHaveLength(1);
+        expect(sameGate(left[0], g)).toBe(true);
+      }
+    }
+  });
+
+  it('round 2 never offers the rule chosen in round 1', () => {
+    for (let seed = 1; seed <= 120; seed++) {
+      const first = makeRound(plan, new Rng(seed));
+      const chosen = first.options[seed % 4];
+      const second = makeRound(plan, new Rng(seed + 900), gateKey(chosen));
+      expect(second.options.some((g) => sameGate(g, chosen))).toBe(false);
+    }
+  });
+
+  it('whichever rule is chosen, the detective (a partner, the pet or the ghost finger) finds it in at most six tries', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const dealt = makeKeeperRound(plan, new Rng(seed));
+      for (const g of dealt.options) {
+        const round = { ...dealt, gate: g };
+        const tried: { c: (typeof round.critters)[number]; passed: boolean }[] = [];
+        let step = nextStep(round, plan, tried);
+        while (step?.do === 'try') {
+          tried.push({ c: step.critter, passed: passes(step.critter, g) });
+          step = nextStep(round, plan, tried);
+        }
+        expect(step?.do, `#${seed} ${gateKey(g)}`).toBe('guess');
+        if (step?.do === 'guess') expect(sameGate(step.gate, g)).toBe(true);
+        expect(tried.length).toBeLessThanOrEqual(6);
+        expect(tried.length).toBeGreaterThanOrEqual(plan.minTests);
+      }
+    }
+  });
+
+  it('two seats always count as supported, keeping her own misses; alone the result is unchanged', () => {
+    for (const [m, h] of [
+      [0, 0],
+      [2, 0],
+      [0, 3],
+      [4, 2],
+    ]) {
+      expect(gateSwapResult(true, m, h)).toEqual({ misses: m, hints: Math.max(h, 1) });
+      expect(gateSwapResult(true, m, h).hints).toBeGreaterThanOrEqual(1);
+      expect(gateSwapResult(false, m, h)).toEqual({ misses: m, hints: h });
+    }
   });
 });
