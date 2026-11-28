@@ -29,6 +29,8 @@ import {
   clearSpot,
   countRun,
   signFor,
+  tenFor,
+  modeCardFor,
   FRIEND_SOUND,
   FRIENDS,
   inReach,
@@ -731,5 +733,73 @@ describe('Blow, then pop (level 19)', () => {
   it('the level has a how-to line and a mode card the voice script knows', () => {
     expect(SCRIPT['bubble.blow']).toBeDefined();
     expect(SCRIPT['bubble.mode.19']).toBeDefined();
+  });
+});
+
+describe('Make 20 (level 20, school, after 14)', () => {
+  const plan = planFor(20);
+
+  it('sits at ID 20 at the top of school after 14, leaves 1 to 19 in place and is played by no other band', () => {
+    expect(PLANS).toHaveLength(20);
+    expect(plan).toMatchObject({ mode: 'bonds', goal: 5, most: 10, sum: 20 });
+    expect(LEVELS.school).toEqual({ min: 10, max: 20, order: [10, 11, 12, 13, 14, 20] });
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(LEVELS[band]!.order ?? [], band).not.toContain(20);
+    expect(LEVELS.prek).toEqual({ min: 6, max: 12 });
+    expect(showsDots(20)).toBe(false);
+    expect(signFor(plan, 20, [])).toEqual({ kind: 'bond', n: 20, dots: false });
+    expect(modeCardFor(20).name).toBe('Make 20');
+    expect(SCRIPT['bubble.mode.20']).toBeDefined();
+    expect(SCRIPT['bubble.ten20']).toBeDefined();
+  });
+
+  it('gives five distinct pairs in 1..19, and every live bubble keeps its partner after any popped pairs', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const nums = bondNumbers(20, plan.goal, rng);
+      expect(nums).toHaveLength(10);
+      const mins = new Set(nums.map((n) => Math.min(n, 20 - n)));
+      expect(mins.size).toBe(5);
+      expect(nums.filter((n) => n === 10).length % 2).toBe(0);
+      for (const n of nums) {
+        expect(n).toBeGreaterThanOrEqual(1);
+        expect(n).toBeLessThanOrEqual(19);
+      }
+      // Pop pairs in a seeded order; every live bubble always has a live partner on screen.
+      let live = [...nums];
+      while (live.length) {
+        for (let i = 0; i < live.length; i++) {
+          const a = live[i];
+          expect(
+            live.some((b, j) => j !== i && a + b === 20),
+            `seed ${seed} live ${live}`,
+          ).toBe(true);
+        }
+        const first = live.shift()!;
+        const partnerIdx = live.indexOf(20 - first);
+        expect(partnerIdx).toBeGreaterThanOrEqual(0);
+        live.splice(partnerIdx, 1);
+      }
+    }
+  });
+
+  it('splits every non-ten partner into small + ones = 10 and small + big = 20, and returns null for 10 or other sums', () => {
+    for (let a = 1; a <= 19; a++) {
+      const res = tenFor(a, 20);
+      if (a === 10) {
+        expect(res).toBeNull();
+        continue;
+      }
+      expect(res, `a=${a}`).not.toBeNull();
+      const { small, ones, big } = res!;
+      expect(small + ones).toBe(10);
+      expect(small + big).toBe(20);
+      expect(big - 10).toBe(ones);
+      expect([small, big].sort((x, y) => x - y)).toEqual([a, 20 - a].sort((x, y) => x - y));
+    }
+    expect(tenFor(3, 10)).toBeNull();
+    expect(tenFor(2, 5)).toBeNull();
+    expect(tenFor(0, 20)).toBeNull();
+    expect(tenFor(20, 20)).toBeNull();
   });
 });
