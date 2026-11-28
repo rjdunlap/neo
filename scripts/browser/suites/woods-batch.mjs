@@ -2022,7 +2022,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     if (!only || only === 'clock')
       for (const level of process.env.CLOCK_LEVELS
         ? process.env.CLOCK_LEVELS.split(',').map(Number)
-        : Array.from({ length: 9 - fromLevel }, (_, i) => i + fromLevel)) {
+        : Array.from({ length: 10 - fromLevel }, (_, i) => i + fromLevel)) {
         await launch('clock-tower', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         // U7 R4: a right answer's line (`clock.yay`, `clock.itis`, level 6's example) never holds the tower. Each is
@@ -2052,7 +2052,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               key !== 'clock.yay' &&
               key !== 'clock.itis' &&
               key !== 'clock.later.example' &&
-              key !== 'clock.earlier.example'
+              key !== 'clock.earlier.example' &&
+              key !== 'clock.half-later.example'
             )
               return line;
             const index = g.index;
@@ -2165,12 +2166,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await ring();
             await ring();
             assert.deepEqual(await counts(), [2, 1]);
-            if (level === 6 || level === 7 || level === 8) {
+            if (level === 6 || level === 7 || level === 8 || level === 9) {
               const evidence = await page.evaluate(() => {
                 const g = neo.scene.game;
                 const digital = (t) => `${Math.floor(t / 60) % 12 || 12}:${String(t % 60).padStart(2, '0')}`;
                 return {
                   comparing: g.comparison.visible,
+                  durationBadge: g.durationBadge.visible,
                   before: g.oldTime.text,
                   after: g.newTime.text,
                   from: digital(g.task.from ?? 0),
@@ -2182,6 +2184,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                     ((g.task.from ?? 0) % 60) / 12 +
                     (g.plan.mode === 'earlier' ? -5 : 5),
                   arc: g.example.arc,
+                  arcStart: g.example.arcStart,
+                  fromMinute: (g.task.from ?? 0) % 60,
                   minute: g.task.time % 60,
                   rim: g.face.children.filter((child) => 'text' in child).map((child) => child.text),
                 };
@@ -2198,6 +2202,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                     : 'worked example moves backwards one hour',
                 );
                 assert.ok(evidence.oldAlpha < 1, 'old clock is faint');
+              } else if (level === 9) {
+                assert.equal(evidence.comparing, false);
+                assert.equal(evidence.durationBadge, true, 'duration sign (+30 min) is visible');
+                assert.equal(evidence.arc, 30, 'explanatory arc sweeps 30 minutes');
+                assert.equal(evidence.arcStart, evidence.fromMinute, 'arc starts at the starting minute');
               } else {
                 assert.equal(evidence.comparing, false);
                 assert.equal(evidence.arc, evidence.minute, 'help arc reaches the requested minute');
