@@ -296,6 +296,12 @@ export interface Game {
    */
   touchReturned?(): void;
   /**
+   * Things a finger would touch that the pad pointer cannot find by their listeners, because the game hears touches on a
+   * layer or the stage and picks the nearest thing itself (Bubble Pop's bubbles). The hand jumps to them and follows them as
+   * they move (`src/app/pad-pointer.ts`). Never a hint: list every candidate, right or wrong.
+   */
+  pointerSpots?(): readonly Container[];
+  /**
    * What a capable player would press this frame, for the couch intro's "watch me" demo. The demo
    * hands it straight to `control()`, so it can only do what a real controller can.
    */

@@ -290,6 +290,7 @@ export class GameScene extends Scene {
     );
 
     this.pointer = new PadPointer(this.app.renderer.canvas, this.root, () => this.app.renderer.screen);
+    this.pointer.extra = () => this.game?.pointerSpots?.() ?? [];
     this.root.addChild(this.pointer.layer);
 
     this.keys.peekEnabled = () => !!this.game?.togglePeek && !this.finished && !this.helpCard;
