@@ -104,7 +104,7 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 4. **Visible "not" entry** (built 2026-10-15, [PR #422](https://github.com/rjdunlap/neo/pull/422)): stable ID 8, pre-K order `[1, 8, 2, 3]`, pictured/slashed rule and `entryLevels`; school remains 2–7. Rule tests, filtered play and `fingerdemo`; [build note](../archive/COMPLETED-2026-10-09.md#critter-crossing-visible-not-entry-2026-10-15).
 5. **Third critter feature** *(built 2026-11-24, [PR #2148](https://github.com/rjdunlap/neo/pull/2148): a scarf on school levels 5–7)*, shared with Critter Sort (decision 2 settled 2026-10-23: a scarf, its own slice): rule tests for both games plus the fairness test across the larger pool.
 6. **Preschool opening** *(built 2026-11-23, [PR #2072](https://github.com/rjdunlap/neo/pull/2072): `preschool: { min: 1, max: 1 }`, level 1 only; no new voice or how-to lines)* (decision 1 settled 2026-10-23: yes, after the visible "not" entry): levels table, registry and lands tests, voice.
-7. **Be the gate** (decision 3 settled 2026-10-23: an anonymous, uncredited second seat; a role-swapped round counts as supported completion), at the next free stable level ID (currently 9; 8 is the visible "not" entry): a new interaction; its own definition first (**queued in [READY](../READY.md) 2026-11-28**).
+7. **Be the gate** (decision 3 settled 2026-10-23: an anonymous, uncredited second seat; a role-swapped round counts as supported completion), at the next free stable level ID (currently 9; 8 is the visible "not" entry): a new interaction; its own definition first (**queued in [READY](../READY.md) 2026-11-28; being defined on `agy/docs-critter-crossing-be-the-gate`**).
 
 ## What was built in this session
 
