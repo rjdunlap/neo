@@ -1181,8 +1181,39 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       );
     }
     if ((!only || only === 'tangram') && tangramTap !== 'only')
-      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
+      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 10); level++) {
         await launch('tangram-town', level);
+        if (level === 10) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(350);
+          await screenshot('tangram-town-10-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            if (g.pieces.length !== 1 || g.filled.filter(Boolean).length !== 1)
+              throw new Error('One piece home starts with one shape placed and one in the tray');
+            const c = g.pieces[0],
+              i = g.filled.indexOf(false),
+              t = g.plan.targets[i];
+            // A drop well away from the shadow just comes back: no boing, no miss.
+            await kit.dragTo(c.node, g.board.toGlobal({ x: t.x + 160, y: t.y - 160 }), 18);
+            await kit.sleep(600);
+            if (c.placed || g.misses !== 0) throw new Error('A far drop is never a miss');
+            kit.tapOn(g.help);
+            await kit.sleep(200);
+            if (g.hints !== 1) throw new Error('The help hand counts as help');
+            // About 100 from the shadow is still home at this level (76 elsewhere).
+            await kit.dragTo(c.node, g.board.toGlobal({ x: t.x + 70, y: t.y + 70 }), 18);
+            await kit.sleep(300);
+            if (!c.placed || !g.done) throw new Error('A drop within 110 places the one piece and finishes');
+          });
+          await finished('tangram-town');
+          assert.deepEqual(await score('tangram-town'), [0, 1]);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            'Tangram Town 10: one piece home, far drop free, help counted, wide snap finished, portrait passed',
+          );
+          continue;
+        }
         if (level === 9) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);
