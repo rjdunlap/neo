@@ -203,7 +203,9 @@ export class HomeScene extends Scene {
       this.basket
         ? { id: 'basket', thing: this.basket, line: 'home.continue', go: () => go.project() }
         : null,
-      this.lodge ? { id: 'lodge', thing: this.lodge, line: 'yard.lodge', go: () => go.lodge() } : null,
+      this.lodge
+        ? { id: 'lodge', thing: this.lodge, line: 'yard.lodge', go: () => go.lodge({ home: true }) }
+        : null,
     ];
     return all.filter((w): w is Way => !!w);
   }
