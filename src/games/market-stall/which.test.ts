@@ -25,10 +25,10 @@ describe('Market Stall 14: Which coin?', () => {
     expect(plan.mode).toBe('which');
     expect(plan.coins).toEqual([1, 2, 5]);
     expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([1, 2, 14]);
-    expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([2, 14, 3, 4]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([2, 14, 15, 3, 4]);
     expect(levelsInOrder(rangeFor(LEVELS, 'school'))).not.toContain(14);
     expect(rangeFor(LEVELS, 'school').max).toBe(13);
-    expect(marketStall.entryLevels).toEqual([14]);
+    expect(marketStall.entryLevels).toEqual([14, 15]);
     expect(marketStall.describeLevel(14)).toMatch(/^Which coin\?/);
   });
 
