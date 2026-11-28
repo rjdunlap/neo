@@ -27,6 +27,7 @@ import { setNote, type PlaytestNote } from '../content/playtest';
 import { earnShells as earnedFor } from '../content/shells';
 import { awardStamps, newStamps, type StampKind } from '../content/stamps';
 import { buy as buyLook, colorId, type BuyRefusal } from '../content/shop';
+import { build as buildPiece, type BuildRefusal } from '../content/lodge';
 import { keyOf, recordAllSix as recordSix } from '../content/sixes';
 import { countRound, seasonOf, settle, type SeasonGoal } from '../content/seasons';
 import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
@@ -320,6 +321,20 @@ export class Store {
     this.data.shells = r.shells;
     this.save();
     return { goals: r.goals, bonus: r.bonus, keepsake: r.keepsake };
+  }
+
+  /**
+   * Builds one piece of Lantern Lodge with shells (the progression loop, slice 7) and writes at once. Refused, with nothing
+   * changed, for a band that does not earn, an unknown or built piece, one whose support is not built, or a short balance.
+   */
+  buildLodge(id: string): true | BuildRefusal {
+    const r = buildPiece(this.data.lodge, this.data.shells, id, this.data.profile.band);
+    if ('refused' in r) return r.refused;
+    this.data.lodge = r.lodge;
+    this.data.shells = r.shells;
+    this.save();
+    this.flush();
+    return true;
   }
 
   /** Whether no round of this game has been finished yet (in any place). */
