@@ -60,9 +60,8 @@ From the 2026-11-23 reconciliation of the dives' slice lists (each checked again
 
 (Refilled into Next ten 2026-11-26.)
 
-Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs (`day-by-day` level 8 moved to Next ten 2026-11-27):
+Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs (`day-by-day` level 8 moved to Next ten 2026-11-27; `clock-tower` level 11 and `letter-trails` level 16 moved there the same day):
 
-- **`clock-tower`, level 11 *Fit a visit*** (new-interaction tier): availability and duration data, choose/set stages, bot; after level 10. [Dive slice 7](deep-dives/clock-tower.md#build-slices-in-order).
 
 
 
