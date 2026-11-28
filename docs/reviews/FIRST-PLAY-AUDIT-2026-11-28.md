@@ -48,7 +48,9 @@ Scored from each game's how-to card: two points for each hidden gesture (three f
 
 **Batch 6, each with its own `showMove`:** Count the Ballots, Adventure Walk, Gear Garden, Moon Window, Word Glue, Example Express and Who Am I (the hand skips the demonstration's deliberate wrong try or replay: the bot's flag is set as if done for the call, then put back), and Seed Travelers (its hint, without the demonstration's first pairing).
 
-**Still to do** (bots that keep timers, steer moving things or reveal as they go): Attic Finds, Logic Grid, Pond Conga, Seesaw Balance, Fluffy Salon, Bounce Back, Recipe Workshop, Drift Cards, Bumper Garden, Roundup. Pond Typing has no touch bot.
+**Batch 7, each with its own `showMove`:** Logic Grid (only a square already in view: the bot scrolls a phone's case file, a hint must not), Seesaw Balance, Recipe Workshop and Fluffy Salon (the bot's bookkeeping is put back after the call), Attic Finds (the right picture where the bot tries the wrong one first), Pond Conga (step-by-step ponds only), Drift Cards (the right answer without tracing every boat first) and Roundup (a stroke from the animal toward its gate, then the bell).
+
+**Left out on purpose:** Bounce Back and Bumper Garden, whose every move is about timing a moving ball (a hand in the air cannot show when), and Pond Typing, which is played on keys. Their how-to cards' demonstrations stay their help.
 
 | Rank | Game | Band read | Why it needs the card | Opt-in |
 | --- | --- | --- | --- | --- |

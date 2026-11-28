@@ -614,6 +614,15 @@ class SeesawBalance implements Game {
   }
 
   /** Use the real drags to compare, balance, or take equal things away, then tap the box's weight. */
+  /** Guided first play: the bot's next move; the things it marks as tested along the way are put back. */
+  showMove(): TouchIntent | null {
+    const tested = new Set(this.demoTested);
+    const move = this.autotouch();
+    this.demoTested.clear();
+    for (const item of tested) this.demoTested.add(item);
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || !this.round) return null;
     if (this.plan.mode === 'predict' && this.released) return { tap: { on: this.continueButton } };

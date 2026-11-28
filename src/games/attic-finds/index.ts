@@ -1563,6 +1563,15 @@ class AtticFinds implements Game {
 
   /* Bot ------------------------------------------------------------------------------------------- */
 
+  /** Guided first play: the bot's next touch, except that it points at the right picture where the bot tries the wrong one first. */
+  showMove(): TouchIntent | null {
+    const move = this.autotouch();
+    if (this.free || this.plan.mode !== 'try' || !move || !('tap' in move)) return move;
+    const right = this.cards.find((c) => c.effect === this.obj.effect);
+    const wrong = this.cards.find((c) => c.effect !== this.obj.effect);
+    return right && move.tap.on === wrong?.node ? { tap: { on: right.node } } : move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.free) {
       // At level 3 the third turn finishes the round by itself (busy is set), so there is no Finish tap to show.
