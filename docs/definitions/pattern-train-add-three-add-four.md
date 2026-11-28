@@ -1,6 +1,6 @@
 # Pattern Train level 21: Add three, add four (definition)
 
-**Built:** not yet; its build is queued in [READY](../READY.md).
+**Built:** 2026-11-28 on `claude/pattern-train-add-three-four` ([PR #2377](https://github.com/rjdunlap/neo/pull/2377)).
 
 Defined 2026-11-28 on `claude/define-pattern-train-add-three-four` ([PR #2373](https://github.com/rjdunlap/neo/pull/2373)) as slice 9 of the [Pattern Train deep dive](../deep-dives/pattern-train.md#build-slices-in-order), from its [level 21 row](../deep-dives/pattern-train.md#new-levels-on-top). That row said "define after a child plays 19–20". The developer's delegation of 2026-10-23 replaced that: "Wonder Woods grows first, so 21 (add three, add four) may be defined now, with a child's play of 19–20 as a person check" ([decisions](../deep-dives/pattern-train.md#decisions-for-the-developer)). Every [open decision](#open-decisions) below has a default the build uses, so none waits on the developer.
 
@@ -57,7 +57,7 @@ One round makes one sticker, as on every Pattern Train level.
 1. The five numbered cars and the empty sixth (`?`) roll in as on level 20. The three choice tiles under the train show the rule chips instead of numbers: `+3` in the same label style as the numbers, with a small hop arc drawn above it. The tiles are the existing 130-unit choice tiles at the existing positions, so targets stay at or above 100 units at every view.
 2. Spoken (`ctx.instruct('pattern.rule', { name })`): "Each car adds the same amount, {name}. How much more is each car? Tap it." The pet repeats this until the rule is found.
 3. A new `phase: 'rule'` (beside `find` and `fill`). Tapping a shown car while in it is free: it plays its bell, as today.
-4. **A wrong chip** is a miss: boing, and "Count on from one car to the next. How many more?" (`pattern.ruleWrong`). After two misses on the rule (one hint, counted once): the right chip glows green, the first hop arc draws between cars 1 and 2, and the pet counts on across it: "From 4: 5, 6, 7. That is 3 more!" (`pattern.ruleHint`, slots `{from}`, `{list}`, `{step}`).
+4. **A wrong chip** is a miss: boing, and "Count on from one car to the next, {name}. How many more?" (`pattern.ruleWrong`; the name slot keeps it on device speech beside the other level-21 lines). After two misses on the rule (one hint, counted once): the right chip glows green, the first hop arc draws between cars 1 and 2, and the pet counts on across it: "From 4: 5, 6, 7. That is 3 more!" (`pattern.ruleHint`, slots `{from}`, `{list}`, `{step}`).
 5. **The right chip:** a bell, the chips fade, and the hop arcs draw over each of the four gaps, each marked `+3`, with a fifth dashed arc onto the empty car. Spoken (`ctx.instruct('pattern.ruleRight', { step })`): "Yes! Add {step} each time. What number goes in the glowing car?" The pet repeats this from then on.
 
 ### 2. Fill the last car
