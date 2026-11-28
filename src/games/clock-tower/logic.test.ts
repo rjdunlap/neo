@@ -9,6 +9,11 @@ import {
   demoAction,
   fiveExample,
   halfLaterExample,
+  durationOf,
+  hopsFor,
+  INTERVAL_LENGTHS,
+  lengthOf,
+  lengthWords,
   hasFrom,
   laterExample,
   requestFor,
@@ -40,6 +45,7 @@ describe('Clock Tower', () => {
     for (const plan of PLANS)
       for (let seed = 1; seed <= 100; seed++)
         for (const task of makeTasks(plan, new Rng(seed))) {
+          if (plan.mode === 'how-long') continue; // its request is a question; the clocks show both times
           const request = requestFor(plan.mode, task);
           const time = hasFrom(plan.mode) ? task.from! : task.time;
           expect(request.time).toBe(`${hourOf(time)}:${String(time % 60).padStart(2, '0')}`);
@@ -59,7 +65,9 @@ describe('Clock Tower', () => {
       const card = howToFor(clockTower, level)!;
       expect(card.finish).toBe('Four correct answers complete the round.');
       expect(card.note).toContain('After two misses');
-      expect(card.note).toContain(level === 5 ? 'picture glows' : 'yellow hands');
+      expect(card.note).toContain(
+        level === 5 ? 'picture glows' : level === 10 ? 'controls still to set glow' : 'yellow hands',
+      );
       if (level === 5) {
         expect(card.steps.join(' ')).toContain('pretend plan');
         expect(card.steps.join(' ')).toContain('tap the time to hear it for free');
@@ -163,7 +171,7 @@ describe('Clock Tower', () => {
   });
 
   it('chooses hand turns, the matching picture, and then the bell for a clean demonstration', () => {
-    for (const plan of PLANS)
+    for (const plan of PLANS.filter((p) => p.mode !== 'how-long'))
       for (let seed = 1; seed <= 100; seed++)
         for (const task of makeTasks(plan, new Rng(seed))) {
           let hour =
@@ -223,7 +231,7 @@ describe('Clock Tower', () => {
 
   it('plays level 8 before level 7 for school, and keeps every level reachable', () => {
     const school = rangeFor(LEVELS, 'school');
-    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 8, 7, 9]);
+    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 8, 7, 9, 10]);
     expect(rangeFor(LEVELS, 'prek').max).toBe(4);
   });
 
@@ -346,5 +354,53 @@ describe('Clock Tower', () => {
     expect(howToFor(clockTower, 3)!.steps.join(' ')).not.toContain('arc');
     expect(SCRIPT['clock.five.zero'][0]).toContain('zero minutes');
     expect(SCRIPT['clock.five.zero'][0]).toContain('sixty minutes');
+  });
+
+  it('level 10 asks four distinct same-day intervals the picker can reach, with one answer each', () => {
+    expect(PLANS[10 - 1].mode).toBe('how-long');
+    expect(LEVELS.school?.order).toEqual([2, 3, 4, 5, 6, 8, 7, 9, 10]);
+    const plan = PLANS[10 - 1];
+    const reachable = new Set(
+      [0, 1, 2, 3].flatMap((h) => [false, true].map((half) => lengthOf(h, half))).filter((d) => d > 0),
+    );
+    expect([...reachable].sort((a, b) => a - b)).toEqual(INTERVAL_LENGTHS);
+    for (let seed = 1; seed <= 300; seed++) {
+      const tasks = makeTasks(plan, new Rng(seed));
+      expect(tasks).toHaveLength(4);
+      expect(tasks[0]).toMatchObject({ from: 180, time: 330, start: 900, end: 1050 });
+      const lengths = tasks.map(durationOf);
+      expect(new Set(lengths).size).toBe(4);
+      expect(lengths.some((d) => d % 60 === 0)).toBe(true);
+      expect(lengths.some((d) => d % 60 === 30)).toBe(true);
+      let crossing = 0;
+      for (const t of tasks) {
+        expect(reachable.has(durationOf(t))).toBe(true);
+        expect(t.end!).toBeLessThan(1440);
+        expect(t.from).toBe(t.start! % 720);
+        expect(t.time).toBe(t.end! % 720);
+        // The full-turn trap: no other picker value gives the same end on the face.
+        expect([...reachable].filter((d) => (t.start! + d) % 720 === t.time)).toEqual([durationOf(t)]);
+        if (Math.floor(t.start! / 720) !== Math.floor(t.end! / 720)) crossing++;
+      }
+      expect(crossing).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('level 10 bot, words and worked count come from the same interval', () => {
+    const task = { from: 180, time: 330, start: 900, end: 1050 };
+    expect(demoAction('how-long', 0, 0, task)).toEqual({ kind: 'hours', hours: 2 });
+    expect(demoAction('how-long', 2, 0, task)).toEqual({ kind: 'half', on: true });
+    expect(demoAction('how-long', 2, 30, task)).toEqual({ kind: 'check' });
+    expect(demoAction('how-long', 3, 30, task)).toEqual({ kind: 'hours', hours: 2 });
+    expect(lengthWords(30)).toBe('half an hour');
+    expect(lengthWords(60)).toBe('1 hour');
+    expect(lengthWords(150)).toBe('2 and a half hours');
+    const worked = hopsFor(task);
+    expect(worked.strip).toBe('3:00 → 4:00 → 5:00 → 5:30');
+    expect(worked.count).toContain('half an hour more');
+    expect(worked.count).toContain('half past 5');
+    expect(requestFor('how-long', task).heading).toBe('How long was it?');
+    expect(howToFor(clockTower, 10)!.steps.join(' ')).toContain('half-hour button');
+    expect(SCRIPT['clock.how-long'][0]).toContain('{from}');
   });
 });

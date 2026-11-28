@@ -35,10 +35,15 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Turn the hands to half an hour (30 minutes) after the starting time on the sign, moving to the next hour when the long hand crosses 12, then ring the bell.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'Two clocks show when something starts and when it ends. Choose how long it took: tap plus or minus for whole hours, and tap the half-hour button if there is half an hour more. The words below the buttons say what you chose. Then ring the bell.',
+    },
     { to: 4, text: 'Tap the time sign to hear the request again for free.' },
-    { from: 6, to: 9, text: 'Tap the time sign to hear the request again for free.' },
+    { from: 6, to: 10, text: 'Tap the time sign to hear the request again for free.' },
   ],
-  finish: [{ to: 9, text: 'Four correct answers complete the round.' }],
+  finish: [{ to: 10, text: 'Four correct answers complete the round.' }],
   note: [
     {
       to: 4,
@@ -68,6 +73,11 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'After two misses on a time, yellow hands show the answer to copy; each miss also shows a 30-minute arc halfway around the clock. Turning or replaying is free.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'After two misses on a time, the hours are counted from the start clock on a strip, then the half hour, and the controls still to set glow. You can change your choice any time before ringing the bell; it is never timed.',
     },
   ],
 };

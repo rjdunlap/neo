@@ -27,6 +27,14 @@ export const VOICE = {
     'That says {now}. Thirty minutes from {from} crosses twelve to {time}, in the next hour.',
   ],
   'clock.half-later.example': ['Half an hour after {from} is {time}, thirty minutes around the clock.'],
+  'clock.how-long': [
+    'The clock starts at {from} and ends at {time}. How long was that? Choose the hours and the half hour, then ring the bell!',
+  ],
+  'clock.how-long.wrong': [
+    'That is {chosen}. From {from}, that would end at {end}, but the clock ends at {time}. Try again.',
+  ],
+  'clock.how-long.zero': ['That is no time at all. The clock moves from {from} to {time}. Try again.'],
+  'clock.how-long.help': ['{count} Choose the same hours and half hour.'],
   'clock.five.zero': [
     'At 12, the digital clock shows zero minutes. A full turn is sixty minutes: the next hour starts at zero.',
   ],

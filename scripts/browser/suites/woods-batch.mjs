@@ -2022,7 +2022,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     if (!only || only === 'clock')
       for (const level of process.env.CLOCK_LEVELS
         ? process.env.CLOCK_LEVELS.split(',').map(Number)
-        : Array.from({ length: 10 - fromLevel }, (_, i) => i + fromLevel)) {
+        : Array.from({ length: 11 - fromLevel }, (_, i) => i + fromLevel)) {
         await launch('clock-tower', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         // U7 R4: a right answer's line (`clock.yay`, `clock.itis`, level 6's example) never holds the tower. Each is
@@ -2076,6 +2076,68 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             timeout: 20000,
           });
         };
+        if (mode === 'how-long') {
+          // Level 10: two fixed clocks, an hours stepper and a half-hour toggle; two misses, one hint, then the bot's own answers.
+          const sees = () =>
+            page.evaluate(() => {
+              const g = neo.scene.game;
+              return {
+                face: g.face.visible,
+                picker: g.interval.visible,
+                hours: g.hours,
+                half: g.half,
+                summary: g.summary.text,
+                hops: g.hops.visible ? g.hops.text : '',
+                start: g.startTime.text,
+                end: g.endTime.text,
+                want: g.task.end - g.task.start,
+              };
+            });
+          const choose = async (hours, half) => {
+            for (;;) {
+              const now = await sees();
+              if (now.hours === hours) break;
+              await tap(now.hours < hours ? 'neo.scene.game.plusButton' : 'neo.scene.game.minusButton');
+            }
+            if ((await sees()).half !== half) await tap('neo.scene.game.halfToggle');
+          };
+          for (let n = 0; n < 4; n++) {
+            await page.waitForTimeout(300);
+            const at = await sees();
+            assert.equal(at.face, false, 'the hands face is replaced by the interval view');
+            assert.equal(at.picker, true);
+            assert.equal(at.hours + (at.half ? 1 : 0), 0, 'each task starts with nothing chosen');
+            if (n === 0) {
+              assert.deepEqual([at.start, at.end], ['3:00', '5:30']);
+              await tap('neo.scene.game.bell');
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'choosing nothing is a gentle miss');
+              await choose(1, false);
+              assert.match((await sees()).summary, /1 hour/);
+              await tap('neo.scene.game.bell');
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss gives the one hint');
+              const hinted = await sees();
+              assert.equal(hinted.hops, '3:00 → 4:00 → 5:00 → 5:30', 'the worked count is shown');
+              await page.setViewportSize({ width: 768, height: 1024 });
+              await page.waitForTimeout(200);
+              await screenshot('clock-tower-10-hint-portrait');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(200);
+              await screenshot('clock-tower-10-hint');
+            }
+            const want = (await sees()).want;
+            await choose(Math.floor(want / 60), want % 60 === 30);
+            await tap('neo.scene.game.bell');
+            await settle();
+          }
+          await finished('clock-tower');
+          assert.deepEqual(await score('clock-tower'), [2, 1]);
+          log(
+            'Clock Tower 10 (how-long): two fixed clocks, hours stepper and half-hour toggle, a miss and the worked-count hint, saved score and sticker passed',
+          );
+          continue;
+        }
         // Turn a hand with a finger: the long hand from the outer ring, the short one from the middle.
         const turn = async (radius, turns) => {
           const path = await page.evaluate(
