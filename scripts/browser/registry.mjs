@@ -303,6 +303,7 @@ export const SUITES = [
   'memory',
   'letters',
   'letters10',
+  'letters16',
   'robot',
   'wardrobe7',
   'wardrobe9',
@@ -1467,6 +1468,10 @@ export async function runSuite(suite, fixture) {
     await traceRound(14, '', true, 'z');
     await traceRound(15, '', false, 'k');
     await traceRound(15, '', true, 'y');
+  }
+  if (suite === 'all' || suite === 'letters' || suite === 'letters16') {
+    await traceRound(16, '', true);
+    await traceRound(17, 'Zoë-Rose');
   }
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'wardrobe7') await wardrobe7();

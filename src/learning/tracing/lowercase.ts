@@ -258,3 +258,21 @@ export const isLower = (letter: string): boolean => letter in LOWER;
 
 /** The strokes for a capital or a little letter. */
 export const strokesOf = (letter: string): readonly Stroke[] => LOWER[letter] ?? LETTERS[letter];
+
+/** How tall a capital stands in the frame: from the top line down to the base line, as a name's first letter is written. */
+export const CAPITAL_IN_FRAME = FRAME.base - FRAME.top;
+const framed = new Map<string, readonly Stroke[]>();
+/** A capital's strokes shrunk into the frame (top line to base line, centred), the same order and lifts as its own. */
+export function framedCapital(letter: string): readonly Stroke[] {
+  let s = framed.get(letter);
+  if (!s) {
+    s = LETTERS[letter].map((stroke) =>
+      stroke.map(([x, y]): Point => [0.5 + (x - 0.5) * CAPITAL_IN_FRAME, FRAME.top + y * CAPITAL_IN_FRAME]),
+    );
+    framed.set(letter, s);
+  }
+  return s;
+}
+
+/** The strokes for a letter traced in the frame: a little letter's own, or a capital standing between the top and base lines. */
+export const frameStrokesOf = (letter: string): readonly Stroke[] => LOWER[letter] ?? framedCapital(letter);
