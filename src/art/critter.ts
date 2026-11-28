@@ -1,6 +1,6 @@
 import { Container, Graphics, Point } from 'pixi.js';
 import { gaze } from '../engine/input';
-import { cheek, ink, swatch, toward, type ColorName, type Swatch } from './palette';
+import { cheek, ink, petSage, swatch, toward, type ColorName, type Swatch } from './palette';
 import { densify, ellipsePoints, paperPoints, U } from './paper';
 import { bodyPath } from './shapes';
 
@@ -195,7 +195,7 @@ function bodyPoints(): Pt[] {
 const PIECES: Record<Form, [number, number, number, number][]> = {
   // A big round head on a chunky body.
   bear: [
-    [0, -56, 114, 60],
+    [0, -54, 102, 58],
     [0, -158, 118, 96],
   ],
   // A wide face with fluffed cheeks, on a slimmer body.
@@ -203,10 +203,10 @@ const PIECES: Record<Form, [number, number, number, number][]> = {
     [0, -52, 86, 54],
     [0, -160, 128, 90],
   ],
-  // A smaller head on a big sitting bottom.
+  // A round head on a small, soft pear of a body: narrower than the head, so it never looks broad-shouldered.
   bunny: [
-    [0, -58, 124, 62],
-    [0, -168, 100, 86],
+    [0, -50, 88, 56],
+    [0, -164, 110, 90],
   ],
   // One egg.
   chick: [[0, -127, 130, 128]],
@@ -226,7 +226,7 @@ const PIECES: Record<Form, [number, number, number, number][]> = {
   sheep: [[0, -116, 128, 116]],
   // A long, narrow head on a deep chest.
   horse: [
-    [0, -46, 108, 50],
+    [0, -46, 96, 50],
     [0, -150, 104, 104],
   ],
   // A taller, narrower egg than the chick's.
@@ -301,7 +301,8 @@ export class Critter extends Container {
   constructor(spec: CritterSpec) {
     super();
     this.spec = spec;
-    this.sw = spec.shade ?? swatch[spec.color];
+    // Pip in its own teal is the leaf pet's sage, so it matches the guide pet; a game that recolours Pip still gets its colour.
+    this.sw = spec.shade ?? (spec.form === 'pip' && spec.color === 'teal' ? petSage : swatch[spec.color]);
     this.eyeY = spec.snout === 'muzzle' ? -150 : -142;
     this.eyeX = spec.snout === 'muzzle' ? 35 : 40;
     this.mouthAt =
@@ -645,7 +646,7 @@ export class Critter extends Container {
         .closePath()
         .fill(shade(sw.fill, 0.22));
     } else if (form === 'bunny') {
-      back.circle(124, -40, 26).fill(0xfffdf8);
+      back.circle(96, -34, 24).fill(0xfffdf8);
     } else if (form === 'pig') {
       back
         .moveTo(126, -70)
@@ -708,11 +709,8 @@ export class Critter extends Container {
           .closePath()
           .fill(dark);
     } else if (form === 'bunny') {
-      // A fluffy chest: a cream piece with a zigzag top.
-      const pts: Pt[] = [];
-      for (let i = 0; i <= 8; i++) pts.push([-56 + i * 14, i % 2 ? -78 : -68]);
-      pts.push([62, -44], [40, -14], [0, -10], [-40, -14], [-62, -44]);
-      paperPoints(g, pts, 0xf6ecdc, { amp: 0.5 * U, seed: 4 });
+      // A soft cream tummy patch.
+      paperPoints(g, ellipsePoints(0, -42, 46, 32), 0xf6ecdc, { amp: 0.5 * U, seed: 4 });
     } else if (form === 'chick') {
       // A few feather scallops on the tummy.
       const line = shade(sw.fill, 0.28);
