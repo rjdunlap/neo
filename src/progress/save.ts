@@ -120,6 +120,8 @@ export interface SaveData {
    */
   settings: {
     placeLayout: 'path' | 'subjects';
+    /** Where tapping this player's card on "Who's playing?" opens (D8): Explore is Home at the root and the map at classic/. */
+    startView: StartView;
     volume: number;
     music: boolean;
     sessionMinutes: 0;
@@ -168,6 +170,9 @@ export interface SaveData {
 export const HISTORY_LENGTH = 10;
 const BAND_IDS: Band[] = ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup'];
 
+/** The starting view (D8, docs/definitions/starting-view.md): Explore-first, or straight to Today's six. */
+export type StartView = 'explore' | 'six';
+
 export function defaults(): SaveData {
   return {
     version: 3,
@@ -176,6 +181,7 @@ export function defaults(): SaveData {
     world: { band: null },
     settings: {
       placeLayout: 'path',
+      startView: 'explore',
       volume: 0.8,
       music: true,
       sessionMinutes: 0,
@@ -390,6 +396,8 @@ export function migrate(raw: unknown): SaveData {
     },
     settings: {
       placeLayout: settings.placeLayout === 'subjects' ? 'subjects' : 'path',
+      // Version 3 still: a save without it, or with an unknown target, opens as it always did.
+      startView: settings.startView === 'six' ? 'six' : 'explore',
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
       music: bool(settings.music, d.settings.music),
       sessionMinutes: 0,
