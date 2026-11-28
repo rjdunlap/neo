@@ -591,8 +591,6 @@ export class DailyScene extends Scene {
   }
 
   enter() {
-    const link = document.querySelector<HTMLElement>('.classic-link');
-    if (link) link.hidden = true;
     music.play(STYLES.hub);
     voice.stop();
     if (this.live()) return this.resumeMix();

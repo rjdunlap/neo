@@ -47,17 +47,17 @@ export async function rootOffline(browser) {
     const openHome = async () => {
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('.chooser__play').first().click();
-      await page.locator('.classic-link').waitFor({ state: 'visible' });
+      await page.locator('.gear').waitFor({ state: 'visible' });
       await page.waitForFunction(() => document.fonts.status === 'loaded');
-      // Production has no scene API. Allow the 0.35 s curtain to settle after the DOM link becomes visible.
+      // Production has no scene API. Allow the 0.35 s curtain to settle after Home's gear appears.
       await sceneWait(page, 600);
     };
     if (book) {
       const openBook = async () => {
         await openHome();
-        // At 1024 × 768, pre-K Home Play → the books in creature play → the third library card.
+        // At 1024 × 768, pre-K Home's treehouse (yardLayout) → the books in creature play → the third library card.
         for (const [x, y] of [
-          [914, 483],
+          [190, 480],
           [129, 258],
           [742, 323],
         ]) {
@@ -92,14 +92,11 @@ export async function rootOffline(browser) {
     const visit = async () => {
       await openHome();
       await page.screenshot({ path: `${output}/home.png` });
-      // At 1024×768: toddler Home Explore (Little surprises, Places, Favorites, Arcade, Family play), Places, then Counting Cove's place card.
-      await page.mouse.click(914, 403);
-      await sceneWait(page, 1400);
-      await page.locator('.classic-link').waitFor({ state: 'hidden' });
-      await page.mouse.click(512, 197);
+      // At 1024×768: toddler Home's signpost (yardLayout) → the island map → Counting Cove's spot (mapLayout, wide).
+      await page.mouse.click(904, 640);
       await sceneWait(page, 2200);
       await page.screenshot({ path: `${output}/places.png` });
-      await page.mouse.click(397, 200);
+      await page.mouse.click(435, 650);
       await waitForSave(
         read,
         (save) => save?.explore?.last === 'counting-cove',

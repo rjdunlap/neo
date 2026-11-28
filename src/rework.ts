@@ -7,11 +7,8 @@ import { placeAtRoot } from './app/origin';
 import { createRoutes } from './app/routes';
 import { applySettings } from './app/settings';
 import { loadCastArt } from './art/creatures/cast';
-import { loadArt } from './art/creatures/illustrated';
-import { loadWearables } from './art/creatures/wearables';
 import { isLocation, LocationScene } from './app/scenes/LocationScene';
 import { loadCollectionArt } from './creatures/companion';
-import { CreaturePreview } from './dev/creature-preview';
 import { ArcadeScene } from './app/scenes/ArcadeScene';
 import { DailyScene } from './app/scenes/DailyScene';
 import { ExploreScene } from './app/scenes/ExploreScene';
@@ -26,11 +23,10 @@ import { loadLocationArt } from './art/locations';
 import { store } from './progress/store';
 
 /**
- * The site root: the creature-world rework as it stands (docs/rework/). It boots to "Who's playing?", then the person's
- * Home (RW06 slice 2, docs/rework/HOME.md#routes-and-the-root-front-door): `hub` is Home, `room` is creature play, and a
- * built location (RW13) replaces its land. RW02b's creature preview stays behind `?preview`, in production too, until
- * RW08 replaces the root's interim Explore. `?daily` opens today's six (`DailyScene`) once in Home's place. The island game boots from `src/main.ts` at `classic/` (decided by the
- * developer 2026-10-19); RW08 decides what becomes of it.
+ * Puddle Island, the one page (the island game at `classic/` retired at RW08's cutover, 2026-11-28). It boots to
+ * "Who's playing?", then the person's Home, a yard to tap around (docs/rework/HOME.md#the-yard): `hub` is Home, `room` is
+ * creature play, Places is the island map and a built location (RW13) replaces its land. `?daily` opens today's six
+ * (`DailyScene`) once in Home's place.
  */
 async function boot() {
   await store.load();
@@ -43,26 +39,11 @@ async function boot() {
   const island = createRoutes(app);
   const query = new URLSearchParams(location.search);
   let daily = query.has('daily');
-  const land: Routes['land'] = (id, page) =>
-    isLocation(id) ? void app.show(new LocationScene(app, id, undefined, page)) : island.land(id, page);
   // At the root a location's Back returns to Explore's Places (RW08); its games' results come back to the location.
   const atRoot: Routes['land'] = (id, page) =>
     isLocation(id)
       ? void app.show(new LocationScene(app, id, () => app.go.explore('places'), page))
       : island.land(id, page);
-  // The page's link to the island games shows only on the root's entry scene (Home, or the preview).
-  const link = document.querySelector<HTMLElement>('.classic-link');
-  const withLink = (routes: Routes) =>
-    Object.fromEntries(
-      Object.entries(routes).map(([name, route]) => [
-        name,
-        (...args: unknown[]) => {
-          // A guest's hub is the six alone (play-first slice 2): no way to the island games until Add me.
-          if (link) link.hidden = name !== 'hub' || store.entry.guest;
-          return (route as (...a: unknown[]) => void)(...args);
-        },
-      ]),
-    ) as unknown as Routes;
   if (import.meta.env.DEV && query.has('cast')) {
     app.go = island;
     // RW02b step 3: the second-wave six, on the dev server only, so their sprites stay out of the build.
@@ -71,24 +52,11 @@ async function boot() {
     app.go = island;
     // The paper cut-out style's swatch book (docs/ART-STYLE.md), on the dev server only.
     await (await import('./dev/paper-lab')).showPaperLab(app);
-  } else if (query.has('preview')) {
-    // RW02b's preview, for comparing the rigs on the iPad until RW08; its meadow button opens Rainbow Meadow, whose Home comes back here.
-    const [sprout, river, glider, items] = await Promise.all([
-      loadArt('sprout'),
-      loadArt('river'),
-      loadArt('glider'),
-      loadWearables(),
-      loadCollectionArt(),
-      loadCastArt(),
-    ]);
-    const entry = () => void app.show(new CreaturePreview(app, { sprout, river, glider }, items));
-    app.go = withLink({ ...island, hub: entry, land });
-    app.go.hub();
   } else {
     // The residents' art (RW14 slice 2) and the location pictures (slice 4) load with the collection's, so a location never waits for them.
     await Promise.all([loadCollectionArt(), loadHomeBackdrop(), loadCastArt(), loadLocationArt()]);
     app.creatureWorld = true;
-    app.go = withLink({
+    app.go = {
       ...island,
       // `?daily` (D10): after "Who's playing?" the day's six open once in Home's place; their Back, and Home after that, is Home.
       hub: () => {
@@ -128,7 +96,7 @@ async function boot() {
       land: atRoot,
       // No age places at the root (RW08 slice 2): Little surprises' stops, its Explore and a game with no origin come back to Explore's entries (U6b).
       place: () => placeAtRoot(app.go),
-    });
+    };
     app.go.start();
   }
   if (import.meta.env.DEV) {

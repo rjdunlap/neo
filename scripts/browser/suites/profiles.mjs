@@ -10,8 +10,8 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
   async function startView() {
     const base = process.env.GAME_URL || 'http://127.0.0.1:5173';
     for (const [path, explore] of [
+      // `classic/` (the map) retired at RW08's cutover, 2026-11-28.
       ['/', 'HomeScene'],
-      ['/classic/', 'MapScene'],
     ]) {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.goto(new URL(path, base).href);

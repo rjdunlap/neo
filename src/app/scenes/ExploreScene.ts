@@ -431,9 +431,6 @@ export class ExploreScene extends Scene {
   }
 
   enter() {
-    // The page's island-games link belongs to Home; Back (`go.hub()`) shows it again.
-    const link = document.querySelector<HTMLElement>('.classic-link');
-    if (link) link.hidden = true;
     music.play(STYLES.hub);
     const e = this.entry;
     const line: LineId | null = !e

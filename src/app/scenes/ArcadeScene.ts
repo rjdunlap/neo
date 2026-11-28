@@ -635,8 +635,6 @@ export class ArcadeScene extends Scene {
   }
 
   enter() {
-    const link = document.querySelector<HTMLElement>('.classic-link');
-    if (link) link.hidden = true;
     music.play(STYLES.hub);
     // The demonstrations' effects stay low, as on the how-to card.
     // Explore's card already said `arcade.open` on the way in.

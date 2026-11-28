@@ -9,14 +9,14 @@ export default defineConfig({
     'node_modules/.vite',
   // Relative paths so the build works from any static host or sub-folder (e.g. GitHub Pages).
   base: './',
-  // Two pages: the root is the creature-world rework (`src/rework.ts`), `classic/` the island game (`src/main.ts`).
+  // One page: Puddle Island (`src/rework.ts`); the island game at `classic/` retired at RW08's cutover (2026-11-28).
   // `art-lab/` is an unlinked art comparison (docs/rework/LOW-POLY-PILOT.md): built so a phone can open it, never precached.
   build: {
     chunkSizeWarningLimit: 1500,
     // Voice clips stay files (precached below) rather than base64 inside the bundle.
     assetsInlineLimit: (file: string) => (file.endsWith('.m4a') ? false : undefined),
     rollupOptions: {
-      input: { main: 'index.html', classic: 'classic/index.html', artlab: 'art-lab/index.html' },
+      input: { main: 'index.html', artlab: 'art-lab/index.html' },
     },
   },
   plugins: [
@@ -35,9 +35,8 @@ export default defineConfig({
         background_color: '#FFF4E3',
         theme_color: '#FFF4E3',
         start_url: './',
-        // Long-press the installed icon: straight to Today's six (D10). On a phone the root opens the six anyway.
+        // Long-press the installed icon: straight to Today's six (D10).
         shortcuts: [{ name: "Today's six", short_name: 'Six', url: './?daily' }],
-        // `classic/` (the island game) links its own copy, public/classic/manifest.webmanifest, which starts there.
         scope: './',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
