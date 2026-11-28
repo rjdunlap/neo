@@ -249,6 +249,11 @@ class RhymeTime implements Game {
   }
 
   /** The ghost finger on the how-to card: the rhyming picture, the odd one out, or the pair, one card and then the other. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked) return null;
     const t = this.tray;

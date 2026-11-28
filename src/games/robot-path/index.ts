@@ -537,6 +537,11 @@ class RobotPath implements Game {
   }
 
   /** The ghost finger on the how-to card: press the next button of the known route, one at a time, then play. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.running || this.done) return null;
     if (this.prediction) {

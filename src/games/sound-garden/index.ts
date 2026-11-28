@@ -449,6 +449,11 @@ class SoundGarden implements Game {
    * The ghost finger: tap each singer in turn in free play; in the listening levels wait for the sound and tap the tile that shows its
    * answer; on the echo level tap the drum with the woodpecker's rhythm, as long and short gaps made with the hand's rest between taps.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     if (this.plan.big)

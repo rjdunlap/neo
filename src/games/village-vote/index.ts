@@ -738,6 +738,11 @@ export class VillageVote implements Game {
     this.finished = true;
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (!this.alive || this.busy || this.finished) return null;
     const e = this.election;

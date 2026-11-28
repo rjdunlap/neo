@@ -365,6 +365,11 @@ class ThoughtBubbles implements Game {
   }
 
   /** The ghost finger: drag the right card into the bubble, then at level 3 tap the clue. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0) return null;
     if (this.stage === 'card' && this.story.level >= 4) {

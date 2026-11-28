@@ -541,6 +541,11 @@ class EggCatch implements Game {
    * The ghost finger on the how-to card: tap a hen (lap), touch under the next catchable egg and let the basket slide there (it
    * leaves white eggs alone), flip the gates the waiting egg needs and then tap the green arrow, or tap the bin the set gates lead to.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     const mode = this.plan.mode;

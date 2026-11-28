@@ -771,6 +771,11 @@ export class WelcomeWays implements Game {
     this.draw();
     this.positionActors();
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.destroyed) return null;
     if (this.ctx.demo && !this.demonstrated && (this.plan.level === 3 || this.plan.level === 4)) {
