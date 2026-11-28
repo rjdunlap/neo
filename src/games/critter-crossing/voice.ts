@@ -22,20 +22,21 @@ export const VOICE = {
   'cross.hint-pick': ['Look at who crossed and who waited. Which picture fits?'],
   'cross.right': ['The rule is {rule}! Now we know.'],
   'cross.done': ['Everyone is across! What a clever detective!'],
+  // Be the gate (level 9): each slot-free line carries {name}, so it stays on device speech until a clip pass.
   'cross.seats': [
-    'Who is playing with you? Tap the two friends to play together, or one friend to play alone.',
+    'Who is playing with you, {name}? Tap the two friends to play together, or one friend to play alone.',
   ],
-  'cross.pick-own': ['You are the gate! Pick a rule from the pictures for your bridge.'],
-  'cross.lookaway': ['Partner, shut your eyes! Pick a secret rule for your gate.'],
+  'cross.pick-own': ['You are the gate, {name}! Pick a rule from the pictures for your bridge.'],
+  'cross.lookaway': ['Partner, shut your eyes! {name}, pick a secret rule for your gate.'],
   'cross.keeper-go': [
-    'Open your eyes! Tap a critter to test the gate, or tap the light bulb when you know the rule.',
+    'Open your eyes! Tap a critter to test {name}’s gate, or tap the light bulb when you know the rule.',
   ],
   'cross.judge': ['Does the {who} cross or wait? Tap the check or the cross.'],
   'cross.pet-try': ['Hmm, let me try the {who}. Does it cross or wait?'],
   'cross.gate-fits': ['Look at your sign! The {who} is {rule}, so it can cross.'],
   'cross.gate-notfit': ['Look at your sign! The {who} is not {rule}, so it has to wait.'],
-  'cross.check-sign': ['Check your rule! Tap the sign if you need a peek.'],
+  'cross.check-sign': ['Check your rule, {name}! Tap the sign if you need a peek.'],
   'cross.pet-guess': ['I know your rule! It is {rule}!'],
-  'cross.swap': ['Swap seats! Now shut your eyes while your partner picks a rule for the gate.'],
-  'cross.crackit': ['Open your eyes! Try critters at the gate and guess your partner’s rule.'],
+  'cross.swap': ['Swap seats! Now shut your eyes, {name}, while your partner picks a rule for the gate.'],
+  'cross.crackit': ['Open your eyes, {name}! Try critters at the gate and guess your partner’s rule.'],
 } satisfies Record<string, string[]>;

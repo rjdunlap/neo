@@ -398,7 +398,7 @@ class CritterCrossing implements Game {
     this.alone.visible = true;
     this.resize(this.view);
     this.busy = false;
-    return this.ctx.instruct('cross.seats');
+    return this.ctx.instruct('cross.seats', { name: this.ctx.childName });
   }
 
   private chooseSeats(seats: 'two' | 'solo') {
@@ -480,8 +480,10 @@ class CritterCrossing implements Game {
     this.phase = 'pick-rule';
     this.showCards((gate) => this.ruleChosen(gate));
     this.busy = false;
-    if (this.seats === 'solo') return this.ctx.instruct('cross.pick-own');
-    return this.ctx.instruct(this.index === 0 ? 'cross.lookaway' : 'cross.swap');
+    if (this.seats === 'solo') return this.ctx.instruct('cross.pick-own', { name: this.ctx.childName });
+    return this.ctx.instruct(this.index === 0 ? 'cross.lookaway' : 'cross.swap', {
+      name: this.ctx.childName,
+    });
   }
 
   private ruleChosen(gate: Gate) {
@@ -498,10 +500,10 @@ class CritterCrossing implements Game {
     }
     if (this.index === 0) {
       this.phase = 'judge';
-      return void this.ctx.instruct('cross.keeper-go');
+      return void this.ctx.instruct('cross.keeper-go', { name: this.ctx.childName });
     }
     this.phase = 'solve';
-    return void this.ctx.instruct('cross.crackit');
+    return void this.ctx.instruct('cross.crackit', { name: this.ctx.childName });
   }
 
   /** The wooden lid over the sign: shut (a "?" on planks) or lifted aside for a peek. */
@@ -587,7 +589,7 @@ class CritterCrossing implements Game {
       this.wrongs++;
       sfx.boing();
       void this.wobbleSign();
-      if (this.seats === 'two') void this.ctx.say('cross.check-sign');
+      if (this.seats === 'two') void this.ctx.say('cross.check-sign', { name: this.ctx.childName });
       else
         void this.ctx.say(truth ? 'cross.gate-fits' : 'cross.gate-notfit', {
           who: KIND_WORDS[slot.c.kind],

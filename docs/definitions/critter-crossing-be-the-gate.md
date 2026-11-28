@@ -1,6 +1,6 @@
 # Critter Crossing level 9: Be the gate (definition)
 
-**Built:** 2026-11-28 on `claude/critter-crossing-be-the-gate` ([PR #2378](https://github.com/rjdunlap/neo/pull/2378)). As defined, with two small choices: the four cards are always one of each kind, and the wooden lid matches the sign's width.
+**Built:** 2026-11-28 on `claude/critter-crossing-be-the-gate` ([PR #2378](https://github.com/rjdunlap/neo/pull/2378)). As defined, with three small choices: the four cards are always one of each kind, the wooden lid matches the sign's width, and the seven slot-free voice lines below gained her name (`{name}`) so they stay on device speech until a clip pass renders them.
 
 Defined 2026-11-28 on `agy/docs-critter-crossing-be-the-gate` ([PR #2369](https://github.com/rjdunlap/neo/pull/2369)) as slice 7 of the [Critter Crossing deep dive](../deep-dives/critter-crossing.md#build-slices-in-order), from its [Be the gate proposal](../deep-dives/critter-crossing.md#new-levels-on-top) and the October 23 [second-seat contract](../archive/DECISIONS-2026-10-23.md#standing-rules) (S5: anonymous, uncredited second seat; only seat 1's role read by `difficulty.ts`; a role-swapped round counts as supported completion). Every [open decision](#open-decisions) below has a default the build uses, so none waits on the developer.
 
