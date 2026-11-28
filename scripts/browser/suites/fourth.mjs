@@ -313,7 +313,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     // Song Maker 14, Change one thing: a change that misses the picture's request is a miss (both versions played),
     // the hint glows after two, the before button replays the pet's tune, and the hinted tap makes the change.
     if (!only || only === 'song' || only === 'song14') {
-      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.setViewportSize({ width: 390, height: 844 });
       await launch('song-maker', 14, 'Mia', 'school');
       await page.waitForTimeout(600);
       const r14 = await page.evaluate(async () => {
@@ -342,6 +342,25 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         const glow = g.glow.getBounds().width > 50;
         return { request: g.song.request, allLit, asleepAtStart, miss1, beforePlays, miss2, glow };
       });
+      const sizes = await page.evaluate(() => {
+        const g = neo.scene.game;
+        const box = (o) => o.getBounds();
+        const [c, b, sign] = [box(g.check), box(g.before), box(g.sign)];
+        const apart = (p, q) =>
+          p.x + p.width <= q.x || q.x + q.width <= p.x || p.y + p.height <= q.y || q.y + q.height <= p.y;
+        return {
+          // Upright, the picture, before and check sit in a row above the board.
+          // Only a touch screen held upright gets the phone layout (FOURTH_ONLY=song14 emulates one).
+          upright:
+            !matchMedia('(pointer: coarse)').matches || (g.check.y < g.lay.y0 && g.before.y < g.lay.y0),
+          cell: g.lay.cell,
+          apart: apart(c, b) && apart(b, sign) && apart(c, sign),
+        };
+      });
+      assert.ok(
+        sizes.upright && sizes.cell >= 100 && sizes.apart,
+        `song 14 phone layout ${JSON.stringify(sizes)}`,
+      );
       await screenshot('song-maker-14-portrait');
       const done14 = await page.evaluate(async () => {
         const g = neo.scene.game;
