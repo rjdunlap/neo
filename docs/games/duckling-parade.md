@@ -12,7 +12,7 @@
 | toddler | 1–3 |
 | preschool | 2–6 |
 | pre-K | 4–8 |
-| school | 9–11 |
+| school | 9–12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,15 +27,18 @@
 | 9 | Make the pattern: two of one color, then one of another |
 | 10 | Make the pattern, leaving out the duckling that does not fit |
 | 11 | Make the pattern: one of a color, then two of another |
+| 12 | Keep the pattern going: bring the next four ducklings |
 
 <!-- end generated -->
 
 **Starts as:** tap the grass or lead with a finger to walk Mama Duck; a fading grass ring acknowledges the destination; ducklings fall in behind
 
-**Grows into:** lead them to the pond, bring exactly N, find one color, build repeated color patterns, leave out a duckling that breaks the pattern; level 11 repeats one of a color then two of another
+**Grows into:** lead them to the pond, bring exactly N, find one color, build repeated color patterns, leave out a duckling that breaks the pattern; level 11 repeats one of a color then two of another; level 12 keeps a shown pattern going (two full units on the card, the next four ducklings with no color shown until she brings them)
 
 ## Design notes
 
 *After Meerca Chase (Neopets).* Tap the grass or lead with a finger to walk Mama Duck; ducklings fall in behind (steer a growing line). A broad, fading grass ring acknowledges the clamped destination. Lifting or cancelling the finger keeps Mama walking there, while cancellation, lost capture, window exit, blur and visibility changes forget the old finger. A new accepted finger leads; palm rejection remains. The cue clears on arrival/finish, resize and destroy; native listeners are released on destroy. Later: lead them to the pond, bring exactly N, find one color, make an AB or ABC pattern, then repeat a two-of-one/one-of-another pattern (AAB at levels 9–10, school) and leave one spare duckling in the meadow. Level 11 (school) flips the unit to ABB: six ducklings, two colors, shown A B B A B B (one of a color, then two of another). It uses the same pattern rules: a wrong next color is refused, two misses glow the right ones, and a partial line cannot unload at the pond. The meadow holds exactly the pattern's ducklings. Pattern colors vary by round. Each round also picks one of two seeded meadow looks, flowers or reeds, drawn behind the pond and the back strip as decoration only (never a duckling color, no effect on rules or places). Count rounds allow partial deliveries; extra-arrival speech names the combined total, including ducklings already in the pond, and extras hop back out (one arrival miss). A wrong duckling that merely waits beside Mama at the start is never a "not me": a refusal counts only once a finger has set a destination near it (a miss also needs that destination to be nearer it than to any duckling that may join).
 
 **Lap level 1 (2026-11-12, PR #1593).** Level 1 is in lap's window only, so it was changed in place for that band; toddler's level 1 is unchanged (all three ducklings out from the start, waiting counts a hint). At lap Mama quacks and hops at every touch-down anywhere, sky included (throttled 0.25 s, also while the ducklings hop into the pond before the finale). One duckling waits on the meadow at the start; each next one pops out (hop, pop, puff of stars) 0.6 s after the one before joins, at the first waiting spot more than 180 units from Mama (`nextToShow`, rule-tested). The fifteen-second glow still shows but counts no hint at lap. The `arcade` suite takes `PARADE_BAND` and `ARCADE_ONLY=parade`.
+
+**Level 12, *Keep it going* (2026-11-28, PR #2381; [definition](../definitions/duckling-parade-keep-it-going.md)).** The card shows two full units of an AB, AAB or ABB pattern at full color, an arrow, and four colorless rings; she brings the next four ducklings, which continue the unit (`ABAB`, `AABA` or `ABBA`). The meadow holds those four plus one spare of each color, so both colors wait at every step; the spares may stay. `round.pattern` holds only the continuation, so the join rule, pond, demo and accounting read it unchanged; the reference is card art only (`cardSlots` in `logic.ts` is the tested rule for what the card shows). The instruction speaks only the reference (`parade.keepgoing`); an aimed wrong duckling gets `parade.keepnext` ("what comes after {last}?"), which never names the answer; a hint (two misses on one slot, or 15 s idle) reveals only the next ring's color, glows the fitting ducklings and says `parade.next`. At the pond the pet says how it kept going (`parade.kept`). Two changes reach levels 7–11 too: filling a slot resets the two-miss count, so two misses are two on the same slot; and once a pattern line is complete, a spare she reaches is not a miss (before, level 10's spare could count a miss and speak a next color that does not exist). An idle complete line's hint is the pond glow alone. The card fits the 1024 × 768 stage (about 620 units at most); the game still has no upright phone layout.
