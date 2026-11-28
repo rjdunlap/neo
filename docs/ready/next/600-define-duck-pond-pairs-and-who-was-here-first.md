@@ -1,1 +1,0 @@
-**Define Duck Pond *Pairs* and *Who was here first?*** (docs only): evens and odds by ducks swimming two by two (Duck Pond owns them, decided 2026-10-23) and the unknown-start story (1.OA.A.1); IDs, bands, accounting and rule tests; queue the builds. [Dive slice 11](../../deep-dives/duck-pond.md#build-slices-in-order).
