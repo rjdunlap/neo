@@ -926,6 +926,55 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
 
+    // Level 17, Hop to the dots (toddler): the sign shows dots; one wrong pad, a second for the glow, then the supported finish.
+    if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [17]).includes(17)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('frog-hop', 17);
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.equal(await page.evaluate(() => neo.scene.instruction?.id), 'hop.dots');
+      await page.evaluate(() => {
+        const g = neo.scene.game;
+        window.dotsSaid = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => (window.dotsSaid.push([String(id), vars?.m, vars?.n]), say(id, vars));
+      });
+      const tapPad = async (k) => {
+        await page.evaluate((k) => kit.tapOn(neo.scene.game.pads[k - 1]), k);
+        await page.waitForTimeout(250);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
+          timeout: 30000,
+        });
+      };
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.pads.filter((p) => p.visible).length),
+        3,
+        'the first question shows pads 1 to 3',
+      );
+      const n = await page.evaluate(() => neo.scene.game.q.target);
+      const wrong = n === 1 ? 2 : 1;
+      await tapPad(wrong);
+      const miss = await page.evaluate(() => dotsSaid.find(([id]) => id.startsWith('hop.wrong.dots')));
+      assert.deepEqual(miss, [n > wrong ? 'hop.wrong.dots-forward' : 'hop.wrong.dots-back', wrong, n]);
+      assert.equal(await page.evaluate(() => neo.scene.game.at), 0, 'a wrong pad leaps home');
+      await tapPad(wrong);
+      assert.equal(await page.evaluate(() => neo.scene.game.glowing), n, 'two misses glow the target');
+      await screenshot('frog-hop-17-phone-glow');
+      await tapPad(wrong);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.qi),
+        1,
+        'with the glow on the next tap finishes the question',
+      );
+      for (let i = 1; i < 5; i++) await tapPad(await page.evaluate(() => neo.scene.game.q.target));
+      await finished('frog-hop');
+      assert.deepEqual(await score('frog-hop'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Frog Hop 17: dots-only sign, three pads then five, a wrong pad names itself and the way and leaps home, two misses glow, the third tap finishes, 2 misses 1 hint saved, phone screenshot',
+      );
+    }
+
     // Level 16, Hop along (lap and toddler): six free taps on the pond, one on the bank; nothing is wrong.
     if ((!only || only === 'hop') && (process.env.HOP_LEVELS?.split(',').map(Number) ?? [16]).includes(16)) {
       await page.setViewportSize({ width: 390, height: 844 });
