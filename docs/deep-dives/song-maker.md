@@ -179,7 +179,7 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
 6. **Finish my song, the next free ID after that (currently 11)** (built, preschool and pre-K, [PR #2195](https://github.com/rjdunlap/neo/pull/2195); D1 and D3 settled). *Tier: new levels on an existing interaction* (reuses slice 5).
 7. **Two to choose, the next free ID after that (currently 12)** (built, pre-K right before 7, [PR #2222](https://github.com/rjdunlap/neo/pull/2222); D1 settled). *Tier: new levels.*
 8. **Bring it home, the next free ID after that (built as level 13, school, [PR #2300](https://github.com/rjdunlap/neo/pull/2300))** (D1 and D4 settled 2026-10-23: a failed check against the spoken rule is a miss). *Tier: new levels.*
-9. **Change one thing, the next free ID after that (currently 14)** (D1 and D4 settled). *Tier: new interaction.*
+9. **Change one thing (built as level 14, school, [PR #2311](https://github.com/rjdunlap/neo/pull/2311))** (D1 and D4 settled). Built on level 9's 6×4 board rather than 8 beats, because an 8×4 board cannot keep 100-unit cells upright on the 768 × 1024 view; a match request has two single-tap answers (either beat), the others at least three. *Tier: new interaction.*
 
 Each slice updates the how-to card (`LevelLine`s), GAMES.md, the README row, voice lines and a VERIFICATION entry, as AGENTS.md requires.
 
