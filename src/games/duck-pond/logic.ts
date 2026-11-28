@@ -13,7 +13,8 @@ export type DuckMode =
   | 'double'
   | 'teen'
   | 'every'
-  | 'peek';
+  | 'peek'
+  | 'compare';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -101,6 +102,9 @@ export const PLANS: DuckPlan[] = [
   // Preschool and pre-K (dive slice 10, appended as 17, played between 6 and 7): 4–10 ducks peek from reeds and lily leaves
   // all over a crowded pond; each tap rings a duck once and counts it, then a dotted pad says how many. "A few, or lots?" first, unscored.
   { mode: 'peek', rounds: 4, min: 4, max: 10, padDots: true },
+  // Pre-K (dive slice 10, appended as 18, played between 7 and 8): the bridge splits the pond; 1–10 ducks a side. Which side
+  // has more, or are they the same? The ducks pair up across the bridge, one to one, and the spare ones stand out.
+  { mode: 'compare', rounds: 5, min: 1, max: 10, split: true },
 ];
 
 export const LEVELS: BandLevels = {
@@ -108,7 +112,8 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
   // Count the peekers (17) plays between 6 and 7.
   preschool: { min: 3, max: 17, order: [3, 4, 5, 6, 17, 7] },
-  prek: { min: 5, max: 17, order: [5, 6, 17, 7, 8, 9] },
+  // Which side has more? (18) plays between 7 and 8.
+  prek: { min: 5, max: 18, order: [5, 6, 17, 7, 18, 8, 9] },
   // Doubles (14), Ten and some more (15) and Every way (16) go on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
   school: { min: 8, max: 16, order: [8, 9, 10, 11, 14, 15, 16] },
 };
@@ -366,6 +371,112 @@ export function peekMove(
   const pad = pads.indexOf(answer);
   return pad >= 0 ? { pad } : null;
 }
+
+/** Level 18: which side has more ducks, or the same. */
+export type CompareAnswer = 'left' | 'right' | 'same';
+
+/** A round of level 18: the ducks on each side of the bridge, and whether they start scattered over their side's seats. */
+export interface CompareRound {
+  left: number;
+  right: number;
+  /** Scattered: each duck takes a random seat on its side, so the shapes do not line up until the ducks pair up. */
+  scatter: boolean;
+}
+
+export const compareAnswer = (r: Pick<CompareRound, 'left' | 'right'>): CompareAnswer =>
+  r.left === r.right ? 'same' : r.left > r.right ? 'left' : 'right';
+
+/** The first round of level 18: four against six, already paired up, a gentle start. */
+export const COMPARE_FIRST: [number, number] = [4, 6];
+/** Level 18: the rounds from this one on start scattered. */
+export const COMPARE_SCATTER_FROM = 2;
+
+/**
+ * Level 18's rounds: each side `min`–`max` ducks; unequal sides differ by one to four; "the same" in at most one round, never
+ * the first (it has a pair of 2 or more); never three of the same answer running (so the bigger side is not always one side).
+ */
+export function compareRounds(rng: Rng, plan: DuckPlan): CompareRound[] {
+  const sameAt = plan.rounds > 1 && rng.chance(0.6) ? rng.int(1, plan.rounds - 1) : -1;
+  const answers: CompareAnswer[] = [];
+  for (let i = 0; i < plan.rounds; i++) {
+    if (i === sameAt) {
+      answers.push('same');
+      continue;
+    }
+    let a: CompareAnswer = rng.chance(0.5) ? 'left' : 'right';
+    if (answers.length >= 2 && answers.at(-1) === a && answers.at(-2) === a)
+      a = a === 'left' ? 'right' : 'left';
+    answers.push(a);
+  }
+  // A forced "same" could still finish a run of three: swap the side of the round before it.
+  for (let i = 2; i < answers.length; i++)
+    if (answers[i] === answers[i - 1] && answers[i] === answers[i - 2])
+      answers[i - 1] = answers[i] === 'left' ? 'right' : 'left';
+  return answers.map((answer, i) => {
+    const scatter = i >= COMPARE_SCATTER_FROM;
+    if (answer === 'same') {
+      const n = rng.int(Math.max(2, plan.min), plan.max);
+      return { left: n, right: n, scatter };
+    }
+    let [small, big] = COMPARE_FIRST;
+    if (i > 0) {
+      const d = rng.int(1, Math.min(4, plan.max - plan.min));
+      small = rng.int(plan.min, plan.max - d);
+      big = small + d;
+    }
+    return answer === 'left' ? { left: big, right: small, scatter } : { left: small, right: big, scatter };
+  });
+}
+
+/** Level 18's seats: three across a side, four rows, smaller ducks on a taller pond, so ten fit a side on an upright phone. */
+export const COMPARE_PER_ROW = 3;
+export const COMPARE_ROWS = [-74, -8, 58, 124] as const;
+/** The size of a twenty-seat duck (`FRAME_SCALE`) and its column gap (`FRAME_GAP`), which are declared further down. */
+export const COMPARE_SCALE = 0.68;
+export const COMPARE_GAP = 80;
+export const COMPARE_POND_RY = 190;
+/** The farthest a scattered duck strays from its seat, across and down. */
+export const COMPARE_JITTER = 8;
+
+/**
+ * Level 18: `n` seats on one side of the bridge (`sign` −1 left, 1 right), filled outward from the bridge, the top row first.
+ * The two sides are mirror images, so the duck in left seat `i` and the one in right seat `i` are a pair.
+ */
+export function compareSide(n: number, sign: -1 | 1): [number, number][] {
+  const count = Math.max(0, Math.min(COMPARE_PER_ROW * COMPARE_ROWS.length, Math.floor(n)));
+  return Array.from({ length: count }, (_, i): [number, number] => [
+    sign * (SPLIT_BRIDGE_HALF + DUCK_GAP / 2 + (i % COMPARE_PER_ROW) * COMPARE_GAP),
+    COMPARE_ROWS[Math.floor(i / COMPARE_PER_ROW)],
+  ]);
+}
+
+/** Level 18: where a side's ducks start. Lined up, the filled seats; scattered, a random choice of the side's twelve, jittered. */
+export function compareStart(rng: Rng, n: number, sign: -1 | 1, scatter: boolean): [number, number][] {
+  if (!scatter) return compareSide(n, sign);
+  const all = compareSide(COMPARE_PER_ROW * COMPARE_ROWS.length, sign);
+  return rng
+    .shuffle(all.map((_, i) => i))
+    .slice(0, Math.max(0, Math.min(all.length, Math.floor(n))))
+    .map((i) => [
+      all[i][0] + rng.int(-COMPARE_JITTER, COMPARE_JITTER),
+      all[i][1] + rng.int(-COMPARE_JITTER, COMPARE_JITTER),
+    ]);
+}
+
+/** Level 18: the pairs across the bridge (seat indexes, one per side) and the spare ducks, on the side with more. */
+export function comparePairs(
+  left: number,
+  right: number,
+): { pairs: number; spare: { side: 'left' | 'right'; seats: number[] } | null } {
+  const pairs = Math.min(left, right);
+  if (left === right) return { pairs, spare: null };
+  const side = left > right ? 'left' : 'right';
+  const most = Math.max(left, right);
+  return { pairs, spare: { side, seats: Array.from({ length: most - pairs }, (_, i) => pairs + i) } };
+}
+
+/** What a capable child taps at level 18: the side with more, or "the same". */
+export const compareMove = (r: Pick<CompareRound, 'left' | 'right'>): CompareAnswer => compareAnswer(r);
 
 /** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
 export function tenStarts(rng: Rng, plan: DuckPlan): number[] {
