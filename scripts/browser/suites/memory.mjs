@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function memory() {
     const levels =
-      process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 13 }, (_, i) => i + 1);
+      process.env.MEMORY_LEVELS?.split(',').map(Number) ?? Array.from({ length: 14 }, (_, i) => i + 1);
     // The toddler window: the hidden four-card round (level 1), played from the toddler band, on a narrow upright phone.
     if (levels.includes(1)) {
       const original = page.viewportSize();
@@ -68,7 +68,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         g.ctx.say = say;
       });
       await launch('memory-match', level);
-      if (level === 1 || level === 8 || level === 12 || level === 13) {
+      if (level === 1 || level === 8 || level === 12 || level === 13 || level === 14) {
         await page.evaluate(async () => {
           const g = neo.scene.game;
           const first = g.views.findIndex((v) => !v.matched),
@@ -232,6 +232,66 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
           }
         });
         await screenshot('memory-total-portrait');
+        await page.evaluate(() => {
+          for (const v of neo.scene.game.views) {
+            v.front.visible = v.matched;
+            v.back.visible = !v.matched;
+          }
+        });
+        await page.setViewportSize(original);
+        await page.waitForTimeout(150);
+      }
+      if (level === 14) {
+        // Same share: the hint cuts the hinted pair's first card into its partner's pieces; a mismatch says which shades
+        // more; faces fit upright on a phone.
+        const original = page.viewportSize();
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(150);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          const hinted = g.cards[g.hintAt].pair;
+          g.views.forEach((v, i) => {
+            const c = g.cards[i];
+            if (c.side === 0 && !v.split) throw new Error('Level 14 first card has no overlay');
+            if (c.side === 1 && v.split) throw new Error('Level 14 partner card has an overlay');
+            if (v.split && v.split.visible !== (v.matched || c.pair === hinted))
+              throw new Error('Level 14 overlay not on the hinted or matched pair only');
+          });
+          const lines = [];
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, vars) => {
+            lines.push({ id, vars });
+            return say(id, vars);
+          };
+          const open = (i) => !g.views[i].matched;
+          const a = g.cards.findIndex((c, i) => open(i)),
+            b = g.cards.findIndex((c, i) => open(i) && c.pair !== g.cards[a].pair);
+          if (b >= 0) {
+            kit.tapOn(g.views[a].node);
+            await kit.sleep(180);
+            kit.tapOn(g.views[b].node);
+            await kit.until(() => !g.locked);
+            const line = lines.find((l) => l.id === 'memory.share-mix');
+            if (!line || ![line.vars.first, line.vars.second].includes(line.vars.bigger))
+              throw new Error(`Level 14 mismatch did not compare the shares: ${JSON.stringify(lines)}`);
+          }
+          g.ctx.say = say;
+          for (const v of g.views) {
+            if (v.node.scale.x * 140 < 100) throw new Error('Level 14 card below 100 units');
+            const r = v.node.getBounds(),
+              scale = neo.view.scale;
+            if (
+              r.x < 0 ||
+              r.y < 0 ||
+              r.x + r.width > neo.view.w * scale ||
+              r.y + r.height > neo.view.h * scale
+            )
+              throw new Error('Level 14 card outside the screen');
+            v.front.visible = true;
+            v.back.visible = false;
+          }
+        });
+        await screenshot('memory-share-portrait');
         await page.evaluate(() => {
           for (const v of neo.scene.game.views) {
             v.front.visible = v.matched;

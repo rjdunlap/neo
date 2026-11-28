@@ -45,6 +45,13 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'The menu board has two lines, each an animal, a numeral and a food word with no picture: drag each animal that many of its own food, then ring the bell. Tap a line to hear it read; that is free.',
     },
+    { from: 11, to: 11, text: 'One animal at a time asks what it eats.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'Tap the mat it belongs on: plants, both, or meat. The middle mat is for animals that eat plants and meat.',
+    },
+    { from: 11, to: 11, text: 'Tap the animal to hear its question again.' },
   ],
   finish: [
     { to: 2, text: 'The round ends after six snacks are eaten.' },
@@ -72,6 +79,16 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'The round ends after three two-line menus are given out exactly, confirmed with the bell.',
     },
+    { from: 11, to: 11, text: 'The round ends when every animal stands on a mat.' },
   ],
-  note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
+  note: [
+    {
+      from: 11,
+      to: 11,
+      text: "A wrong mat only shakes the animal's head, and it says one food it really eats. After two misses on one animal, its mat glows. Only the cat eats meat alone, so some rounds leave the meat mat empty.",
+    },
+    {
+      text: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
+    },
+  ],
 };

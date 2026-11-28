@@ -1365,7 +1365,10 @@ export async function runSuite(suite, fixture) {
       neo.go.start();
     });
     await pickFirst();
-    await scene('HomeScene');
+    // Since the cutover (#2336) the hub is Home's yard, or the day's six first on a phone (`src/rework.ts`).
+    await page.waitForFunction(
+      () => ['HomeScene', 'DailyScene'].includes(neo.scene.constructor.name) && !neo.switching,
+    );
   }
   if (suite === 'discovery')
     await (

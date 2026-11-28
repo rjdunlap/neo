@@ -9,6 +9,10 @@ import {
   DOT_RADIUS,
   totalCardDots,
   type TotalSum,
+  SHARE_BOX,
+  shareStrips,
+  splitLines,
+  type Share,
   type FractionSquare,
   type MemoryPicture,
   type VehicleKind,
@@ -167,5 +171,35 @@ export function totalFace(sum: TotalSum, side: 0 | 1): Container {
     g.circle(d.x, d.y, DOT_RADIUS).fill(swatch.teal.fill).stroke({ width: 2, color: swatch.teal.line });
   for (const d of right)
     g.circle(d.x, d.y, DOT_RADIUS).fill(swatch.orange.fill).stroke({ width: 2, color: swatch.orange.line });
+  return g;
+}
+
+/**
+ * Level 14's face: the shared whole rectangle cut into equal strips, the shaded ones from the left, and the fraction
+ * written under it. Every card uses the same rectangle and colors, so only the pieces and the shaded width can match.
+ */
+export function shareFace(share: Share): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const { height, y } = SHARE_BOX;
+  for (const strip of shareStrips(share))
+    g.rect(strip.x, y - height / 2, strip.width, height)
+      .fill(strip.shaded ? swatch.orange.fill : cream)
+      .stroke({ width: 3, color: swatch.orange.line });
+  const text = label(`${share.numerator}/${share.denominator}`, 30, ink);
+  text.position.set(0, y + height / 2 + 24);
+  c.addChild(g, text);
+  return c;
+}
+
+/** The hint's overlay on a pair's first card: dashed lines cutting each piece in two, the partner's pieces. */
+export function shareSplit(pair: number): Graphics {
+  const g = new Graphics();
+  const { height, y } = SHARE_BOX;
+  for (const x of splitLines(pair))
+    for (let top = y - height / 2 + 2; top < y + height / 2 - 2; top += 12)
+      g.moveTo(x, top)
+        .lineTo(x, Math.min(top + 7, y + height / 2 - 2))
+        .stroke({ width: 4, color: swatch.purple.line, cap: 'round' });
   return g;
 }

@@ -22,6 +22,7 @@ export const VOICE = {
   'stamp.places': ['Put the {kind} {place}!'],
   'stamp.elsewhere': ['What a picture! Can you put the {kind} {place}?'],
   'stamp.placesdone': ['You found all {count} places! Add anything you like, then tap the green arrow.'],
+  'stamp.relationsdone': ['You did all {count}! Add anything you like, then tap the green arrow.'],
   'stamp.full': [
     'Your paper has lots of stamps! Undo a stamp with the back arrow, or finish with the green arrow.',
   ],

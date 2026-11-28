@@ -60,12 +60,25 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 15,
+      to: 15,
       text: 'The line goes from 0 to 100 with no other numbers. Tap where the number on the sign goes, or slide the frog there. On the last line the marks count by tens: put the frog on the right mark.',
+    },
+    {
+      from: 16,
+      to: 16,
+      text: 'Tap anywhere on the pond: the frog hops pad by pad to the lily pad nearest the tap, saying each number. Tap the bank to hop it home.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'The sign shows dots. Tap the lily pad with that many dots, and the frog hops there pad by pad, saying each number.',
     },
   ],
   finish: [
     { to: 14, text: 'Answer the questions to bring the frog home.' },
-    { from: 15, text: 'Three guesses, then one number placed on the marked line.' },
+    { from: 15, to: 15, text: 'Three guesses, then one number placed on the marked line.' },
+    { from: 16, to: 16, text: 'Six taps, then a big splash.' },
+    { from: 17, to: 17, text: 'Five dot signs, then the frog is home.' },
   ],
   note: [
     {
@@ -74,7 +87,9 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 15,
+      to: 15,
       text: 'A guess is never a mistake: the frog hops to the real place. On the marked line a wrong mark counts, and after two the right mark glows.',
     },
+    { from: 16, to: 16, text: 'Nothing here is wrong: every tap hops the frog, forward or back.' },
   ],
 };

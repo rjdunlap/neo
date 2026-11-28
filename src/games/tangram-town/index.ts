@@ -129,8 +129,8 @@ class TangramTown implements Game {
         const i = coverHint(this.plan, this.filled);
         this.selected =
           this.pieces.find((p) => !p.placed && p.piece.shape === this.plan.targets[i]?.shape) ?? null;
-      } else if (!this.selected || this.selected.placed)
-        this.selected = this.pieces.find((p) => !p.placed) ?? null;
+      } else if (!this.selected || this.selected.placed || !this.fits(this.selected))
+        this.selected = this.fitting() ?? this.pieces.find((p) => !p.placed) ?? null;
       if (this.selected) {
         const i = hintFor(this.selected.piece, this.plan.targets, unavailableSlots(this.plan, this.filled));
         if (i >= 0) {
@@ -140,7 +140,9 @@ class TangramTown implements Game {
       }
       void (this.plan.onePiece
         ? ctx.say('tangram.home-help', { picture: this.plan.picture })
-        : ctx.say('tangram.help'));
+        : this.plan.pick
+          ? ctx.say('tangram.pick-help', { picture: this.plan.picture })
+          : ctx.say('tangram.help'));
       this.drawHint();
     });
     ctx.stage.addChild(this.turn, this.help);
@@ -154,7 +156,8 @@ class TangramTown implements Game {
       ctx.stage.addChild(node);
       const c: Choice = { piece, node, art, drag: null!, placed: false, named: false };
       c.drag = draggable(node, ctx.tw, {
-        tapToPlace: () => (ctx.level <= TAP_PLACE_TO || !!this.plan.onePiece) && !this.done && !c.placed,
+        tapToPlace: () =>
+          (ctx.level <= TAP_PLACE_TO || !!this.plan.onePiece || !!this.plan.pick) && !this.done && !c.placed,
         onPick: () => {
           this.selected = c;
           sfx.tick();
@@ -173,7 +176,7 @@ class TangramTown implements Game {
             local.y,
             this.plan.targets,
             unavailableSlots(this.plan, this.filled),
-            this.plan.onePiece ? SNAP_HOME : SNAP,
+            this.plan.onePiece || this.plan.pick ? SNAP_HOME : SNAP,
           );
           if (target >= 0) {
             this.filled[target] = true;
@@ -213,10 +216,14 @@ class TangramTown implements Game {
             this.misses++;
             this.wrong++;
             sfx.boing();
-            void ctx.say('tangram.try');
+            void (this.plan.pick
+              ? ctx.say('tangram.pick-try', { picture: this.plan.picture })
+              : ctx.say('tangram.try'));
             if (this.wrong === 2) {
               this.assisted = true;
               this.hints++;
+              // The glow marks where the held piece goes; a wrong shape goes nowhere, so the right one is held instead.
+              if (!this.fits(c)) this.selected = this.fitting() ?? this.selected;
             }
           }
           this.drawHint();
@@ -225,7 +232,15 @@ class TangramTown implements Game {
       });
       this.pieces.push(c);
     }
-    this.selected = this.pieces[0];
+    // On a pick round nothing is held at the start, so the ring never points at the answer before she chooses.
+    this.selected = this.plan.pick ? null : this.pieces[0];
+  }
+  /** Whether a tray piece has an open place in the picture (a pick round's wrong shape never does). */
+  private fits(c: Choice) {
+    return !c.placed && hintFor(c.piece, this.plan.targets, unavailableSlots(this.plan, this.filled)) >= 0;
+  }
+  private fitting() {
+    return this.pieces.find((p) => this.fits(p));
   }
   private drawHint() {
     for (const c of this.outlines.removeChildren()) c.destroy();
@@ -263,9 +278,11 @@ class TangramTown implements Game {
         ? 'tangram.covers'
         : this.plan.onePiece
           ? 'tangram.home'
-          : this.plan.rotate
-            ? 'tangram.turn'
-            : 'tangram.fit',
+          : this.plan.pick
+            ? 'tangram.pick'
+            : this.plan.rotate
+              ? 'tangram.turn'
+              : 'tangram.fit',
       { picture: this.plan.picture },
     );
   }
@@ -313,15 +330,18 @@ class TangramTown implements Game {
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     const hint = this.plan.covers ? coverHint(this.plan, this.filled) : -1;
+    // A piece with somewhere to go: a pick round's wrong shape has none, so the bot never reaches for it.
     const c = this.pieces.find(
-      (p) => !p.placed && (!this.plan.covers || p.piece.shape === this.plan.targets[hint]?.shape),
+      (p) =>
+        !p.placed &&
+        (!this.plan.covers || p.piece.shape === this.plan.targets[hint]?.shape) &&
+        bestTarget(p.piece, this.plan.targets, unavailableSlots(this.plan, this.filled)),
     );
     if (!c || c.drag.dragging) return null;
     const goal = bestTarget(c.piece, this.plan.targets, unavailableSlots(this.plan, this.filled));
     if (!goal) return null;
-    // The turn button turns the piece picked up last; the first in the tray is already in hand, so this only takes a touch if it is not.
-    if (this.selected !== c) return { tap: { on: c.node } };
-    if (goal.turns > 0) return { tap: { on: this.turn } };
+    // The turn button turns the piece picked up last, so a piece that needs turning is picked first; a drag picks it anyway.
+    if (goal.turns > 0) return { tap: { on: this.selected === c ? this.turn : c.node } };
     const t = this.plan.targets[goal.index];
     return { drag: { on: c.node }, to: { on: this.board, x: t.x, y: t.y } };
   }

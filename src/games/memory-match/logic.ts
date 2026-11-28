@@ -20,12 +20,13 @@ export const PLANS = [
   { pairs: 3, mode: 'fractions', name: 'Match fraction pictures to names' },
   { pairs: 3, mode: 'clocks', name: 'Same time: match hour and half-hour clocks' },
   { pairs: 3, mode: 'totals', name: 'Same total: two groups of dots and the number they make' },
+  { pairs: 3, mode: 'shares', name: 'Same share: equal fractions with different pieces' },
 ] as const;
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 5 },
   prek: { min: 3, max: 9 },
-  school: { min: 8, max: 13, order: [8, 12, 13, 9, 10, 11] },
+  school: { min: 8, max: 14, order: [8, 12, 13, 9, 10, 11, 14] },
 };
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
@@ -111,6 +112,7 @@ export function cardLabel(
   if (mode === 'clocks') return clockLabel(times[card.pair]);
   if (mode === 'totals')
     return card.side ? numberWord(sums[card.pair].total - 1) : groupsLabel(sums[card.pair]);
+  if (mode === 'shares') return shareOf(card).name;
   if (mode === 'pictures' && pictures) return pictures[card.pair].name;
   if (mode === 'fractions') return fraction(card.pair).name;
   if (mode === 'letters') return letters[card.pair];
@@ -417,6 +419,65 @@ export function groupDots(n: number, cx: number): DotSpot[] {
 }
 /** Both groups of a sum card: the first left of the centre line, the second right of it. */
 export const totalCardDots = (sum: TotalSum): DotSpot[][] => [groupDots(sum.a, -32), groupDots(sum.b, 32)];
+
+// Same share (level 14) ------------------------------------------------------------------------------------------------
+
+/** One card of level 14: a fraction of the same whole rectangle, shown as `numerator` of `denominator` equal strips. */
+export interface Share {
+  numerator: number;
+  denominator: number;
+  name: string;
+}
+/**
+ * The three pairs, always these: side 0 the fewer, bigger pieces and side 1 the same share cut into twice as many. Values
+ * differ across pairs (a half, a third, two thirds), so exactly two cards on a board shade the same share.
+ */
+export const SHARES: readonly (readonly [Share, Share])[] = [
+  [
+    { numerator: 1, denominator: 2, name: 'one half' },
+    { numerator: 2, denominator: 4, name: 'two quarters' },
+  ],
+  [
+    { numerator: 1, denominator: 3, name: 'one third' },
+    { numerator: 2, denominator: 6, name: 'two sixths' },
+  ],
+  [
+    { numerator: 2, denominator: 3, name: 'two thirds' },
+    { numerator: 4, denominator: 6, name: 'four sixths' },
+  ],
+];
+export const shareOf = (card: MemoryCard): Share => SHARES[card.pair][card.side];
+/** Every card's whole: the same rectangle, its width a multiple of 12 so halves, thirds, quarters and sixths are whole units. */
+export const SHARE_BOX = { width: 108, height: 60, y: -16 } as const;
+/** Compare two shares exactly, by cross-multiplying: negative when `a` shades less, 0 when they are the same share. */
+export const compareShares = (a: Share, b: Share): number =>
+  a.numerator * b.denominator - b.numerator * a.denominator;
+/**
+ * The whole cut into `denominator` equal vertical strips, shaded from the left on every card, so two cards of the same
+ * share shade exactly the same region and only the lines between pieces differ.
+ */
+export function shareStrips(share: Share): { x: number; width: number; shaded: boolean }[] {
+  const width = SHARE_BOX.width / share.denominator;
+  return Array.from({ length: share.denominator }, (_, i) => ({
+    x: -SHARE_BOX.width / 2 + i * width,
+    width,
+    shaded: i < share.numerator,
+  }));
+}
+/** The lines between strips of a share, as x positions inside the whole. */
+export const shareLines = (share: Share): number[] =>
+  shareStrips(share)
+    .slice(1)
+    .map((s) => s.x);
+/**
+ * The hint's overlay on a pair's first card: the lines that cut its pieces into its partner's smaller pieces (the
+ * partner's lines that the first card does not already have), so one half shows as two quarters.
+ */
+export function splitLines(pair: number): number[] {
+  const [coarse, fine] = SHARES[pair];
+  const have = new Set(shareLines(coarse));
+  return shareLines(fine).filter((x) => !have.has(x));
+}
 
 // Layout ---------------------------------------------------------------------------------------------------------------
 

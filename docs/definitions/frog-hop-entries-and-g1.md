@@ -41,6 +41,8 @@ Every new line goes under the game's `hop.` prefix, which is not a rendered pref
 
 ## 16 *Hop along* (lap and toddler)
 
+*Built 2026-11-28 on `claude/frog-hop-hop-along` ([PR #2364](https://github.com/rjdunlap/neo/pull/2364)); see the [game page](../games/frog-hop.md) for what was built and the one departure (no pause-sheet hint).*
+
 **Fun action and purpose.** Five big lily pads in a row, numbered 1 to 5 with dots under each numeral (the existing `dotLayout`). The frog sits on a bank left of pad 1. She taps anywhere on the pond and the frog hops to the pad nearest her tap, pad by pad, saying each number it lands on and playing a rising note on each. Cause and effect, and the cue Siegler's line game teaches: further along is a bigger number, a higher note and more number names. There is no goal and nothing is wrong.
 
 **A round.** Six taps. Each tap hops the frog from where it is to the nearest pad (forward or back, one pad per hop, each said: "2… 3… 4"). A tap on the pad the frog is on is a croak and a splash, and counts as a tap. A tap on the bank sends the frog home ("Home!"). After the sixth tap's hops end, the frog does a big splash and the round finishes with `{ misses: 0, hints: 0 }` (a creative-play finish: one sticker, always happy). Taps during a hop are ignored, not queued, with the touch-down ripple still shown.
@@ -60,6 +62,8 @@ Every new line goes under the game's `hop.` prefix, which is not a rendered pref
 **Tier.** Younger-band opening: typecheck, rule tests, registry and `lands.test.ts`, one filtered browser play at 16 (six taps, one on the bank) with a phone portrait screenshot, `fingerdemo` at 16.
 
 ## 17 *Hop to the dots* (toddler)
+
+*Built 2026-11-28 on `claude/frog-hop-hop-to-the-dots` ([PR #2368](https://github.com/rjdunlap/neo/pull/2368)); see the [game page](../games/frog-hop.md) for what was built. Each pad has its own 140 tap box and open water only ripples, rather than level 16's whole-pond target, so a stray tap is never a miss.*
 
 **Fun action and purpose.** Level 1 with dots for a child who cannot read numerals yet. The sign shows dots only (no numeral), in the five-frame grouping of `dotLayout`, and the voice says "Hop to three!" She taps the pad with that many dots; each pad shows its dots and its numeral, so the numeral sits beside the quantity. Give-N shaped: match a small quantity to its place on the line.
 

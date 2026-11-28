@@ -139,8 +139,10 @@ describe('touch how-to cards', () => {
     expect(howToFor(snack, 9)!.steps.join(' ')).toContain('menu board');
     expect(howToFor(snack, 10)!.finish).toContain('three two-line menus');
     expect(howToFor(snack, 10)!.steps.join(' ')).toContain('two lines');
-    expect(howToFor(snack, 11)!.finish).toBe('');
-    expect(howToFor(snack, 11)!.steps).toEqual([]);
+    expect(howToFor(snack, 11)!.finish).toContain('every animal stands on a mat');
+    expect(howToFor(snack, 11)!.steps.join(' ')).toContain('plants, both, or meat');
+    expect(howToFor(snack, 12)!.finish).toBe('');
+    expect(howToFor(snack, 12)!.steps).toEqual([]);
   });
 
   it('explains Beat Builder controls, finish gates and target counts for each current mode', () => {

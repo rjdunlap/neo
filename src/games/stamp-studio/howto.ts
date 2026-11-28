@@ -33,6 +33,11 @@ export const HOW_TO: GameHowTo = {
       to: 12,
       text: 'On the farm, the voice asks for three places: up in the sky, on the grass, in the water. Any stamp there meets it; anywhere else is part of the picture.',
     },
+    {
+      from: 13,
+      to: 13,
+      text: 'Two animals are printed on the paper. The voice asks for a stamp next to one, between them, and above or below the other; any stamp there meets it.',
+    },
     { from: 1, to: 3, text: 'Each stamp has its own sound, and the stamps are counted aloud up to ten.' },
     { from: 4, to: 6, text: 'Turn a stamp; the size button makes it big, then small, then middle again.' },
     { from: 8, to: 8, text: 'Pat the mud: the leaf presses its shape there. Pat as often as you like.' },
@@ -47,7 +52,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 12,
-      to: 12,
+      to: 13,
       text: 'Drag a stamp to move it; the back arrow removes the latest, the bin the one picked up.',
     },
     {
@@ -84,7 +89,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 12,
-      to: 12,
+      to: 13,
       text: 'Tap the green arrow whenever you are ready: the stamps wake up one by one. A place not yet found counts as one hint.',
     },
     { from: 8, to: 8, text: 'Tap the green arrow to finish; the eighth pat finishes by itself.' },

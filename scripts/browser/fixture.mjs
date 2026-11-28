@@ -49,7 +49,9 @@ export async function createFixture(browser, suite) {
     (suite === 'fourth' && process.env.FOURTH_ONLY === 'song14') ||
     (suite === 'villagevote' && ['tie', 'access', 'funding'].includes(process.env.VILLAGE_VOTE_ONLY)) ||
     (suite === 'robot' && ['1', '17'].includes(process.env.DRIVE_ONLY)) ||
-    (suite === 'expansion' && process.env.EXPANSION_ONLY === 'storygrow')
+    (suite === 'expansion' && process.env.EXPANSION_ONLY === 'storygrow') ||
+    // A touch phone, so an upright-ready level lays out on the upright 768 × 1024 area.
+    (suite === 'woods' && process.env.WOODS_TOUCH === '1')
       ? { hasTouch: true, isMobile: true }
       : {}),
   });
