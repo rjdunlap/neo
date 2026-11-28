@@ -476,6 +476,7 @@ describe("Home's yard (2026-11-28)", () => {
             ['blanket', l.blanket],
             ['basket', l.basket],
             ['lodge', l.lodge],
+            ['kite', l.kite],
           ] as const
         )
           .filter((w): w is [(typeof w)[0], YardSpot] => !!w[1])
