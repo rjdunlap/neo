@@ -97,7 +97,8 @@ class StampStudio implements Game {
   private readonly setTray = new Graphics();
   readonly setButtons: RoundButton[] = [];
   private lastView: View = { w: 1024, h: 768, scale: 1 };
-  private readonly selection = new Graphics();
+  /** The yellow ring round the picked stamp (empty when nothing is picked). */
+  readonly selection = new Graphics();
   readonly finish: RoundButton;
   readonly undo: RoundButton;
   readonly turn: RoundButton;
