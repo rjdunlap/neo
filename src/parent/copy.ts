@@ -43,8 +43,8 @@ export function playingCopy(app: PanelApp): { before: string[]; after: string[] 
       : "Today's six is a different mix of games each day";
   const phone =
     app === 'root'
-      ? `On a phone the app is ${HOME_NAMES.daily} alone, held upright or sideways; Home and ${HOME_NAMES.explore} stay on a tablet or computer.`
-      : "On a phone the app is Today's six alone, held upright or sideways; Home, Explore and the island games stay on a tablet or computer.";
+      ? `On a phone ${HOME_NAMES.daily} opens first, held upright or sideways, and its Back goes Home.`
+      : "On a phone Today's six opens first, held upright or sideways, and its Back goes Home.";
   return {
     before: [
       "Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.",

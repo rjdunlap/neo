@@ -791,15 +791,14 @@ export class GameScene extends Scene {
     const home = new RoundButton(icon, swatch.blue, 66, () =>
       this.leaveSaying(this.backLine(), () => this.goHome()),
     );
-    const house =
-      from
-        ? new RoundButton(houseIcon(), swatch.white, 50, () =>
-            this.leaveSaying(
-              () => voice.say('nav.home'),
-              () => this.app.go.hub(),
-            ),
-          ).means('home')
-        : null;
+    const house = from
+      ? new RoundButton(houseIcon(), swatch.white, 50, () =>
+          this.leaveSaying(
+            () => voice.say('nav.home'),
+            () => this.app.go.hub(),
+          ),
+        ).means('home')
+      : null;
     if (root) home.means('back');
     return { home, house };
   }
