@@ -461,6 +461,9 @@ export class HomeScene extends Scene {
     ])
       t?.children[1]?.scale.set(1 / t.scale.x);
     if (!this.toy?.chasing) this.pet.position.set(l.stage.x, l.stage.y);
+    // She stands at the front of the yard, so the things behind her never draw over her; the ball stays in front of her.
+    this.pet.zIndex = l.stage.y;
+    if (this.toy) this.toy.shadow.zIndex = this.toy.ball.zIndex = l.stage.y + 1;
     this.pet.scale.set(l.stage.scale * Math.sign(this.pet.scale.x || 1), l.stage.scale);
     if (this.toy && l.ball) this.toy.place(l.floor, l.ball);
     this.pick.resize(v);

@@ -82,7 +82,7 @@ Both RW05 slice 2 and RW06 slice 1 edit `companion.ts`. **Do not build them in p
 
 ### The yard
 
-**Built 2026-11-28 (the developer: "rather than having Explore on the treehouse main page, you should just be able to click things and things should happen", like a point-and-click adventure or JumpStart).** Home is a yard to tap around, replacing the pictured action buttons above. Every way out is a thing in the picture (`src/art/home/yard.ts`), placed by `yardLayout` (`src/creatures/home-layout.ts`) for the wide area and the upright 768-wide area of a phone held upright, with a cream name pill under each for grown-ups. It reaches every device, phone included (a phone opens on Today's six and the six's Back comes here).
+**Built 2026-11-28 (the developer: "rather than having Explore on the treehouse main page, you should just be able to click things and things should happen", like a point-and-click adventure or JumpStart).** Home is a yard to tap around, replacing the pictured action buttons above. Every way out is a thing in the picture (`src/art/home/yard.ts`), placed by `yardLayout` (`src/creatures/home-layout.ts`) for the wide area and the upright 768-wide area of a phone held upright, with a cream name pill under each for grown-ups. On a phone held upright her friend stands a little smaller at the front, the basket sits bottom left and a short phone steps the blanket and signpost in, so nothing covers a name pill (a test checks every upright phone screen). It reaches every device, phone included (a phone opens on Today's six and the six's Back comes here).
 
 | Thing | Does | Says |
 | --- | --- | --- |
