@@ -1,6 +1,97 @@
 import assert from 'node:assert/strict';
+import { selectValue } from '../selection.mjs';
 
-export function createSuite({ page, errors, log, ready, scene, pickFirst, screenshot }) {
+export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, screenshot }) {
+  /**
+   * D8's starting view (`PROFILES_ONLY=start-view`), at the root on a tablet-sized screen and then at classic/: a player
+   * set to Today's six taps their card and gets the six, whose Back is Home (the map at classic/); a second player on the
+   * default gets Home (the map). The Opens with row on the grown-ups' page saves it.
+   */
+  async function startView() {
+    const base = process.env.GAME_URL || 'http://127.0.0.1:5173';
+    for (const [path, explore] of [
+      ['/', 'HomeScene'],
+      ['/classic/', 'MapScene'],
+    ]) {
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.goto(new URL(path, base).href);
+      await ready();
+      await scene('ChooserScene');
+      // Two players with a friend each: Mia set to Today's six on the grown-ups' page, Sam left on the default.
+      const ids = await page.evaluate(async () => {
+        const friend = (name) => ({
+          owned: [{ id: 'pip0', species: 'sprout', name, look: { color: 'pink' }, metAt: 'start' }],
+          companion: 'pip0',
+        });
+        const store = kit.store;
+        if (store.profiles.length < 2) store.addProfile();
+        const [a, b] = store.profiles.map((p) => p.id);
+        for (const [id, name] of [
+          [b, 'Sam'],
+          [a, 'Mia'],
+        ]) {
+          await store.switchTo(id);
+          store.data.profile.name = name;
+          store.data.creatures = friend(name === 'Mia' ? 'Clover' : 'Pip');
+          store.data.settings.howToCards = false;
+          store.data.settings.startView = 'explore';
+          store.save();
+        }
+        store.flush();
+        neo.go.start();
+        return [a, b];
+      });
+      await scene('ChooserScene');
+      const box = await page.locator('.gear:not(.gear--inline)').boundingBox();
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(2400);
+      await page.mouse.up();
+      await page.locator('.parent').waitFor();
+      await page.selectOption('#p-who', ids[0]);
+      await page.locator('#p-who:not([disabled])').waitFor();
+      const labels = await page.locator('#p-start option').allInnerTexts();
+      assert.deepEqual(
+        labels,
+        [path === '/' ? 'Home' : 'The map', "Today's six"],
+        `Opens with options at ${path}`,
+      );
+      await page.selectOption('#p-start', 'six');
+      assert.equal(
+        await page.evaluate((id) => kit.store.peek(id).then((d) => d.settings.startView), ids[0]),
+        'six',
+        'the row saves the player it is pointed at',
+      );
+      await page.locator('[data-done]').click();
+      await scene('ChooserScene');
+      const card = (name) =>
+        page.locator('.chooser__card', { hasText: name }).locator('.chooser__play').click();
+      await card('Mia');
+      await scene('DailyScene');
+      await screenshot(`start-view-six${path === '/' ? '-root' : '-classic'}`);
+      await tap('neo.scene.back');
+      await scene(explore);
+      // Back from the six is the ordinary hub, which stays Home: the setting changed the chooser's exit only.
+      await page.evaluate(() => neo.go.start());
+      await scene('ChooserScene');
+      await card('Sam');
+      await scene(explore);
+      assert.equal(await page.evaluate(() => kit.store.data.settings.startView), 'explore');
+    }
+    // `?daily` with Today's six chosen: the six once, and their Back is Home, not the six again.
+    await page.goto(new URL('/?daily', base).href);
+    await ready();
+    await scene('ChooserScene');
+    await page.locator('.chooser__card', { hasText: 'Mia' }).locator('.chooser__play').click();
+    await scene('DailyScene');
+    await tap('neo.scene.back');
+    await scene('HomeScene');
+    assert.deepEqual(errors, []);
+    log(
+      "Profiles start view: Opens with saved per player at the root and classic/; Today's six from the card, Back to Home or the map; a second player on the default opens Home or the map; ?daily does not loop",
+    );
+  }
+
   /** "Who's playing?": a new device, add-a-player, the three ways in, the grown-ups' page per player, remove, and a backup of everyone. */
   async function profiles() {
     const idb = (fn, arg) =>
@@ -378,5 +469,11 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     );
   }
 
-  return { profiles };
+  return {
+    profiles: () => {
+      if (process.env.PROFILES_ONLY === undefined) return profiles();
+      selectValue(process.env.PROFILES_ONLY, ['start-view'], 'PROFILES_ONLY');
+      return startView();
+    },
+  };
 }

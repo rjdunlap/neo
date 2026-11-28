@@ -1,0 +1,1 @@
+**`market-stall`, *Which coin?*** (new-levels tier): the next free stable ID (currently 14), preschool and pre-K between 2 and 3 with `order`; "Give me the five-shell coin" from 1, 2 and 5, the shopkeeper counts the pips, two misses glow the right coin; the pre-K window grows to include it. [Dive slice 9](../../deep-dives/market-stall.md#build-slices-in-order).
