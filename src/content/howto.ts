@@ -173,6 +173,7 @@ import { HOW_TO as spinnerFairHowTo } from '../games/spinner-fair/howto.ts';
 import { HOW_TO as splishSplashHowTo } from '../games/splish-splash/howto.ts';
 import { HOW_TO as sproutShuffleHowTo } from '../games/sprout-shuffle/howto.ts';
 import { HOW_TO as stampStudioHowTo } from '../games/stamp-studio/howto.ts';
+import { HOW_TO as stirSeeHowTo } from '../games/stir-see/howto.ts';
 import { HOW_TO as stopAndGoHowTo } from '../games/stop-and-go/howto.ts';
 import { HOW_TO as storyStepsHowTo } from '../games/story-steps/howto.ts';
 import { HOW_TO as storyWeaverHowTo } from '../games/story-weaver/howto.ts';
@@ -395,6 +396,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'splish-splash': splishSplashHowTo,
   'sprout-shuffle': sproutShuffleHowTo,
   'stamp-studio': stampStudioHowTo,
+  'stir-see': stirSeeHowTo,
   'stop-and-go': stopAndGoHowTo,
   'story-steps': storyStepsHowTo,
   'story-weaver': storyWeaverHowTo,

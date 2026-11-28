@@ -42,6 +42,16 @@ export const HOW_TO: GameHowTo = {
       to: 15,
       text: 'Any little letter between four lines, with its capital faintly shown in the corner. The capital is only there to look at; trace the little letter.',
     },
+    {
+      from: 16,
+      to: 16,
+      text: 'A short word in little letters between four lines. Trace each letter in turn, from the first to the last.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'The name as it is written: a capital from the top line to the base line, then little letters, one at a time.',
+    },
   ],
   finish: [
     { to: 6, text: 'The round ends when the whole letter has been traced.' },
@@ -65,6 +75,16 @@ export const HOW_TO: GameHowTo = {
       to: 15,
       text: 'The round ends when the little letter has been traced and its picture appears.',
     },
+    {
+      from: 16,
+      to: 16,
+      text: "The round ends when the whole word has been traced and the word's own picture appears.",
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'The round ends when the name (up to eight letters) is traced and a sign shows all of it.',
+    },
   ],
   note: [
     {
@@ -85,6 +105,11 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 15,
       text: 'Leaving the trail counts as a miss. On the second miss on one stroke the firefly flies the next stretch by itself and comes back; that counts as one hint. The little letters use a narrower trail than the capitals, because they are smaller.',
+    },
+    {
+      from: 16,
+      to: 17,
+      text: 'Leaving the trail is a miss; on the second miss on one stroke the firefly shows the next stretch (a hint). Each letter counts at most one miss and one hint, so a long name is judged like a short word.',
     },
   ],
 };
