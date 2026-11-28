@@ -181,6 +181,11 @@ export interface Plan {
    * snaps home from further away (SNAP_HOME) and no drop is ever a miss.
    */
   onePiece?: boolean;
+  /**
+   * Pick the missing piece (level 11, toddler): one slot is open as on one piece home, but the tray also holds one wrong
+   * shape (DECOYS) that fits nowhere; dropping it on the open shadow is a gentle miss.
+   */
+  pick?: boolean;
 }
 export const PLANS: readonly Plan[] = [
   {
@@ -261,7 +266,26 @@ export const PLANS: readonly Plan[] = [
     onePiece: true,
     name: 'One piece home: one shape is already in the picture; move the other onto its shadow',
   },
+  {
+    pool: ['house', 'tree', 'lamp', 'tent', 'shovel', 'broom'],
+    rotate: false,
+    outlines: true,
+    pick: true,
+    name: 'Pick the missing piece: one shape is missing; choose it from two in the tray and move it onto its shadow',
+  },
 ];
+/**
+ * The wrong shape a pick round may offer for each missing one: never the same shape, never its look-alike (a roof and a
+ * right triangle are both spoken "a triangle"; a rectangle and a trapezoid share a long flat side), never the school
+ * band's mirror piece. Every one is plainly different at a glance.
+ */
+export const DECOYS: Record<Exclude<Shape, 'parallelogram'>, readonly Shape[]> = {
+  square: ['roof', 'rectangle'],
+  roof: ['square', 'rectangle'],
+  triangle: ['square', 'rectangle'],
+  rectangle: ['square', 'roof'],
+  hull: ['square', 'roof'],
+};
 /** How near its shadow a dropped piece must land to snap in: the usual reach, and one piece home's wider one. */
 export const SNAP = 76;
 export const SNAP_HOME = 110;
@@ -275,6 +299,8 @@ export interface Build extends Plan {
   covers?: readonly (readonly number[])[];
   /** Slots whose piece is already in place when the round starts (one piece home); they get no tray piece. */
   preset?: readonly number[];
+  /** Pick the missing piece: the wrong shape waiting in the tray beside the right one, the right way up. */
+  decoy?: Piece;
 }
 export function buildFor(level: number, rng: Rng): Build {
   const plan = planFor(level),
@@ -289,23 +315,38 @@ export function buildFor(level: number, rng: Rng): Build {
           [0, 2, 3],
         ],
       }
-    : plan.onePiece
-      ? { ...plan, picture, targets: PICTURES[picture], preset: [rng.int(0, PICTURES[picture].length - 1)] }
+    : plan.onePiece || plan.pick
+      ? withOpenSlot(plan, picture, rng)
       : { ...plan, picture, targets: PICTURES[picture] };
+}
+/** One piece home and pick the missing piece: every slot but one is preset; a pick round adds its wrong shape. */
+function withOpenSlot(plan: Plan, picture: PictureId, rng: Rng): Build {
+  const targets: readonly Target[] = PICTURES[picture],
+    open = rng.int(0, targets.length - 1),
+    preset = targets.flatMap((_, i) => (i === open ? [] : [i])),
+    missing = targets[open].shape as keyof typeof DECOYS;
+  return {
+    ...plan,
+    picture,
+    targets,
+    preset,
+    ...(plan.pick ? { decoy: { shape: rng.pick(DECOYS[missing]), turns: 0 } } : {}),
+  };
 }
 export function sameOrientation(shape: Shape, a: number, b: number) {
   const period = shape === 'square' ? 1 : shape === 'rectangle' || shape === 'parallelogram' ? 2 : 4;
   return (((a - b) % period) + period) % period === 0;
 }
-export function makePieces(build: Pick<Build, 'targets' | 'rotate' | 'preset'>, rng: Rng): Piece[] {
-  return rng.shuffle(
-    build.targets
+export function makePieces(build: Pick<Build, 'targets' | 'rotate' | 'preset' | 'decoy'>, rng: Rng): Piece[] {
+  return rng.shuffle([
+    ...build.targets
       .filter((_, i) => !build.preset?.includes(i))
       .map((t) => ({
         shape: t.shape,
         turns: build.rotate ? (t.turns + rng.int(1, 3)) % 4 : t.turns,
       })),
-  );
+    ...(build.decoy ? [{ ...build.decoy }] : []),
+  ]);
 }
 /** Any identical piece can fill a slot, including symmetric turns and the two complementary wall triangles. */
 export function targetFor(
@@ -462,10 +503,13 @@ export function makeFlipRepair(build: Pick<Build, 'targets'>, rng: Rng): Piece[]
   return pieces;
 }
 
-/** Appended easier entries: one piece home (10) plays before level 1 at toddler and is in no other band. */
-export const ENTRY_LEVELS = [10] as const;
+/**
+ * Appended easier entries: one piece home (10) and pick the missing piece (11) play before level 1 at toddler and are in
+ * no other band.
+ */
+export const ENTRY_LEVELS = [10, 11] as const;
 export const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 10, order: [10, 1, 2] },
+  toddler: { min: 1, max: 11, order: [10, 11, 1, 2] },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
   school: { min: 5, max: 9 },

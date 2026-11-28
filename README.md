@@ -165,7 +165,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Shape Sorter](docs/games/shape-sorter.md) | lap–pre-K | Rainbow Meadow | 14 | tap a shape and it hops in; one circle hole, every touch answered |
 | [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 12 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
 | [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 12 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
-| [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 10 | one shape home: a house, tree or lamp with one of its two shapes already in place, the other moved onto its shadow (toddler, level 10); then fit two big shapes into a house, tree or boat |
+| [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 11 | one shape home: a house, tree or lamp with one of its two shapes already in place, the other moved onto its shadow (toddler, level 10); then fit two big shapes into a house, tree or boat |
 | [Garden Grow](docs/games/garden-grow.md) | lap–school | Rainbow Meadow | 15 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
 | [Treasure Map](docs/games/treasure-map.md) | preschool–school | Rainbow Meadow | 11 | dig anywhere in the named row or column (preschool), then where the apple row meets the red column |
 | [Habitat Helpers](docs/games/habitat-helpers.md) | preschool–school | Rainbow Meadow | 9 | place Bunny's food, water and shelter, then open the garden gate |

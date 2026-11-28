@@ -1318,8 +1318,42 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       );
     }
     if ((!only || only === 'tangram') && tangramTap !== 'only')
-      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 10); level++) {
+      for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 11); level++) {
         await launch('tangram-town', level);
+        if (level === 11) {
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(350);
+          await screenshot('tangram-town-11-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            if (g.pieces.length !== 2 || g.filled.filter(Boolean).length !== 1)
+              throw new Error('Pick the missing piece starts with one shape placed and two in the tray');
+            const i = g.filled.indexOf(false),
+              t = g.plan.targets[i],
+              right = g.pieces.find((p) => p.piece.shape === t.shape),
+              wrong = g.pieces.find((p) => p !== right);
+            if (!right || !wrong || wrong.piece.shape === t.shape)
+              throw new Error('One right and one wrong shape');
+            // The wrong shape on the shadow bounces back as a miss.
+            await kit.dragTo(wrong.node, g.board.toGlobal({ x: t.x, y: t.y }), 18);
+            await kit.sleep(600);
+            if (wrong.placed || g.misses !== 1) throw new Error('The wrong shape on the shadow is one miss');
+            kit.tapOn(g.help);
+            await kit.sleep(200);
+            if (g.hints !== 1 || g.selected !== right) throw new Error('The help hand holds the right shape');
+            await kit.dragTo(right.node, g.board.toGlobal({ x: t.x + 70, y: t.y + 70 }), 18);
+            await kit.sleep(300);
+            if (!right.placed || !g.done || wrong.placed)
+              throw new Error('The right shape goes home and finishes');
+          });
+          await finished('tangram-town');
+          assert.deepEqual(await score('tangram-town'), [1, 1]);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          log(
+            'Tangram Town 11: pick the missing piece, wrong drop a miss, help held the right shape, finished, portrait passed',
+          );
+          continue;
+        }
         if (level === 10) {
           await page.setViewportSize({ width: 768, height: 1024 });
           await page.waitForTimeout(350);
