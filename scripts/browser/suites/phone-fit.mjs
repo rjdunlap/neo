@@ -103,7 +103,9 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       assert.deepEqual(await uncovered(), [], `${name}: touchable UI under the notch or the home indicator`);
       if (name === 'place' || name === 'land' || name === 'map') await screenshot(`phone-notch-${name}`);
     }
-    // Scenery drawn past the island's edge (clouds, hills, a scrolling place's landmarks) must not show in the strips the insets leave: they are plain cream.
+    // Scenery drawn past the island's edge (clouds, hills, a scrolling place's landmarks) must not show in the strips the insets leave:
+    // they hold only the paper frame round the island, in warm oatmeal greys (red ≥ green ≥ blue), never a sky's blue, a
+    // hill's green or a cloud's white.
     await page.evaluate(() => neo.go.place('toddler'));
     await scene('PlaceScene');
     await page.waitForTimeout(900);
@@ -120,17 +122,14 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         const data = px.pixels;
         let off = 0;
         for (let i = 0; i < data.length; i += 4)
-          if (
-            Math.abs(data[i] - 255) > 1 ||
-            Math.abs(data[i + 1] - 244) > 1 ||
-            Math.abs(data[i + 2] - 227) > 1
-          )
-            off++;
-        if (off) bad.push(`${name} strip: ${off} of ${data.length / 4} pixels are not cream`);
+          if (data[i + 2] > data[i + 1] + 4 || data[i + 1] > data[i] + 4 || data[i] > 245) off++;
+        // A few stray fibre strokes are paper too; scenery leaking in would be hundreds of pixels.
+        if (off > data.length / 4 / 200)
+          bad.push(`${name} strip: ${off} of ${data.length / 4} pixels are scenery, not the paper frame`);
       }
       return bad;
     });
-    assert.deepEqual(strips, [], 'the inset strips are plain cream');
+    assert.deepEqual(strips, [], 'the inset strips show only the paper frame');
     // A tap at a button's real screen position lands on it (the root is offset, so client and canvas coordinates must still agree).
     await page.evaluate(() => neo.go.place('toddler'));
     await scene('PlaceScene');
