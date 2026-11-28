@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/jelly-drums; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `jelly-drums` · **Land:** Music Mountain · **Ages:** lap–school · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `jelly-drums` · **Land:** Music Mountain · **Ages:** lap–grown-up · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-effect, rhythm, sequence-memory
 
@@ -13,6 +13,7 @@
 | preschool | 14, 4, 5, 6, 16, 7, 18 |
 | pre-K | 5, 6, 7, 8, 9, 11, 12, 13 |
 | school | 8, 9, 11, 12, 13 |
+| grown-up | 9, 11, 12, 13, 19, 20, 21, 22 |
 
 | Level | Plays like |
 | --- | --- |
@@ -34,6 +35,10 @@
 | 16 | Hear a known song, then tap its last one or two notes to finish it, 3 songs |
 | 17 | Every touch gets an echo, 8 touches |
 | 18 | Line up 4 jellies of different sizes from lowest to highest, 3 line-ups |
+| 19 | Copy a long 6-note tune, 3 tunes |
+| 20 | Copy a long 8-note tune, 3 tunes |
+| 21 | Copy a long 12-note tune, 2 tunes |
+| 22 | Copy a long 16-note tune, 1 tune |
 
 <!-- end generated -->
 

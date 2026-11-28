@@ -51,6 +51,12 @@ export const PLANS: JellyPlan[] = [
   { mode: 'answer', goal: 8, length: 0 },
   // Level 18, "Lowest to highest, with sizes": level 13's line-ups with the size cue on, so the biggest jelly is the lowest of those left.
   { mode: 'order', goal: 3, length: 4, sized: true },
+  // Levels 19–22, "Long tune": grown-ups' tunes of six, eight, twelve and sixteen notes (`grownup` only, and the couch's Long tune
+  // face-off). No child's range reaches them: six notes and more are the memory load the audit keeps out of her levels.
+  { mode: 'echo', goal: 3, length: 6 },
+  { mode: 'echo', goal: 3, length: 8 },
+  { mode: 'echo', goal: 2, length: 12 },
+  { mode: 'echo', goal: 1, length: 16 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -63,6 +69,8 @@ export const LEVELS: BandLevels = {
   // Levels 10 (one big jelly) and 17 (Echo jellies) are lap's, 14 (Which jelly sang?) is toddler/preschool's, 15 (Follow the glow) is toddler's and 16 (Finish the song) is preschool's: older bands skip them. Level 18 is preschool's only.
   prek: { min: 5, max: 13, order: [5, 6, 7, 8, 9, 11, 12, 13] },
   school: { min: 8, max: 13, order: [8, 9, 11, 12, 13] },
+  // Grown-ups: school's top levels, then the long tunes (19–22), which only this band plays.
+  grownup: { min: 9, max: 22, order: [9, 11, 12, 13, 19, 20, 21, 22] },
 };
 
 /** The order the jellies wake in on the wake level: the big low one, the little high one, then the rest one by one. */
@@ -166,6 +174,42 @@ export function drawTune(rng: Rng, length: number, played: readonly Tune[] = [],
   const choices = kinds.length > 1 ? kinds.filter((k) => k !== last) : kinds;
   const kind = rng.pick(choices);
   return rng.pick(fresh.filter((t) => t.kind === kind));
+}
+
+/** A tune longer than the five jellies: the grown-ups' long tunes (levels 19–22). */
+export const LONG_FROM = JELLIES + 1;
+
+/**
+ * A long tune: a walk across the jellies, mostly to a neighbour, sometimes a leap of two or more, never the same jelly twice in
+ * a row, and never a tune already in `played`. It visits at least four jellies, so it is not a hop or a wiggle drawn out.
+ */
+export function longTune(rng: Rng, length: number, played: readonly Tune[] = []): Tune {
+  for (;;) {
+    const notes = [rng.int(0, JELLIES - 1)];
+    while (notes.length < length) {
+      const at = notes[notes.length - 1];
+      const near = [at - 1, at + 1].filter((j) => j >= 0 && j < JELLIES);
+      const far = Array.from({ length: JELLIES }, (_, j) => j).filter((j) => Math.abs(j - at) >= 2);
+      notes.push(rng.chance(0.7) ? rng.pick(near) : rng.pick(far));
+    }
+    if (new Set(notes).size >= 4 && !played.some((p) => same(p.notes, notes)))
+      return { notes, kind: 'twist' };
+  }
+}
+
+/**
+ * Every tune of an echo round, drawn before the first one plays, so the round's tunes depend on the seed alone: two
+ * grown-ups in a couch face-off hear the same tunes however many slips each makes.
+ */
+export function drawEchoRound(rng: Rng, plan: JellyPlan): Tune[] {
+  const played: Tune[] = [];
+  for (let n = 0; n < plan.goal; n++) {
+    const length = tuneLength(plan, n);
+    played.push(
+      length >= LONG_FROM ? longTune(rng, length, played) : drawTune(rng, length, played, plan.reverse),
+    );
+  }
+  return played;
 }
 
 /** Level 12's answer: the two songs are the same, or one jelly differs. */

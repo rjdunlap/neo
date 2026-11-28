@@ -179,6 +179,23 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     level: (stop) => (stop < 3 ? 5 : 6),
     lines: { 'neighbors.rhythm': 'couch.neighbors.rhythm' },
   },
+  'jelly-drums': {
+    goal: 'couch.how.jelly-drums',
+    tagline: 'Hear a long tune on the jellies, then play it back note for note.',
+    controls: [
+      { parts: STICK, text: 'Move the ring along the jellies.', keys: 'Left / right arrows' },
+      { parts: ['bottom'], text: 'Play the jelly in the ring.', keys: 'Enter' },
+      { parts: ['left'], text: 'Hear the tune again.', keys: 'Backspace' },
+    ],
+    // Long tune: the round's tunes come from the seed, so both players copy the same ones; fewer slips wins.
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'slips' },
+    // The grown-up band's long tunes (19–22): six notes at the first stops, sixteen at the last.
+    band: 'grownup',
+    demoLevel: 19,
+    level: (stop) => [19, 19, 20, 20, 21, 22][stop] ?? 22,
+  },
   'light-lab': {
     goal: 'couch.how.light-lab',
     tagline: 'Turn the mirrors to carry the sunbeam to every flower.',

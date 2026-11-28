@@ -27,6 +27,11 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 4, to: 9, text: 'Listen to the tune, then tap the same jellies in the same order.' },
     {
+      from: 19,
+      to: 22,
+      text: 'A long tune plays, more notes than there are jellies. Listen to it all, then tap the same jellies in the same order.',
+    },
+    {
       from: 11,
       to: 11,
       text: 'Listen to the tune, then tap the same jellies backwards: the last one first, the first one last.',
@@ -74,6 +79,7 @@ export const HOW_TO: GameHowTo = {
     { from: 16, to: 16, text: 'The round ends after three songs: Hot Cross Buns, then two more.' },
     { from: 17, to: 17, text: 'The round ends after eight touches.' },
     { from: 10, to: 10, text: 'The round ends after a number of touches, once all five jellies are awake.' },
+    { from: 19, to: 22, text: 'The round ends when every long tune has been copied.' },
   ],
   note: [
     {
@@ -120,6 +126,11 @@ export const HOW_TO: GameHowTo = {
       from: 17,
       to: 17,
       text: 'Nothing is a wrong answer and no hint is needed. If nobody touches for six seconds, a jelly wiggles to invite another touch.',
+    },
+    {
+      from: 19,
+      to: 22,
+      text: 'For grown-ups. A slip keeps the notes already right: the tune plays again from the top and play carries on from the slip. The yellow note button replays it for free. On the couch the left button replays it, and fewer slips wins the face-off.',
     },
   ],
 };

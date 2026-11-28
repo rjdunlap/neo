@@ -6,6 +6,7 @@ import { domePath, musicNote } from '../../art/shapes';
 import { music, STYLES, silenced } from '../../audio/music';
 import { PITCH_COLORS, pitchColor } from '../../audio/notes';
 import { sfx, type AnimalSound } from '../../audio/sfx';
+import { HeldDirection, idle, type CouchControls } from '../../engine/controller';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -33,7 +34,9 @@ import {
   awakeJellies,
   drawLineups,
   drawPair,
-  drawTune,
+  drawEchoRound,
+  JELLIES,
+  LONG_FROM,
   drawFinish,
   drawFollow,
   endingOf,
@@ -57,7 +60,6 @@ import {
   JournalWatch,
   SET_STEPS,
   soundSetFor,
-  tuneLength,
   verdictOf,
   verdictToTap,
   whichAwake,
@@ -131,6 +133,14 @@ class JellyDrums implements Game {
   private tunesDone = 0;
   /** The tunes already played this round, so none comes round twice. */
   private played: Tune[] = [];
+  /** Echo levels: the round's tunes, drawn at the start from the seed alone (a couch face-off gives both players the same). */
+  private round: Tune[] = [];
+  /** Couch play: a teal ring over the jelly the bottom button plays, moved one jelly at a time. */
+  private cursor = 2;
+  private couchOn = false;
+  private readonly focus = new Graphics();
+  private readonly held = new HeldDirection();
+  private botWait = 1;
   /** Tune levels: hear the tune again, free (no miss, no hint), whenever it is her turn. */
   private readonly again: RoundButton;
   /** Level 12: the two answer buttons, "same" (two matching dots) and "different" (two unlike dots). */
@@ -242,7 +252,9 @@ class JellyDrums implements Game {
       this.ring,
       this.ticks,
       this.rewind,
+      this.focus,
     );
+    this.focus.eventMode = 'none';
     this.ticks.eventMode = 'none';
     this.rippleG.eventMode = 'none';
     this.ring.eventMode = 'none';
@@ -310,7 +322,10 @@ class JellyDrums implements Game {
             : 'jelly.free',
       { name: this.ctx.childName },
     );
-    if (this.plan.mode === 'echo') void this.ctx.tw.wait(2).then(() => this.nextTune());
+    if (this.plan.mode === 'echo') {
+      this.round = drawEchoRound(this.ctx.rng, this.plan);
+      void this.ctx.tw.wait(2).then(() => this.nextTune());
+    }
   }
 
   resize(v: View) {
@@ -340,6 +355,7 @@ class JellyDrums implements Game {
     this.choices.same.position.set(l.choices[0].x, l.choices[0].y);
     this.choices.different.position.set(l.choices[1].x, l.choices[1].y);
     this.ticks.position.set(l.again.x, l.again.y - 85);
+    if (this.couchOn) this.drawFocus();
     this.rewind.position.set(l.again.x - 150, l.again.y);
     this.drawRewind();
     if (this.plan.mode === 'order') {
@@ -420,6 +436,56 @@ class JellyDrums implements Game {
     if (i === null) return null;
     const tap = { on: this.jellies[i], y: this.jellies[i].belly };
     return this.plan.mode === 'wake' ? { tap, receiver: this.anywhere, pause: 0.15 } : { tap, pause: 0.15 };
+  }
+
+  /**
+   * Couch play (the grown-ups' Long tune): the stick or left and right move the ring along the jellies, the bottom button
+   * plays the ringed jelly as a tap would, and the left button hears the tune again (the listen-again button is hidden there).
+   */
+  control(input: CouchControls, dt: number) {
+    this.couchOn = true;
+    if (this.phase === 'done') return void this.focus.clear();
+    for (const dir of this.held.poll(input, dt)) {
+      if (dir !== 0 && dir !== 2) continue;
+      const next = Math.min(JELLIES - 1, Math.max(0, this.cursor + (dir === 0 ? 1 : -1)));
+      if (next !== this.cursor) {
+        this.cursor = next;
+        sfx.tick();
+      }
+    }
+    if (input.players.some((p) => p.action)) this.tapJelly(this.cursor);
+    else if (input.players.some((p) => p.undo)) void this.listenAgain();
+    this.drawFocus();
+  }
+
+  /** The ring around the jelly the bottom button plays, faint while the jellies sing. */
+  private drawFocus() {
+    const j = this.jellies[this.cursor];
+    const hw = (82 - this.cursor * 7) * j.scale.x;
+    const h = hw * 1.55;
+    this.focus
+      .clear()
+      .roundRect(j.x - hw - 22, j.y - h - 34, hw * 2 + 44, h + 58, 28)
+      .stroke({ width: 8, color: swatch.teal.line, alpha: this.phase === 'turn' ? 1 : 0.4 });
+  }
+
+  /** The "watch me" demo: wait for the tune, then walk the ring to each jelly of it in turn and press. */
+  autoplay(dt: number): CouchControls {
+    const out = idle();
+    const p = out.players[0];
+    p.active = true;
+    this.botWait -= dt;
+    if (this.phase !== 'turn' || this.botWait > 0) return out;
+    const want = this.answer[this.at];
+    if (want === undefined) return out;
+    if (want === this.cursor) {
+      p.action = true;
+      this.botWait = 0.35;
+    } else {
+      p.direction = want > this.cursor ? 0 : 2;
+      this.botWait = 0.15;
+    }
+    return out;
   }
 
   destroy() {
@@ -618,12 +684,7 @@ class JellyDrums implements Game {
     this.phase = 'listen';
     this.at = 0;
     this.wrongThisTune = 0;
-    const tune = drawTune(
-      this.ctx.rng,
-      tuneLength(this.plan, this.tunesDone),
-      this.played,
-      this.plan.reverse,
-    );
+    const tune = this.round[this.tunesDone];
     this.played.push(tune);
     this.tune = tune.notes;
     this.answer = answerOf(this.plan, tune.notes);
@@ -702,12 +763,15 @@ class JellyDrums implements Game {
     const n = this.tune.length;
     this.ticks.clear();
     if (this.plan.mode !== 'echo' || this.ctx.couch || n < RESUME_FROM_LENGTH) return;
-    const gap = 44;
+    // A grown-up's long tune (up to sixteen notes) packs its dots closer so the row stays on screen.
+    const room = Math.min(this.ticks.x, this.view.w - this.ticks.x) - 24;
+    const gap = Math.min(44, (2 * room) / Math.max(1, n - 1));
+    const r = Math.min(15, gap * 0.36);
     for (let k = 0; k < n; k++) {
       const x = (k - (n - 1) / 2) * gap;
       const done = k < this.at;
       this.ticks
-        .circle(x, 0, 15)
+        .circle(x, 0, r)
         .fill(done ? swatch.green.fill : 0xffffff)
         .stroke({ width: 4, color: swatch.green.line });
     }
@@ -1268,6 +1332,8 @@ class JellyDrums implements Game {
     this.ctx.finish({
       misses: this.misses,
       hints: this.hints,
+      // On the couch, slips are the Long tune face-off's score (fewer wins).
+      ...(this.ctx.couch ? { score: this.misses } : {}),
       ...(found.length ? { discoveries: found } : {}),
     });
   }
@@ -1326,7 +1392,7 @@ export const jellyDrums: GameModule = {
   region: 'music-mountain',
   challenge: 'music',
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
-  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [17, 10, 14, 15, 16],
   describeLevel: (level) => {
@@ -1342,6 +1408,8 @@ export const jellyDrums: GameModule = {
     if (p.mode === 'answer') return `Every touch gets an echo, ${p.goal} touches`;
     if (p.mode === 'follow') return `Tap each jelly as it glows to play ${p.goal} short songs`;
     if (p.mode === 'which') return `Listen to one note and tap which jelly sang, ${p.goal} sounds`;
+    if (p.mode === 'echo' && p.length >= LONG_FROM)
+      return `Copy a long ${p.length}-note tune, ${p.goal} tune${p.goal === 1 ? '' : 's'}`;
     if (p.mode === 'wake') return `One big jelly, then friends wake, any touch sings, ${p.goal} notes`;
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },
