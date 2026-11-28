@@ -63,6 +63,24 @@ From the 2026-11-23 reconciliation of the dives' slice lists (each checked again
 Refilled 2026-11-27 from the dives' slice lists, each checked against the game's `LEVELS` table on `origin/main` and the open PRs (`day-by-day` level 8 moved to Next ten 2026-11-27; `clock-tower` level 11 and `letter-trails` level 16 moved there the same day):
 
 
+Refilled 2026-11-28 from the dives' slice lists, each checked against the game's level table in `docs/games/` and `LEVELS` on `origin/main` and the open pull requests (stale slice lines in the dives were marked built the same day). A line that follows another of the same game waits for that one to merge, since both take the next free ID:
+
+- **`duck-pond`, *Which pond has more?*** (new-levels tier): after *Count the peekers*, at the next free ID; pre-K between 7 and 8 with `order`; two small ponds pair up one to one and the spare ducks stand out; "the same" in at most one round of five. [Dive slice 10](deep-dives/duck-pond.md#build-slices-in-order).
+- **`market-stall`, *Which costs more?*** (new-levels tier): after *Which coin?*, at the next free ID; pre-K between 2 and 3; two tagged fruits with numerals and dots, a wrong tap shows the dots side by side. [Dive slice 9](deep-dives/market-stall.md#build-slices-in-order).
+- **`market-stall`, G1 *Odd coins*** (new-levels tier plus the `grownup` band audit): after *Which costs more?*; coins 1, 3 and 4 with a true-minimum (dynamic programming) `fewest` (gap 8); rounds include prices where greedy is not minimal. [Dive slice 11](deep-dives/market-stall.md#build-slices-in-order).
+- **`memory-match`, level 14 *Same share*** (new-levels tier): after 13; three equivalent-fraction pairs (1/2 with 2/4, 1/3 with 2/6, 2/3 with 4/6) on same-size rectangles, the subdivision overlay after two misses. [Dive slice 6](deep-dives/memory-match.md#build-slices-in-order).
+- **`stamp-studio`, *Next to, between, above*** (new-levels tier): after *Where does it go?*, at the next free ID. [Dive slice 11](deep-dives/stamp-studio.md#build-slices-in-order).
+- **`stamp-studio`, *The pet tells it back*** (existing-game tier: rule tests that every sentence is true of its picture, one scripted play; decision 6 settled 2026-10-23). [Dive slice 9](deep-dives/stamp-studio.md#build-slices-in-order).
+- **`story-steps`, level 0b *Press the picture to watch*** (new-levels tier): after 0a, at the next free ID, lap; three cards that play in order when tapped, a story told, not asked. [Dive slice 7](deep-dives/story-steps.md#build-slices-in-order).
+- **`tangram-town`, *One piece home*, then *Pick the missing piece*** (new-levels tier, one per session): the next free stable IDs (currently 10), toddler placed with `order`; one shadow, one piece, a snap radius of about 110 and no miss; then a built picture with one empty slot and a wrong piece that never fits. [Dive slice 8](deep-dives/tangram-town.md#build-slices-in-order).
+- **`clock-tower`, preschool 1–1** (younger-band opening tier): after level 11's pull request merges; copy a visible model with one hand (decided 2026-10-23), band and inventory counts, a scoped card, registry and lands rules. [Dive slice 8](deep-dives/clock-tower.md#build-slices-in-order).
+- **Define Critter Crossing *Be the gate*** (docs only): the second-seat level at the next free ID (currently 9), an anonymous, uncredited seat and a role-swapped round as supported completion (decided 2026-10-23); queue its build. [Dive slice 7](deep-dives/critter-crossing.md#build-slices-in-order).
+- **Define Critter Sort level 10 *Pick the signs*** (docs only): play only, nothing kept (decided 2026-10-23); ID 10 is reserved for it; queue its build. [Dive slice 9](deep-dives/critter-sort.md#build-slices-in-order).
+- **Define Pattern Train level 21 *Add three, add four*** (docs only; Wonder Woods may define it now, decided 2026-10-23; a child's play of 19–20 is a person check, not a gate); queue its build. [Dive slice 9](deep-dives/pattern-train.md#build-slices-in-order).
+- **Define Duckling Parade level 12, the continuation** (docs only): the reference and progress card, the one-step reveal counted as help, completion and the bot (approved 2026-10-23); queue its build. [Dive slice 5](deep-dives/duckling-parade.md#build-slices-in-order).
+- **Define Garden Rows *Two-flower beds* (4×4)** (docs only): a new level ID, its rules, layout at the four views and rule tests; queue its build. [Dive slice 5](deep-dives/garden-rows.md#build-slices-in-order).
+- **Define Duck Pond *Pairs* and *Who was here first?*** (docs only): evens and odds by ducks swimming two by two (Duck Pond owns them, decided 2026-10-23) and the unknown-start story (1.OA.A.1); IDs, bands, accounting and rule tests; queue the builds. [Dive slice 11](deep-dives/duck-pond.md#build-slices-in-order).
+
 
 
 

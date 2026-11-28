@@ -60,7 +60,7 @@ export function playingCopy(app: PanelApp): { before: string[]; after: string[] 
   };
 }
 
-/** The Finding games section (the home spot's layout), on classic only. */
+/** The Finding games section's home spot layout row, on classic only (the section's Opens with row is in both apps). */
 export function findingCopy(app: PanelApp): { label: string; note: string } | null {
   return app === 'root'
     ? null
@@ -68,6 +68,22 @@ export function findingCopy(app: PanelApp): { label: string; note: string } | nu
         label: 'Home spot layout',
         note: 'The home spot on the map holds every game for their age in one place. Subject cards show four large choices at a time; the swiping path shows them all along one path.',
       };
+}
+
+/**
+ * The Opens with row (D8, docs/definitions/starting-view.md), in the Finding games section of both apps: what Explore is
+ * called there, and the one note. The root never names the map; only the root has a phone's six-only start.
+ */
+export function startCopy(app: PanelApp): { label: string; explore: string; six: string; note: string } {
+  const back = app === 'root' ? 'Home' : 'to the map';
+  return {
+    label: 'Opens with',
+    explore: app === 'root' ? 'Home' : 'The map',
+    six: "Today's six",
+    note: `Where this player starts after tapping their card. Back from Today's six goes ${back}.${
+      app === 'root' ? " On a phone Today's six is always the start." : ''
+    }`,
+  };
 }
 
 /** This week's words: its opening note, the row for a bigger kids' game, and whether the Windy Picnic line shows. */

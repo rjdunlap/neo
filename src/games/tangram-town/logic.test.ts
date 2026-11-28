@@ -1,5 +1,7 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
+import { tangramTown } from '.';
 import {
   fixFor,
   looksSame,
@@ -14,7 +16,10 @@ import {
   bestTarget,
   buildFor,
   hintFor,
+  isMiss,
+  LEVELS,
   makePieces,
+  SNAP_HOME,
   PICTURE_BOX,
   PICTURE_IDS,
   PICTURES,
@@ -143,7 +148,18 @@ it('level pools match the level: fewer pieces low down, a complementary pair at 
   }
   for (const b of builds(5)) expect(b.targets.length).toBe(4);
   for (const b of builds(6)) expect(b.targets.length).toBeGreaterThanOrEqual(3);
-  expect(PLANS.map((p) => p.outlines)).toEqual([true, true, true, true, true, false, false, true, true]);
+  expect(PLANS.map((p) => p.outlines)).toEqual([
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    true,
+    true,
+    true,
+  ]);
 });
 it('a piece dropped on any slot goes to a slot of its own shape and turn, so every slot can be filled in any order', () => {
   for (const id of PICTURE_IDS) {
@@ -298,7 +314,7 @@ it('the two-piece broom joins its handle to its brush and belongs only to the ea
       ([x, y]) => Math.abs(x) <= PICTURE_BOX.x && y >= PICTURE_BOX.top && y <= PICTURE_BOX.bottom,
     ),
   ).toBe(true);
-  expect(PLANS.flatMap((p, i) => (p.pool.includes('broom') ? [i + 1] : []))).toEqual([1, 2, 3]);
+  expect(PLANS.flatMap((p, i) => (p.pool.includes('broom') ? [i + 1] : []))).toEqual([1, 2, 3, 10]);
   // Every seeded tray, its useful hint and real quarter-turn bot path are
   // exercised above for every pool entry; low levels require zero turns.
 });
@@ -349,4 +365,64 @@ it('level 9 rounds have one wrong parallelogram, always fixable, and the bot fli
     flip: false,
     turns: 1,
   });
+});
+
+it('one piece home (level 10): one piece is already placed, the other is the tray, upright and ready to go home', () => {
+  const plan = PLANS[9];
+  expect(plan.onePiece).toBe(true);
+  expect(plan.rotate).toBe(false);
+  // Level 1's pictures: two big shapes, each already the right way up.
+  expect(plan.pool).toEqual(PLANS[0].pool);
+  const missing = new Set<string>();
+  for (let seed = 1; seed <= 80; seed++) {
+    const b = buildFor(10, new Rng(seed));
+    expect(b.targets).toHaveLength(2);
+    expect(b.preset).toHaveLength(1);
+    const pieces = makePieces(b, new Rng(seed));
+    expect(pieces).toHaveLength(1);
+    const open = b.targets.findIndex((_, i) => !b.preset!.includes(i));
+    expect(pieces[0]).toEqual({ shape: b.targets[open].shape, turns: b.targets[open].turns });
+    missing.add(`${b.picture}:${open}`);
+  }
+  // Either of a picture's two shapes can be the one left to place.
+  expect(missing.size).toBeGreaterThan(plan.pool.length);
+});
+it('one piece home: any drop within 110 of the shadow places the piece, and no drop anywhere is a miss', () => {
+  for (const id of PLANS[9].pool) {
+    const targets = PICTURES[id] as readonly Target[];
+    for (const open of [0, 1]) {
+      const filled = targets.map((_, i) => i !== open),
+        t = targets[open],
+        piece = { shape: t.shape, turns: t.turns },
+        build = { targets, onePiece: true };
+      for (let a = 0; a < 24; a++) {
+        const ang = (a * Math.PI) / 12;
+        for (const r of [0, 40, 80, 105, SNAP_HOME - 1]) {
+          const x = t.x + r * Math.cos(ang),
+            y = t.y + r * Math.sin(ang);
+          expect(targetFor(piece, x, y, targets, filled, SNAP_HOME), `${id} ${open} r${r}`).toBe(open);
+        }
+        for (const r of [SNAP_HOME + 1, 150, 200, 400]) {
+          const x = t.x + r * Math.cos(ang),
+            y = t.y + r * Math.sin(ang);
+          expect(targetFor(piece, x, y, targets, filled, SNAP_HOME)).toBe(-1);
+          expect(isMiss(build, x, y, filled)).toBe(false);
+        }
+      }
+    }
+  }
+  // The usual rounds keep their reach and their miss ring.
+  const house = PICTURES.house as readonly Target[];
+  expect(targetFor({ shape: 'square', turns: 0 }, house[0].x + 90, house[0].y, house, [false, false])).toBe(
+    -1,
+  );
+  expect(isMiss({ targets: house }, house[0].x + 90, house[0].y, [false, false])).toBe(true);
+});
+it('one piece home plays first at toddler only, and carried into another band starts it at its easiest level', () => {
+  expect(levelsInOrder(LEVELS.toddler!)).toEqual([10, 1, 2]);
+  expect(firstLevel(LEVELS.toddler!, tangramTown.entryLevels)).toBe(10);
+  for (const band of ['preschool', 'prek', 'school'] as const) {
+    expect(levelsInOrder(LEVELS[band]!)).not.toContain(10);
+    expect(landing(10, LEVELS[band]!, tangramTown.entryLevels)).toBe(levelsInOrder(LEVELS[band]!)[0]);
+  }
 });
