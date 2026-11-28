@@ -12,7 +12,7 @@
 | toddler | 2–4 |
 | preschool | 3–5 |
 | pre-K | 5–8 |
-| school | 8–10 |
+| school | 8–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 8 | Their own snacks: give two animals 1 to 4 each of their own food, then ring the bell |
 | 9 | The menu board: read an animal, a numeral 4 to 9 and a food word, give that many, ring the bell |
 | 10 | The long menu: read two lines, numeral and food word, and give each animal its own number |
+| 11 | Plants, meat or both: tap the mat each animal belongs on |
 
 <!-- end generated -->
 
