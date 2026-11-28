@@ -4906,6 +4906,45 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await settle();
             continue;
           }
+          if (level === 10) {
+            const offered = await page.evaluate(() => neo.scene.game.round.options);
+            assert.equal(offered.length, 3);
+            assert.equal(await page.evaluate(() => neo.scene.game.phase), 'choose');
+            if (n === 0) await screenshot('critter-sort-10-choose');
+            const tapSign = async (rule) => {
+              await tap(`neo.scene.game.options.find((x) => x.rule === '${rule}').node`);
+              await page.waitForTimeout(450);
+            };
+            const state = () => page.evaluate(() => [neo.scene.game.phase, [...neo.scene.game.chosen]]);
+            await tapSign(offered[0]);
+            await tapSign(offered[1]);
+            assert.deepEqual(await state(), ['sort', [offered[0], offered[1]]]);
+            // Taking a sign back before the first drop is free and reopens the choice.
+            await tapSign(offered[0]);
+            assert.deepEqual(await state(), ['choose', [null, offered[1]]]);
+            await tapSign(offered[2]);
+            assert.deepEqual(await state(), ['sort', [offered[2], offered[1]]]);
+            assert.deepEqual(await counts(), n === 0 ? [0, 0] : [2, 1]);
+            await settle();
+            const places = await page.evaluate(async () => {
+              const L = await import('/src/games/critter-sort/logic.ts');
+              const g = neo.scene.game;
+              return g.sorters.map((s) => L.placeOf(s.c, g.round.rules));
+            });
+            if (n === 0) {
+              const wrong = places[0] === 'left' ? 'right' : 'left';
+              await dropTo(0, wrong);
+              // Her signs lock at the first drop.
+              await tapSign(offered[1]);
+              assert.deepEqual(await state(), ['sort', [offered[2], offered[1]]]);
+              await dropTo(0, wrong);
+              assert.deepEqual(await counts(), [2, 1]);
+              assert.equal(await page.evaluate(() => neo.scene.game.hinting === neo.scene.game.sorters[0]), true);
+              await screenshot('critter-sort-10-hint');
+            }
+            for (const [i, place] of places.entries()) await dropTo(i, place);
+            continue;
+          }
           if (level === 9) {
             const data = await page.evaluate(async () => {
               const L = await import('/src/games/critter-sort/logic.ts');

@@ -20,6 +20,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Sort all six critters into the two separate hoops or onto the leaf mat. Then tap critters to count each part aloud; a ring marks each counted critter. Tap a part’s picture below to choose which has more.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'Tap two of the three signs to put them on the hoops (tap a sign on a hoop to take it back before sorting). Then drag each critter to the hoop its sign fits, the middle for both, or the leaf mat for neither.',
+    },
+    {
       from: 9,
       to: 9,
       text: 'The hoop has two pictures: fit the first, but not the crossed-out second picture. Drag matching critters into the one hoop; put every other critter on the leaf mat.',
