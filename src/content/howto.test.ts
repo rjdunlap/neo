@@ -209,7 +209,14 @@ describe('touch how-to cards', () => {
     expect(howToFor(pop, 18)!.note).toContain('moves the hold');
     expect(howToFor(pop, 19)!.steps).toEqual([expect.stringContaining('blow a trail of bubbles')]);
     expect(howToFor(pop, 19)!.note).toContain('just blows one');
-    expect(howToFor(pop, 20)!.steps).toEqual([]);
+    expect(howToFor(pop, 20)!.steps).toEqual([
+      expect.stringContaining('shows 20'),
+      expect.stringContaining('makes 20 with it'),
+      expect.stringContaining('10 and 10 is a pair too'),
+    ]);
+    expect(howToFor(pop, 20)!.finish).toContain('last pair is popped');
+    expect(howToFor(pop, 20)!.note).toContain('making 10 gets there');
+    expect(howToFor(pop, 21)!.steps).toEqual([]);
     expect(howToFor(pop, 15)!.note).toContain('No touch is wrong');
     expect(howToFor(pop, 14)!.note).toContain('wrong bubble');
     // The sign is mentioned only where there is one, and the new levels do not inherit the dots or the pairs.

@@ -60,6 +60,21 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'Tap a bubble to hold it, then tap the bubble that makes 10 with it. Tap the held bubble again to let it go.',
     },
+    {
+      from: 20,
+      to: 20,
+      text: 'The sign at the top shows 20, the number the two bubbles make together.',
+    },
+    {
+      from: 20,
+      to: 20,
+      text: 'Tap a bubble to hold it, then tap the bubble that makes 20 with it. Tap the held bubble again to let it go.',
+    },
+    {
+      from: 20,
+      to: 20,
+      text: "Most pairs are a small number and a teen: the small number and the teen's ones make 10, then the ten makes 20 (3 and 17). 10 and 10 is a pair too.",
+    },
   ],
   finish: [
     { to: 14, text: 'The round ends when the last bubble that was asked for is popped.' },
@@ -74,6 +89,7 @@ export const HOW_TO: GameHowTo = {
       to: 19,
       text: 'After a few pops a rainbow bubble floats up; tap it and the round ends.',
     },
+    { from: 20, to: 20, text: 'The round ends when the last pair is popped.' },
   ],
   note: [
     {
@@ -97,6 +113,11 @@ export const HOW_TO: GameHowTo = {
       from: 18,
       to: 18,
       text: 'A bubble that is not the partner only wobbles and the held one stays held; after two in a row the partner glows. Tapping another of the same kind just moves the hold. A held numeral is read aloud; held dots are not, so the counting is hers.',
+    },
+    {
+      from: 20,
+      to: 20,
+      text: 'A pair that does not make 20 only wobbles and its total is said; after two in a row, the first bubble of the try and its partner glow and the pet says how making 10 gets there.',
     },
   ],
 };

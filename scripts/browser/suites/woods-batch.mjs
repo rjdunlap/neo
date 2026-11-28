@@ -3783,9 +3783,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
 
     if (!only || only === 'bonds')
-      for (const level of [10, 11]) {
-        await launch('bubble-pop', level);
+      for (const level of [10, 11, 20].filter((l) => l >= fromLevel)) {
+        if (level === 20) {
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.waitForTimeout(300);
+        }
+        await launch('bubble-pop', level, 'Mia', level === 20 ? 'school' : undefined);
         await page.waitForTimeout(600);
+        if (level === 20) await screenshot('bubble-pop-20-portrait');
         // The total the pairs make is on a sign at the top, above where any bubble can drift, and takes no touches.
         assert.deepEqual(
           await page.evaluate(() => {
@@ -3808,18 +3813,48 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const live = () =>
           page.evaluate(() =>
             neo.scene.game.bubbles
-              .map((b, i) => ({ i, n: b.number, popped: b.popped, rainbow: b.rainbow }))
+              .map((b, i) => ({ i, n: b.number, popped: b.popped, rainbow: b.rainbow, glow: b.glow }))
               .filter((b) => !b.popped && !b.rainbow),
           );
         const sum = await page.evaluate(() => neo.scene.game.plan.sum);
+        if (level === 20) {
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            g._said = [];
+            const say = g.ctx.say.bind(g.ctx);
+            g.ctx.say = (id, vars) => {
+              g._said.push([id, vars]);
+              return say(id, vars);
+            };
+          });
+        }
+        let hintFirst = null;
         for (let k = 0; k < 2; k++) {
           const bs = await live();
           const a = bs[0];
           const b = bs.find((x) => x.i !== a.i && x.n + a.n !== sum);
+          hintFirst = a;
           await pop(a.i);
           await pop(b.i);
         }
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1]);
+        if (level === 20) {
+          const after = await live();
+          const glowing = after.filter((x) => x.glow > 0);
+          assert.equal(glowing.length, 2, 'Make 20 hint lights the tried bubble and its partner');
+          assert.ok(
+            glowing.some((x) => x.i === hintFirst.i) &&
+              glowing.some((x) => x.i !== hintFirst.i && x.n + hintFirst.n === 20),
+            'Make 20 hint lights the first bubble of her last try and its partner',
+          );
+          const said = await page.evaluate(() => neo.scene.game._said);
+          const hintLine = said.at(-1);
+          assert.equal(
+            hintLine[0],
+            hintFirst.n === 10 ? 'bubble.made' : 'bubble.ten20',
+            'Make 20 hint speaks ten20 (or made for 10+10) instead of notmade',
+          );
+        }
         await screenshot(`bubble-pop-${level}-hint`);
         for (let k = 0; k < 12; k++) {
           const bs = await live();
@@ -3838,6 +3873,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await page.evaluate(() => kit.tapOn(neo.scene.game.bubbles.find((b) => b.rainbow)));
         await finished('bubble-pop');
         assert.deepEqual(await score('bubble-pop'), [2, 1]);
+        if (level === 20) {
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(300);
+        }
         log(
           `Bubble Pop ${level}: pairs that make ${sum} popped together, wrong pairs as misses, glowing pair hint, rainbow bubble, saved score and sticker passed`,
         );
