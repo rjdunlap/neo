@@ -1549,6 +1549,57 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           );
           continue;
         }
+        if (plan.mode === 'more') {
+          // Which costs more? (dive slice 9, level 15): no bell, coins or slate; the cheaper fruit twice (a miss that lays the
+          // dots side by side, then the hint that lights the dearer one), then the dearer; later orders straight away.
+          const good = (i) => `neo.scene.game.shelf[${i}].node`;
+          const settle = () =>
+            page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+          for (let n = 0; n < plan.orders; n++) {
+            await idle(n);
+            const dear = await page.evaluate(() => {
+              const [a, b] = neo.scene.game.order.prices;
+              return a > b ? 0 : 1;
+            });
+            if (n === 0) {
+              assert.deepEqual(
+                await page.evaluate(() => [
+                  neo.scene.game.bell.visible,
+                  neo.scene.game.purse.length,
+                  neo.scene.game.shelf.length,
+                ]),
+                [false, 0, 2],
+                'no bell or coins; two things on the shelf',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await screenshot('market-stall-15-upright');
+              await tap(good(1 - dear));
+              await settle();
+              assert.deepEqual(await counts(), [1, 0], 'the cheaper one is a miss');
+              assert.ok(await page.evaluate(() => !!neo.scene.game.compare), 'the dots lie side by side');
+              await screenshot('market-stall-15-dots-upright');
+              await tap(good(1 - dear));
+              await settle();
+              assert.deepEqual(await counts(), [2, 1], 'the second miss is the hint');
+              assert.ok(
+                await page.evaluate(() => neo.scene.game.shelfGlow.bounds.width > 0),
+                'the dearer one glows',
+              );
+              await screenshot('market-stall-15-hint-upright');
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
+            await tap(good(dear));
+          }
+          await finished('market-stall');
+          assert.deepEqual(await score('market-stall'), [2, 1]);
+          assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickerCount + 1);
+          log(
+            'Market Stall 15 (Which costs more?): no bell, two misses, the dots and the glow, saved score and sticker',
+          );
+          continue;
+        }
         if (plan.mode === 'which') {
           // Which coin? (dive slice 9, level 14): no bell or slate; two wrong coins (a miss each, the second glows the asked
           // coin and counts one hint), then the asked coin; later orders are answered straight away.
