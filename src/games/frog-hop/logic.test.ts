@@ -6,6 +6,15 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { GUIDE_CORNER } from '../../creatures/home-layout';
 import {
+  ownScene,
+  planFor,
+  ESTIMATE_FIRST,
+  ESTIMATE_SPREAD,
+  valueAt,
+  placeOf,
+  nearestTen,
+  closeness,
+  estimateLayout,
   hopsLayout,
   openLine,
   overshoots,
@@ -55,7 +64,7 @@ import {
 
 describe('Frog Hop', () => {
   it('asks questions whose start and answer are both on the pads in view', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'hops')) {
+    for (const plan of PLANS.filter((p) => !ownScene(p.mode))) {
       for (let seed = 1; seed <= 300; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
         expect(qs).toHaveLength(plan.questions);
@@ -122,7 +131,7 @@ describe('Frog Hop', () => {
   });
 
   it('always has an answer on the screen for the ghost finger to tap, and it is the right one', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'hops')) {
+    for (const plan of PLANS.filter((p) => !ownScene(p.mode))) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           const slot = answerSlot(plan.mode, q, q.lo);
@@ -367,7 +376,7 @@ describe('Frog Hop, Fraction Landings', () => {
         const flowers = Array.from({ length: plan.top + 1 }, (_, n) => n).filter((n) =>
           flowerOn(plan.mode, n),
         );
-        if (i < 2 || isFrac(plan.mode) || plan.mode === 'hops') expect(flowers).toEqual([]);
+        if (i < 2 || isFrac(plan.mode) || ownScene(plan.mode)) expect(flowers).toEqual([]);
         else expect(flowers).toEqual([5, 10, 15, 20].filter((n) => n <= plan.top));
       });
     });
@@ -703,9 +712,9 @@ describe('Big hops and little hops (level 14)', () => {
   const plan = PLANS[13];
   const questions = (seed: number) => makeQuestions(plan, new Rng(seed));
 
-  it('is the next ladder level and the top of school', () => {
+  it('is the next ladder level, in school', () => {
     expect(plan.mode).toBe('hops');
-    expect(LEVELS.school?.max).toBe(14);
+    expect(LEVELS.school?.max).toBeGreaterThanOrEqual(14);
   });
 
   it('asks tens and ones: neither start nor distance is a multiple of ten, the flag is on the line', () => {
@@ -785,6 +794,87 @@ describe('Big hops and little hops (level 14)', () => {
       for (let i = 1; i < boxes.length; i++)
         expect(boxes[i].x - boxes[i].w / 2).toBeGreaterThanOrEqual(boxes[i - 1].x + boxes[i - 1].w / 2);
       expect(l.line.y).toBeLessThan(l.big.y - 70);
+    }
+  });
+});
+
+describe('Where does it go? (level 15)', () => {
+  const plan = PLANS[14];
+  const questions = (seed: number) => makeQuestions(plan, new Rng(seed));
+
+  it('is the top of school, after Big hops and little hops', () => {
+    expect(plan.mode).toBe('estimate');
+    expect(LEVELS.school?.max).toBe(15);
+    expect(planFor(15)).toBe(plan);
+  });
+
+  it('asks three guesses (37 first, never 0, 50, 100 or a ten, spread out), then one ten on the marked line', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = questions(seed);
+      expect(qs).toHaveLength(4);
+      expect(qs.map((q) => q.place)).toEqual(['guess', 'guess', 'guess', 'ticks']);
+      expect(qs[0].target).toBe(ESTIMATE_FIRST);
+      const guesses = qs.slice(0, 3).map((q) => q.target);
+      for (const n of guesses) {
+        expect(n).toBeGreaterThan(0);
+        expect(n).toBeLessThan(100);
+        expect(n % 10).not.toBe(0);
+      }
+      for (let i = 0; i < 3; i++)
+        for (let j = i + 1; j < 3; j++)
+          expect(Math.abs(guesses[i] - guesses[j])).toBeGreaterThanOrEqual(ESTIMATE_SPREAD);
+      const t = qs[3].target;
+      expect(t % 10).toBe(0);
+      expect([0, 50, 100]).not.toContain(t);
+    }
+  });
+
+  it('maps the line linearly, and every number has a reachable place that reads back as itself', () => {
+    const [x0, x1] = [70, 698];
+    expect(valueAt(x0, x0, x1)).toBe(0);
+    expect(valueAt(x1, x0, x1)).toBe(100);
+    expect(valueAt((x0 + x1) / 2, x0, x1)).toBe(50);
+    expect(valueAt(x0 - 50, x0, x1)).toBe(0);
+    expect(valueAt(x1 + 50, x0, x1)).toBe(100);
+    for (let n = 0; n <= 100; n++) {
+      expect(valueAt(placeOf(n, x0, x1), x0, x1)).toBe(n);
+      expect(nearestTen(n) % 10).toBe(0);
+      expect(Math.abs(nearestTen(n) - n)).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('says how close a guess was for every guess, the same either side', () => {
+    for (let t = 0; t <= 100; t++)
+      for (let g = 0; g <= 100; g++) {
+        const c = closeness(g, t);
+        expect(['spot', 'close', 'near', 'far']).toContain(c);
+        expect(closeness(t + (t - g), t)).toBe(c);
+      }
+    expect(closeness(37, 37)).toBe('spot');
+    expect(closeness(45, 37)).toBe('close');
+    expect(closeness(20, 37)).toBe('near');
+    expect(closeness(90, 37)).toBe('far');
+    for (const c of ['spot', 'close', 'near'])
+      expect(SCRIPT[`hop.est.${c}` as keyof typeof SCRIPT]).toBeTruthy();
+  });
+
+  it('lays the line out inside the view, clear of the guide corner and the sign, on every view', () => {
+    for (const [w, h, upright] of [
+      [1024, 768, false],
+      [1366, 768, false],
+      [768, 1662, true],
+      [768, 1366, true],
+    ] as const) {
+      const v = { w, h, ...(upright ? { upright: true as const } : {}) };
+      const L = estimateLayout(v);
+      expect(L.band.x).toBeGreaterThanOrEqual(0);
+      expect(L.band.x + L.band.w).toBeLessThanOrEqual(w);
+      expect(L.band.h).toBeGreaterThanOrEqual(100);
+      // Clear of the guide's corner below and the sign above.
+      expect(L.band.y + L.band.h).toBeLessThan(h - GUIDE_CORNER.h);
+      expect(L.band.y).toBeGreaterThan(L.sign.y + 60);
+      // A mark by tens is at least 50 units from the next, so a place snaps to the mark she meant.
+      expect((L.line.x1 - L.line.x0) / 10).toBeGreaterThanOrEqual(50);
     }
   });
 });

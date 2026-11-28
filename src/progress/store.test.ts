@@ -181,6 +181,19 @@ describe('switching profiles', () => {
     expect(store.data.settings.language2).toBe('pt-PT');
   });
 
+  it("keeps each player's starting view their own (D8)", async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    store.data.settings.startView = 'six';
+    store.save();
+    const b = store.addProfile()!;
+    expect(await store.switchTo(b)).toBe(true);
+    expect(store.data.settings.startView).toBe('explore');
+    expect(await store.switchTo(a)).toBe(true);
+    expect(store.data.settings.startView).toBe('six');
+  });
+
   it('never shows default data while the other save is being read, and a save made meanwhile still lands on the old one', async () => {
     const store = make();
     await store.load();
@@ -1294,5 +1307,28 @@ describe('the saved mix (D5b)', () => {
     await store.restoreAll(text);
     await store.switchTo(a);
     expect(store.data.mix).toEqual(mine);
+
+describe('the friend shop (the progression loop)', () => {
+  it('a grown-up buys with shells and keeps it; a child profile cannot buy', async () => {
+    const store = make();
+    await store.load();
+    store.setBand('grownup');
+    store.data.shells.balance = 150;
+    expect(store.buy('wear:crown')).toBe('short');
+    expect(store.buy('color:lilac')).toBe(true);
+    expect(store.data.shells.balance).toBe(30);
+    expect(store.buy('color:lilac')).toBe('owned');
+    // A bought paint colour is the friend's to wear, though it was never mixed.
+    const pal = store.meet('sprout', 'Pip', 'teal', 'grownup:friend')!;
+    expect(store.recolor(pal.id, 'lilac')).toBe(true);
+    expect(store.recolor(pal.id, 'rose')).toBe(false);
+    await store.flush();
+    const again = make();
+    await again.load();
+    expect(again.data.shop.owned).toEqual(['color:lilac']);
+    again.setBand('school');
+    again.data.shells.balance = 500;
+    expect(again.buy('wear:scarf')).toBe('band');
+    expect(again.data.shells.balance).toBe(500);
   });
 });

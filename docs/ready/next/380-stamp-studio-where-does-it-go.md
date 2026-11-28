@@ -1,0 +1,1 @@
+**`stamp-studio`, *Where does it go?*** (new-levels tier): the dive's invitation level 7 at the next free stable ID (currently 12; 7–11 are taken), on the built Farm set, in the preschool 3–7, pre-K and school windows decided 2026-10-23; an unmet invitation counts as one hint. [Dive slice 10](../../deep-dives/stamp-studio.md#build-slices-in-order).

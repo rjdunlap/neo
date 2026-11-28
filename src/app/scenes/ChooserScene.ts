@@ -26,6 +26,7 @@ import {
   chipForBirth,
   couchNameFor,
   FIRST_VISIT_PLACES,
+  exitFor,
   modeFor,
   POINTER_WINDOW_MS,
   readNewPlayer,
@@ -425,8 +426,11 @@ export class ChooserScene extends Scene {
     sfx.giggle();
     await this.tw.wait(LEAVE_BEAT);
     if (this.closed) return;
-    // To the island map: the lands, their home spot and the picnic, with their friend waiting where they were last.
-    if (store.data.creatures.owned.length > 0) this.app.go.hub();
+    // To Home (the island map at classic/), or Today's six for a player whose grown-up chose it (D8); someone with no
+    // friend yet hatches one first, and the hatch ends at Home.
+    const exit = exitFor(store.data.creatures.owned.length > 0, store.data.settings.startView);
+    if (exit === 'six') this.app.go.daily();
+    else if (exit === 'hub') this.app.go.hub();
     else this.app.go.hatch(skipsEgg(store.entry.birth, new Date()));
   }
 

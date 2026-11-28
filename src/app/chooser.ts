@@ -1,5 +1,6 @@
 import { cleanName } from '../couch/party';
 import type { Band } from '../progress/bands';
+import type { StartView } from '../progress/save';
 import { checkBirthInput, completedYears, type Birth } from '../progress/profiles';
 
 /**
@@ -13,6 +14,14 @@ export type Source = 'pointer' | 'key' | 'pad';
 export type Mode = 'island' | 'couch';
 
 export const modeFor = (source: Source): Mode => (source === 'pointer' ? 'island' : 'couch');
+
+/**
+ * Where a tapped card opens (D8, docs/definitions/starting-view.md): the hatch for someone with no friend yet, otherwise the
+ * player's own starting view. `six` is read here only, at the chooser's exit, never by the `hub` route: `hub` is also Home
+ * and every Back, so honouring it there would make Explore unreachable. A phone's root is the six either way.
+ */
+export const exitFor = (ownsFriend: boolean, startView: StartView): 'hatch' | 'hub' | 'six' =>
+  !ownsFriend ? 'hatch' : startView === 'six' ? 'six' : 'hub';
 
 /** How recently a pointer must have gone down for the click that follows to be its tap. */
 export const POINTER_WINDOW_MS = 1500;

@@ -27,6 +27,7 @@ import {
   bandWhere,
   findingCopy,
   friendHeading,
+  startCopy,
   playingCopy,
   weekCopy,
   type PanelApp,
@@ -77,6 +78,7 @@ export function openParentPanel(
   if (current) return;
   const playing = playingCopy(app);
   const finding = findingCopy(app);
+  const start = startCopy(app);
   const openedFor = store.activeId;
   const root = document.createElement('div');
   current = root;
@@ -151,10 +153,16 @@ export function openParentPanel(
       </div>
       <p class="muted">The guide's question is written beside the round, for a phone on silent. A grown-up's own games always show it; younger games never do.</p>
       ${playing.after.map((line) => `<p class="muted">${esc(line)}</p>`).join('')}
+
+      <h2>Finding games</h2>
+      <div class="parent__row">
+        <label for="p-start">${esc(start.label)}</label>
+        <select id="p-start"><option value="explore">${esc(start.explore)}</option><option value="six">${esc(start.six)}</option></select>
+      </div>
+      <p class="muted">${esc(start.note)}</p>
 ${
   finding
     ? `
-      <h2>Finding games</h2>
       <div class="parent__row">
         <label for="p-layout">${esc(finding.label)}</label>
         <select id="p-layout"><option value="path">Swiping path (original)</option><option value="subjects">Subject cards (try on iPad)</option></select>
@@ -230,6 +238,7 @@ ${
   const intro = $<HTMLInputElement>('#p-intro');
   const words = $<HTMLInputElement>('#p-words');
   const layout = root.querySelector<HTMLSelectElement>('#p-layout');
+  const startView = $<HTMLSelectElement>('#p-start');
   const volume = $<HTMLInputElement>('#p-volume');
   const speechBox = $<HTMLInputElement>('#p-speech');
   const language2 = $<HTMLSelectElement>('#p-language2');
@@ -280,6 +289,7 @@ ${
     $('[data-age]').textContent = ageNote();
     $('[data-follow]').toggleAttribute('hidden', startBand === null);
     if (layout) layout.value = d.settings.placeLayout;
+    startView.value = d.settings.startView;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
     brief.checked = d.settings.briefResults;
@@ -418,6 +428,10 @@ ${
   });
   words.addEventListener('change', () => {
     store.data.settings.showWords = words.checked;
+    store.save();
+  });
+  startView.addEventListener('change', () => {
+    store.data.settings.startView = startView.value === 'six' ? 'six' : 'explore';
     store.save();
   });
   layout?.addEventListener('change', () => {

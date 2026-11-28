@@ -25,6 +25,7 @@ import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
 import { cleanShells, emptyShells, type ShellsSave } from '../content/shells';
 import { cleanStamps, type Stamp } from '../content/stamps';
 import { cleanMix, emptyMix, type SavedMix } from '../content/saved-mix';
+import { cleanShop, emptyShop, type ShopSave } from '../content/shop';
 
 /** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
 export type Language2 = 'none' | 'pt-PT';
@@ -121,6 +122,8 @@ export interface SaveData {
    */
   settings: {
     placeLayout: 'path' | 'subjects';
+    /** Where tapping this player's card on "Who's playing?" opens (D8): Explore is Home at the root and the map at classic/. */
+    startView: StartView;
     volume: number;
     music: boolean;
     sessionMinutes: 0;
@@ -169,10 +172,15 @@ export interface SaveData {
   shells: ShellsSave;
   /** The progression loop's stamps (`src/content/stamps.ts`): named goals a grown-up has met, each once, oldest first. */
   stamps: Stamp[];
+  /** The progression loop's shop (`src/content/shop.ts`): the looks a grown-up has bought for their friend with shells. */
+  shop: ShopSave;
 }
 
 export const HISTORY_LENGTH = 10;
 const BAND_IDS: Band[] = ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup'];
+
+/** The starting view (D8, docs/definitions/starting-view.md): Explore-first, or straight to Today's six. */
+export type StartView = 'explore' | 'six';
 
 export function defaults(): SaveData {
   return {
@@ -182,6 +190,7 @@ export function defaults(): SaveData {
     world: { band: null },
     settings: {
       placeLayout: 'path',
+      startView: 'explore',
       volume: 0.8,
       music: true,
       sessionMinutes: 0,
@@ -211,6 +220,7 @@ export function defaults(): SaveData {
     playtest: [],
     shells: emptyShells(),
     stamps: [],
+    shop: emptyShop(),
   };
 }
 
@@ -397,6 +407,8 @@ export function migrate(raw: unknown): SaveData {
     },
     settings: {
       placeLayout: settings.placeLayout === 'subjects' ? 'subjects' : 'path',
+      // Version 3 still: a save without it, or with an unknown target, opens as it always did.
+      startView: settings.startView === 'six' ? 'six' : 'explore',
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
       music: bool(settings.music, d.settings.music),
       sessionMinutes: 0,
@@ -427,6 +439,7 @@ export function migrate(raw: unknown): SaveData {
     playtest: cleanPlaytest(raw.playtest),
     shells: cleanShells(raw.shells),
     stamps: cleanStamps(raw.stamps),
+    shop: cleanShop(raw.shop),
   };
 }
 
