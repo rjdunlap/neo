@@ -113,3 +113,29 @@ export function monthLayout(view: View) {
     }),
   };
 }
+
+/** A daylight record's panel: five bars on a toy scale, a large target that replays its name. */
+export const PANEL = { w: 380, h: 170 };
+export const PANEL_UPRIGHT = { w: 460, h: 150 };
+
+/** Daylight records: the two records sit side by side (wide) or one above the other (upright), reusing the window's controls. */
+export function daylightLayout(view: View) {
+  const base = windowLayout(view);
+  const { top } = portraitPlacement(view);
+  const x = view.w / 2;
+  const upright = !!view.upright;
+  return {
+    ...base,
+    panel: upright ? PANEL_UPRIGHT : PANEL,
+    panels: upright
+      ? [
+          { x: x + 80, y: top + 330 },
+          { x: x + 80, y: top + 505 },
+        ]
+      : [
+          // Shifted right of the replay button, which keeps the wide screen's left edge.
+          { x: x - 100, y: 322 },
+          { x: x + 300, y: 322 },
+        ],
+  };
+}

@@ -1,1 +1,0 @@
-**`day-by-day`, level 8 *Daylight records*** (new-levels tier if the input is unchanged): a fictional site with relative bars, no hour arithmetic or season claims (decision 3 settled 2026-10-23). [Dive slice 8](../../deep-dives/day-by-day.md#build-slices-in-order).

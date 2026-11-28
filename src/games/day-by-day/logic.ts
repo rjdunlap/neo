@@ -11,12 +11,13 @@ export const PLANS = [
   { name: 'Count this weather, including none', relatives: true, tally: true },
   { name: 'Weather Window: compare two supplied weeks', relatives: false, tally: false },
   { name: 'Month wheel: the month before and after, round the year', relatives: false, tally: false },
+  { name: 'Daylight records: compare two pretend records', relatives: false, tally: false },
 ] as const;
 
 export const LEVELS: BandLevels = {
   preschool: { min: 9, max: 9 },
   prek: { min: 1, max: 4, order: [1, 2, 4] },
-  school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6, 7] },
+  school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6, 7, 8] },
 };
 /** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
 export const ANCHOR_LEVEL = 4;
@@ -187,3 +188,64 @@ export function monthQuestions(rng: Rng): MonthQuestion[] {
 }
 /** The month wheel's choices are the whole ring; it never hides a month. */
 export const monthCards = () => MONTHS.map((_, i) => i);
+
+/**
+ * Daylight records: two explicitly pretend records from one pretend town, taken at two different times of year, each
+ * five aligned bars on a toy scale of ten. A longer bar is more daylight; the bars are not hours and name no season,
+ * hemisphere or cause.
+ */
+export const DAYLIGHT_LEVEL = 8;
+export const DAYLIGHT_BARS = 5;
+export const DAYLIGHT_SCALE = 10;
+export type DaylightSummary = 'a-longer' | 'b-longer' | 'same' | 'different';
+export interface DaylightQuestion {
+  /** Two aligned records of five bars, A then B. */
+  records: readonly (readonly number[])[];
+  choices: readonly DaylightSummary[];
+}
+export interface DaylightRound {
+  questions: readonly DaylightQuestion[];
+}
+export const daylightTrue = (records: DaylightQuestion['records'], summary: DaylightSummary): boolean => {
+  const [a, b] = records;
+  const sameBars = a.every((v, i) => v === b[i]);
+  const aLonger = a.every((v, i) => v > b[i]);
+  const bLonger = b.every((v, i) => v > a[i]);
+  return summary === 'a-longer'
+    ? aLonger
+    : summary === 'b-longer'
+      ? bLonger
+      : summary === 'same'
+        ? sameBars
+        : !sameBars;
+};
+/**
+ * Two questions. First, one record is longer on every aligned bar, by at least two on the scale of ten, so the answer
+ * never rests on a close call; which side is longer is seeded. Second, the equality example: the same or a different
+ * pair (when different, the other side is the longer one).
+ */
+export function makeDaylight(rng: Rng): DaylightRound {
+  const bars = (low: number, high: number) => Array.from({ length: DAYLIGHT_BARS }, () => rng.int(low, high));
+  const pair = (longerFirst: boolean) => {
+    const short = bars(2, 6);
+    const long = short.map((v) => v + rng.int(2, 4));
+    return Object.freeze(
+      (longerFirst ? [long, short] : [short, long]).map((r) => Object.freeze(r)),
+    ) as DaylightQuestion['records'];
+  };
+  const firstAFirst = rng.chance(0.5);
+  const same = rng.chance(0.5);
+  const twin = Object.freeze(bars(2, 9));
+  return Object.freeze({
+    questions: Object.freeze([
+      {
+        records: pair(firstAFirst),
+        choices: Object.freeze(rng.shuffle<DaylightSummary>(['a-longer', 'b-longer'])),
+      },
+      {
+        records: same ? Object.freeze([twin, twin]) : pair(!firstAFirst),
+        choices: Object.freeze(rng.shuffle<DaylightSummary>(['same', 'different'])),
+      },
+    ]),
+  });
+}
