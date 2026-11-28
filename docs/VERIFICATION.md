@@ -154,7 +154,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `outcropdetective` | 2026-11-23 · [Outcrop Detective levels 1-2 (batch outcrop-detective 1)](verification/2026-11-23-outcrop-detective-levels-1-2-batch-outcrop-detective-1.md) | Levels 1–2 |
 | `paintmixer` | 2026-11-12 · [U7d fix batch 10: picture-graph, paint-mixer and spinner-fair never hold a tap on a cut line](archive/VERIFICATION-2026-11-12.md#2026-11-12--u7d-fix-batch-10-picture-graph-paint-mixer-and-spinner-fair-never-hold-a-tap-on-a-cut-line-pr-1550) | `PAINT_LEVELS=4` |
 | `pantry` | 2026-11-17 · [Picnic Pantry level 1, Two dishes, one pantry](verification/2026-11-17-picnic-pantry-level-1-two-dishes-one-pantry.md) | — |
-| `pattern` | 2026-11-26 · [Pattern Train level 20: Start anywhere (PR #2206)](verification/2026-11-26-pattern-train-level-20-start-anywhere.md) | `PATTERN_LEVELS=12,20` |
+| `pattern` | 2026-11-28 · [Pattern Train level 21: Add three, add four (PR #2377)](verification/2026-11-28-pattern-train-level-21-add-three-add-four.md) | `PATTERN_LEVELS=20,21` |
 | `phone` | 2026-11-17 · [Beside a sound, and no room to spare](verification/2026-11-17-beside-a-sound-and-no-room-to-spare.md) | `PHONE_ONLY=gem-swap,pattern-train` |
 | `phonefit` | 2026-11-21 · [The first-visit screen and the guest's round](verification/2026-11-21-the-first-visit-screen-and-the-guest-s-round.md) | First visit and Today's six, passed after the Lift It icon fix |
 | `picnic` | 2026-10-21 · [RW07 slice 1: Welcome a New Friend (record, page, Continue, pretty and yummy)](archive/VERIFICATION-2026-10-21.md#2026-10-21--rw07-slice-1-welcome-a-new-friend-record-page-continue-pretty-and-yummy) | — |
