@@ -523,7 +523,7 @@ class WordMonsters implements Game {
       this.drawSlots(q.answer.length, q.answer);
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);
-    } else if (this.plan.mode === 'last' && q.word) {
+    } else if ((this.plan.mode === 'last' || this.plan.mode === 'middle') && q.word) {
       // Larger than a building level's picture: there are no slots below it, and it is a thing to tap.
       this.showPicture(this.sayingPicture(q.word), LAST_PICTURE.scale, LAST_PICTURE.y);
     } else {
@@ -751,6 +751,8 @@ class WordMonsters implements Game {
         return this.ctx.instruct('monster.first', { word: FIRST_WORDS[q.answer], sound });
       case 'last':
         return this.ctx.instruct('monster.last', { word: q.word ?? '' });
+      case 'middle':
+        return this.ctx.instruct('monster.middle', { word: q.word ?? '' });
       case 'slow':
         return this.ctx.instruct('monster.slow', { word: q.answer });
       case 'team':

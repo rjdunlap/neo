@@ -16,6 +16,10 @@ export const VOICE = {
   'monster.build': ['Let us make {word}! {sounds}.'],
   'monster.family': ['Make {word}! {word} starts with {sound}.'],
   'monster.family.word': ['Make {word}!', 'Can you make {word}?'],
+  'monster.middle': [
+    'What is in the middle of {word}?',
+    'Listen to the middle of {word}. Which vowel says it?',
+  ],
   'monster.last': ['What does {word} end with?', 'Listen to the end of {word}. Who says it?'],
   'monster.end': ['Make {word}! Keep {first} and {second}. Change the end to {sound}.'],
   'monster.end.word': ['Make {word}! Change the last sound.', 'Can you make {word}? Change the last sound.'],

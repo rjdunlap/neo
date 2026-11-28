@@ -20,6 +20,10 @@ import {
   LAST_LEVEL,
   LAST_PLAN,
   LAST_WORDS,
+  MIDDLE_LEVEL,
+  MIDDLE_PLAN,
+  MIDDLE_WORDS,
+  VOWELS,
   LEVELS,
   REPAIR_LEVEL,
   REPAIR_PLAN,
@@ -80,6 +84,7 @@ describe('Word Monsters', () => {
       7,
       8,
       LAST_LEVEL,
+      MIDDLE_LEVEL,
       BLEND_LEVEL,
       SLOW_LEVEL,
       REPAIR_LEVEL,
@@ -270,6 +275,38 @@ describe('Word Monsters', () => {
     expect(firstDecoys / questions).toBeLessThan(0.8);
   });
 
+  it('level 19 asks for the middle vowel of a pictured word, from all five vowels, each vowel at most once a round', () => {
+    expect(planFor(MIDDLE_LEVEL)).toBe(MIDDLE_PLAN);
+    expect(MIDDLE_PLAN).toMatchObject({ mode: 'middle', choices: 5 });
+    expect(SCRIPT['monster.middle']).toBeDefined();
+    // First, last, then middle: it follows last sounds and comes before blending; no younger band reaches it.
+    expect(stepLevel(LAST_LEVEL, 1, LEVELS.school!)).toBe(MIDDLE_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(MIDDLE_LEVEL);
+    // Every vowel has words to ask for, and no word ends in l, r or x.
+    for (const v of VOWELS)
+      expect(MIDDLE_WORDS.filter((w) => w[1] === v).length, v).toBeGreaterThanOrEqual(3);
+    for (const w of MIDDLE_WORDS) {
+      expect(PICTURE_WORDS, w).toContain(w);
+      expect(w).toHaveLength(3);
+      expect('lrx'.includes(w[2]), w).toBe(false);
+    }
+    // The five vowel sounds are five different stand-ins, so each wrong tap says something new.
+    expect(new Set(VOWELS.map((v) => SOUNDS[v])).size).toBe(VOWELS.length);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(MIDDLE_PLAN, new Rng(seed));
+      expect(qs).toHaveLength(MIDDLE_PLAN.rounds);
+      expect(new Set(qs.map((q) => q.answer)).size).toBe(qs.length);
+      for (const q of qs) {
+        expect(q.answer).toBe(q.word![1]);
+        expect(q.monsters).toEqual([...VOWELS]);
+        seen.add(q.word!);
+      }
+    }
+    expect(seen).toEqual(new Set(MIDDLE_WORDS));
+  });
+
   it('level 11 builds a pictured word from the word alone: one box per sound, a spare unlike every needed letter', () => {
     expect(planFor(SLOW_LEVEL)).toBe(SLOW_PLAN);
     expect(SLOW_PLAN).toMatchObject({ mode: 'slow', rounds: 3, choices: 4 });
@@ -432,7 +469,7 @@ describe('Word Monsters', () => {
     expect(planFor(BLEND_LEVEL)).toBe(BLEND_PLAN);
     expect(BLEND_PLAN).toMatchObject({ mode: 'blend', rounds: 3, choices: 3 });
     // It follows last sounds and comes before building from the word alone.
-    expect(stepLevel(LAST_LEVEL, 1, LEVELS.school!)).toBe(BLEND_LEVEL);
+    expect(stepLevel(MIDDLE_LEVEL, 1, LEVELS.school!)).toBe(BLEND_LEVEL);
     expect(stepLevel(BLEND_LEVEL, 1, LEVELS.school!)).toBe(SLOW_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BLEND_LEVEL);
@@ -521,7 +558,7 @@ describe('Word Monsters', () => {
     expect(planFor(LADDER_LEVEL)).toBe(LADDER_PLAN);
     expect(LADDER_PLAN).toMatchObject({ mode: 'ladder', rounds: 4, choices: 3 });
     expect(stepLevel(MAGIC_LEVEL, 1, LEVELS.school!)).toBe(LADDER_LEVEL);
-    expect(LEVELS.school!.max).toBe(LADDER_LEVEL);
+    expect(levelsInOrder(LEVELS.school!).at(-1)).toBe(LADDER_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(LADDER_LEVEL);
     for (const id of ['monster.ladder.start', 'monster.ladder', 'monster.ladder.replace'])
