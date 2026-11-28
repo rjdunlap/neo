@@ -107,8 +107,9 @@ const lanternSvg = (lit: boolean) =>
  */
 export function openStampsSheet(onClose: () => void, today?: SixToday): StampsSheet {
   const held = new Map(store.data.stamps.map((s) => [s.id, s.at]));
-  const games = GAMES.filter((g) => g.bands.includes('grownup'))
-    .map((g) => ({ g, goals: goalsFor(g.levels('grownup')) }))
+  const band = store.data.profile.band;
+  const games = GAMES.filter((g) => g.bands.includes(band))
+    .map((g) => ({ g, goals: goalsFor(g.levels(band)) }))
     .map((x) => ({ ...x, got: x.goals.filter((goal) => held.has(stampId(x.g.id, goal.kind))).length }))
     // Games with stamps under way first, then by name.
     .sort((a, b) => Number(b.got > 0) - Number(a.got > 0) || a.g.name.localeCompare(b.g.name));

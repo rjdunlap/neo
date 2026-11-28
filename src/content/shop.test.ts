@@ -10,6 +10,7 @@ import {
   colorId,
   emptyShop,
   hasLook,
+  sellsLooks,
   MIXED_COLOR_PRICE,
   priceOf,
   SHOP_IDS,
@@ -36,7 +37,7 @@ describe('the friend shop', () => {
   });
 
   it('only a band that earns shells can buy', () => {
-    const bands: Band[] = ['lap', 'toddler', 'preschool', 'prek', 'school'];
+    const bands: Band[] = ['lap', 'toddler', 'preschool', 'prek'];
     for (const band of bands)
       expect(buy(emptyShop(), rich(1000), 'wear:crown', band)).toEqual({ refused: 'band' });
   });
@@ -72,6 +73,14 @@ describe('the friend shop', () => {
     expect(defaults().shop).toEqual(emptyShop());
     expect(migrate({ ...defaults(), shop: { owned: ['color:red', 'nope'] } }).shop).toEqual({
       owned: ['color:red'],
+    });
+  });
+  it("sells a friend's looks to grown-ups only: a school-age friend has them all in Dress", () => {
+    expect(sellsLooks('grownup')).toBe(true);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'school'] as Band[])
+      expect(sellsLooks(band)).toBe(false);
+    expect(buy(emptyShop(), { ...emptyShells(), balance: 500 }, 'wear:scarf', 'school')).toEqual({
+      refused: 'band',
     });
   });
 });

@@ -946,9 +946,10 @@ export class GameScene extends Scene {
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
     this.shellsEarned = store.earnShells(this.mod.id, dayKey(new Date()));
-    // Stamps belong to the grown-up games, read from their grown-up ladder whatever level this round played.
-    if (this.mod.bands.includes('grownup')) {
-      const won = store.earnStamps(this.mod.id, this.mod.levels('grownup'), {
+    // Stamps belong to the games of the player's own band, read from that band's ladder whatever level this round played.
+    const own = store.data.profile.band;
+    if (this.mod.bands.includes(own)) {
+      const won = store.earnStamps(this.mod.id, this.mod.levels(own), {
         level: this.level,
         misses: result.misses,
         hints,
