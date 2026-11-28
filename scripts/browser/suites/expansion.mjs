@@ -817,34 +817,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       ),
       progress,
     );
-    // Toddler Daisy Meadow holds all three; the arrows bring an off-screen one into view.
-    await page.evaluate(() => neo.go.place('toddler'));
-    await scene('PlaceScene');
-    for (const id of ['size-parade', 'bug-builder', 'story-steps'])
-      assert.ok(await page.evaluate((id) => neo.scene.landmarks.some((l) => l.mod.id === id), id), id);
-    const onScreen = () =>
-      page.evaluate(() => {
-        const x = neo.scene.landmarks.find((l) => l.mod.id === 'size-parade').node.getGlobalPosition().x;
-        return x > 120 && x < innerWidth - 120;
-      });
-    for (let i = 0; i < 6 && !(await onScreen()); i++) {
-      await tap('neo.scene.next');
-      await page.waitForTimeout(600);
-    }
-    assert.ok(await onScreen(), 'Size Parade scrolled into view');
-    await screenshot('place-toddler-scrolled');
-    await page.evaluate(() =>
-      kit.tapOn(neo.scene.landmarks.find((l) => l.mod.id === 'size-parade').node, 0, -60),
-    );
-    await scene('GameScene');
-    assert.equal(await page.evaluate(() => neo.scene.mod.id), 'size-parade');
-    // Coming home lands where the meadow was scrolled to, not back at the start.
-    await page.mouse.move(62, 62);
-    await page.mouse.down();
-    await scene('PlaceScene');
-    await page.mouse.up();
-    assert.ok(await onScreen(), 'place kept its scroll');
-    log('Expansion save reload, arrow scrolling, and returning to a scrolled place passed');
+    // Explore's All games (the age places retired with classic/) holds all three for a toddler.
+    const toddler = await page.evaluate(async (band) => {
+      const { allGames } = await import('/src/content/explore.ts');
+      const { GAMES } = await import('/src/games/registry.ts');
+      const { LANDS } = await import('/src/content/lands.ts');
+      return allGames(band, GAMES, LANDS).map((g) => g.id);
+    }, 'toddler');
+    for (const id of ['size-parade', 'bug-builder', 'story-steps']) assert.ok(toddler.includes(id), id);
+    log('Expansion save reload, and Explore holding the three for a toddler, passed');
   }
 
   return { expansion };

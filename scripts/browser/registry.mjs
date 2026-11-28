@@ -1365,7 +1365,7 @@ export async function runSuite(suite, fixture) {
       neo.go.start();
     });
     await pickFirst();
-    await scene('MapScene');
+    await scene('HomeScene');
   }
   if (suite === 'discovery')
     await (

@@ -39,7 +39,7 @@ export function createSuite({ page, ready, scene, finished, screenshot, log }) {
         kit.store.stats(id).pinned = level;
         kit.store.data.settings.showWords = true;
         kit.store.data.settings.howToCards = false;
-        neo.go.hub();
+        neo.go.explore('places');
       },
       { id, level },
     );

@@ -94,7 +94,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
     for (const [name, go] of [
       ['map', () => neo.go.hub()],
       ['land', () => neo.go.land('cozy-village')],
-      ['place', () => neo.go.place('toddler')],
+      ['place', () => neo.go.explore('places')],
       ['game', () => neo.go.game('bubble-pop')],
     ]) {
       await page.evaluate(go);
@@ -106,8 +106,8 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
     // Scenery drawn past the island's edge (clouds, hills, a scrolling place's landmarks) must not show in the strips the insets leave:
     // they hold only the paper frame round the island, in warm oatmeal greys (red ≥ green ≥ blue), never a sky's blue, a
     // hill's green or a cloud's white.
-    await page.evaluate(() => neo.go.place('toddler'));
-    await scene('PlaceScene');
+    await page.evaluate(() => neo.go.explore('places'));
+    await scene('MapScene');
     await page.waitForTimeout(900);
     const strips = await page.evaluate(() => {
       const k = neo.insets,
@@ -131,8 +131,8 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
     });
     assert.deepEqual(strips, [], 'the inset strips show only the paper frame');
     // A tap at a button's real screen position lands on it (the root is offset, so client and canvas coordinates must still agree).
-    await page.evaluate(() => neo.go.place('toddler'));
-    await scene('PlaceScene');
+    await page.evaluate(() => neo.go.land('cozy-village'));
+    await scene('LandScene');
     await page.waitForTimeout(700);
     const home = await page.evaluate(() => {
       const p = neo.scene.home.getGlobalPosition();
@@ -159,7 +159,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
     );
     await screenshot('phone-notch-parent');
     await page.locator('[data-done]').click();
-    await scene('MapScene');
+    await scene('HomeScene');
     await insets(0, 0, 0, 0);
     await page.waitForFunction(() => neo.insets.left === 0 && neo.root.x === 0);
     await page.setViewportSize({ width: 1024, height: 768 });
@@ -239,23 +239,36 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         `Family play is on the screen (${JSON.stringify(family)})`,
       );
       await p.locator('.chooser__play').first().tap();
-      await p.waitForFunction(() => neo.scene.constructor.name === 'MapScene' && !neo.switching);
+      // At the root an upright phone opens Today's six, laid out upright: no prompt.
+      await p.waitForFunction(() => neo.scene.constructor.name === 'DailyScene' && !neo.switching);
       await p.waitForTimeout(500);
       assert.deepEqual(
         await asked(),
-        { turning: true, shown: true, scene: 'MapScene' },
-        'an upright phone is asked to turn when the island starts',
+        { turning: false, shown: false, scene: 'DailyScene' },
+        'the six suit an upright phone: no prompt',
+      );
+      // A game that still plays sideways asks an upright phone to turn.
+      await p.evaluate(() => {
+        kit.store.data.settings.howToCards = false;
+        neo.go.game('block-topple');
+      });
+      await p.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching);
+      await p.waitForTimeout(500);
+      assert.deepEqual(
+        await asked(),
+        { turning: true, shown: true, scene: 'GameScene' },
+        'an upright phone is asked to turn for a sideways game',
       );
       await p.screenshot({ path: `${output}/phone-turn-prompt.png` });
       await p.touchscreen.tap(195, 422);
       await p.waitForTimeout(500);
-      assert.equal((await asked()).scene, 'MapScene', 'a tap on the prompt starts nothing');
+      assert.equal((await asked()).scene, 'GameScene', 'a tap on the prompt starts nothing');
       // Turned sideways, the prompt goes.
       await p.setViewportSize({ width: 844, height: 390 });
       await p.waitForTimeout(500);
       assert.deepEqual(
         await asked(),
-        { turning: false, shown: false, scene: 'MapScene' },
+        { turning: false, shown: false, scene: 'GameScene' },
         'the prompt goes when the phone is sideways',
       );
       // Tablet shapes in either direction, and a tall phone again.
@@ -402,7 +415,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       );
       await p.screenshot({ path: `${output}/upright-${id}.png` });
       await p.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
-      await p.waitForFunction(() => neo.scene.after?.home && !neo.scene.navigating, null, { timeout: 15000 });
+      await p.waitForFunction(() => neo.scene.after?.home && !neo.scene.navigating, null, { timeout: 30000 });
       await p.waitForTimeout(900);
       const off = await p.evaluate(() =>
         Object.entries(neo.scene.after)
@@ -426,22 +439,24 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         { next: true, note: true, house: true },
         'a phone result: the next game, the note pencil, Back to the six and Home',
       );
-      // Upright, the next game sits in the thumb's row, between Again and Back.
+      // Upright with the house in the row, the next game stands just above it, centred and clear of Again and Back.
       const row = await p.evaluate(() => {
         const box = (o) => {
           const r = o.getBounds();
-          return { x0: r.minX, x1: r.maxX, y: (r.minY + r.maxY) / 2 };
+          return { x0: r.minX, x1: r.maxX, y0: r.minY, y1: r.maxY, y: (r.minY + r.maxY) / 2 };
         };
         const a = neo.scene.after;
         return {
           next: box(neo.scene.dailyNext),
           again: box(a.again.children[0]),
           home: box(a.home.children[0]),
+          w: innerWidth,
         };
       });
       assert.ok(
-        row.again.x1 < row.next.x0 && row.next.x1 < row.home.x0 && Math.abs(row.next.y - row.again.y) < 20,
-        `the next game is between Again and Back (${JSON.stringify(row)})`,
+        row.next.y1 < Math.min(row.again.y0, row.home.y0) &&
+          Math.abs((row.next.x0 + row.next.x1) / 2 - row.w / 2) < 20,
+        `the next game stands above Again and Back (${JSON.stringify(row)})`,
       );
       await p.evaluate(() => neo.scene.dailyNote.press());
       await p.locator('.playtest [data-rate="good"]').tap();

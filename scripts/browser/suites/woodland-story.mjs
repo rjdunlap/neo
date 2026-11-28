@@ -32,25 +32,20 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot, 
       kit.store.data.profile.band = 'school';
       kit.store.data.world.band = 'school';
       kit.store.retellStory('woodland');
-      kit.store.data.settings.placeLayout = 'path';
     });
     const before = await stickers();
-    // Younger home spots show nothing new; Wonder Woods has the spot first on its path.
-    await page.evaluate(() => neo.go.place('prek'));
-    await scene('PlaceScene');
-    assert.equal(await page.evaluate(() => neo.scene.story), null);
-    await page.evaluate(() => neo.go.place('school'));
-    await scene('PlaceScene');
-    assert.ok(
-      await page.evaluate(() => {
-        const s = neo.scene.story.node,
-          m = neo.scene.landmarks[0].node;
-        return s.x < m.x && s.hitArea.width >= 100 && s.hitArea.height >= 100;
-      }),
-      'the story spot stands first, at full size',
-    );
+    // The library (opened from creature play) holds the story for her age only; a younger one has no Woodland book.
+    const books = (band) =>
+      page.evaluate(async (band) => {
+        const { libraryBooks } = await import('/src/content/library.ts');
+        return libraryBooks(band);
+      }, band);
+    assert.ok(!(await books('prek')).includes('woodland'));
+    assert.ok((await books('school')).includes('woodland'));
+    await page.evaluate(() => neo.go.library());
+    await scene('LibraryScene');
     await page.waitForTimeout(300);
-    await tap('neo.scene.story.node');
+    await tap("neo.scene.cards.find((c) => c.book === 'woodland').node");
     await clearing();
     assert.deepEqual(
       await page.evaluate(() => [
@@ -185,26 +180,19 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot, 
     assert.deepEqual(await story(), { steps: [], ended: false, keepsake: true }, 'retelling keeps the photo');
     assert.equal(await page.evaluate(() => neo.scene.friends.length), 0);
     assert.equal(await stickers(), before + 3);
-    // Home goes to Wonder Woods; the subject layout offers the story as a card too.
+    // Home goes back to the library, whose book opens the story again.
     await tap('neo.scene.home');
-    await scene('PlaceScene');
-    assert.equal(await page.evaluate(() => neo.scene.band), 'school');
-    await page.evaluate(() => {
-      kit.store.data.settings.placeLayout = 'subjects';
-      neo.go.place('school');
-    });
-    await scene('SubjectPlaceScene');
+    await scene('LibraryScene');
     await page.waitForTimeout(400);
-    await tap("neo.scene.cards.find(c => c.id === 'woodland').node");
+    await tap("neo.scene.cards.find((c) => c.book === 'woodland').node");
     await clearing();
     await page.evaluate(() => {
-      kit.store.data.settings.placeLayout = 'path';
       kit.store.data.profile.band = 'prek';
       kit.store.data.world.band = 'prek';
     });
     assert.equal(errors.length, 0, errors.join('\n'));
     log(
-      'Woodland Picnic: Wonder Woods entry only, portrait cards, Mail Carrier 6 with a miss at the story level, leaving mid-round, reload resume, Seesaw 7 with help, Beat Builder 3 picnic stage, ending and photo once, retelling, subject card passed',
+      'Woodland Picnic: library entry for school only, portrait cards, Mail Carrier 6 with a miss at the story level, leaving mid-round, reload resume, Seesaw 7 with help, Beat Builder 3 picnic stage, ending and photo once, retelling, back to the library passed',
     );
   }
 

@@ -73,8 +73,18 @@ export async function createFixture(browser, suite) {
       });
       await frame();
     };
+    /** Waits for a scene by class name; a subclass counts (at the root a land is a `LocationScene`, which is a `LandScene`). */
     const scene = async (name) => {
-      await page.waitForFunction((name) => neo.scene.constructor.name === name && !neo.switching, name);
+      await page.waitForFunction((name) => {
+        if (neo.switching) return false;
+        for (
+          let p = Object.getPrototypeOf(neo.scene);
+          p && p !== Object.prototype;
+          p = Object.getPrototypeOf(p)
+        )
+          if (p.constructor.name === name) return true;
+        return false;
+      }, name);
       await frame();
     };
     /** The first card on "Who's playing?": a tap opens the island as that person. */

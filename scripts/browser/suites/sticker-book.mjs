@@ -55,7 +55,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot }) {
     await tap('neo.scene.trayNext');
     assert.ok(await page.evaluate(() => neo.scene.trayPage > 0));
     await tap('neo.scene.home');
-    await scene('MapScene');
+    await scene('HomeScene');
     await screenshot('map-final');
     log(
       'All five sticker scenes, placement, reload persistence, removal, tray paging, and portrait resize passed',

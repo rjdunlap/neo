@@ -1710,7 +1710,7 @@ export class GameScene extends Scene {
   }
 
   private layoutDaily(view: View) {
-    const at = dailySpots(view);
+    const at = dailySpots(view, !!this.after?.house);
     this.dailyNext?.position.set(at.next.x, at.next.y);
     this.dailyNote?.position.set(at.note.x, at.note.y);
   }

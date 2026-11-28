@@ -260,6 +260,12 @@ export class ExploreScene extends Scene {
     return node;
   }
 
+  /** Little surprises' card, when Explore leads with it (scripted checks find the mix here, as they once did on an age place). */
+  get mixSpot(): { node: Container } | null {
+    const card = this.cards.find((c) => c.kind === 'mix');
+    return card ? { node: card.node } : null;
+  }
+
   /**
    * Little surprises' card: its own pointer handling, since a tap starts the mix on the lift and a grown-up's hold (a ring
    * fills) opens Make my mix instead (D5a), as on the age places.

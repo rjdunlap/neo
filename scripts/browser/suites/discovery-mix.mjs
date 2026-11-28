@@ -42,7 +42,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, finishe
     };
     const sheet = () =>
       page.waitForFunction(
-        () => !neo.switching && neo.scene.constructor.name === 'PlaceScene' && !!neo.scene.mix.sheet,
+        () => !neo.switching && neo.scene.constructor.name === 'ExploreScene' && !!neo.scene.mix.sheet,
       );
     const said = () => page.evaluate(() => (window.__said ??= []).splice(0));
     const stopCard = (id) =>
@@ -66,18 +66,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, finishe
         kit.store.entry.startBand = 'lap';
         kit.store.data.profile.band = 'lap';
         kit.store.data.settings.howToCards = cards;
-        kit.store.data.settings.placeLayout = 'path';
         neo.go.place('lap');
       }, cards);
     const tapMixSpot = async () => {
-      await scene('PlaceScene');
-      assert.deepEqual(
-        await page.evaluate(() => [
-          !!neo.scene.mixSpot,
-          neo.scene.mixSpot.node.x < neo.scene.landmarks[0].node.x,
-        ]),
-        [true, true],
-      );
+      await scene('ExploreScene');
+      assert.deepEqual(await page.evaluate(() => [!!neo.scene.mixSpot, neo.scene.lead]), [true, true]);
       await page.evaluate(() => {
         const s = neo.scene;
         s.scroll = 0;
@@ -153,7 +146,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, finishe
       const c = neo.scene.helpCard.body.children[0];
       kit.tapOn(c.children.find((b) => b.radius === 52));
     });
-    await scene('PlaceScene');
+    await scene('ExploreScene');
     assert.deepEqual(
       await page.evaluate(() => [
         neo.scene.mix.sheet,
@@ -175,7 +168,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, finishe
     // A tile speaks its title and launches nothing.
     await page.evaluate(() => kit.tapOn(neo.scene.mix.sheet.tileAt(1)));
     await page.waitForTimeout(300);
-    assert.equal(await page.evaluate(() => neo.scene.constructor.name), 'PlaceScene');
+    assert.equal(await page.evaluate(() => neo.scene.constructor.name), 'ExploreScene');
     await screenshot('mix-preview-landscape');
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForTimeout(250);

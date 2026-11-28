@@ -121,4 +121,30 @@ describe("a daily round's next game and note pencil", () => {
       expect(note.y + 50, where).toBeLessThan(at.keep.y - RESULT_RADIUS.keep);
     }
   });
+
+  it('stands the next game just above the row when the house is in it, centred and clear of every button and name', () => {
+    for (const v of UPRIGHT) {
+      const at = resultSpots(v, true);
+      const { next } = dailySpots(v, true);
+      const tile = { x0: next.x, x1: next.x + DAILY_NEXT.w, y0: next.y, y1: next.y + DAILY_NEXT.h };
+      const where = `at ${Math.round(v.w)}×${Math.round(v.h)}`;
+      expect((tile.x0 + tile.x1) / 2, where).toBeCloseTo(v.w / 2);
+      expect(tile.y1, where).toBeLessThan(at.again.y - RESULT_RADIUS.again);
+      expect(tile.y0, where).toBeGreaterThan(at.pill.y + PILL.h / 2);
+      for (const k of ['again', 'next', 'home', 'house', 'heart', 'keep'] as const) {
+        const r = RESULT_RADIUS[k];
+        const dx = Math.max(tile.x0 - at[k].x, 0, at[k].x - tile.x1);
+        const dy = Math.max(tile.y0 - at[k].y, 0, at[k].y - tile.y1);
+        expect(Math.hypot(dx, dy), `${k} ${where}`).toBeGreaterThan(r + 10);
+        const name = {
+          x0: at[k].x - RESULT_NAME_W[k] / 2,
+          x1: at[k].x + RESULT_NAME_W[k] / 2,
+          y1: at[k].y + nameBelow(r),
+        };
+        const apart =
+          name.x1 <= tile.x0 || tile.x1 <= name.x0 || name.y1 <= tile.y0 || tile.y1 <= name.y1 - PILL.h;
+        expect(apart, `${k}'s name ${where}`).toBe(true);
+      }
+    }
+  });
 });
