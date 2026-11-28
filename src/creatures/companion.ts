@@ -9,7 +9,7 @@ import {
   type Texture,
 } from 'pixi.js';
 import type { Mood } from '../art/critter';
-import { ink, swatch, type ColorName } from '../art/palette';
+import { ink, petSage, swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
 import type { Creature } from '../art/creatures/creature';
 import {
@@ -719,8 +719,8 @@ export const EGG = {
 };
 
 const EGG_SHELL = 0xfdf3dc;
-const EGG_SPOT = 0x5ccbbf;
-const EGG_CRACK = 0x3d7f78;
+const EGG_SPOT = petSage.fill;
+const EGG_CRACK = petSage.line;
 
 /** A point on the egg's edge, `a` from the top round clockwise: 100 wide at the waist, narrower on top, 130 tall. */
 const eggAt = (a: number): [number, number] => [
