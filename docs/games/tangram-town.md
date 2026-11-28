@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| toddler | 1–2 |
+| toddler | 10, 1, 2 |
 | preschool | 2–4 |
 | pre-K | 3–6 |
 | school | 5–9 |
@@ -24,10 +24,11 @@
 | 7 | Build a house two ways: a square or two triangles can make its wall |
 | 8 | Find a shape facing the wrong way, turn it, then check the repaired picture |
 | 9 | Flip a leaning shape to match its outline: a flip makes a mirror that no turn can |
+| 10 | One piece home: one shape is already in the picture; move the other onto its shadow |
 
 <!-- end generated -->
 
-**Starts as:** fit two big shapes into a house, tree or boat
+**Starts as:** one shape home: a house, tree or lamp with one of its two shapes already in place, the other moved onto its shadow (toddler, level 10); then fit two big shapes into a house, tree or boat
 
 **Grows into:** thirty pictures across level pools (including two-piece shovel and broom pictures at 1–3), spoken shape names on first pickup for toddler–pre-K, quarter-turn snaps, two triangles making a wall, a four-piece rocket, houseboat, castle, robot or ship, silhouettes with optional help; a house wall built from one square or two triangles (7), turning/checking a broken picture (8), and flipping a leaning parallelogram to fix a picture (9)
 
@@ -44,3 +45,5 @@
 Tap-then-place (levels 1–3): a tray piece can also be placed by tapping it (it is held at its tray home) and then tapping a shadow, with the tapped point as the piece's middle; a wrong shadow is the same miss as the same drag, and letting go, switching or tapping empty ground is free. At level 3 she turns first, then taps the piece and its shadow. Levels 4–9 are unchanged, and the how-to card still shows the drag.
 
 **Upright on a phone (2026-11-19).** `townLayout` in `layout.ts` places the board, tray and button column, tested over every level and five upright views (plus 360 × 800 and 768 × 1024) in `upright.test.ts`. Held upright the tray pieces rest in rows of two (four 150-unit touch circles in a row did not fit between the guide corner and the 768-wide edge), the lowest row stays clear of the guide and the cream tray panel grows to match; the board and the turn, help and check column are unchanged. Sideways keeps the old layout.
+
+**Level 10 (toddler, played first), one piece home:** one of level 1's two-shape pictures (house, tree, lamp, tent, shovel or broom) starts with one of its shapes already in place, and the other waits alone in the tray the right way up. A drop within about 110 of its shadow snaps it home (the other levels take about 76); a tap on the shape and then on the shadow places it too, as at levels 1–3. A drop anywhere else simply returns it, with no boing and no miss, so the round always finishes; the help hand glows the shadow and counts as help. The shape still says its name when first picked up. It is listed in `entryLevels`, so a saved level 10 carried into preschool starts that band at its easiest level. *Pick the missing piece* (a built picture with one empty slot and a wrong piece that never fits) is the second half of dive slice 8 and is not built.

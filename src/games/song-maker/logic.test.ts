@@ -28,6 +28,12 @@ import {
   WAKE_AT,
   WAKE_ORDER,
   wakeTouch,
+  CHANGE_REQUESTS,
+  CHANGE_TUNES,
+  changedFrom,
+  changeTap,
+  requestBeats,
+  requestMet,
   type Note,
 } from './logic';
 import { landing, levelsInOrder, rangeFor } from '../../progress/difficulty';
@@ -239,7 +245,8 @@ describe('Song Maker songs', () => {
     });
 
     it('finishes every level with only right taps: each note of the song once, the given ones left alone', () => {
-      for (const plan of SONG_PLANS) {
+      // Change one thing (level 14) has its own bot test below: its ghost finger moves the pet's notes.
+      for (const plan of SONG_PLANS.filter((p) => p.mode !== 'revise')) {
         for (let seed = 1; seed <= 100; seed++) {
           const song = makeSong(plan, new Rng(seed));
           const placed = new Set(song.given.map(key));
@@ -289,7 +296,7 @@ describe('Song Maker songs', () => {
     const plan = songPlan(9);
 
     it('is an open 6×4 loop with no given or target notes, last in the preschool, pre-K and school orders', () => {
-      expect(SONG_PLANS).toHaveLength(13);
+      expect(SONG_PLANS).toHaveLength(14);
       expect(plan).toMatchObject({ mode: 'compose', cols: 6, rows: 4 });
       const song = makeSong(plan, new Rng(1));
       expect(song).toEqual({ notes: [], given: [] });
@@ -298,7 +305,7 @@ describe('Song Maker songs', () => {
       for (const band of ['preschool', 'prek'] as const) {
         expect(levelsInOrder(LEVELS[band]!)).not.toContain(8);
       }
-      expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 13]);
+      expect(levelsInOrder(LEVELS.school!)).toEqual([6, 7, 9, 10, 13, 14]);
       for (const band of ['lap', 'toddler'] as const) expect(LEVELS[band]!.max).toBeLessThanOrEqual(8);
     });
 
@@ -613,6 +620,122 @@ describe('Song Maker songs', () => {
         }
         expect(mine.map((n) => n.col)).toEqual([4, 5, 6, 7]);
         expect(endsHome(plan, mine)).toBe(true);
+      }
+    });
+  });
+
+  describe('level 14, Change one thing', () => {
+    const plan = songPlan(14);
+    const tuneOf = (rows: readonly number[]): Note[] => rows.map((row, col) => ({ col, row }));
+    /** Every single tap on the board, with the one-jelly-a-beat rule. */
+    const singleEdits = (lit: readonly Note[]) =>
+      Array.from({ length: plan.cols * plan.rows }, (_, i) =>
+        answerTap(lit, { col: Math.floor(i / plan.rows), row: i % plan.rows }),
+      );
+
+    it("revises the pet's whole 6×4 tune, last in school only", () => {
+      expect(plan).toMatchObject({ mode: 'revise', cols: 6, rows: 4, notes: 6 });
+      expect(levelsInOrder(LEVELS.school!).at(-1)).toBe(14);
+      for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+        expect(levelsInOrder(LEVELS[band]!)).not.toContain(14);
+      for (const r of CHANGE_REQUESTS) {
+        expect(SCRIPT[`song.change.${r}`]?.length, r).toBeGreaterThan(0);
+        expect(SCRIPT[`song.change.${r}.again`]?.length, r).toBeGreaterThan(0);
+      }
+      expect(SCRIPT['song.change.ready']?.length).toBeGreaterThan(0);
+    });
+
+    it('authors tunes with a jelly on every beat, at least two of each request, none repeated', () => {
+      expect(new Set(CHANGE_TUNES.map((t) => `${t.request}:${t.rows.join()}`)).size).toBe(
+        CHANGE_TUNES.length,
+      );
+      expect(CHANGE_TUNES.length).toBeGreaterThan(MOTIF_WINDOW + 1);
+      for (const r of CHANGE_REQUESTS)
+        expect(CHANGE_TUNES.filter((t) => t.request === r).length).toBeGreaterThanOrEqual(2);
+      for (const t of CHANGE_TUNES) {
+        expect(t.rows).toHaveLength(plan.cols);
+        expect(t.rows.every((r) => r >= 0 && r < plan.rows)).toBe(true);
+        expect(new Set(t.rows).size).toBeGreaterThan(1);
+      }
+      const recent: string[] = [];
+      for (let i = 0; i < 40; i++) {
+        const song = makeSong(plan, new Rng(i + 1), recent);
+        expect(recent.slice(-MOTIF_WINDOW)).not.toContain(song.motif);
+        const t = CHANGE_TUNES[Number(song.motif!.slice(2))];
+        expect(song.request).toBe(t.request);
+        expect(song.notes).toEqual(tuneOf(t.rows));
+        expect(song.given).toEqual([]);
+        recent.push(song.motif!);
+      }
+    });
+
+    it('asks for something not yet true that several single taps make true (two for a match: either beat)', () => {
+      for (const t of CHANGE_TUNES) {
+        const tune = tuneOf(t.rows);
+        expect(requestMet(plan, t.request, tune, tune), t.rows.join()).toBe(false);
+        expect(changedFrom(tune, tune)).toBe(false);
+        const ways = singleEdits(tune).filter((l) => requestMet(plan, t.request, tune, l)).length;
+        expect(ways, `${t.request} ${t.rows.join()}`).toBeGreaterThanOrEqual(t.request === 'match' ? 2 : 3);
+        for (const l of singleEdits(tune)) {
+          // One jelly a beat, whatever she taps; any single tap changes the song.
+          expect(new Set(l.map((n) => n.col)).size).toBe(l.length);
+          expect(changedFrom(tune, l)).toBe(true);
+        }
+      }
+    });
+
+    it('checks each request by its plain meaning', () => {
+      const tune = tuneOf([3, 2, 1, 2, 2, 3]);
+      const with5 = (row: number | null) =>
+        row === null ? tune.slice(0, 5) : [...tune.slice(0, 5), { col: 5, row }];
+      expect(requestMet(plan, 'higher', tune, with5(2))).toBe(true);
+      expect(requestMet(plan, 'higher', tune, with5(3))).toBe(false);
+      expect(requestMet(plan, 'higher', tune, with5(null))).toBe(false);
+      expect(requestMet(plan, 'down', tune, with5(3))).toBe(true);
+      expect(requestMet(plan, 'down', tune, with5(2))).toBe(false);
+      expect(requestMet(plan, 'down', tune, with5(null))).toBe(false);
+      expect(requestMet(plan, 'quiet', tune, with5(null))).toBe(true);
+      expect(requestMet(plan, 'quiet', tune, tune)).toBe(false);
+      expect(requestMet(plan, 'match', tune, answerTap(tune, { col: 3, row: 3 }))).toBe(true);
+      expect(requestMet(plan, 'match', tune, answerTap(tune, { col: 0, row: 2 }))).toBe(true);
+      expect(
+        requestMet(plan, 'match', tune, answerTap(answerTap(tune, { col: 0, row: 3 }), { col: 3, row: 3 })),
+      ).toBe(false);
+      expect(requestBeats(plan, 'match')).toEqual([0, 3]);
+      expect(requestBeats(plan, 'higher')).toEqual([5]);
+      expect(requestBeats(plan, 'down')).toEqual([4, 5]);
+      expect(requestBeats(plan, 'quiet')).toEqual([]);
+    });
+
+    it("has a bot (and hint) that makes the change in one tap from the pet's tune", () => {
+      for (const t of CHANGE_TUNES) {
+        const tune = tuneOf(t.rows);
+        const after = answerTap(tune, changeTap(plan, t.request, tune, tune));
+        expect(requestMet(plan, t.request, tune, after), `${t.request} ${t.rows.join()}`).toBe(true);
+        // A minimal edit: exactly one beat differs from the pet's tune.
+        const differ = new Set(
+          [...tune, ...after]
+            .filter((n) => !(tune.some((m) => key(m) === key(n)) && after.some((m) => key(m) === key(n))))
+            .map((n) => n.col),
+        );
+        expect(differ.size).toBe(1);
+      }
+    });
+
+    it('gives a hint that leads somewhere: from any song, following it makes the change within two taps', () => {
+      const rng = new Rng(7);
+      for (const t of CHANGE_TUNES) {
+        const tune = tuneOf(t.rows);
+        for (let trial = 0; trial < 200; trial++) {
+          let lit: Note[] = tune;
+          for (let k = rng.int(0, 8); k > 0; k--)
+            lit = answerTap(lit, { col: rng.int(0, 5), row: rng.int(0, 3) });
+          let taps = 0;
+          while (!requestMet(plan, t.request, tune, lit)) {
+            lit = answerTap(lit, changeTap(plan, t.request, tune, lit));
+            expect(++taps, `${t.request} from ${JSON.stringify(lit)}`).toBeLessThanOrEqual(2);
+          }
+        }
       }
     });
   });

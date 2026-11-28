@@ -1,0 +1,1 @@
+**`clock-tower`, level 11 *Fit a visit*** (new-interaction tier): availability and duration data, choose/set stages, bot; after level 10. [Dive slice 7](../../deep-dives/clock-tower.md#build-slices-in-order).
