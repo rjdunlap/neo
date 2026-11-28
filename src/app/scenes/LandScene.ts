@@ -161,7 +161,7 @@ export class LandScene extends Scene {
   /** At the root, a house beside Back that always goes Home (RW14 slice 3); null on the island. */
   readonly house: RoundButton | null;
   private readonly heading = label('', 36);
-  private leaving = false;
+  protected leaving = false;
   private scale0 = 1;
   /** Keys and a pad: a ring over the games standing here, the host, the signpost and the two buttons. Backspace or B goes back to the map. */
   private readonly keys = new ScreenKeys(this.app, {
