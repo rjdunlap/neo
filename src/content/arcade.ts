@@ -2,7 +2,7 @@ import type { GameModule } from '../games/types';
 import { playsByTouch } from '../games/registry';
 import type { Band } from '../progress/bands';
 import type { GameStats } from '../progress/save';
-import { ageOf, allGames } from './explore';
+import { ageOf, allGames, favoriteGames } from './explore';
 import type { Land } from './lands';
 import type { LineId } from './voice-script';
 import { SUBJECTS, type RegionId } from './world';
@@ -15,9 +15,9 @@ import { SUBJECTS, type RegionId } from './world';
 
 /**
  * What the Topics sheet offers: her own age's games (For me, the default), every game, the ones she has played (last
- * played first), or one subject.
+ * played first), her hearted favourites (newest first; Explore's Favorites moved here when Home became a yard), or one subject.
  */
-export type ArcadeFilter = 'mine' | 'all' | 'played' | RegionId;
+export type ArcadeFilter = 'mine' | 'all' | 'played' | 'hearts' | RegionId;
 
 /** The filter the Arcade opens on: a first visit, a different player, or a remembered filter no longer offered. */
 export const DEFAULT_FILTER: ArcadeFilter = 'mine';
@@ -47,6 +47,7 @@ export function arcadeFilters(games: readonly GameModule[]): ArcadeFilter[] {
     'mine',
     'all',
     'played',
+    'hearts',
     ...SUBJECTS.filter((s) => games.some((g) => g.region === s.id)).map((s) => s.id),
   ];
 }
@@ -62,7 +63,9 @@ export function filterName(f: ArcadeFilter): string {
       ? 'All games'
       : f === 'played'
         ? 'Played before'
-        : topicWord(f);
+        : f === 'hearts'
+          ? 'Favourites'
+          : topicWord(f);
 }
 
 /** What a filter's tile says when it is chosen. */
@@ -73,7 +76,9 @@ export function filterLine(f: ArcadeFilter): LineId {
       ? 'explore.all'
       : f === 'played'
         ? 'arcade.played'
-        : SUBJECTS.find((s) => s.id === f)!.line;
+        : f === 'hearts'
+          ? 'explore.favorites'
+          : SUBJECTS.find((s) => s.id === f)!.line;
 }
 
 /** When she last finished a round of a game, or 0. */
@@ -92,6 +97,8 @@ export function arcadeList(
   games: readonly GameModule[],
   lands: readonly Land[],
   stats: Readonly<Record<string, GameStats | undefined>>,
+  /** Her hearted game IDs, newest last (`store.favorites`), for Favourites. */
+  hearts: readonly string[] = [],
 ): GameModule[] {
   if (filter === 'mine') return allGames(band, games, lands).filter((g) => ageOf(g, band) === 'hers');
   const ordered = [...allGames(band, games, lands), ...allGames(band, games, lands, true)];
@@ -102,6 +109,7 @@ export function arcadeList(
       .sort((a, b) => b.at - a.at)
       .map((x) => x.g);
   }
+  if (filter === 'hearts') return favoriteGames(hearts, games);
   return filter === 'all' ? ordered : ordered.filter((g) => g.region === filter);
 }
 

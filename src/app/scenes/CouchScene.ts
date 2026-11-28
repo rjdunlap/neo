@@ -251,6 +251,7 @@ export class CouchScene extends Scene {
   }
   /** What the button that leaves couch play says: the island when it sent her here, else the start. */
   private get leaveLabel() {
+    if (this.origin && 'home' in this.origin) return 'Back home';
     return this.origin ? 'Back to the island' : 'Back to start';
   }
 
@@ -1478,8 +1479,14 @@ export class CouchScene extends Scene {
         this.couch.save();
         this.go();
       });
-    this.button(sheet, this.origin ? 'Save and back to the island' : 'Save and return to start', () =>
-      this.leave(),
+    this.button(
+      sheet,
+      this.origin && 'home' in this.origin
+        ? 'Save and back home'
+        : this.origin
+          ? 'Save and back to the island'
+          : 'Save and return to start',
+      () => this.leave(),
     );
     sheet.append(
       node(

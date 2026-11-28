@@ -45,7 +45,7 @@ import { playBand } from '../../progress/bands';
 import { levelsInOrder } from '../../progress/difficulty';
 import { store } from '../../progress/store';
 import { RoundButton, spring, squash } from '../../ui/buttons';
-import { againIcon, arcadeIcon, arrowIcon, houseIcon, playIcon, tilesIcon } from '../../ui/icons';
+import { againIcon, arcadeIcon, arrowIcon, heartIcon, houseIcon, playIcon, tilesIcon } from '../../ui/icons';
 import { fitArt } from '../../ui/origin-art';
 import { FONT, label } from '../../ui/text';
 import type { App } from '../App';
@@ -180,7 +180,7 @@ export class ArcadeScene extends Scene {
   }
 
   private listFor(filter: ArcadeFilter) {
-    return arcadeList(filter, store.data.profile.band, GAMES, LANDS, store.data.games);
+    return arcadeList(filter, store.data.profile.band, GAMES, LANDS, store.data.games, store.favorites);
   }
 
   init() {
@@ -249,6 +249,7 @@ export class ArcadeScene extends Scene {
   private filterArt(f: ArcadeFilter): Container {
     // For me: her own companion, dressed as Home draws it, small and still (a picture no other control uses).
     if (f === 'mine') return makeCompanion();
+    if (f === 'hearts') return heartIcon(swatch.pink.fill);
     return f === 'all' ? tilesIcon() : f === 'played' ? againIcon(swatch.blue.line) : landmarkFor(f);
   }
 
@@ -634,8 +635,6 @@ export class ArcadeScene extends Scene {
   }
 
   enter() {
-    const link = document.querySelector<HTMLElement>('.classic-link');
-    if (link) link.hidden = true;
     music.play(STYLES.hub);
     // The demonstrations' effects stay low, as on the how-to card.
     // Explore's card already said `arcade.open` on the way in.

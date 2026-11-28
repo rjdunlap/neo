@@ -10,6 +10,7 @@ export function goToOrigin(go: Routes, origin: Origin | undefined, fallback: () 
     go.book(origin.recipe ? { colour: origin.recipe } : origin.form ? { form: origin.form } : undefined);
   else if (origin && 'explore' in origin) go.explore(origin.explore, origin.page);
   else if (origin && 'daily' in origin) go.daily();
+  else if (origin && 'home' in origin) go.hub();
   else fallback();
 }
 

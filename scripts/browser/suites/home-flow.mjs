@@ -112,25 +112,19 @@ export function createSuite({
         toy: !!neo.scene.toy,
         pet: neo.scene.pet.species,
         worn: neo.scene.pet.worn,
-        link: !document.querySelector('.classic-link').hidden,
       })),
-      { young: false, play: true, toy: false, pet: 'sprout', worn: ['scarf'], link: true },
+      { young: false, play: true, toy: false, pet: 'sprout', worn: ['scarf'] },
     );
-    // The birthday once, and the grown-ups' gear top right with the link below it.
+    // The birthday once, and the grown-ups' gear top right.
     assert.deepEqual(
       await page.evaluate(() => ({ birthday: neo.scene.birthday, world: kit.store.data.world.band })),
       { birthday: true, world: 'preschool' },
     );
     const corner = await page.evaluate(() => {
-      const g = document.querySelector('.gear').getBoundingClientRect(),
-        l = document.querySelector('.classic-link').getBoundingClientRect();
-      return {
-        gear: !document.querySelector('.gear').hidden,
-        below: l.top >= g.bottom,
-        right: g.right > innerWidth - 80,
-      };
+      const g = document.querySelector('.gear').getBoundingClientRect();
+      return { gear: !document.querySelector('.gear').hidden, right: g.right > innerWidth - 80 };
     });
-    assert.deepEqual(corner, { gear: true, below: true, right: true });
+    assert.deepEqual(corner, { gear: true, right: true });
     await page.waitForTimeout(400);
     await screenshot('home-landscape');
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -148,7 +142,6 @@ export function createSuite({
     // Play with Clover: creature play, the ball three times; it repeats and nothing is recorded.
     await tap('neo.scene.play');
     await scene('PlayScene');
-    assert.equal(await page.evaluate(() => document.querySelector('.classic-link').hidden), true);
     for (let i = 1; i <= 3; i++) {
       await tap('neo.scene.toy.ball');
       await page.waitForFunction(() => !neo.scene.toy.flight && !neo.scene.toy.chasing, null, {
@@ -258,7 +251,8 @@ export function createSuite({
           (entry === null || neo.scene.page === at),
         { entry, at },
       );
-    await tap('neo.scene.explore');
+    // Home is a yard since 2026-11-28: its signpost opens Places; Explore's entries page is still a route.
+    await page.evaluate(() => neo.go.explore());
     await explore(null);
     assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.entry)), [
       'places',
@@ -266,7 +260,6 @@ export function createSuite({
       'arcade',
       'family',
     ]);
-    assert.equal(await page.evaluate(() => document.querySelector('.classic-link')?.hidden), true);
     await screenshot('explore');
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForTimeout(500);
@@ -289,7 +282,6 @@ export function createSuite({
     await explore(null);
     await tap('neo.scene.back');
     await scene('HomeScene');
-    assert.equal(await page.evaluate(() => document.querySelector('.classic-link')?.hidden), false);
     await page.waitForTimeout(400);
     // U6b: the Arcade entry opens the Arcade on For me. Favorites, page 2 → a game → its result → Back to Favorites
     // (the same page) → Home.
@@ -298,7 +290,7 @@ export function createSuite({
       const { forgetArcade } = await import('/src/content/arcade.ts');
       forgetArcade();
     });
-    await tap('neo.scene.explore');
+    await page.evaluate(() => neo.go.explore());
     await explore(null);
     const pressed = await page.evaluate(() => {
       const arcade = neo.scene.cards.find((c) => c.entry === 'arcade').node;

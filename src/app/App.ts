@@ -78,7 +78,9 @@ export type Origin =
   | { library: true }
   | BookOrigin
   | { explore: ExploreEntry; page: number }
-  | { daily: true };
+  | { daily: true }
+  /** Home's yard (the picnic blanket's family play): leaving comes back Home. */
+  | { home: true };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -452,10 +454,11 @@ export class App {
   }
 
   /**
-   * On a phone the root is Today's six alone (the developer, 2026-11-09): no Home, Explore or island, so the hub route
-   * opens the six and the six's Back goes to "Who's playing?". Read when a scene opens; a tablet or computer is never one.
+   * A phone at the root: Today's six deals its phone week (`dailySix`'s `phone`). Since 2026-11-28 a phone reaches Home
+   * and everything under it like any device (the developer: one main flow); "Opens with" still picks the first screen.
+   * Read when a scene opens; a tablet or computer is never one.
    */
-  get phoneOnly(): boolean {
+  get onPhone(): boolean {
     const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
     return this.creatureWorld && phoneSized(window.innerWidth, window.innerHeight, touch);
   }

@@ -2,7 +2,7 @@
 
 A home-made iPad learning game in the spirit of JumpStart and Neopets: playful learning, a familiar pet, and an island to explore. Current age bands run from lap play through early school (ages 6–8); the long-term plan grows through elementary school, roughly grade 5 / age eleven. Art uses Pixi Graphics and prepared illustrated sprites; sound is synthesized with Web Audio.
 
-**Play it:** <https://rjdunlap.github.io/neo/classic/> is the island game; the site root <https://rjdunlap.github.io/neo/> is the creature-world rework as it grows (Home, creature play, Friends and dressing, Explore and the library; the welcome adventure is partly built). On a phone the root opens **Today's six**, six games picked each day, and that is where play is being tried now ([try it on a phone](#try-it-on-a-phone)); on a tablet or computer add `?daily` to the root URL to see the same page in place of Home. Every push to `main` redeploys via GitHub Actions
+**Play it:** <https://rjdunlap.github.io/neo/> is Puddle Island: Who's playing?, then Home, a yard to tap around (the treehouse, Today's six on a notice board, every game in an arcade cabinet, a signpost out to the island map and its places, family play on a picnic blanket). On a phone Who's playing? opens **Today's six** first and its Back goes Home ([try it on a phone](#try-it-on-a-phone)). The island game that lived at `classic/` retired on 2026-11-28 (RW08's cutover). Every push to `main` redeploys via GitHub Actions
 
 [Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md) · [Docs map](docs/README.md)
 
@@ -28,7 +28,7 @@ npm run build      # type-check + production build into dist/
 This is how the game is being played and judged right now: two grown-ups, each on their own phone, a few minutes a day.
 
 - **Open it:** <https://rjdunlap.github.io/neo/> in Safari (iPhone) or Chrome (Android). Share → Add to Home Screen on iPhone, or ⋮ → Install app on Android, runs it full screen and offline; in a plain browser tab the browser's own bars take some of the screen.
-- **A phone is Today's six.** Pick or add a player at "Who's playing?" and the phone opens six games for that player's age, re-picked each day. The green play button runs them in order, one tap per game. Home, Explore, creature play and the island at `classic/` are for tablets and computers.
+- **A phone opens on Today's six.** Pick or add a player at "Who's playing?" and the phone opens six games for that player's age, re-picked each day. The green play button runs them in order, one tap per game. Back goes Home, the yard, where everything else is.
 - **Hold it either way.** Games that have been laid out for an upright phone play upright; the others show a turn badge on their card and ask for the phone sideways (turn off the rotation lock for those). Each [batch](docs/definitions/phone-portrait.md#game-batches) makes more games upright.
 - **Leave notes.** A grown-up player (13 and up) sees a pencil on the six page and after each round: Good, Fine or Needs work, and a line of text. **Copy all notes** copies them as text; paste them into [docs/OBSERVATIONS.md](docs/OBSERVATIONS.md) or send them to whoever is building. What the notes say decides what is built next.
 - **Targets are about half an iPad's size.** A 100-unit target is about 51 CSS pixels upright (a grown-up board's 64-unit minimum is about 33). A phone shows whether a game flows, reads and sounds right for a grown-up; it does not show what a small hand can do.
@@ -47,7 +47,7 @@ Couch play is for a computer or TV with a keyboard or controller and is not a ph
 For when there is one; nothing has been tried on an iPad yet.
 
 - **Quick look, same Wi-Fi:** `npm run dev:lan`, then open the "Network" URL it prints in Safari on the iPad. Fine for playing; offline mode and "Add to Home Screen" as a full app need HTTPS (below).
-- **The real thing:** open <https://rjdunlap.github.io/neo/classic/> (the island game; the root is the creature-world route) in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
+- **The real thing:** open <https://rjdunlap.github.io/neo/> in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
 - **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app. Guided Access can also set a time limit.
 - **Limit her time:** the app has no timer of its own. Use Screen Time → App Limits (check Screen Time → See All Activity after a few minutes of play to see where the Home Screen app is listed) or a Guided Access time limit.
 
