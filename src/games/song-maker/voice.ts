@@ -12,7 +12,7 @@ export const VOICE = {
     'Listen to my song, {name}! Now answer it, and end your answer on the home jelly at the very bottom.',
   ],
   'song.home.hear': [
-    'Hear how this one sounds finished? It ends on the home jelly. Change your last jelly to try it!',
+    'Hear how this one sounds finished, {name}? It ends on the home jelly. Change your last jelly to try it!',
   ],
   'song.finish': ['Listen to my start, {name}! Now finish it: tap one jelly in each of the last two beats.'],
   'song.finish.ready': ['Is that a good ending, {name}? Press the check to hear our song once more!'],
