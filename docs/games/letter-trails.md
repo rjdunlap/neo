@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–6 |
 | pre-K | 3–10 |
-| school | 7–15 |
+| school | 7–17 |
 
 | Level | Plays like |
 | --- | --- |
@@ -29,12 +29,14 @@
 | 13 | Down, up and over: p, r, n, m, h and b in the four-line frame |
 | 14 | The last four: f, q, x and z in the four-line frame |
 | 15 | Big and little: trace any little letter, with its capital shown beside it |
+| 16 | Little words: trace a short word in little letters, then see its picture |
+| 17 | My name, the way it is written: a capital first, then little letters (up to eight) |
 
 <!-- end generated -->
 
 **Starts as:** follow a firefly along capital strokes
 
-**Grows into:** all 26 capitals starting at the top, short pictured words that end on the word's own picture, the first eight letters of the child's name on a sign, one capital traced three times with less help each time, and the little letters c o s v w t in a four-line frame, then a d g (a magic c, then a stem)
+**Grows into:** all 26 capitals starting at the top, short pictured words that end on the word's own picture, the first eight letters of the child's name on a sign, one capital traced three times with less help each time, and the little letters c o s v w t in a four-line frame, then a d g (a magic c, then a stem), the rest of the little alphabet, a little letter beside its capital, a short pictured word in little letters, and her name the way it is written (a capital, then little letters)
 
 ## Design notes
 
@@ -49,3 +51,9 @@ Level 13, Down, up and over (school 7–13; pre-K stays 3–10): p r n m h b in 
 Level 14, The last four (school 7–14; pre-K stays 3–10): f q x z in the same frame and corridor, completing the little alphabet. f hooks over the top into its stem and has a bar; q is the magic c with a stem whose tail turns right (g's turns left); x is two crossing slides; z is one zigzag. The forms are simple shapes of our own, not yet checked against the Handwriting Without Tears chart.
 
 Level 15, Big and little (school 7–15; pre-K stays 3–10): any of the 26 little letters in the same frame and corridor, with its capital drawn faint in the top-left corner and shown in the heading. The capital is only to look at: it is never traced or judged. The spoken line (`trails.big`) names the big letter and asks for the little one.
+
+Level 16, Little words (school 7–16; pre-K stays 3–10): one of level 7's nineteen pictured words, in little letters, in the frame and at the little-letter corridor. Each letter is traced in turn with a short unspoken flourish, and the round ends on the word's own picture (`trails.made`), as level 7 does; each letter counts at most one miss and one hint.
+
+Level 17, My name (school 7–17): the first eight letters of her name the way it is written, a capital then little letters ("Dana", "Zoerose" for Zoë-Rose: accents and hyphens fall away and only the first letter stays a capital; PIP becomes Pip). The capital stands in the frame from the top line to the base line (`framedCapital` in `lowercase.ts`: the capital's own strokes, shrunk to 0.6 and centred), so the whole name sits on the same lines; the round ends on the sign with her whole name written the same way (`signName`). Level 8 stays all capitals. Each letter counts at most one miss and one hint. The dive's "each letter says its name as it is traced" is left for the letter-name lines (slice 5), which wait on the speech check.
+
+The heading (the letter, or the word with the current letter in brackets) is drawn larger on a phone (`textBoost`), up to what fits between the corner buttons.

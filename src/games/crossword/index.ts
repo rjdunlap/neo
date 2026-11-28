@@ -747,6 +747,7 @@ export const crossword: GameModule = {
   touchDemo: true,
   coplayHint: 'Say the word slowly together while {name} finds the letter that fits.',
   offScreen: 'Think of a word that starts with the last letter of mine.',
+  ownKeys: true,
   hubIcon: () => new WigglyIcon(miniGrid()),
   sticker,
   create: (ctx) => (planFor(ctx.level).grown ? new GrownCrossword(ctx) : new Crossword(ctx)),

@@ -85,13 +85,16 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, finishe
         kit.tap(p.x, p.y);
       });
     };
-    // Spoken lines, read from the device speech the app hands them to.
-    await page.evaluate(() => {
-      const speak = speechSynthesis.speak.bind(speechSynthesis);
-      speechSynthesis.speak = (u) => {
-        (window.__said ??= []).push(u.text);
-        speak(u);
-      };
+    // Read from the voice itself, not device speech: a line with a rendered clip plays as audio and never reaches speechSynthesis.
+    await page.evaluate(async () => {
+      const { voice } = await import('/src/audio/voice.ts');
+      for (const key of ['speak', 'speakIn']) {
+        const say = voice[key].bind(voice);
+        voice[key] = (text, ...rest) => {
+          (window.__said ??= []).push(text);
+          return say(text, ...rest);
+        };
+      }
     });
 
     // D3, cards on: the next-up stop's own card is the preview, with the stop row and Skip; one Play.

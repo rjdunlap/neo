@@ -463,6 +463,7 @@ export const game: GameModule = {
     'After each try, say what the marks tell you: "The C is a cross, so it is not in the word. Which letters could still fit?"',
   offScreen:
     'Pick a short word in your head and let her guess it, telling her for each letter whether it is in the word and in the right place.',
+  ownKeys: true,
   hubIcon: () => new WigglyIcon(marksArt()),
   touchDemo: true,
   upright: true,
