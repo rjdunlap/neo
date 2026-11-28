@@ -848,4 +848,8 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *grown-up* · [Two Tablets](games/two-tablets.md)
 
+### Village Planner
+
+*school–grown-up* · [Village Planner](games/village-planner.md)
+
 <!-- end generated -->

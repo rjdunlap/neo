@@ -191,6 +191,7 @@ import { VOICE as trackwayTalesVoice } from '../games/trackway-tales/voice.ts';
 import { VOICE as treasureMapVoice } from '../games/treasure-map/voice.ts';
 import { VOICE as truthBridgeVoice } from '../games/truth-bridge/voice.ts';
 import { VOICE as twoTabletsVoice } from '../games/two-tablets/voice.ts';
+import { VOICE as villagePlannerVoice } from '../games/village-planner/voice.ts';
 import { VOICE as villageVoteVoice } from '../games/village-vote/voice.ts';
 import { VOICE as vineSnipVoice } from '../games/vine-snip/voice.ts';
 import { VOICE as waterRoadVoice } from '../games/water-road/voice.ts';
@@ -887,6 +888,7 @@ export const SCRIPT = {
   ...treasureMapVoice,
   ...truthBridgeVoice,
   ...twoTabletsVoice,
+  ...villagePlannerVoice,
   ...villageVoteVoice,
   ...vineSnipVoice,
   ...waterRoadVoice,

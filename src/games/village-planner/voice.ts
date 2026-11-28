@@ -1,0 +1,18 @@
+export const VOICE = {
+  'village-planner.title': ['Village Planner'],
+  'village-planner.start': ['Put each job on the bench or the cart in order, then run your plan.'],
+  'village-planner.job': ['{job}.'],
+  'village-planner.job.needs': ['{job}. It needs {needs} done first.'],
+  'village-planner.cart': ['That job uses the cart.'],
+  'village-planner.bench': ['That job needs the bench.'],
+  'village-planner.benchfull': ['One job on the bench at a time.'],
+  'village-planner.cartfull': ['The cart visits one place per step.'],
+  'village-planner.place': ['Place all the jobs first.'],
+  'village-planner.wait': ['Wait! {job} needs {needs} done first.'],
+  'village-planner.works': ['This plan works! Tap Run plan.'],
+  'village-planner.put': ['Put {job} in step {step}.'],
+  'village-planner.back': ['Move {job} back so {needs} can go first.'],
+  'village-planner.done': ['Every job is done!'],
+  'village-planner.trips': ['Great plan! {trips} cart trips.'],
+  'village-planner.more': ['Plan worked! You can finish now or try fewer cart trips.'],
+};

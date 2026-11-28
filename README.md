@@ -55,7 +55,7 @@ For when there is one; nothing has been tried on an iPad yet.
 
 <!-- generated: land counts (npm run game-docs) -->
 
-The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (15), **Counting Cove** (14), **Cozy Village** (23), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (32) and **Lantern Lake** (27, grown-up puzzles, shown to a child behind its signpost).
+The island is a world of **11 themed lands**: **Bubble Beach** (15), **Music Mountain** (8), **Painted Canyon** (11), **Barnyard** (15), **Counting Cove** (14), **Cozy Village** (23), **Rainbow Meadow** (16), **Puzzle Peaks** (21), **Story Grove** (22), **Tinker Lab** (32) and **Lantern Lake** (28, grown-up puzzles, shown to a child behind its signpost).
 
 <!-- end generated -->
 
@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 204 games; the 175 child games are listed below and the 29 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 169 games, and "grown-up" (13 and up) is played by 41 games: the 29 grown-up puzzles and 12 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 205 games; the 175 child games are listed below and the 30 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 170 games, and "grown-up" (13 and up) is played by 42 games: the 30 grown-up puzzles and 12 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -291,7 +291,7 @@ A separate route for grown-ups (two taking turns, or **Just me** with a puzzle s
 
 <!-- generated: grown-up count (npm run game-docs) -->
 
-These 29 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 27 in Lantern Lake. All play by touch on the island; 21 are touch-only, and 8 also play with a controller on the couch.
+These 30 are island games for the grown-up band: Marble Jump in Puzzle Peaks, Log Roll in Tinker Lab and 28 in Lantern Lake. All play by touch on the island; 22 are touch-only, and 8 also play with a controller on the couch.
 
 <!-- end generated -->
 
@@ -330,6 +330,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Market Days](docs/games/market-days.md) | Lantern Lake | 3 | Eight towns each hold one market a week; she gives each town a market day (a banner with a colour and a shape) so that towns joined by a dotted path, a day's walk apart, never share a day. Level 1 sets three towns that all need different days and she finishes the other five; level 2 starts from nothing. |
 | [Count the Ballots](docs/games/count-the-ballots.md) | Lantern Lake | 2 | nine villagers have each ranked three fairground rides on a ballot. She taps a ballot, then the pile of the ride it likes best (level 1, *Count first choices*). No pile reaches five, so the smallest pile is out and its ballots come back to the hand, each now marking its next choice still standing; she moves them, and the ride with five is built. The learning is a counting procedure with a rule that can change the answer. |
 | [Two Tablets](docs/games/two-tablets.md) | Lantern Lake | 2 | A scribe left two tablets: a line of picture-words with the island signs written under each, and a new line of signs nobody has read. She taps the first tablet's signs to drop their sounds into the key strip, finds the one sound the first tablet has not used, and reads one group of new signs by choosing the picture it spells. The learning is cross-referencing and elimination: a sign carries one sound and a sound sits in one sign. |
+| [Village Planner](docs/games/village-planner.md) | Lantern Lake | 3 | two stops on the island, Baker's Hill and Creek Mill, a shared Bench in the Yard and one Cart. She drags (or taps, then taps a step) pictured job tiles onto a board: Bench jobs on the top row, cart jobs on the bottom row, one job per slot. A job that needs another must sit in a later step; its tile shows the needed job as a small picture. Run plan acts the plan out step by step and stops at the first job that came too soon. |
 
 <!-- end generated -->
 
@@ -448,6 +449,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `wordcode` | Word Code by touch: level 1 with a picture word that is not hidden, a try that ignores a mark (the one miss), a requested hint, a portrait screenshot, then the hidden word and a saved score; level 3 with a word not on the list turned down free, an ignored mark, a hint and a portrait screenshot, then the hidden word on the keys | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-code` |
 | `marketdays` | Market Days by touch: level 1 with a banner placed beside a town of the same banner (the one miss), Undo, two Hint requests (glow, then place), a portrait screenshot, then the ghost finger's taps to a finish; level 3 with Why? (uncounted) and the finish on three banners | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=market-days` |
 | `twotablets` | Two Tablets by touch and keys: level 1 with a first-tablet sign (stamps the key), an unknown sign (not yet), one wrong reading (the one miss), Show me (dims a card), a portrait screenshot, then the ghost finger to a finish; level 2 with a wrong two-group reading (still one miss), Show me, then a finish | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=two-tablets` |
+| `villageplanner` | Village Planner by real drags: level 1 with a bench job dropped on the cart row (goes home, no miss), an incomplete Run plan (free), a plan that runs dough before its grain (one miss, board editable, the same board again not a second miss), one hint, a phone portrait screenshot (`VILLAGE_PLANNER_PHONE=1` for the touch phone context) and a fix to finish; level 2 with a three-trip plan (the Trace Card, Try fewer trips free, then Done); level 3 by the ghost finger with no miss | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=village-planner` |
 | `downwego` | Down We Go by touch: level 1 with a ledge tapped before the ride (free), the ride, a too-dark ledge twice (two misses, one glow hint), a lit ledge that is not the deepest (free), then the right ledge on three dives; level 2 with an unmeasured ledge (free), a requested hint, a screenshot at the darkest knot, then the right ledge on three dives; level 3 with the other prediction first (free) and a screenshot of the plates; level 4 with the free first question wrong, a counted wrong dial and the right ones | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=down-we-go` |
 | `bunnypatches` | Bunny Patches by touch: level 1 with the given bunny locked, a full wrong board (one miss), the identical board again (free), a changed wrong board (second miss, one glow hint), a requested hint, then the finish; level 3 with the paw, bunny and clear cycle and the answer. `BUNNY_ONLY=upright` runs the 390×844 phone check (touch context, squares at least 100 units, screenshots) | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=bunny-patches` |
 | `campsite` | Campsite by touch on a 390×844 phone: a free tree tap and part-full check, the authored touching camp (one miss, checked again free), a fourth tent refused, a changed wrong camp (second miss and its own hint), a Hint press, the revision and the sticker; one upright screenshot | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=campsite` |

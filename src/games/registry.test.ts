@@ -725,6 +725,7 @@ describe('game registry', () => {
       'trackway-tales',
       'truth-bridge',
       'two-tablets',
+      'village-planner',
       'village-vote',
       'water-road',
       'wave-ribbon',

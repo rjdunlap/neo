@@ -67,6 +67,7 @@ import { layout as ballotsLayout } from './count-the-ballots/layout';
 import { roomLayout as commonGroundLayout } from './common-ground/layout';
 import { marketLayout } from './market-days/layout';
 import { tabletsLayout } from './two-tablets/layout';
+import { plannerLayout } from './village-planner/layout';
 import { outcropLayout } from './outcrop-detective/layout';
 import { wordLayout } from './word-code/layout';
 import { PLANS as codePlans } from './word-code/logic';
@@ -239,6 +240,14 @@ const MEASURE: Record<string, () => Size[]> = {
     const l = tabletsLayout(v, 4, 1);
     return [
       ['sign', l.cell],
+      ['button', l.button],
+    ];
+  },
+  'village-planner': () => {
+    const l = plannerLayout(v, 5, 6);
+    return [
+      ['slot', l.slot],
+      ['tile', l.tile],
       ['button', l.button],
     ];
   },
@@ -441,6 +450,7 @@ const THUMBS: Record<string, { px: number; what: string; slides?: number }> = {
   'count-the-ballots': { px: 50.8, what: 'button' },
   'market-days': { px: 50.8, what: 'banner' },
   'two-tablets': { px: 50.8, what: 'sign' },
+  'village-planner': { px: 50.8, what: 'button' },
   'common-ground': { px: 55.9, what: 'piece' },
   'outcrop-detective': { px: 50.8, what: 'button' },
   'picture-logic': { px: 44.7, what: 'tool button', slides: 44.7 },
