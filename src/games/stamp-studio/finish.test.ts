@@ -71,6 +71,7 @@ function round(level: number) {
   } as unknown as GameContext;
   const game = stampStudio.create(ctx) as ReturnType<typeof stampStudio.create> & {
     paper: Container;
+    selection: Container;
     finish: Container;
     undo: Container;
     turn: Container;
@@ -273,7 +274,7 @@ describe('Stamp Studio bin and early stopping', () => {
       expect(r.game.stamps).toHaveLength(0);
       expect(r.game.bin.visible).toBe(false);
       expect(r.game.finish.visible).toBe(false);
-      expect(r.game.paper.children[4].getLocalBounds().width).toBe(0);
+      expect(r.game.selection.getLocalBounds().width).toBe(0);
       r.stamp();
       expect(r.game.bin.visible).toBe(true);
       press.get(r.game.finish)!();

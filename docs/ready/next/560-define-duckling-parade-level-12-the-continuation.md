@@ -1,0 +1,1 @@
+**Define Duckling Parade level 12, the continuation** (docs only): the reference and progress card, the one-step reveal counted as help, completion and the bot (approved 2026-10-23); queue its build. [Dive slice 5](../../deep-dives/duckling-parade.md#build-slices-in-order).
