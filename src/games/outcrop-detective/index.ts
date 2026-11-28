@@ -783,6 +783,11 @@ class Round implements Game {
   }
 
   /** The ghost finger: one wrong Check, then the hint walk's swaps by tap, Play, Check, the right answer and the sand look. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy) return null;
     if (this.lensOpen) return { tap: { on: this.lens } };

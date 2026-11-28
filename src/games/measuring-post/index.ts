@@ -1149,6 +1149,11 @@ class MeasuringPost implements Game {
    * The ghost finger: tap the tool that answers the question, then Send, or the row with the asked-for units, or (level
    * 3) the little units for both and then the longer, heavier or fuller one, or the same.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (!this.started || this.unasked) return null;
     if (this.phase === 'tool') return { tap: { on: this.toolPads.get(TOOL_FOR[this.current.attribute])! } };

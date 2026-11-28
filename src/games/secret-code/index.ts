@@ -433,6 +433,11 @@ class SecretCode implements Game {
   }
 
   /** The ghost finger on the how-to card: tap the stone the clues point to, slot by slot, then the key. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     if (this.phase === 'seats') return { tap: { on: this.together }, pause: 0.6 };

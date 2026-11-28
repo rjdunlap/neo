@@ -384,6 +384,11 @@ class BlockTower implements Game {
   }
 
   /** The ghost finger on the how-to card: stack by tapping, ring the bell at the target, pick the tower that stands, or carry blocks out to the star. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || !this.rounds[this.index]) return null;
     switch (this.plan.mode) {

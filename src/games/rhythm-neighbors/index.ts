@@ -612,6 +612,11 @@ class RhythmNeighbors implements Game {
     return out;
   }
   /** The ghost finger on the how-to card: after the bird, tap the frogs of the reply, resting longer where the gap is long, then send it. Free levels: each frog once, then send. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.plan.knock) return this.knocks < KNOCKS ? { tap: { on: this.bird }, pause: 0.5 } : null;

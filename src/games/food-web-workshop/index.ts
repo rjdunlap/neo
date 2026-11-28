@@ -213,6 +213,11 @@ class FoodWebWorkshop implements Game {
   }
 
   /** The ghost finger: watch each card, then drag its food's badge onto the eater, then Show our web. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.replaying || this.stations.some((st) => st.handle.dragging))
       return null;

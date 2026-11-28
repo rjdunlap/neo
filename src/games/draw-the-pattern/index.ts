@@ -1509,6 +1509,11 @@ class DrawThePattern implements Game {
   }
 
   /** The ghost finger: a short wave at level 1, a tap on the shining dot at 10; otherwise the stroke from where the crayon waits (circles counterclockwise, the continuing candidate). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.drag) return null;
     const spot = (p: Point) => ({ on: this.paper, x: p[0] * this.s, y: p[1] * this.s });

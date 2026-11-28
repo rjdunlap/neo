@@ -1058,6 +1058,11 @@ class GadgetBench implements Game {
   }
 
   /** The ghost finger: level 1 tries the failing gadget, the passing one, then gives it; levels 2–3 drag what help names, Try, Give. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.showing || !this.layoutNow) return null;
     const m = nextMove(this.round, this.gadget, this.tried, this.triedOk, this.level);

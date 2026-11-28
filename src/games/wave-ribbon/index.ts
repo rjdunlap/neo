@@ -711,6 +711,11 @@ class WaveRibbon implements Game {
   }
 
   /** The ghost finger: completes the level's experiment, picks the matching card, Checks, then taps Done. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || !this.started) return null;
     const move = nextMove(

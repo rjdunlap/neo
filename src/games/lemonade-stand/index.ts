@@ -583,6 +583,11 @@ class LemonadeStand implements Game {
    * The ghost finger: read the sign, then tap the batch and the price a sensible child picks from it, then OPEN. It never
    * asks the lightbulb, since asking counts as a hint, and it only uses what the sign shows.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0 || this.index >= this.week.length) return null;
     if (this.boatPhase) return { tap: { on: this.boats[cheaperBoat(this.week[this.index].boats!)].node } };

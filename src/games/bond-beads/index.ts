@@ -719,6 +719,11 @@ class BondBeads implements Game {
   hintLabel = 'Show a hint';
 
   /** The ghost finger: carry a bead to the one the next link needs, tap a link that has to go, then (levels 2–4) Check. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     // Level 4: the ghost finger waits for the other shape's ask, so a demonstration hears it.
     if (this.finished || this.busy || this.unasked || this.drags.some((d) => d.dragging) || !this.layoutNow)
