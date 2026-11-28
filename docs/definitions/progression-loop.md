@@ -44,7 +44,7 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 1. **Rules** (this file and the rule wording). Docs only. Built.
 2. **Shells for grown-ups.** Defined below. Built.
 3. **Stamps** (from option A; defined below, built): three to five named goals per grown-up game (reach a level, a level with no hint, the top level, one trick of the game's own), each written beforehand, earned once and paying a one-time shell bonus. A stamp page per land, and Lantern Lake shows one lit paper lantern per stamp, so the lake fills up as the total grows.
-4. **The friend's page and shop**: colours and wearables for the player's own friend at shown prices, on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
+4. **The friend's page and shop** (defined below, built): colours and wearables for the player's own friend at shown prices, on a page of its own reached from the six (as Neopets kept pets on their own pages), never added to a game screen. The developer, 2026-11-25: the friend in a game's corner "didn't really do much".
 5. **Today's six extras** (from option C): a copyable share line of the day's results (the six games are the same for both grown-ups on a day), a small bonus once a day for finishing all six, and a month calendar with a lantern on each day all six were done. Empty days stay empty; nothing counts a run of days.
 6. **Seasons** (from option C): four-week sets of goals ("finish 15 sixes", "try every grown-up game"), each paying shells once, and a dated keepsake for a finished season. A season that ends unfinished simply ends.
 7. **Lantern Lodge** (from option B): a lodge, dock and garden to build and decorate with shells, piece by piece at shown prices, in the paper cut-out look (chosen 2026-11-26, [ART-STYLE](../ART-STYLE.md)).
@@ -71,3 +71,14 @@ The developer, 2026-11-27: "option D, can have features from the other options a
 - **Shown.** The result adds the bonus to "+N shells" and a lantern pill under it: "New stamp: Top level" (one or two named, three or more counted). A lantern button on Today's six (above the notes in a wide view, beside them upright) opens the stamps page: plain HTML, every grown-up game with its goals as a row of paper lanterns, lit and dated when held, each saying what it asks, games under way first, and the balance.
 - **Later.** Lantern Lake's own lanterns on the island map (the phone has no island), and school games' stamps once the school band earns.
 
+### Slice 4: the friend's page and shop
+
+**Built 2026-11-28.** A grown-up's own friend gets a page of its own, as a Neopet does, and shells buy its looks. Nothing goes on a game screen.
+
+- **Way in.** On Today's six, for a band that earns shells, a pill beside the friend in the bottom-left corner reads "Choose a friend" (or "Pebble's shop" once there is one), and a tap on the pill or the friend opens the page. Back returns to the six.
+- **Choosing.** With no friend yet, the page offers the three species, free, by their first names (Pip, Pebble, Breeze). The choice is a normal friend in the save (`store.meet`, met-at token `grownup:friend`), so the six's corner shows it from then on.
+- **Shop.** The friend stands on a stage with a card for each thing its species can wear and a paged row of all fourteen colours, laid out as Dress lays them out (`dressLayout`). Prices (`src/content/shop.ts`): sunglasses, scarf, mittens 60; beanie, boots 80; sun hat 100; umbrella 120; raincoat 150; flower crown 250; each of the first eight colours 50, each paint-shelf colour 120. A thing not yet bought carries its price on a small shell pill. A tap tries it on without saving and shows its name and price over the stage with Buy, or "N more shells to go" when the balance is short. Buy takes the price off the balance and keeps the thing on. A thing bought goes on and off with a tap, free, for good.
+- **Never taken away.** The friend's own colour, and anything already on it, count as owned. Buying is once per thing, opens no game or level, and the balance cannot go below zero.
+- **Save.** `SaveData.shop: { owned: ShopId[] }` (`wear:<item>` or `color:<colour>`), repaired by `cleanShop` (known ids, once each). `store.buy(id)` refuses a band that does not earn, an unknown or owned id, or a short balance, changing nothing. `store.recolor` also accepts a bought colour.
+- **Children.** Dress keeps every item and colour free; a child's profile has no shop and no prices.
+- **Later.** More things to sell as new wearables are drawn; Lantern Lodge (slice 7) is the larger thing to save for.

@@ -6,6 +6,7 @@ import {
   bandSmall,
   bandWhere,
   findingCopy,
+  startCopy,
   friendHeading,
   playingCopy,
   weekCopy,
@@ -24,6 +25,7 @@ function allCopy(app: PanelApp): string {
     ...playing.before,
     ...playing.after,
     ...(finding ? [finding.label, finding.note] : []),
+    ...Object.values(startCopy(app)),
     week.intro,
     week.older,
   ].join('\n');
@@ -38,6 +40,19 @@ describe("the grown-ups' page's words (U8a)", () => {
     for (const b of BANDS) expect(root).not.toContain(placeFor(b.id).name.toLowerCase());
     expect(findingCopy('root')).toBeNull();
     expect(weekCopy('root').picnic).toBe(false);
+  });
+
+  it('word the Opens with row for each app (D8)', () => {
+    expect(startCopy('root')).toEqual({
+      label: 'Opens with',
+      explore: 'Home',
+      six: "Today's six",
+      note: "Where this player starts after tapping their card. Back from Today's six goes Home. On a phone Today's six is always the start.",
+    });
+    expect(startCopy('classic').explore).toBe('The map');
+    expect(startCopy('classic').note).toBe(
+      "Where this player starts after tapping their card. Back from Today's six goes to the map.",
+    );
   });
 
   it("end the root's age line with the band, and keep classic's home spot", () => {
