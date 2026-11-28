@@ -84,6 +84,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Campsite](definitions/campsite.md) | Puzzle-pages PP6, school level 1: pitch three tents using row and column counts and one shared-edge pairing per tree |
 | [Bunny Patches](definitions/bunny-patches.md) | Puzzle-pages PP3, levels 1–3: one bunny in every row, column and patch, none touching; pre-K 4×4 to school 6×6 |
 | [Market Stall levels 12–13](definitions/market-stall-12-13.md) | Can I buy it? (does a purse cover a price, then spend it on two things) and Trade up (swap small coins for a bigger one); school, built after levels 8–11 |
+| [Market Stall sell stall and bakery](definitions/market-stall-sell-and-bakery.md) | *Is it enough?* (she keeps the stall, counts a customer's shells, then sells or asks for more; school, after level 8) and the bakery, a fourth stall skin with four new props |
 | [Block Tower level 7](definitions/block-tower-mend.md) | Mend the leaning tower: move the top block under ropes, release, and see whether it stands; school, a repair interaction |
 | [Egg Catch level 13](definitions/egg-catch-sorting-gate.md) | Sorting gate: place a shell-reading sorter at one junction and turn it so four mixed eggs reach their baskets; school, a placement interaction |
 | [Swing Pals level 9](definitions/swing-pals-paint-the-beat.md) | Paint the beat: a paint pot on the swing paints wiggles on a rolling paper strip; the painting is kept only on request; preschool to school |
