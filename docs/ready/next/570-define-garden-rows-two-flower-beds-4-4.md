@@ -1,1 +1,0 @@
-**Define Garden Rows *Two-flower beds* (4×4)** (docs only): a new level ID, its rules, layout at the four views and rule tests; queue its build. [Dive slice 5](../../deep-dives/garden-rows.md#build-slices-in-order).

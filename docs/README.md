@@ -84,6 +84,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [Last Pebble](definitions/last-pebble.md) | Strategy-games SG3, levels 1–2: lay one or two stones across a stream in turn to reach the far bank, finding stepping stones back from the end; school (about 10 and up) and grown-up, Puzzle Peaks |
 | [Sum Crates](definitions/sum-crates.md) | Puzzle-pages PP5, levels 1–3: crossing rows and columns of fruit crates that add to their signs, no repeat in a line; school 1–2, grown-up 3 |
 | [Garden Rows level 11](definitions/garden-rows-bee.md) | Puzzle-pages PP4, The bee counts tall flowers: a 3×3 bed with visibility clues viewed from each gate |
+| [Garden Rows level 12](definitions/garden-rows-two-flower-beds.md) | Two-flower beds: a 4×4 bed with two packets, two of each flower in every row and column; school 11–12 |
 | [Campsite](definitions/campsite.md) | Puzzle-pages PP6, school level 1: pitch three tents using row and column counts and one shared-edge pairing per tree |
 | [Bunny Patches](definitions/bunny-patches.md) | Puzzle-pages PP3, levels 1–3: one bunny in every row, column and patch, none touching; pre-K 4×4 to school 6×6 |
 | [Market Stall levels 12–13](definitions/market-stall-12-13.md) | Can I buy it? (does a purse cover a price, then spend it on two things) and Trade up (swap small coins for a bigger one); school, built after levels 8–11 |
