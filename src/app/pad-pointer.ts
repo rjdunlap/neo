@@ -15,13 +15,15 @@ export const PAD_POINTER = 71_000_002;
 export interface PointerSpot {
   x: number;
   y: number;
+  /** The thing itself, so the hand can stay on it while it moves (a rising bubble, a walking critter). */
+  ref?: Container;
 }
 
 export type PointerAction = 'move' | 'down' | 'up';
 
 /** Seconds an arrow or the stick is held before the hand stops jumping between things and glides instead. */
 export const GLIDE_AFTER = 0.28;
-/** An arrow tap jumps to a touchable thing at most this far away (a share of the window's short side); further, it steps. */
+/** An arrow tap jumps to a touchable thing at most this far away (a share of the window's short side), or to one nearly straight ahead however far; otherwise it steps. */
 export const REACH = 0.45;
 /** One arrow-tap step over open ground, or while something is held: a share of the window's short side. */
 export const STEP = 0.1;
@@ -39,6 +41,8 @@ export class PointerMotion {
   y = 0;
   shown = false;
   down = false;
+  /** The thing the hand jumped to, which it follows while it moves until the hand is moved off it or presses it. */
+  follow: Container | null = null;
   /** The button has been let go since the hand appeared, so the next press is a real one. */
   private armed = false;
   private heldFor = 0;
@@ -46,6 +50,7 @@ export class PointerMotion {
   /** Shows the hand at `at` (the touchable thing nearest the middle) without pressing anything. */
   show(at: PointerSpot) {
     this.shown = true;
+    this.follow = at.ref ?? null;
     this.armed = false;
     this.heldFor = 0;
     this.x = at.x;
@@ -57,6 +62,7 @@ export class PointerMotion {
     const was = this.down;
     this.shown = false;
     this.down = false;
+    this.follow = null;
     return was;
   }
 
@@ -108,10 +114,15 @@ export class PointerMotion {
       const all = this.down ? [] : spots();
       const from = all.length;
       const to = nextSpot([...all, { x: this.x, y: this.y }], from, dir);
-      if (to !== from && Math.hypot(all[to].x - this.x, all[to].y - this.y) <= REACH * short) {
+      if (
+        to !== from &&
+        (straight(all[to], this, dir) || Math.hypot(all[to].x - this.x, all[to].y - this.y) <= REACH * short)
+      ) {
         this.x = all[to].x;
         this.y = all[to].y;
+        this.follow = all[to].ref ?? null;
       } else {
+        this.follow = null;
         // Nothing to jump to close by that way (an open board, a row of places to put something), or a piece is held: a step.
         this.x += [1, 0, -1, 0][dir] * STEP * short;
         this.y += [0, 1, 0, -1][dir] * STEP * short;
@@ -122,6 +133,7 @@ export class PointerMotion {
       const unit = Math.min(size.w, size.h) / 768;
       const ramp = Math.min(GLIDE.max, 1 + Math.max(0, this.heldFor - GLIDE_AFTER) * 1.2);
       const speed = (this.down ? GLIDE.carrying : GLIDE.free) * unit * ramp;
+      this.follow = null;
       this.x += sx * speed * dt;
       this.y += sy * speed * dt;
     }
@@ -136,11 +148,28 @@ export class PointerMotion {
       }
     } else if (this.armed && !this.down) {
       this.down = true;
+      // A held thing follows the hand now, not the other way round.
+      this.follow = null;
       out.push('down');
     }
     return out;
   }
 }
+
+/** Drawn: it and every container above it are visible, up to the stage. */
+const seen = (c: Container): boolean => {
+  for (let at: Container | null = c; at; at = at.parent) if (!at.visible || at.destroyed) return false;
+  return true;
+};
+
+/** `to` lies nearly straight ahead of `from` toward `dir`: no further to the side than half its distance ahead. */
+const straight = (to: PointerSpot, from: PointerSpot, dir: number) => {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const along = dx * [1, 0, -1, 0][dir] + dy * [0, 1, 0, -1][dir];
+  const across = Math.abs(dx * [0, 1, 0, -1][dir] - dy * [1, 0, -1, 0][dir]);
+  return along > 0 && across <= along / 2;
+};
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -155,16 +184,26 @@ export function touchSpots(
   root: Container,
   screen: { w: number; h: number },
   skip?: Container,
+  extra: readonly (Container | PointerSpot)[] = [],
 ): PointerSpot[] {
   const out: PointerSpot[] = [];
   const big = screen.w * screen.h * 0.3;
+  for (const c of extra) {
+    if (!(c instanceof Container)) {
+      if (c.x >= 0 && c.y >= 0 && c.x <= screen.w && c.y <= screen.h) out.push(c);
+      continue;
+    }
+    const at = c.destroyed || !c.parent || !seen(c) ? null : middle(c);
+    if (at && at.x >= 0 && at.y >= 0 && at.x <= screen.w && at.y <= screen.h)
+      out.push({ x: at.x, y: at.y, ref: c });
+  }
   const visit = (c: Container) => {
     if (c === skip || !c.visible || c.alpha <= 0.02 || c.eventMode === 'none' || c.destroyed) return;
     const live = c.eventMode === 'static' || c.eventMode === 'dynamic';
     if (live && TOUCH_EVENTS.some((t) => c.listenerCount(t) > 0)) {
       const at = middle(c);
       if (at && at.area <= big && at.x >= 0 && at.y >= 0 && at.x <= screen.w && at.y <= screen.h)
-        out.push({ x: at.x, y: at.y });
+        out.push({ x: at.x, y: at.y, ref: c });
     }
     if (c.interactiveChildren === false) return;
     for (const child of c.children) visit(child);
@@ -209,6 +248,8 @@ export class PadPointer {
 
   /** What the hand can jump between: the scene's whole tree (the app's pointer follows the scene in play). */
   root: () => Container;
+  /** Things the game says a finger would touch that have no listener of their own (`Game.pointerSpots`). */
+  extra: () => readonly (Container | PointerSpot)[] = () => [];
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -240,10 +281,31 @@ export class PadPointer {
     }
     const s = this.screen();
     const size = { w: s.width, h: s.height };
-    const actions = this.motion.step(keys, dt, () => touchSpots(this.root(), size, this.layer), size);
+    const actions = this.motion.step(
+      keys,
+      dt,
+      () => touchSpots(this.root(), size, this.layer, this.extra()),
+      size,
+    );
+    if (this.motion.shown && !actions.length) this.keepOn(size);
     for (const a of actions)
       this.send(a === 'move' ? 'pointermove' : a === 'down' ? 'pointerdown' : 'pointerup');
     this.draw(dt);
+  }
+
+  /** The thing the hand jumped to has moved: the hand moves with it, or lets it go once it is gone or off the window. */
+  private keepOn(size: { w: number; h: number }) {
+    const it = this.motion.follow;
+    if (!it) return;
+    const at = it.destroyed || !it.parent || !seen(it) ? null : middle(it);
+    if (!at || at.x < 0 || at.y < 0 || at.x > size.w || at.y > size.h) {
+      this.motion.follow = null;
+      return;
+    }
+    if (Math.abs(at.x - this.motion.x) < 0.5 && Math.abs(at.y - this.motion.y) < 0.5) return;
+    this.motion.x = at.x;
+    this.motion.y = at.y;
+    this.send('pointermove');
   }
 
   /** A real finger or mouse came back, or the round stopped taking the hand: lift anything held and hide. */

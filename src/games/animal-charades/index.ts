@@ -541,6 +541,13 @@ class Round implements Game {
   }
 
   /** The ghost finger: pick the pet, tap a wrong card then the right one, then finish. */
+  /** Guided first play: the bot tries a wrong animal first to show a guess costs nothing; the hand points at the right one. */
+  showMove(): TouchIntent | null {
+    if (this.screen === 'guess' && !this.two && !this.busy && this.ctx.alive && !this.perf)
+      return { tap: { on: this.cards[this.deal.target].root } };
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || !this.ctx.alive || this.perf) return null;
     switch (this.screen) {

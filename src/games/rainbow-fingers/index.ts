@@ -1210,6 +1210,11 @@ class RainbowFingers implements Game {
    * The ghost finger: wavy strokes and then the frame in the free levels; in the picture levels the pot (or the two primaries) for the
    * picture's color, then a fill over the whole picture, and the frame once the page is done. Never a stroke in a wrong color.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done || this.folding || this.strokes.size > 0) return null;
     const pic = this.picture;

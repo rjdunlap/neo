@@ -234,9 +234,10 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         way.addBottom <= way.tall && way.addHeight >= 80,
         `Add a player is on the screen (${JSON.stringify(way)})`,
       );
+      const family = await p.locator('.chooser__family').boundingBox();
       assert.ok(
-        (await p.locator('.chooser__couch').first().boundingBox()).height >= 100,
-        'the couch button on a card is at least 100 units tall',
+        family.height >= 80 && family.y + family.height <= way.tall,
+        `Family play is on the screen (${JSON.stringify(family)})`,
       );
       await p.locator('.chooser__play').first().tap();
       await p.waitForFunction(() => neo.scene.constructor.name === 'MapScene' && !neo.switching);

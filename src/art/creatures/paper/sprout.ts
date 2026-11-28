@@ -1,3 +1,4 @@
+import { petSage } from '../../palette';
 import type { Expression } from '../illustrated';
 import { SPROUT_ART as A } from '../sprout-illustrated';
 import {
@@ -15,12 +16,11 @@ import {
   spot,
 } from './canvas';
 
-const BODY = 0x5ccbbf;
-const INNER = 0x9fe3da;
+const BODY = petSage.fill;
+const INNER = petSage.light;
 const CREAM = 0xfef1d1;
 const LEAF = 0x8ccf4e;
-const PAD = 0xffa3a3;
-const CHEEK = 'rgba(255,143,163,0.6)';
+const PAD = 0xe6b8a2;
 
 /**
  * The sprout as a paper cut-out (docs/ART-STYLE.md), drawn on the prepared sprite's points (`SPROUT_ART`): the two leaves
@@ -91,7 +91,6 @@ export function drawSprout(x: Ctx, ex: Expression) {
   });
 
   // The face.
-  A.cheeks.forEach((c) => spot(x, c.x, c.y, 22, 14, CHEEK));
   A.eyes.forEach((e, i) => eye(x, e, ex, `sprout-eye${i}`));
   spot(x, A.nose.x, A.nose.y, 10, 7, hexCss(0x4a2f2f));
   mouth(x, { x: A.mouth.x, y: A.mouth.y + 2 }, ex, 17);

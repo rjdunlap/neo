@@ -5,6 +5,7 @@ import { queueRows, robotLayout, routineLayout } from './layout';
 import {
   boardFor,
   DIRECTIONS,
+  DRIVE_PLANS,
   FIX_PLANS,
   LEVELS,
   MEND_PLANS,
@@ -112,3 +113,25 @@ describe('Robot Path level 15 sideways and on a tall tablet', () => {
     expect(L.origin[1] + 400).toBeLessThanOrEqual(h);
   });
 });
+
+describe.each(Object.entries(UPRIGHT_VIEWS))(
+  'Robot Path level 16 (Drive the robot) upright on %s',
+  (_, v) => {
+    it('keeps the four arrows apart, large and clear of Home and the guide, below a board that fits', () => {
+      for (const plan of DRIVE_PLANS) {
+        const L = robotLayout(v, plan.size, 0, 'steps');
+        const t: Target[] = DIRECTIONS.map((d) => square(`arrow ${d}`, L.arrows[d], 100));
+        t.push(
+          square(
+            'board',
+            { x: L.origin[0] + (plan.size * L.cell) / 2, y: L.origin[1] + (plan.size * L.cell) / 2 },
+            plan.size * L.cell,
+          ),
+        );
+        expect(uprightProblems(v, t), plan.name).toEqual([]);
+        expect(L.origin[0]).toBeGreaterThanOrEqual(0);
+        expect(L.origin[1] + plan.size * L.cell).toBeLessThan(L.arrows.up.y - 50);
+      }
+    });
+  },
+);

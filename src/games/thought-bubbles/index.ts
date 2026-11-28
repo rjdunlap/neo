@@ -57,6 +57,7 @@ import {
   planFor,
   rectToScreen,
   regionAt,
+  SLOTS,
   regionRect,
   roundFor,
   STAGE_H,
@@ -806,6 +807,16 @@ class ThoughtBubbles implements Game {
   }
 
   /** Level 3: a tap on the picture. The clue ends the story; anything else is named, free. */
+  /** For the pad pointer: on the pointing level, every part of the picture one layer hears (the right one and the rest). */
+  pointerSpots() {
+    const s = this.story;
+    if (this.stage !== 'point' || s.level !== 3) return [];
+    return s.why.regions.map((r) => {
+      const b = SLOTS[r.slot];
+      return this.ctx.stage.toLocal(this.stageBox.toGlobal({ x: b.x + b.w / 2, y: b.y + b.h / 2 }));
+    });
+  }
+
   private async tapPicture(p: { x: number; y: number }) {
     const s = this.story;
     if (this.busy || this.finished || this.stage !== 'point' || s.level !== 3) return;

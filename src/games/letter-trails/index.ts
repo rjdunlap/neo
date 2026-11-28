@@ -548,6 +548,11 @@ class LetterTrails implements Game {
         .circle(this.firefly.x, this.firefly.y, 40 + Math.sin(this.clock * 4) * 5)
         .stroke({ width: 6, color: swatch.yellow.line });
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.done || !this.firefly.visible) return null;
     const route = traceWaypoints(this.points.slice(this.progress));

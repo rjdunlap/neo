@@ -658,6 +658,11 @@ class StampStudio implements Game {
     }
   }
   /** The ghost finger: make a small picture with what this level offers (stamps, colors, a turn, a bigger stamp, a carried stamp), then press the green arrow. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     const spot = this.sparkle();

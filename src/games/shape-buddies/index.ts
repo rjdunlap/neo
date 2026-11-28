@@ -877,6 +877,11 @@ class ShapeBuddies implements Game {
     });
     if (this.handles.length === 2) this.sync();
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.shared && !this.round.seats && !this.dead) return { tap: { on: this.together }, pause: 0.6 };
     if (!this.canEdit() || this.finished) return null;

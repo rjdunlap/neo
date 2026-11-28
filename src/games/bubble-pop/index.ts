@@ -255,6 +255,11 @@ class BubblePop implements Game {
   }
 
   /** The ghost finger on the how-to card: pop what a capable child would, and the rainbow bubble last. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.phase === 'done') return null;
     const shown = this.bubbles.filter(
@@ -280,6 +285,11 @@ class BubblePop implements Game {
       this.wantSize,
     );
     return pick ? { tap: { on: pick }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
+  }
+
+  /** The bubbles on screen, for the pad pointer: a touch anywhere pops the nearest, so they have no listener of their own. */
+  pointerSpots() {
+    return this.bubbles.filter((b) => !b.popped);
   }
 
   destroy() {

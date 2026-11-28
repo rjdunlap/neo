@@ -5,7 +5,6 @@ import { audio } from '../../audio/engine';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { nextSpot } from '../../couch/focus';
-import { couchStore } from '../../couch/store';
 import { CouchInput } from '../../engine/controller';
 import type { View } from '../../engine/view';
 import { openParentPanel } from '../../parent/panel';
@@ -24,15 +23,10 @@ import {
   AGE_CHIPS,
   birthForChip,
   chipForBirth,
-  couchNameFor,
   FIRST_VISIT_PLACES,
   exitFor,
-  modeFor,
-  POINTER_WINDOW_MS,
   readNewPlayer,
   skipsEgg,
-  sourceOfClick,
-  type Mode,
   type NewPlayer,
 } from '../chooser';
 import { selectPlayer } from '../players';
@@ -51,7 +45,7 @@ interface Item {
   save: SaveData;
 }
 
-/** A small game controller, for the card's own way into couch play. */
+/** A small game controller, on the Family play tile. */
 const PAD = `<svg viewBox="0 0 46 30" aria-hidden="true"><path fill="#6b6b7b" d="M10 3h26c5 0 8.5 4 9.4 11l1 8c.4 4-2 6-5.2 6-2.2 0-3.5-1.2-4.8-3.2L33.4 20H12.6l-1.4 4.8C9.9 26.8 8.6 28 6.4 28c-3.2 0-5.6-2-5.2-6l1-8C3.1 7 6 3 10 3z"/><path stroke="#fff" stroke-width="2.6" stroke-linecap="round" d="M13 9v8M9 13h8"/><circle cx="32" cy="10.5" r="2.2" fill="#fff"/><circle cx="37" cy="14.5" r="2.2" fill="#fff"/></svg>`;
 
 const MONTHS = [
@@ -80,9 +74,10 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text 
 const PLACE_PICTURE = { small: 150, medium: 190, large: 230 } as const;
 
 /**
- * "Who's playing?": a card for each person, and Add a player. A tap opens the island as that person; Enter or a controller
- * button opens couch play with them as Player 1, and so does the small controller button on each card, so a mouse user can
- * choose it too. Plain HTML over the island's backdrop. Nothing here can remove anyone: that is behind the gear's hold.
+ * "Who's playing?": a card for each person, Add a player, and Family play. A card opens the island as that person, picked
+ * by a tap, a click, Enter or a controller button alike. Family play is couch play (controller and keyboard games for the
+ * grown-ups, with its own save and names): a place of its own, not part of anyone's card. Plain HTML over the island's
+ * backdrop. Nothing here can remove anyone: that is behind the gear's hold.
  *
  * At the root, while every profile is hidden (blank or a guest), it is the first-visit screen instead (play-first slice 2):
  * three age places that play one round as a guest before anything is set up, and a smaller Add a player below them.
@@ -106,8 +101,6 @@ export class ChooserScene extends Scene {
   private age = 0;
   private busy = false;
   private closed = false;
-  /** When a real pointer last went down: the click that follows is that tap, whatever its `detail` says. */
-  private pointerAt = -Infinity;
   private form: HTMLElement | null = null;
   private formKey: ((e: KeyboardEvent) => void) | null = null;
   /** Showing the three age places rather than people's cards (`everyoneHidden` at the root). */
@@ -150,15 +143,8 @@ export class ChooserScene extends Scene {
     const ask = el('p', 'chooser__ask', 'Who’s playing?');
     this.page.append(title, ask, this.cards, this.note);
     this.note.hidden = true;
-    // A key (Tab included) brings the ring; any real pointer takes it away, and makes the click that follows its tap.
-    this.page.addEventListener(
-      'pointerdown',
-      () => {
-        this.pointerAt = performance.now();
-        this.showRing(false);
-      },
-      true,
-    );
+    // A key (Tab included) brings the ring; any real pointer takes it away.
+    this.page.addEventListener('pointerdown', () => this.showRing(false), true);
     window.addEventListener('keydown', this.onKeyDown);
     document.body.append(this.page, this.gear.el);
     setTimeout(() => this.page.classList.add('chooser--in'), 16);
@@ -206,6 +192,7 @@ export class ChooserScene extends Scene {
     if (this.closed) return;
     this.items = items;
     this.cards.replaceChildren();
+    this.page.querySelector('.chooser__family')?.remove();
     this.buttons = [];
     const opening = this.openFormOnBuild;
     this.openFormOnBuild = false;
@@ -241,18 +228,8 @@ export class ChooserScene extends Scene {
       play.dataset.id = entry.id;
       play.setAttribute('aria-label', `Play as ${name}`);
       play.append(this.friend(save), el('span', 'chooser__name', name));
-      play.addEventListener('click', (e) =>
-        this.choose(
-          entry.id,
-          modeFor(sourceOfClick(e.detail, performance.now() - this.pointerAt < POINTER_WINDOW_MS)),
-        ),
-      );
-      const couch = el('button', 'chooser__couch');
-      couch.type = 'button';
-      couch.setAttribute('aria-label', `${name}: couch play, with a controller or keyboard`);
-      couch.innerHTML = `${PAD}<span>Couch play</span>`;
-      couch.addEventListener('click', () => this.choose(entry.id, 'couch'));
-      card.append(play, couch);
+      play.addEventListener('click', () => this.choose(entry.id));
+      card.append(play);
       this.cards.append(card);
       this.buttons.push(play);
     }
@@ -266,6 +243,17 @@ export class ChooserScene extends Scene {
       add.addEventListener('click', () => this.openAdd());
       this.cards.append(add);
       this.buttons.push(add);
+    }
+    // Family play: the couch's own place, for whoever is on the couch, after the people (not on the first-visit screen,
+    // whose age places are about one person trying the island).
+    if (!firstVisit) {
+      const family = el('button', 'chooser__family');
+      family.type = 'button';
+      family.setAttribute('aria-label', 'Family play: couch games with a controller or keyboard');
+      family.innerHTML = `${PAD}<span class="chooser__family-words"><strong>Family play</strong><small>Couch games with a controller or keyboard</small></span>`;
+      family.addEventListener('click', () => this.openFamily());
+      this.cards.after(family);
+      this.buttons.push(family);
     }
     this.note.hidden = canAdd;
     if (!canAdd)
@@ -381,15 +369,13 @@ export class ChooserScene extends Scene {
     const id = at instanceof HTMLElement ? at.closest<HTMLElement>('.chooser__card')?.dataset.id : undefined;
     const band = at instanceof HTMLElement ? (at.dataset.band as Band | undefined) : undefined;
     if (band) this.playAsGuest(band);
-    else if (id) this.choose(id, modeFor('pad'));
+    else if (id) this.choose(id);
     else if (at instanceof HTMLElement && at.classList.contains('chooser__add')) this.openAdd();
+    else if (at instanceof HTMLElement && at.classList.contains('chooser__family')) this.openFamily();
   }
 
-  /**
-   * A card was picked. Sound is unlocked first, inside the gesture and before anything is awaited (iOS keeps the game
-   * silent otherwise); then the player is switched, and the mode decides where they go.
-   */
-  private choose(id: string, mode: Mode) {
+  /** Family play: couch play, as it is, for whoever is on the couch. The island's player stays whoever it was. */
+  private openFamily() {
     if (this.busy || this.closed) return;
     markTiming('tap');
     this.busy = true;
@@ -397,10 +383,25 @@ export class ChooserScene extends Scene {
     voice.unlock();
     this.stopInput();
     this.gear.hide(true);
-    void this.begin(id, mode);
+    this.app.go.couch();
   }
 
-  private async begin(id: string, mode: Mode) {
+  /**
+   * A card was picked. Sound is unlocked first, inside the gesture and before anything is awaited (iOS keeps the game
+   * silent otherwise); then the player is switched and goes to their starting view.
+   */
+  private choose(id: string) {
+    if (this.busy || this.closed) return;
+    markTiming('tap');
+    this.busy = true;
+    audio.unlock();
+    voice.unlock();
+    this.stopInput();
+    this.gear.hide(true);
+    void this.begin(id);
+  }
+
+  private async begin(id: string) {
     const ok = await selectPlayer(id);
     if (this.closed) return;
     if (!ok) {
@@ -409,16 +410,6 @@ export class ChooserScene extends Scene {
       this.gear.hide(false);
       this.startInput();
       await this.build();
-      return;
-    }
-    if (mode === 'couch') {
-      // Their name fills Player 1, as the couch shows names; with none, the couch keeps what it has.
-      const name = couchNameFor(store.data.profile.name);
-      if (name) {
-        couchStore.data.names[0] = name;
-        couchStore.save();
-      }
-      this.app.go.couch();
       return;
     }
     this.page.classList.add('chooser--leaving');

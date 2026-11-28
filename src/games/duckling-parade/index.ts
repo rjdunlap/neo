@@ -349,6 +349,11 @@ class DucklingParade implements Game {
     this.destinationAge = 1;
   };
 
+  /** For the pad pointer: the loose ducklings to steer Mama to (the meadow hears every touch as a place to go). */
+  pointerSpots() {
+    return this.ducklings.filter((d) => d.state === 'loose').map((d) => d.critter);
+  }
+
   private steer(e: FederatedPointerEvent, down: boolean) {
     if (down && this.lap && !this.destroyed && !this.finished && !palmOnGlass()) this.quack();
     if (this.destroyed || this.busy || this.finished) return;

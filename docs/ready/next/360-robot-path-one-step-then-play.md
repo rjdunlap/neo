@@ -1,0 +1,1 @@
+**`robot-path`, *One step, then play*** (new-levels tier): the next free stable ID (currently 17), preschool placed after 16 with `order`; a 3 × 3 board, one program slot, one arrow, then play, star one step away; rule test slot limit 1 and shortest route 1, a wrong arrow is the normal miss. [Dive slice 9](../../deep-dives/robot-path.md#build-slices-in-order).
