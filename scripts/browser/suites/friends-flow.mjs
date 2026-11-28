@@ -26,7 +26,7 @@ export function createSuite({
     await tap('neo.scene.choices.children[2]');
     await page.waitForTimeout(300); // Mochi, the sprout's second name
     await tap('neo.scene.next');
-    await scene('MapScene');
+    await scene('HomeScene');
     const mochi = await page.evaluate(() => kit.store.companion);
     assert.deepEqual(
       { species: mochi.species, name: mochi.name, metAt: mochi.metAt },
@@ -102,7 +102,7 @@ export function createSuite({
     await page.locator('.chooser__play canvas').first().waitFor();
     await screenshot('friends-chooser');
     await pickFirst();
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.equal(await page.evaluate(() => kit.store.companion.name), 'Pebble');
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;

@@ -481,7 +481,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       neo.go.land('lantern-lake');
     });
     await scene('LandScene');
-    await page.evaluate(() => neo.go.game('lantern-lights', 'grownup', undefined, false, 'lantern-lake'));
+    await page.evaluate(() =>
+      neo.go.game('lantern-lights', 'grownup', undefined, false, { land: 'lantern-lake' }),
+    );
     await scene('GameScene');
     await idle();
     await tapNext();
@@ -490,7 +492,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.waitForTimeout(700);
     // (A puzzle that takes only a controller would open its couch puzzle-shelf course from the island; Pond Conga, the last, now plays by touch.)
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.deepEqual(errors, []);
     log(
       'Lantern Lights touch: first and last level, a free tap and undo, one hint, start over, one sticker each, portrait and leaving mid-round passed',

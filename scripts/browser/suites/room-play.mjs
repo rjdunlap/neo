@@ -16,7 +16,7 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot }
       kit.store.flush();
       neo.go.hub();
     });
-    await scene('MapScene');
+    await scene('HomeScene');
     await tap('neo.scene.treehouse');
     await scene('RoomScene');
     await page.waitForTimeout(500);
@@ -127,7 +127,7 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot }
     assert.equal(emptied.room.frame, null);
     assert.equal(emptied.stickers, 3);
     await tap('neo.scene.home');
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.deepEqual(errors, []);
     log(
       'Room: reached from the map, an item moved (saved, on the floor), the lamp toggled, a shelf turned, the pet used the bed, rug, plant and music box, a sticker hung and kept through a reload without being used up, tidy and emptying the frame worked, home returned to the map',

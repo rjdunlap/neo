@@ -315,7 +315,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, finishe
       await page.evaluate(() => window.afterReset),
     );
     await page.evaluate(() => neo.go.hub());
-    await scene('MapScene');
+    await scene('HomeScene');
     log(
       'Discovery: result controls, Keep, stable resize, live pins, invalid/empty offers, exclusions and reset guards',
     );

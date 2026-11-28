@@ -30,7 +30,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
       neo.go.start();
     });
     await pickFirst();
-    await scene('MapScene');
+    await scene('HomeScene');
     await page.evaluate(() => neo.go.room());
     await scene('RoomScene');
     await tap('neo.scene.basket');
@@ -137,7 +137,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, s
     await ready();
     await scene('ChooserScene');
     await pickFirst();
-    await scene('MapScene');
+    await scene('HomeScene');
     assert.deepEqual(await page.evaluate(() => kit.store.companion.look.worn), ['scarf', 'sunhat']);
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;

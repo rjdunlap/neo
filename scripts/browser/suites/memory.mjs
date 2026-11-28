@@ -324,7 +324,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
           kit.tapOn(g.views[wrong].node);
           neo.go.hub();
         });
-        await scene('MapScene');
+        await scene('HomeScene');
         await page.waitForTimeout(1500);
       }
       log(`Memory Match level ${level}: matching and reward passed`);

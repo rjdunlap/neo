@@ -286,9 +286,19 @@ export function createSuite({
     await page.evaluate(() => neo.scene.home.press());
     await scene('LandScene');
     assert.equal(await page.evaluate(() => neo.scene.page), classicPage);
-    await page.evaluate(() => neo.go.place('prek'));
-    await scene('PlaceScene');
-    assert.ok(await page.evaluate(() => neo.scene.landmarks.some((m) => m.mod.id === 'movie-night')));
+    // Explore's All games (the age places retired with classic/) holds it for her age.
+    assert.ok(
+      await page.evaluate(
+        async ([band, id]) => {
+          const { allGames } = await import('/src/content/explore.ts');
+          const { GAMES } = await import('/src/games/registry.ts');
+          const { LANDS } = await import('/src/content/lands.ts');
+          return allGames(band, GAMES, LANDS).some((g) => g.id === id);
+        },
+        ['prek', 'movie-night'],
+      ),
+      "movie-night is among Explore's games",
+    );
     await page.goto(new URL('/', process.env.GAME_URL).href);
     await ready();
     await scene('ChooserScene');
@@ -316,8 +326,8 @@ export function createSuite({
       kit.store.data.profile.band = 'prek';
       neo.go.explore('places');
     });
-    await scene('ExploreScene');
-    await page.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.id === 'treehouse').node));
+    await scene('MapScene');
+    await page.evaluate(() => kit.tapOn(neo.scene.lands.find((l) => l.def.id === 'treehouse').node));
     await scene('LocationScene');
     await turnToGame('movie-night');
     const rootPage = await page.evaluate(() => neo.scene.page);

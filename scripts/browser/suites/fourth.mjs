@@ -1181,11 +1181,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.evaluate((ids) => ids.map((id) => ({ id, plays: kit.store.stats(id).plays })), ids),
       progress,
     );
-    await page.evaluate(() => neo.go.place('lap'));
-    await scene('PlaceScene');
-    const lap = await page.evaluate(() => neo.scene.landmarks.map((l) => l.mod.id));
+    // Explore's All games (the age places retired with classic/) holds every lap game.
+    const lap = await page.evaluate(async (band) => {
+      const { allGames } = await import('/src/content/explore.ts');
+      const { GAMES } = await import('/src/games/registry.ts');
+      const { LANDS } = await import('/src/content/lands.ts');
+      return allGames(band, GAMES, LANDS).map((g) => g.id);
+    }, 'lap');
     for (const id of ids) assert.ok(lap.includes(id), id);
-    log('Puddle Lagoon shows all four, and saved progress survives a reload');
+    log('Explore holds all four for lap, and saved progress survives a reload');
   }
 
   return { fourth };
