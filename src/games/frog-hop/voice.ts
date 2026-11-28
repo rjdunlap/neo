@@ -75,5 +75,8 @@ export const VOICE = {
   'hop.along': ['Tap the pond, and the frog hops! Up to {n}.'],
   'hop.along.home': ['Home! Ribbit, {n}!'],
   'hop.along.done': ['{n} big hops! Splash!'],
+  'hop.dots': ['Hop to {n}! Find the pad with {n} dots.'],
+  'hop.wrong.dots-forward': ['That is {m}. {n} is further along!'],
+  'hop.wrong.dots-back': ['That is {m}. {n} is back this way!'],
   'hop.done': ['The frog hopped all the way home. Ribbit!'],
 } satisfies Record<string, string[]>;

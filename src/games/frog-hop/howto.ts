@@ -68,6 +68,11 @@ export const HOW_TO: GameHowTo = {
       to: 16,
       text: 'Tap anywhere on the pond: the frog hops pad by pad to the lily pad nearest the tap, saying each number. Tap the bank to hop it home.',
     },
+    {
+      from: 17,
+      to: 17,
+      text: 'The sign shows dots. Tap the lily pad with that many dots, and the frog hops there pad by pad, saying each number.',
+    },
   ],
   finish: [
     { to: 14, text: 'Answer the questions to bring the frog home.' },

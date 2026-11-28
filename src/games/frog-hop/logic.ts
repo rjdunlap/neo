@@ -27,7 +27,8 @@ export type HopMode =
   | 'tens'
   | 'hops'
   | 'estimate'
-  | 'along';
+  | 'along'
+  | 'dots';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -37,7 +38,8 @@ export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-m
 export const countsHops = (mode: HopMode) => mode === 'gap' || mode === 'count-up';
 
 /** The levels drawn by a scene of their own, with no lily pads: Big hops and little hops, and Where does it go?. */
-export const ownScene = (mode: HopMode) => mode === 'hops' || mode === 'estimate' || mode === 'along';
+export const ownScene = (mode: HopMode) =>
+  mode === 'hops' || mode === 'estimate' || mode === 'along' || mode === 'dots';
 
 export const splitsAtTen = (mode: HopMode) => mode === 'make-ten' || mode === 'back-ten';
 
@@ -139,6 +141,12 @@ export const PLANS: HopPlan[] = [
     questions: 6,
     name: 'Hop along: tap the pond and the frog hops pad by pad, 1 to 5, saying each number',
   },
+  {
+    mode: 'dots',
+    top: 5,
+    questions: 5,
+    name: 'Hop to the dots: the sign shows dots, she taps the pad with that many, 1 to 5',
+  },
 ];
 
 /** The number a pad shows and the frog says: its place on the line times the plan's stride. */
@@ -146,18 +154,20 @@ export const padValue = (plan: HopPlan, n: number) => n * (plan.stride ?? 1);
 
 /** Hop along (level 16): an entry below level 1, for lap and toddler. */
 export const ALONG_LEVEL = 16;
+/** Hop to the dots (level 17): the toddler's second entry, after Hop along. */
+export const DOTS_LEVEL = 17;
 
 export const LEVELS: BandLevels = {
   lap: { min: ALONG_LEVEL, max: ALONG_LEVEL },
-  toddler: { min: ALONG_LEVEL, max: ALONG_LEVEL },
+  toddler: { min: ALONG_LEVEL, max: DOTS_LEVEL },
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  // School holds the school ladder only: 16 is the youngest's, so the ceiling is a literal, not `PLANS.length`.
+  // School holds the school ladder only: 16 and 17 are the youngest's, so the ceiling is a literal, not `PLANS.length`.
   school: { min: 3, max: 15 },
 };
 
 /** The easy levels with high IDs, appended above the ladder (`GameModule.entryLevels`). */
-export const ENTRY_LEVELS = [ALONG_LEVEL] as const;
+export const ENTRY_LEVELS = [ALONG_LEVEL, DOTS_LEVEL] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -313,6 +323,7 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   if (plan.mode === 'estimate') return estimateQuestions(plan, rng);
   // Hop along asks nothing: six free taps.
   if (plan.mode === 'along') return [];
+  if (plan.mode === 'dots') return dotsQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -808,19 +819,19 @@ export interface AlongLayout {
  * (an upright phone, 768 wide) two rows reading like text: the bank and pads 1–3, then pads 4–5 under 1 and 2. The rows
  * hang clear of the guide's bottom-left corner (`corner`).
  */
-export function alongLayout(view: { w: number; h: number }, corner = 200): AlongLayout {
-  const oneRow = view.w >= (ALONG_PADS + 1) * ALONG_PITCH + 120;
+export function alongLayout(view: { w: number; h: number }, corner = 200, count = ALONG_PADS): AlongLayout {
+  const oneRow = view.w >= (count + 1) * ALONG_PITCH + 120;
   const half = ALONG_PITCH / 2;
   let spots: { x: number; y: number }[];
   if (oneRow) {
-    const x0 = (view.w - ALONG_PADS * ALONG_PITCH) / 2;
+    const x0 = (view.w - count * ALONG_PITCH) / 2;
     const y = view.h * 0.6;
-    spots = Array.from({ length: ALONG_PADS + 1 }, (_, k) => ({ x: x0 + k * ALONG_PITCH, y }));
+    spots = Array.from({ length: count + 1 }, (_, k) => ({ x: x0 + k * ALONG_PITCH, y }));
   } else {
     const x0 = (view.w - 3 * ALONG_PITCH) / 2;
     const yB = Math.min(view.h * 0.5 + ALONG_ROW_GAP, view.h - corner - half);
     const yA = yB - ALONG_ROW_GAP;
-    spots = Array.from({ length: ALONG_PADS + 1 }, (_, k) =>
+    spots = Array.from({ length: count + 1 }, (_, k) =>
       k <= 3 ? { x: x0 + k * ALONG_PITCH, y: yA } : { x: x0 + (k - 3) * ALONG_PITCH, y: yB },
     );
   }
@@ -858,3 +869,50 @@ export function alongRoute(from: number, to: number): number[] {
 
 /** The note a landing plays: `sfx.pop`'s step, rising with the pad; the bank (0) is the lowest. */
 export const alongNote = (pad: number) => 5 + pad;
+
+// Hop to the dots (level 17, entries slice 17): toddler ----------------------------------------------
+
+/** Questions 1 and 2 use the short line, pads 1 to 3; the rest use all five. */
+export const DOTS_SHORT = 2;
+export const DOTS_SHORT_PADS = 3;
+/** Each dot on the sign is this wide (the definition's floor is 36), and this far from the next, centre to centre. */
+export const SIGN_DOT_R = 20;
+export const SIGN_DOT_GAP = 52;
+
+/** How many pads question `i` (0-based) shows. */
+export const dotsPadsFor = (i: number) => (i < DOTS_SHORT ? DOTS_SHORT_PADS : ALONG_PADS);
+
+/**
+ * Five targets: 1 to 3 on the short line, then 1 to 5, never the previous question's number, and at least one 4 or 5 on
+ * the long line. The frog starts on the bank (0) every question.
+ */
+export function dotsQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  for (;;) {
+    const out: HopQuestion[] = [];
+    let last = 0;
+    for (let i = 0; i < plan.questions; i++) {
+      let target: number;
+      do target = rng.int(1, dotsPadsFor(i));
+      while (target === last);
+      last = target;
+      out.push({ start: 0, target, hops: target, lo: 0 });
+    }
+    if (out.slice(DOTS_SHORT).some((q) => q.target >= 4)) return out;
+  }
+}
+
+/** The sign's dots for `n`, in the pads' five-frame grouping (`dotLayout`) scaled up, relative to the sign's centre. */
+export const signDots = (n: number) =>
+  dotLayout(n).map((d) => ({ x: (d.x / DOT_GAP) * SIGN_DOT_GAP, y: (d.y / DOT_GAP) * SIGN_DOT_GAP }));
+
+/** The sign's box for the dot levels: centred at the top, clear of the pause button. */
+export function dotsSign(view: { w: number; h: number }) {
+  const w = 5 * SIGN_DOT_GAP + 60;
+  const h = 2 * SIGN_DOT_R + 48;
+  const y = view.h > view.w * 1.1 ? 150 : 110;
+  return { x: view.w / 2 - w / 2, y: y - h / 2, w, h };
+}
+
+/** A wrong pad on the dot level: the target is further along (forward) or back this way. */
+export const dotsMissLine = (target: number, tapped: number) =>
+  target > tapped ? 'hop.wrong.dots-forward' : 'hop.wrong.dots-back';

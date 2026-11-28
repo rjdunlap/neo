@@ -1,9 +1,9 @@
 import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
-import { ink, swatch } from '../../art/palette';
+import { grass, ink, swatch } from '../../art/palette';
 import { label } from '../../ui/text';
 import { DOT_R, dotLayout, PAD_HIT, type HopScene } from './logic';
 
-// The lily pad and its dots, shared by the main line and Hop along (level 16).
+// The lily pad and its dots, shared by the main line, Hop along (level 16) and Hop to the dots (level 17).
 
 /** The first row of dots under a pad's numeral, clear of the numeral (y 44) and inside the pad's step. */
 export const DOTS_Y = 82;
@@ -11,6 +11,21 @@ export const DOTS_Y = 82;
 /** Dots for a numeral, fives grouped (`dotLayout`), centred on (x, y). */
 export function drawDots(g: Graphics, n: number, x: number, y: number) {
   for (const d of dotLayout(n)) g.circle(x + d.x, y + d.y, DOT_R).fill(swatch.blue.fill);
+}
+
+/** The frog's home bank on the entry ponds (levels 16 and 17): earth with a grassy top and tufts, so it reads as land, not a pad. */
+export function drawBank(g: Graphics, b: { x: number; y: number }) {
+  g.ellipse(b.x, b.y + 18, 72, 44)
+    .fill(swatch.brown.fill)
+    .stroke({ width: 5, color: swatch.brown.line })
+    .ellipse(b.x, b.y + 4, 62, 26)
+    .fill(grass)
+    .stroke({ width: 4, color: swatch.green.line });
+  for (const dx of [-34, -4, 26])
+    g.moveTo(b.x + dx - 8, b.y + 4)
+      .lineTo(b.x + dx, b.y - 18)
+      .lineTo(b.x + dx + 8, b.y + 4)
+      .stroke({ width: 4, color: swatch.green.line, join: 'round' });
 }
 
 /** What the frog lands on in each scene, inside the lily pad's 96 × 56 oval. */

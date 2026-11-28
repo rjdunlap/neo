@@ -63,7 +63,7 @@ Every new line goes under the game's `hop.` prefix, which is not a rendered pref
 
 ## 17 *Hop to the dots* (toddler)
 
-*In progress 2026-11-28 on `claude/frog-hop-hop-to-the-dots`.*
+*Built 2026-11-28 on `claude/frog-hop-hop-to-the-dots` ([PR #2368](https://github.com/rjdunlap/neo/pull/2368)); see the [game page](../games/frog-hop.md) for what was built. Each pad has its own 140 tap box and open water only ripples, rather than level 16's whole-pond target, so a stray tap is never a miss.*
 
 **Fun action and purpose.** Level 1 with dots for a child who cannot read numerals yet. The sign shows dots only (no numeral), in the five-frame grouping of `dotLayout`, and the voice says "Hop to three!" She taps the pad with that many dots; each pad shows its dots and its numeral, so the numeral sits beside the quantity. Give-N shaped: match a small quantity to its place on the line.
 
