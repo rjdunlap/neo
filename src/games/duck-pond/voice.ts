@@ -58,4 +58,11 @@ export const VOICE = {
   'duckpeek.tapEach': ['Tap each duck as you count it!'],
   'duckpeek.more': ['{n} counted. Who is still peeking?'],
   'duckpeek.allRung': ['{n} rings, so {n} ducks!'],
+  // Level 18, Which side has more? Device speech too, like level 17.
+  'duckcmp.ask': ['Which side has more ducks? Or are they the same? Tap the side, or the same button.'],
+  'duckcmp.pairs': ["Let's pair them up across the bridge!"],
+  'duckcmp.more': ['These ducks have no partner, so this side has more!'],
+  'duckcmp.same': ['Every duck has a partner. They are the same!'],
+  'duckcmp.hintMore': ['Look at the ducks with no partner. Which side has more?'],
+  'duckcmp.hintSame': ['Every duck has a partner! Are they the same?'],
 } satisfies Record<string, string[]>;

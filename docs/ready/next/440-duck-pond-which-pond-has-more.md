@@ -1,1 +1,0 @@
-**`duck-pond`, *Which pond has more?*** (new-levels tier): at the next free ID (currently 18; *Count the peekers* is 17); pre-K between 7 and 8 with `order`; two small ponds pair up one to one and the spare ducks stand out; "the same" in at most one round of five. [Dive slice 10](../../deep-dives/duck-pond.md#build-slices-in-order).
