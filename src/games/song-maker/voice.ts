@@ -8,6 +8,12 @@ export const VOICE = {
   'song.compose.ready': ['Do you like your song? Press the check to hear it once more!'],
   'song.answer': ['Listen to my song, {name}! Now answer it: tap one jelly in each of the last four beats.'],
   'song.answer.ready': ['Is that a good answer, {name}? Press the check to hear our song once more!'],
+  'song.home': [
+    'Listen to my song, {name}! Now answer it, and end your answer on the home jelly at the very bottom.',
+  ],
+  'song.home.hear': [
+    'Hear how this one sounds finished, {name}? It ends on the home jelly. Change your last jelly to try it!',
+  ],
   'song.finish': ['Listen to my start, {name}! Now finish it: tap one jelly in each of the last two beats.'],
   'song.finish.ready': ['Is that a good ending, {name}? Press the check to hear our song once more!'],
   'song.copy': ['Tap the shadow jellies to make the song!'],
