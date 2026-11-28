@@ -705,6 +705,15 @@ class RecipeWorkshop implements Game {
   }
 
   /** The ghost finger: level 1 both pots, the spoon and Serve; level 2 the base first (the order is free); level 3 each bowl in turn. */
+  /** Guided first play: skips the demonstration's first look into an empty pot; the bot's step is put back. */
+  showMove(): TouchIntent | null {
+    const step = this.demoStep;
+    this.demoStep = 1;
+    const move = this.autotouch();
+    this.demoStep = step;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     const s = this.state,
