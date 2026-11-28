@@ -27,6 +27,7 @@ import { setNote, type PlaytestNote } from '../content/playtest';
 import { earnShells as earnedFor } from '../content/shells';
 import { awardStamps, newStamps, type StampKind } from '../content/stamps';
 import { buy as buyLook, colorId, type BuyRefusal } from '../content/shop';
+import { recordAllSix as recordSix } from '../content/sixes';
 import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
 import { cleanForms, cleanLookForm, isForm, type FormId } from '../creatures/forms';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
@@ -263,6 +264,20 @@ export class Store {
     this.save();
     this.flush();
     return true;
+  }
+
+  /**
+   * All of Today's six are done on `day` (the progression loop, slice 5): the day gets its lantern on the calendar and, the
+   * first time, a band that earns shells gets the bonus. Returns the bonus (0 when already recorded or not earned).
+   */
+  recordAllSix(day: string): number {
+    const r = recordSix(this.data.sixes, this.data.shells, day, this.data.profile.band);
+    if (r.sixes === this.data.sixes) return 0;
+    this.data.sixes = r.sixes;
+    this.data.shells = r.shells;
+    this.save();
+    this.flush();
+    return r.bonus;
   }
 
   /** Whether no round of this game has been finished yet (in any place). */

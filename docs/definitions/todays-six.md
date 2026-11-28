@@ -13,7 +13,7 @@ This is a shell feature, not a game. It adds no game ID, no learning claim of it
 | Pool | Touch games listing the band; a grown-up gets grown-up and early-school games | Same, plus an explicit per-game eligibility rule and a registry test, so the pool is inspectable |
 | Levels | Grown-ups: a seeded level from the top third of each game's ladder; children: their saved level | **Every band plays a preset level** from the band's own ladder, chosen with the day; a grown-up's pin wins; the round does not move her saved level |
 | Mix | One subject (`region`, a land) per game before any repeats | **One kind of challenge per game** before any repeats, then the land spread; the seven kinds are below |
-| Across days | Tick for a game played today; no streak, nothing missed | Same. Finishing all six gets a small flourish and nothing else |
+| Across days | Tick for a game played today; no streak, nothing missed | Same. Finishing all six gets a small flourish; a grown-up also gets 25 shells once that day, a lantern on a month calendar and a share line ([progression loop, slice 5](progression-loop.md#slice-5-todays-six-extras)), still with no streak and nothing marked missed |
 
 ## Brain Age, and what the island keeps
 
