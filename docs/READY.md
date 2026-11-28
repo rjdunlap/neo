@@ -75,8 +75,6 @@ Refilled 2026-11-28 from the dives' slice lists, each checked against the game's
 - **`stamp-studio`, *The pet tells it back*** (existing-game tier: rule tests that every sentence is true of its picture, one scripted play; decision 6 settled 2026-10-23). [Dive slice 9](deep-dives/stamp-studio.md#build-slices-in-order).
 - **`story-steps`, level 0b *Press the picture to watch*** (new-levels tier): after 0a, at the next free ID, lap; three cards that play in order when tapped, a story told, not asked. [Dive slice 7](deep-dives/story-steps.md#build-slices-in-order).
 - **`clock-tower`, preschool 1–1** (younger-band opening tier): after level 11's pull request merges; copy a visible model with one hand (decided 2026-10-23), band and inventory counts, a scoped card, registry and lands rules. [Dive slice 8](deep-dives/clock-tower.md#build-slices-in-order).
-- **Define Duckling Parade level 12, the continuation** (docs only): the reference and progress card, the one-step reveal counted as help, completion and the bot (approved 2026-10-23); queue its build. [Dive slice 5](deep-dives/duckling-parade.md#build-slices-in-order).
-- **Define Garden Rows *Two-flower beds* (4×4)** (docs only): a new level ID, its rules, layout at the four views and rule tests; queue its build. [Dive slice 5](deep-dives/garden-rows.md#build-slices-in-order).
 - **Define Duck Pond *Pairs* and *Who was here first?*** (docs only): evens and odds by ducks swimming two by two (Duck Pond owns them, decided 2026-10-23) and the unknown-start story (1.OA.A.1); IDs, bands, accounting and rule tests; queue the builds. [Dive slice 11](deep-dives/duck-pond.md#build-slices-in-order).
 
 

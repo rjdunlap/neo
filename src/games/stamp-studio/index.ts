@@ -15,13 +15,24 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { sceneArt, stampArt } from './art';
 import { TracePrints } from './trace';
 import {
+  anchorPixel,
+  type Anchor,
   animalAsks,
   animalWord,
+  type Invite,
+  type Relation,
+  meetsRelation,
+  relationPhrase,
+  relationTarget,
   ASK_HINT_AFTER,
   choiceButtonRadius,
   COLOR_RADIUS,
+  ABOVE_REACH,
+  BETWEEN_REACH,
   LEVELS,
   meetsWord,
+  NEXT_TO,
+  ON_ANCHOR,
   nextSize,
   PLACE_GLOW_AFTER,
   PLACE_PHRASES,
@@ -29,7 +40,6 @@ import {
   POND,
   POND_REACH,
   SCENES,
-  type PlaceWord,
   stampLine,
   LIMIT,
   pixel,
@@ -120,8 +130,15 @@ class StampStudio implements Game {
   askIndex = 0;
   hintKind: StampKind | null = null;
   readonly choiceGlow = new Graphics();
-  /** Where does it go? (level 12): the round's place invitations, how many are met, and the named place's idle glow. */
-  readonly invites: { word: PlaceWord; kind: StampKind }[] = [];
+  /**
+   * The invitation levels, Where does it go? (12) and Next to, between, above (13): the round's invitations, how many are
+   * met, and the idle glow over the place that would meet the open one.
+   */
+  readonly invites: Invite[] = [];
+  /** Next to, between, above: the two animals printed on the paper, which never move and are not hers to remove. */
+  readonly anchors: Anchor[] = [];
+  readonly anchorMarks: Mark[] = [];
+  private readonly anchorShadows = new Graphics();
   inviteIndex = 0;
   private elsewhereSaid = false;
   readonly placeGlow = new Graphics();
@@ -149,6 +166,7 @@ class StampStudio implements Game {
     this.color = round.color;
     this.scene = round.scene;
     if (round.invites) this.invites.push(...round.invites);
+    if (round.anchors) this.anchors.push(...round.anchors);
     this.activeKinds = [...this.plan.kinds];
     this.kind = this.activeKinds[0];
     this.backdrop.eventMode = 'none';
@@ -164,6 +182,17 @@ class StampStudio implements Game {
     );
     this.placeGlow.eventMode = 'none';
     this.placeGlow.visible = false;
+    this.anchorShadows.eventMode = 'none';
+    this.paper.addChild(this.anchorShadows);
+    for (const [i, a] of this.anchors.entries()) {
+      // Printed in two fixed colors; a press on an animal passes through to the paper.
+      const data: Stamp = { kind: a.kind, color: i ? 'blue' : 'orange', x: 0.5, y: 0.5, size: 1, turns: 0 };
+      const node = new Container();
+      node.addChild(stampArt(data.kind, data.color));
+      node.eventMode = 'none';
+      this.paper.addChild(node);
+      this.anchorMarks.push({ data, node });
+    }
     if (this.plan.follow) {
       this.spots.push(...sparkleSpots(ctx.rng));
       const gold = swatch.yellow;
@@ -188,7 +217,8 @@ class StampStudio implements Game {
         this.drawSelection();
       }
       const p = this.paper.toLocal(e.global);
-      if (this.stamps.length >= LIMIT) {
+      // The printed animals are kept with the picture, so they take their places in its limit.
+      if (this.stamps.length >= LIMIT - this.anchorMarks.length) {
         if (this.currentAsk() !== null) {
           // Keep the paper within the limit without locking out remaining asks.
           this.remove(this.stamps[0]);
@@ -354,7 +384,7 @@ class StampStudio implements Game {
     this.finish.rotation = 0;
     this.stopScan();
     this.placeGlow.visible = false;
-    // Where does it go?: each invitation not met when she finishes counts as one hint (never spoken as a failure).
+    // Levels 12 and 13: each invitation not met when she finishes counts as one hint (never spoken as a failure).
     for (let i = this.inviteIndex; i < this.invites.length; i++) hinted(this.tally);
     this.play.visible = false;
     this.setsButton.visible = false;
@@ -370,20 +400,22 @@ class StampStudio implements Game {
       s.node.scale.set(1);
       this.layoutStamp(s);
     });
+    // The printed animals are kept with her picture (first, under her stamps) and wake up with it.
+    const marks = [...this.anchorMarks, ...this.stamps];
     const creation = {
       kind: 'picture' as const,
-      stamps: this.stamps.map((s) => ({ ...s.data })),
+      stamps: marks.map((s) => ({ ...s.data })),
       ...(this.scene ? { scene: this.scene } : {}),
     };
     void this.ctx.say('stamp.done');
     // The wake-up: each stamp bounces with its own sound, in the order it was placed, then the round ends (`update`).
     this.woken = [];
-    const { at, end } = wakeSchedule(this.stamps.length);
+    const { at, end } = wakeSchedule(marks.length);
     const sounds = wakeSounds(
-      this.stamps.map((s) => s.data.kind),
+      marks.map((s) => s.data.kind),
       at,
     );
-    this.wake = { at, end, sounds, time: 0, marks: [...this.stamps], creation };
+    this.wake = { at, end, sounds, time: 0, marks, creation };
   }
   /** A stamp's own sound; a pitched one rings the step for this `press` (counting from 1). */
   private sound(kind: StampKind, press: number) {
@@ -533,14 +565,27 @@ class StampStudio implements Game {
     )
       this.complete();
   }
-  /** The place invitation still open (Where does it go?, level 12), or null once all are met. */
+  /** The invitation still open (levels 12 and 13), or null once all are met. */
   private currentInvite() {
     return this.invites[this.inviteIndex] ?? null;
+  }
+  /** The printed animals' centres on this paper. */
+  private anchorPixels() {
+    return this.anchors.map((a) => anchorPixel(a, this.width, this.height));
+  }
+  private invitePlace(invite: Invite) {
+    return 'word' in invite ? PLACE_PHRASES[invite.word] : relationPhrase(invite.relation, this.anchors);
+  }
+  /** Whether a stamp centred at this pixel meets the invitation: only where it lands counts. */
+  private meets(invite: Invite, p: Pt) {
+    return 'word' in invite
+      ? meetsWord(invite.word, p.x, p.y, this.width, this.height)
+      : meetsRelation(invite.relation, p.x, p.y, this.anchorPixels());
   }
   private sayInvite(line: 'stamp.places' | 'stamp.elsewhere') {
     const invite = this.currentInvite();
     if (!invite) return;
-    const params = { kind: animalWord(invite.kind), place: PLACE_PHRASES[invite.word] };
+    const params = { kind: animalWord(invite.kind), place: this.invitePlace(invite) };
     if (line === 'stamp.places') void this.ctx.instruct(line, params);
     else void this.ctx.say(line, params);
   }
@@ -554,7 +599,7 @@ class StampStudio implements Game {
     this.idleTime = 0;
     this.placeGlow.visible = false;
     const p = pixel(stamp, this.width, this.height);
-    if (!meetsWord(invite.word, p.x, p.y, this.width, this.height)) {
+    if (!this.meets(invite, p)) {
       if (!this.elsewhereSaid) {
         this.elsewhereSaid = true;
         this.sayInvite('stamp.elsewhere');
@@ -573,6 +618,7 @@ class StampStudio implements Game {
       life: [0.4, 0.7],
     });
     if (this.currentInvite()) this.sayInvite('stamp.places');
+    else if (this.plan.relate) void this.ctx.instruct('stamp.relationsdone', { count: 'three' });
     else void this.ctx.instruct('stamp.placesdone', { count: 'three' });
     this.drawPlaceGlow();
   }
@@ -583,15 +629,47 @@ class StampStudio implements Game {
     if (!invite) return;
     const w = this.width;
     const h = this.height;
+    const fill = { color: 0xfff3a0, alpha: 0.45 };
+    if (!('word' in invite)) {
+      this.drawRelationGlow(g, invite.relation, fill);
+      return;
+    }
     const horizon = h * SCENES.farm.horizon;
     const pond = () => g.ellipse(w * POND.x, h * POND.y, w * POND.rx + POND_REACH, h * POND.ry + POND_REACH);
-    const fill = { color: 0xfff3a0, alpha: 0.45 };
     if (invite.word === 'sky') g.rect(4, 4, w - 8, horizon - 4).fill(fill);
     else if (invite.word === 'water') pond().fill(fill).stroke({ width: 5, color: swatch.yellow.line });
     else {
       g.rect(4, horizon, w - 8, h - horizon - 4).fill(fill);
       pond().cut();
     }
+  }
+  /** Next to, between, above: the zone that would meet the relation, with the animals themselves left clear. */
+  private drawRelationGlow(g: Graphics, r: Relation, fill: { color: number; alpha: number }) {
+    const pts = this.anchorPixels();
+    if (r.rel === 'next') g.circle(pts[r.anchor].x, pts[r.anchor].y, NEXT_TO).fill(fill);
+    else if (r.rel === 'between') {
+      const [a, b] = pts;
+      const len = Math.hypot(b.x - a.x, b.y - a.y);
+      const nx = (-(b.y - a.y) / len) * BETWEEN_REACH;
+      const ny = ((b.x - a.x) / len) * BETWEEN_REACH;
+      g.poly([a.x + nx, a.y + ny, b.x + nx, b.y + ny, b.x - nx, b.y - ny, a.x - nx, a.y - ny]).fill(fill);
+    } else {
+      const a = pts[r.anchor];
+      const top = r.rel === 'above' ? 4 : a.y + ON_ANCHOR;
+      const bottom = r.rel === 'above' ? a.y - ON_ANCHOR : this.height - 4;
+      g.rect(a.x - ABOVE_REACH, top, ABOVE_REACH * 2, bottom - top).fill(fill);
+    }
+    for (const a of pts) g.circle(a.x, a.y, ON_ANCHOR).cut();
+  }
+  /** Lay the printed animals and their soft shadows out on this paper. */
+  private layoutAnchors() {
+    const shadows = this.anchorShadows.clear();
+    this.anchorPixels().forEach((p, i) => {
+      const mark = this.anchorMarks[i];
+      Object.assign(mark.data, place(p.x, p.y, this.width, this.height));
+      this.layoutStamp(mark);
+      shadows.ellipse(p.x + 4, p.y + 44, 50, 14).fill({ color: 0x000000, alpha: 0.12 });
+    });
   }
   private checkAsk(stamped: StampKind) {
     const ask = this.currentAsk();
@@ -688,6 +766,7 @@ class StampStudio implements Game {
       .roundRect(3.5, 3.5, this.width - 7, this.height - 7, 20.5)
       .fill(0xffffff);
     this.drawBackdrop();
+    this.layoutAnchors();
     this.drawPlaceGlow();
     this.choices.forEach((b, i) => b.position.set(l.choices[i].x, l.choices[i].y));
     this.colors.forEach((b, i) => b.position.set(l.colors[i].x, l.colors[i].y));
@@ -793,11 +872,14 @@ class StampStudio implements Game {
         return { tap: { on: this.finish } };
     }
   }
-  /** The ghost finger's open invitation: its suggested stamp and a press well inside its place. */
+  /** The ghost finger's open invitation: its suggested stamp and a press well inside its place or relation. */
   private inviteFor() {
     const invite = this.currentInvite();
     if (!invite) return undefined;
-    const at = placeTarget(invite.word, this.width, this.height);
+    const at =
+      'word' in invite
+        ? placeTarget(invite.word, this.width, this.height)
+        : relationTarget(invite.relation, this.anchorPixels());
     return { kind: invite.kind, at: place(at.x, at.y, this.width, this.height) };
   }
   destroy() {

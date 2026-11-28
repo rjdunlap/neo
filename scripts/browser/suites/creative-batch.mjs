@@ -261,6 +261,77 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       assert.deepEqual(await score('stamp-studio'), [0, 1], 'one place not found counts one hint, no misses');
       await page.setViewportSize({ width: 1024, height: 768 });
     }
+    if ((!only || only === 'stamps') && stampAt(13)) {
+      // Level 13, Next to, between, above (pre-K and up): two animals printed on plain paper and three spoken relations; a
+      // stamp elsewhere is no miss, the relation's zone glows after a quiet spell, and one not met by the arrow is one hint.
+      await launch('stamp-studio', 13);
+      await page.evaluate(() => {
+        if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
+      });
+      await page.waitForTimeout(500);
+      await page.evaluate(async () => {
+        const { anchorPixel, meetsRelation, relationTarget } =
+          await import('/src/games/stamp-studio/logic.ts');
+        const g = neo.scene.game;
+        if (g.invites.length !== 3 || g.anchors.length !== 2 || g.anchorMarks.length !== 2)
+          throw new Error(
+            `Expected two animals and three relations, got ${JSON.stringify([g.anchors, g.invites])}`,
+          );
+        if (g.scene) throw new Error(`Level 13 is on ${g.scene}, not plain paper`);
+        const pts = () => g.anchors.map((a) => anchorPixel(a, g.width, g.height));
+        const tapAt = async (t) => {
+          const p = g.paper.toGlobal(t);
+          kit.tap(p.x, p.y);
+          await kit.sleep(350);
+        };
+        // A stamp far from what the first relation asks is part of the picture: no miss, the invitation stays open.
+        const corner = { x: 80, y: 80 };
+        if (meetsRelation(g.invites[0].relation, corner.x, corner.y, pts()))
+          throw new Error('The corner unexpectedly meets the first relation');
+        await tapAt(corner);
+        if (g.stamps.length !== 1 || g.inviteIndex !== 0 || g.misses !== 0)
+          throw new Error(
+            `Off-relation stamp: stamps=${g.stamps.length} met=${g.inviteIndex} misses=${g.misses}`,
+          );
+        if (!g.finish.visible) throw new Error('The green arrow is hidden while invitations are open');
+        // A tap on a printed animal stamps on the paper there; the animal itself never moves or goes away.
+        const before = JSON.stringify(g.anchorMarks.map((m) => m.data));
+        await tapAt(pts()[0]);
+        kit.tapOn(g.undo);
+        await kit.sleep(300);
+        if (g.stamps.length !== 1 || JSON.stringify(g.anchorMarks.map((m) => m.data)) !== before)
+          throw new Error('Pressing on an animal or undoing moved or removed a printed animal');
+        g.idleTime = 12.5;
+        await kit.sleep(200);
+        if (!g.placeGlow.visible || g.hints !== 0)
+          throw new Error('No idle glow of the relation, or it counted');
+        for (let i = 0; i < 2; i++) {
+          kit.tapOn(g.choices[g.activeKinds.indexOf(g.invites[i].kind)]);
+          await kit.sleep(400);
+          await tapAt(relationTarget(g.invites[i].relation, pts()));
+          if (g.inviteIndex !== i + 1)
+            throw new Error(`Invitation ${i + 1} (${JSON.stringify(g.invites[i].relation)}) not met`);
+          if (g.placeGlow.visible) throw new Error('The relation glow stayed on after a stamp');
+        }
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+      await screenshot('stamp-studio-13-portrait');
+      const kept = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        kit.tapOn(g.finish);
+        await kit.sleep(100);
+        return g.wake?.creation.stamps.length ?? -1;
+      });
+      assert.equal(kept, 5, 'the kept picture holds the two animals and her three stamps');
+      await finished('stamp-studio');
+      assert.deepEqual(
+        await score('stamp-studio'),
+        [0, 1],
+        'one relation not met counts one hint, no misses',
+      );
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
     if ((!only || only === 'stamps') && stampAt(7)) {
       // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
       // The teal around the paper presses too, at the nearest place on it, and no star button or arrow is shown.

@@ -172,6 +172,8 @@ export interface StampPlan {
   ask?: { count: number };
   /** Where does it go? (level 12): on the Farm scene, this many place invitations in a row, met by where a stamp lands. */
   invite?: { count: number };
+  /** Next to, between, above (level 13): two animals fixed on plain paper, this many relation invitations in a row. */
+  relate?: { count: number };
   /** A music-note button plays the picture back, left to right. */
   play?: boolean;
   /** The stamps on the paper are counted aloud, one to ten, each number once (levels 1–3, dive slice 3). */
@@ -300,6 +302,17 @@ export const PLANS = [
     prompt: 'places',
     name: 'Where does it go?: put a stamp up in the sky, on the grass or in the water',
     invite: { count: 3 },
+  },
+  // Next to, between, above: two animals printed on plain paper; three spoken relations, met by where any stamp lands.
+  {
+    kinds: ['star', 'flower', 'kite'],
+    color: true,
+    move: true,
+    transform: false,
+    // An invitation level: its first line is the open invitation's, as at level 12.
+    prompt: 'places',
+    name: 'Next to, between, above: put a stamp beside, between, above or below two animals',
+    relate: { count: 3 },
   },
 ] as const satisfies readonly StampPlan[];
 export const planFor = (level: number): StampPlan =>
@@ -556,12 +569,113 @@ export function placeInvites(rng: Rng): { word: PlaceWord; kind: StampKind }[] {
   return rng.shuffle([...PLACE_WORDS]).map((word) => ({ word, kind: rng.pick(PLACE_KINDS[word]) }));
 }
 
+/**
+ * Next to, between, above (level 13): the two animals printed on the paper. Each sits at a fixed offset in units from the
+ * paper's centre (not a fraction of it), so the gap between them and the room around them are the same on every device.
+ */
+export interface Anchor {
+  kind: StampKind;
+  /** Offset of the centre from the paper's centre, in units. */
+  dx: number;
+  dy: number;
+}
+export const ANCHOR_KINDS: readonly StampKind[] = ['cat', 'fish', 'cow', 'duck', 'pig', 'hen'];
+/** Half the gap between the anchors' centres, and how far each may sit above or below the middle line. */
+export const ANCHOR_SPREAD = 170;
+export const ANCHOR_RISE = 30;
+/** A stamp centred this close to an animal is on it, and meets no relation. */
+export const ON_ANCHOR = 60;
+/** `next to`: a centre within this of the animal's. `between`: at most this far from the line joining them. */
+export const NEXT_TO = 160;
+export const BETWEEN_REACH = 70;
+/** `above` and `below`: at most this far to either side of the animal's centre. */
+export const ABOVE_REACH = 90;
+/** The stamps a round suggests for its three relations (three different ones are offered); any stamp meets a relation. */
+export const RELATION_KINDS: readonly StampKind[] = [
+  'star',
+  'flower',
+  'kite',
+  'balloon',
+  'butterfly',
+  'cloud',
+];
+export type Relation = { rel: 'next' | 'above' | 'below'; anchor: 0 | 1 } | { rel: 'between' };
+/** One invitation of an invitation level: a place word on the Farm (level 12) or a relation to the animals (level 13). */
+export type Invite = { word: PlaceWord; kind: StampKind } | { relation: Relation; kind: StampKind };
+
+export function anchorPixel(a: Pick<Anchor, 'dx' | 'dy'>, w: number, h: number): Pt {
+  return { x: w / 2 + a.dx, y: h / 2 + a.dy };
+}
+/** A round's two animals: two different kinds, one left and one right of the middle, each nudged up or down a little. */
+export function relationAnchors(rng: Rng): [Anchor, Anchor] {
+  const [a, b] = rng.shuffle([...ANCHOR_KINDS]);
+  const rise = () => rng.pick([-ANCHOR_RISE, 0, ANCHOR_RISE]);
+  return [
+    { kind: a, dx: -ANCHOR_SPREAD, dy: rise() },
+    { kind: b, dx: ANCHOR_SPREAD, dy: rise() },
+  ];
+}
+/** A round's three relations in a seeded order: next to one animal, between both, above or below the other. */
+export function relationInvites(rng: Rng): { relation: Relation; kind: StampKind }[] {
+  const near = rng.pick([0, 1] as const);
+  const far = (1 - near) as 0 | 1;
+  const relations: Relation[] = [
+    { rel: 'next', anchor: near },
+    { rel: 'between' },
+    { rel: rng.pick(['above', 'below'] as const), anchor: far },
+  ];
+  const kinds = rng.shuffle([...RELATION_KINDS]);
+  return rng.shuffle(relations).map((relation, i) => ({ relation, kind: kinds[i] }));
+}
+/** How a relation is said after its stamp: "next to the cat", "between the cat and the fish", "above the fish". */
+export function relationPhrase(r: Relation, anchors: readonly Pick<Anchor, 'kind'>[]): string {
+  if (r.rel === 'between')
+    return `between the ${animalWord(anchors[0].kind)} and the ${animalWord(anchors[1].kind)}`;
+  const word = r.rel === 'next' ? 'next to' : r.rel;
+  return `${word} the ${animalWord(anchors[r.anchor].kind)}`;
+}
+/** Whether a stamp centred at this pixel meets the relation. Only its position counts; on an animal meets nothing. */
+export function meetsRelation(r: Relation, x: number, y: number, anchors: readonly Pt[]): boolean {
+  const d = anchors.map((a) => Math.hypot(x - a.x, y - a.y));
+  if (Math.min(...d) < ON_ANCHOR) return false;
+  if (r.rel === 'next') return d[r.anchor] <= NEXT_TO;
+  if (r.rel === 'between') {
+    const [a, b] = anchors;
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const t = ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / len;
+    const off = Math.abs((x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x)) / len;
+    return t >= 0 && t <= len && off <= BETWEEN_REACH;
+  }
+  const a = anchors[r.anchor];
+  if (Math.abs(x - a.x) > ABOVE_REACH) return false;
+  return r.rel === 'above' ? a.y - y >= ON_ANCHOR : y - a.y >= ON_ANCHOR;
+}
+/** Where the ghost finger presses for a relation, as a pixel: well inside it at every view. */
+export function relationTarget(r: Relation, anchors: readonly Pt[]): Pt {
+  if (r.rel === 'between')
+    return { x: (anchors[0].x + anchors[1].x) / 2, y: (anchors[0].y + anchors[1].y) / 2 };
+  const a = anchors[r.anchor];
+  if (r.rel === 'next') return { x: a.x + (r.anchor === 0 ? 1 : -1) * 115, y: a.y };
+  return { x: a.x, y: a.y + (r.rel === 'above' ? -110 : 110) };
+}
+
 /** Early rounds vary their existing tools without adding simultaneous choices. */
 export function roundPlan(
   level: number,
   rng: Rng,
-): { plan: StampPlan; color: ColorName; scene?: SceneId; invites?: { word: PlaceWord; kind: StampKind }[] } {
+): { plan: StampPlan; color: ColorName; scene?: SceneId; invites?: Invite[]; anchors?: [Anchor, Anchor] } {
   const base = planFor(level);
+  if (base.relate) {
+    // Plain paper, two animals fixed on it, and one suggested stamp for each relation, shown in a seeded order.
+    const anchors = relationAnchors(rng);
+    const invites = relationInvites(rng);
+    return {
+      plan: { ...base, kinds: rng.shuffle(invites.map((i) => i.kind)) },
+      color: rng.pick(STAMP_COLORS),
+      invites,
+      anchors,
+    };
+  }
   if (base.invite) {
     // The Farm scene, and one suggested stamp for each place in the round, shown in a seeded order.
     const invites = placeInvites(rng);
@@ -600,7 +714,7 @@ export interface StampState {
   sparkle?: Pt;
   /** Stamp a duck!: the animal currently asked for, while asks remain. */
   ask?: StampKind;
-  /** Where does it go?: the stamp suggested for the open invitation and where to press for its place (0 to 1). */
+  /** Where does it go? and Next to, between, above: the stamp suggested for the open invitation and where to press (0 to 1). */
   invite?: { kind: StampKind; at: Pt };
 }
 
@@ -643,7 +757,7 @@ export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   if (plan.pat) return n < plan.pat.count ? { do: 'stamp', ...PAT_SPOTS[n] } : { do: 'finish' };
   if (plan.follow)
     return n < plan.follow.count && st.sparkle ? { do: 'stamp', ...st.sparkle } : { do: 'finish' };
-  if (plan.invite) {
+  if (plan.invite || plan.relate) {
     if (!st.invite) return { do: 'finish' };
     if (st.kind !== st.invite.kind) return { do: 'kind', kind: st.invite.kind };
     return { do: 'stamp', ...st.invite.at };
@@ -854,9 +968,10 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 10, order: [7, 8, 1, 10, 2] },
   toddler: { min: 2, max: 11, order: [9, 10, 2, 11, 3] },
   // Where does it go? (12) closes the preschool 3–7, pre-K 4–9 and school 5–11 windows decided 2026-10-23 (old numbering).
+  // Next to, between, above (13) starts at pre-K: a three-year-old's "between" is a person check.
   preschool: { min: 3, max: 12, order: [3, 4, 5, 6, 12] },
-  prek: { min: 4, max: 12, order: [4, 5, 6, 12] },
-  school: { min: 5, max: 12, order: [5, 6, 12] },
+  prek: { min: 4, max: 13, order: [4, 5, 6, 12, 13] },
+  school: { min: 5, max: 13, order: [5, 6, 12, 13] },
 };
 
 /** A round button's touch radius (`RoundButton`: its 48 radius and 14 more). */
