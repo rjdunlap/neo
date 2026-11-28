@@ -661,6 +661,16 @@ export const DRIVE_PLANS: RobotPlan[] = [
   { size: 3, goal: [1, 1], rocks: [[0, 1]], limit: 0, name: 'Drive across, then down, to the star' },
 ];
 
+/**
+ * One step, then play (stable ID 17, preschool after 16): the first program. One slot, one arrow, then play, on a 3 × 3
+ * board with the star one step away. A wrong arrow is the normal miss.
+ */
+export const ONE_STEP_LEVEL = 17;
+export const ONE_STEP_PLANS: RobotPlan[] = [
+  { size: 3, goal: [1, 0], rocks: [], limit: 1, name: 'One arrow to the star, then play' },
+  { size: 3, goal: [0, 1], rocks: [], limit: 1, name: 'One arrow down to the star, then play' },
+];
+
 /** One arrow tap on the drive level: the robot steps, or stays put at a rock or the edge. */
 export function driveStep(
   plan: RobotPlan,
@@ -678,9 +688,9 @@ export function driveStep(
 export const driveNext = (plan: RobotPlan, at: Cell): Direction | null => shortestPath(plan, at)[0] ?? null;
 
 /** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12), pick up an apple (13), mend a loop (14) and reuse a routine (15). Preschool
- * starts with Drive the robot (16), placed first by `order` so no saved level is renumbered. */
+ * starts with Drive the robot (16) and One step, then play (17), placed first by `order` so no saved level is renumbered. */
 export const LEVELS: BandLevels = {
-  preschool: { min: 1, max: DRIVE_LEVEL, order: [DRIVE_LEVEL, 1, 2] },
+  preschool: { min: 1, max: ONE_STEP_LEVEL, order: [DRIVE_LEVEL, ONE_STEP_LEVEL, 1, 2] },
   prek: { min: 1, max: 6 },
   school: { min: 4, max: 15 },
 };

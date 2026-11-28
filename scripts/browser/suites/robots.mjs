@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function robots() {
+    if (process.env.DRIVE_ONLY === '17') return oneStep();
     if (process.env.DRIVE_ONLY) return drive();
     for (
       let level = Number(process.env.FROM_LEVEL || 1);
@@ -328,6 +329,48 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await finished('robot-path');
     log(
       'Robot Path level 16: edge and rock stop gently, the arrows drive it to the star, no program or play button',
+    );
+  }
+
+  /** Level 17, One step, then play, on a touch phone: two wrong arrows (each a miss that empties the slot), the glow, then the right arrow. */
+  async function oneStep() {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('robot-path', 17);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (g.plan.limit !== 1 || g.plan.size !== 3) throw new Error('Level 17 is not a one-slot board');
+      const right = g.solution[0].dir;
+      const wrong = ['up', 'right', 'down', 'left'].filter((d) => d !== right);
+      const press = async (dir) => {
+        kit.tapOn(g.arrows.find((a) => a.dir === dir).button);
+        await kit.sleep(450);
+      };
+      for (let k = 0; k < 2; k++) {
+        await press(wrong[k + 1]);
+        // A second arrow does not fit the one slot.
+        await press(right);
+        if (g.program.length !== 1 || g.program[0].dir !== wrong[k + 1])
+          throw new Error('The slot took two arrows');
+        kit.tapOn(g.play);
+        if (!(await kit.until(() => !g.running && g.misses === k + 1, 8000)))
+          throw new Error('A wrong arrow was not a miss');
+        if (g.program.length !== 0) throw new Error('The slot did not empty after a miss');
+      }
+      if (g.hints !== 1) throw new Error('Two misses did not show the glow');
+    });
+    await screenshot('robot-path-17-glow');
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const next = g.autotouch();
+      kit.tapOn(next.tap.on);
+      await kit.sleep(450);
+      kit.tapOn(g.play);
+      if (!(await kit.until(() => g.done, 8000))) throw new Error('The right arrow did not reach the star');
+      if (g.misses !== 2 || g.hints !== 1) throw new Error('Misses or hints were miscounted');
+    });
+    await finished('robot-path');
+    log(
+      'Robot Path level 17: two wrong arrows are misses that empty the slot, a second arrow does not fit, the glow, the right arrow reaches the star',
     );
   }
 

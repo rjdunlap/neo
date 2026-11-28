@@ -724,6 +724,15 @@ class GearGarden implements Game {
   }
 
   /** The ghost finger: open machine B, carry the loose gear to the gap, then tap the face (one Turn-back on the second flower). */
+  /** Guided first play: its demonstration turns the gear back once, so the hand shows the next real step. The bot's own flags are put back. */
+  showMove(): TouchIntent | null {
+    const backShown = this.backShown;
+    this.backShown = true;
+    const move = this.autotouch();
+    this.backShown = backShown;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.anim || this.drag?.dragging) return null;
     const help = helpFor(this.machine);

@@ -550,6 +550,14 @@ class SeedTravelers implements Game {
 
   // ----- the ghost finger -----
 
+  /** Guided first play: the next helpful touch, without the demonstration's first pairing that does not travel. */
+  showMove(): TouchIntent | null {
+    if (this.busy || this.finished || !this.layout) return null;
+    const target = this.state.hintAction();
+    const on = target && this.targetObject(target);
+    return on ? { tap: { on } } : null;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.layout) return null;
     const s = this.state;

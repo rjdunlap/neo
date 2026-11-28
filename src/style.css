@@ -731,3 +731,17 @@ html.turning .playtest {
   transform: scale(1.07, 0.86);
   transition-duration: 0.05s;
 }
+
+/* A plain-HTML piece the PaperSkin (src/ui/paper-dom.ts) has drawn as paper: the picture is its background, shadow and
+   outline, so the CSS ones give way while sizes stay as they were. */
+html body .is-paper {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  /* The picture is drawn at the whole box's size, border included. */
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+}

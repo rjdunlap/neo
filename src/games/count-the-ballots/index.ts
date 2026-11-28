@@ -575,6 +575,18 @@ class CountTheBallots implements Game {
   private botWrong = false;
   private botHelped = false;
 
+  /** Guided first play: its demonstration drops one card on a wrong pile and asks for Help once, so the hand shows the right pile. The bot's own flags are put back. */
+  showMove(): TouchIntent | null {
+    const botWrong = this.botWrong;
+    this.botWrong = true;
+    const botHelped = this.botHelped;
+    this.botHelped = true;
+    const move = this.autotouch();
+    this.botWrong = botWrong;
+    this.botHelped = botHelped;
+    return move;
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     const pile = (c: number) => ({ on: this.trays[c], x: 0, y: 0 });
