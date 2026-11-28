@@ -202,6 +202,64 @@ html.turning .pet-name-form {
   font-size: 15px;
 }
 
+/* ---------- A grown-up's stamps (src/ui/stamps-sheet.ts); the card and buttons are the playtest sheet's ---------- */
+
+.stamps__game {
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+.stamps ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stamps__goal {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--quiet);
+  font-size: 15px;
+}
+.stamps__goal.is-held {
+  color: var(--ink);
+  font-weight: 600;
+}
+.stamps__goal small {
+  color: var(--quiet);
+  font-weight: 500;
+}
+.stamps__lantern {
+  flex: none;
+  width: 26px;
+  height: 32px;
+}
+.stamps__glow {
+  fill: #ffe9a3;
+  opacity: 0.6;
+}
+.stamps__cap {
+  fill: #2b2b3a;
+}
+.stamps__body {
+  fill: #ece6da;
+  stroke: #b9ae9c;
+  stroke-width: 2;
+}
+.stamps__lantern.is-lit .stamps__body {
+  fill: #ffd54a;
+  stroke: #c79a12;
+}
+.stamps__rib {
+  fill: none;
+  stroke: #b9ae9c;
+  stroke-width: 1.2;
+}
+.stamps__lantern.is-lit .stamps__rib {
+  stroke: #c79a12;
+}
+
 /* ---------- A grown-up's playtest notes on Today's six (src/ui/playtest-sheet.ts) ---------- */
 
 .playtest {

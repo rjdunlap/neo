@@ -25,6 +25,7 @@ import { SPECIES, type SpeciesId } from '../creatures/species';
 import type { LandId } from '../content/lands';
 import { setNote, type PlaytestNote } from '../content/playtest';
 import { earnShells as earnedFor } from '../content/shells';
+import { awardStamps, newStamps, type StampKind } from '../content/stamps';
 import { changeWorn, SLOT, type WearableId } from '../art/creatures/wear-slots';
 import { cleanForms, cleanLookForm, isForm, type FormId } from '../creatures/forms';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
@@ -228,6 +229,24 @@ export class Store {
     this.data.shells = next;
     this.save();
     return shells;
+  }
+
+  /**
+   * The stamps a finished round of a grown-up game earns (none for a band that does not earn, or when all are held), with
+   * their one-time shell bonus. Saved with the round; the caller flushes.
+   */
+  earnStamps(
+    gameId: string,
+    range: LevelRange,
+    round: { level: number; misses: number; hints: number },
+  ): { kinds: StampKind[]; bonus: number } {
+    const kinds = newStamps(this.data.stamps, gameId, this.data.profile.band, range, round);
+    if (!kinds.length) return { kinds, bonus: 0 };
+    const won = awardStamps(this.data.stamps, this.data.shells, gameId, kinds, Date.now());
+    this.data.stamps = won.stamps;
+    this.data.shells = won.shells;
+    this.save();
+    return { kinds, bonus: won.bonus };
   }
 
   /** Whether no round of this game has been finished yet (in any place). */
