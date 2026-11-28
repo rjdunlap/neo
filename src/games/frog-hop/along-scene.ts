@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { frogArt } from '../../art/animals';
-import { grass, swatch } from '../../art/palette';
+import { swatch } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
@@ -8,14 +8,15 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { ALONG_BOT, ALONG_PADS, ALONG_TAPS, alongLayout, alongNote, alongRoute, nearestPad } from './logic';
-import { DOTS_Y, drawDots, Pad } from './pad-art';
+import { DOTS_Y, drawBank, drawDots, Pad } from './pad-art';
 
 /**
  * Hop along (level 16, lap and toddler): five big lily pads, 1 to 5 with their dots, and the frog on a bank left of pad 1.
  * A tap anywhere on the pond hops the frog pad by pad to the pad nearest the tap, saying each number it lands on and
  * playing a note that rises with the pad; a tap on the bank hops it home. Six taps, then a big splash. Nothing is wrong.
  */
-const SKY = {
+/** The entry ponds' sky (levels 16 and 17). */
+export const POND_SKY = {
   sky: [0x8fd3f7, 0xe9f7ff],
   hills: [0x7fd0e8, 0x5bb8d8, 0x4aa8c9],
   horizon: 0.42,
@@ -25,9 +26,9 @@ const SKY = {
 } satisfies ConstructorParameters<typeof Backdrop>[0];
 
 /** The pads are drawn this much bigger than the main line's. */
-const PAD_SCALE = 1.3;
+export const PAD_SCALE = 1.3;
 /** The frog's feet sit this far above a pad's centre. */
-const PERCH = 10;
+export const PERCH = 10;
 
 export class AlongPond implements Game {
   private readonly backdrop: Backdrop;
@@ -52,7 +53,7 @@ export class AlongPond implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.backdrop = new Backdrop(SKY, ctx.view);
+    this.backdrop = new Backdrop(POND_SKY, ctx.view);
     for (let k = 1; k <= ALONG_PADS; k++) {
       const pad = new Pad();
       pad.set(k);
@@ -162,22 +163,7 @@ export class AlongPond implements Game {
       .clear()
       .roundRect(pond.x + 20, pond.y + 20, pond.w - 40, pond.h - 40, 60)
       .fill({ color: swatch.blue.light, alpha: 0.55 });
-    const b = L.spots[0];
-    // An earthy bank with a grassy top and tufts, so it reads as land, not another pad.
-    const art = this.bankArt
-      .clear()
-      .ellipse(b.x, b.y + 18, 72, 44)
-      .fill(swatch.brown.fill)
-      .stroke({ width: 5, color: swatch.brown.line })
-      .ellipse(b.x, b.y + 4, 62, 26)
-      .fill(grass)
-      .stroke({ width: 4, color: swatch.green.line });
-    for (const dx of [-34, -4, 26])
-      art
-        .moveTo(b.x + dx - 8, b.y + 4)
-        .lineTo(b.x + dx, b.y - 18)
-        .lineTo(b.x + dx + 8, b.y + 4)
-        .stroke({ width: 4, color: swatch.green.line, join: 'round' });
+    drawBank(this.bankArt.clear(), L.spots[0]);
     const g = this.dots.clear();
     this.pads.forEach((pad, i) => {
       const s = L.spots[i + 1];
