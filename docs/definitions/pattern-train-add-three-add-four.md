@@ -1,6 +1,6 @@
 # Pattern Train level 21: Add three, add four (definition)
 
-**Built:** not yet; its build is queued in [READY](../READY.md).
+**Built:** in progress on `claude/pattern-train-add-three-four`; its build is queued in [READY](../READY.md).
 
 Defined 2026-11-28 on `claude/define-pattern-train-add-three-four` ([PR #2373](https://github.com/rjdunlap/neo/pull/2373)) as slice 9 of the [Pattern Train deep dive](../deep-dives/pattern-train.md#build-slices-in-order), from its [level 21 row](../deep-dives/pattern-train.md#new-levels-on-top). That row said "define after a child plays 19–20". The developer's delegation of 2026-10-23 replaced that: "Wonder Woods grows first, so 21 (add three, add four) may be defined now, with a child's play of 19–20 as a person check" ([decisions](../deep-dives/pattern-train.md#decisions-for-the-developer)). Every [open decision](#open-decisions) below has a default the build uses, so none waits on the developer.
 
