@@ -5,6 +5,7 @@ import {
   arcadeCabinet,
   familyBlanket,
   flowerPatch,
+  yardKite,
   noticeBoard,
   projectBasket,
   signpost,
@@ -43,6 +44,7 @@ import { namePill } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 import { WayOut } from '../leave';
+import { PickHost } from '../pick';
 import { BallPlay } from './ball-play';
 
 /** Lap and toddler get the ball right here; preschool and older get Play with {pet}, which opens creature play. */
@@ -119,6 +121,21 @@ export class HomeScene extends Scene {
   readonly lodge: Thing | null = earnsShells(store.data.profile.band)
     ? new Thing(yardLodge(), YARD_SIZE.lodge, YARD_NAMES.lodge)
     : null;
+  /** Pick for me (D7a): a kite in the sky that opens the chooser sheet over the yard, every band. */
+  private kiteT = 0;
+  readonly kite = new Thing(yardKite(), YARD_SIZE.kite, YARD_NAMES.kite);
+  readonly pick: PickHost = new PickHost(
+    this.app,
+    store.data.profile.band,
+    this.ui,
+    () => this.view,
+    (go) => {
+      if (this.out.leaving) return;
+      this.out.leaving = true;
+      this.gear.hide(true);
+      go();
+    },
+  );
   readonly bush = new Thing(yardBush(), YARD_SIZE.bush, null);
   readonly flowers = new Thing(flowerPatch(), YARD_SIZE.flowers, null);
   /** The upright yard's own sun (the backdrop's is out of view there). */
@@ -203,6 +220,7 @@ export class HomeScene extends Scene {
       this.blanket,
       this.basket,
       this.lodge,
+      this.kite,
       this.bush,
       this.flowers,
       this.sun,
@@ -215,6 +233,9 @@ export class HomeScene extends Scene {
       onTap(way.thing, () => this.leave(way.thing, way.line, way.go, way.id), { cooldown: 400 });
     }
     if (this.young) onTap(this.treehouse, () => this.lightUp(), { cooldown: 500 });
+    // A player with no game Pick could choose from has no dip.
+    this.kite.visible = this.pick.button.visible;
+    onTap(this.kite, () => this.kiteTug(), { cooldown: 500 });
     onTap(this.bush, () => this.rustle(), { cooldown: 900 });
     onTap(this.flowers, () => this.bloom(), { cooldown: 700 });
     this.sun.hitArea = new Rectangle(-80, -80, 160, 160);
@@ -239,6 +260,18 @@ export class HomeScene extends Scene {
       this.pet.cheer();
       return voice.say(line);
     });
+  }
+
+  /** The kite: it swoops, then Pick for me's chooser opens over the yard (D7a; nothing leaves until Play). */
+  private kiteTug() {
+    if (this.out.leaving || this.pick.covering) return;
+    const kite = this.kite.art.getChildByLabel('kite');
+    if (kite) {
+      kite.rotation = -0.5;
+      void this.tw.to(kite, { rotation: 0 }, { duration: 0.5, ease: ease.outBack });
+    }
+    sfx.whoosh();
+    this.pick.open();
   }
 
   /** The chosen thing does its own little move before the scene leaves: the cards flutter, the screen flashes. */
@@ -410,6 +443,7 @@ export class HomeScene extends Scene {
     put(this.blanket, l.blanket);
     put(this.basket, l.basket);
     put(this.lodge, l.lodge);
+    put(this.kite, l.kite);
     put(this.bush, l.bush);
     put(this.flowers, l.flowers);
     this.sun.visible = !!l.sun;
@@ -423,15 +457,25 @@ export class HomeScene extends Scene {
       this.blanket,
       this.basket,
       this.lodge,
+      this.kite,
     ])
       t?.children[1]?.scale.set(1 / t.scale.x);
     if (!this.toy?.chasing) this.pet.position.set(l.stage.x, l.stage.y);
     this.pet.scale.set(l.stage.scale * Math.sign(this.pet.scale.x || 1), l.stage.scale);
     if (this.toy && l.ball) this.toy.place(l.floor, l.ball);
+    this.pick.resize(v);
   }
 
   update(dt: number) {
     super.update(dt);
+    this.pick.update(dt);
+    // The kite bobs and leans on the breeze.
+    this.kiteT += dt;
+    const kite = this.kite.art.getChildByLabel('kite');
+    if (kite) {
+      kite.x = Math.sin(this.kiteT * 0.9) * 10;
+      kite.y = -150 + Math.sin(this.kiteT * 1.3) * 6;
+    }
     this.pet.zIndex = this.pet.y;
     if (this.toy) {
       // The ball always draws (and takes touches) over her friend, who stops beside it.

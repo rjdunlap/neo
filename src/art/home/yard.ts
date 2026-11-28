@@ -133,6 +133,51 @@ export function projectBasket(): Container {
   return c;
 }
 
+/**
+ * Pick for me's kite, flying in the yard's sky (`kite`, which bobs and swoops without redrawing): a diamond in the old
+ * Pick button's three card colours, with a bow-knotted tail and its string running down. Foot (the string's end) at
+ * (0, 0). About 150 × 230.
+ */
+export function yardKite(): Container {
+  const c = new Container();
+  const string = new Graphics()
+    .moveTo(0, 0)
+    .bezierCurveTo(-30, -60, 30, -120, 0, -150)
+    .stroke({ width: 3, color: 0x8c8c9c });
+  const kite = new Container();
+  kite.label = 'kite';
+  kite.position.set(0, -150);
+  const tail = new Graphics()
+    .moveTo(0, 0)
+    .bezierCurveTo(-24, 30, 24, 50, -6, 84)
+    .stroke({ width: 3, color: 0x8c8c9c });
+  for (const [x, y, color] of [
+    [-6, 28, 0xff9ac1],
+    [8, 52, 0xffd54a],
+    [-4, 78, 0x4fa3f7],
+  ] as const)
+    tail
+      .poly([x - 12, y - 7, x, y, x - 12, y + 7])
+      .poly([x + 12, y - 7, x, y, x + 12, y + 7])
+      .fill(color);
+  const body = new Graphics()
+    .poly([0, -80, 46, -22, 0, 0, 0, -80])
+    .fill(0x4fa3f7)
+    .poly([0, -80, -46, -22, 0, 0])
+    .fill(0xff9ac1)
+    .poly([-46, -22, 46, -22, 0, 0])
+    .fill(0xffd54a)
+    .moveTo(0, -80)
+    .lineTo(0, 0)
+    .moveTo(-46, -22)
+    .lineTo(46, -22)
+    .stroke({ width: 3, color: 0x8f5a37 });
+  const star = new Graphics().star(0, -38, 5, 11, 5).fill(0xffffff);
+  kite.addChild(tail, body, star);
+  c.addChild(string, kite);
+  return c;
+}
+
 /** A round bush with a bird tucked behind it (`bird`, hidden until a tap shakes it out). About 170 × 110. */
 export function yardBush(color = 0x4fa24a): Container {
   const c = new Container();

@@ -93,6 +93,7 @@ Both RW05 slice 2 and RW06 slice 1 edit `companion.ts`. **Do not build them in p
 | Lantern Lodge, on the hill | The grown-ups' lodge (`go.lodge()`, progression slice 7), only for bands that earn shells | `yard.lodge` |
 | The picnic blanket | Family play (couch play), with a `{ home: true }` origin so leaving comes back here; not for lap and toddler | `explore.family` |
 | Welcome a New Friend's basket | Continue, while the project is open (RW07) | `home.continue` |
+| The kite, in the sky | Pick for me (D7a, `PickHost` in `src/app/pick.ts`): the kite swoops and the chooser sheet opens over the yard, every band; a picked game carries a `{ home: true }` origin, so its Back and Home come here | `pick.offer` |
 | A bush, a patch of flowers, the sun, the clouds, the pond | Only do something: a bird pops out and flies off, the flowers spin, sparkles, a puff, a splash | — |
 
 Who's playing (top left) and the grown-ups' gear (top right) stay buttons. The ball stays for lap and toddler. Every way-out box is at least 100 units, stands on screen and keeps out of the two corners (`home-layout.test.ts`). The Explore entries page is still a route but no longer reached from Home.

@@ -430,6 +430,8 @@ export interface YardLayout {
   /** Family play is grown-up couch play: no blanket for lap and toddler, whose ball takes its corner. */
   blanket: YardSpot | null;
   basket: YardSpot | null;
+  /** Pick for me's kite (D7a), in the sky for every band; its foot is the string's end. */
+  kite: YardSpot;
   /** Lantern Lodge on the hill, for the bands that earn shells (`earnsShells`, grown-ups): placed always, drawn only for them. */
   lodge: YardSpot;
   bush: YardSpot;
@@ -449,6 +451,7 @@ export const YARD_SIZE = {
   signpost: { w: 220, h: 215 },
   blanket: { w: 220, h: 100 },
   basket: { w: 140, h: 120 },
+  kite: { w: 150, h: 240 },
   lodge: { w: 190, h: 150 },
   bush: { w: 180, h: 110 },
   flowers: { w: 130, h: 120 },
@@ -480,6 +483,8 @@ export function yardLayout(v: { w: number; h: number }, young: boolean, project 
       // On a short upright screen (a tablet held upright) the grass is shallow: the blanket steps left of the signpost.
       blanket: young ? null : { x: k < 1.2 ? 540 : 610, y: Math.round(g + 110 * k), scale: 0.85 * k },
       basket: project && !young ? { x: 265, y: Math.round(g + 120 * k), scale: 0.85 } : null,
+      // High enough that its name pill stays over the sky, clear of the treehouse's canopy.
+      kite: { x: 300, y: Math.round(Math.max(330, g - 560 * k)), scale: 0.9 * k },
       bush: { x: 60, y: Math.round(g + 150 * k), scale: 0.7 * k },
       flowers: { x: 205, y: Math.round(g + 170 * k), scale: 0.8 },
       lodge: { x: 640, y: Math.round(g - 270 * k), scale: 0.75 * k },
@@ -506,6 +511,8 @@ export function yardLayout(v: { w: number; h: number }, young: boolean, project 
     signpost: { x: v.w - 120, y: v.h - 50, scale: s },
     blanket: young ? null : { x: Math.round(v.w * 0.6), y: v.h - 60, scale: s },
     basket: project && !young ? { x: Math.round(v.w * 0.72), y: g + 30, scale: 0.9 * s } : null,
+    // Up in the sky between the treehouse and the board, over her friend's head.
+    kite: { x: Math.round(v.w * 0.38), y: Math.round(g - 230), scale: 0.8 * s },
     bush: { x: v.w - 90, y: g + 5, scale: 0.8 },
     flowers: { x: Math.round(v.w * 0.77), y: v.h - 25, scale: 0.8 },
     sun: null,
