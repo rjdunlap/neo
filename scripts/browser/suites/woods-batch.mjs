@@ -4939,7 +4939,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               assert.deepEqual(await state(), ['sort', [offered[2], offered[1]]]);
               await dropTo(0, wrong);
               assert.deepEqual(await counts(), [2, 1]);
-              assert.equal(await page.evaluate(() => neo.scene.game.hinting === neo.scene.game.sorters[0]), true);
+              assert.equal(
+                await page.evaluate(() => neo.scene.game.hinting === neo.scene.game.sorters[0]),
+                true,
+              );
               await screenshot('critter-sort-10-hint');
             }
             for (const [i, place] of places.entries()) await dropTo(i, place);
