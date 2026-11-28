@@ -1,5 +1,6 @@
 import { createTestContext } from '../test-browser.mjs';
 import { publicSave, waitForSave } from './storage.mjs';
+import { sceneWait } from './frames.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 // The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
@@ -16,12 +17,12 @@ export async function classicOffline(browser) {
 
   const fromStart = async (target, afterTarget) => {
     await page.waitForFunction(() => document.fonts.status === 'loaded');
-    await page.waitForTimeout(1600);
+    await sceneWait(page, 1600);
     // "Who's playing?" opens the island map itself.
     await page.locator('.chooser__play').first().click();
-    await page.waitForTimeout(4200);
+    await sceneWait(page, 4200);
     await page.mouse.click(target.x, target.y);
-    await page.waitForTimeout(afterTarget);
+    await sceneWait(page, afterTarget);
   };
 
   /** A production scene has no dev test API. Prove the route by the save change it alone makes, with one recovery
@@ -40,7 +41,7 @@ export async function classicOffline(browser) {
         [388, 418],
       ]) {
         await page.mouse.click(x, y);
-        await page.waitForTimeout(900);
+        await sceneWait(page, 900);
         if ((await readSave()).stories?.picnic?.steps?.includes('blanket')) return;
       }
       if (attempt === 0) {
@@ -55,7 +56,7 @@ export async function classicOffline(browser) {
       await fromStart({ x: 75, y: 698 }, 1800);
       await page.screenshot({ path: roomShot });
       await page.mouse.click(719, 698);
-      await page.waitForTimeout(1600);
+      await sceneWait(page, 1600);
       const journal = (await readSave()).journal;
       if (journal.found.length > 0 && journal.seen === journal.found.length) {
         await page.screenshot({ path: journalShot });
@@ -196,35 +197,35 @@ export async function classicOffline(browser) {
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.locator('#app canvas').waitFor();
     await page.waitForFunction(() => document.fonts.status === 'loaded');
-    await page.waitForTimeout(1400);
+    await sceneWait(page, 1400);
     // Her card opens the island map; her home spot (Daisy Meadow for a toddler) holds every game for her age.
     // Start waits for its greeting before changing scenes; allow the production/offline frame loop to finish each
     // transition before the next click (a click during the curtain is intentionally swallowed).
     await page.locator('.chooser__play').first().click();
-    await page.waitForTimeout(4000);
+    await sceneWait(page, 4000);
     await page.screenshot({ path: 'test-results/offline/map.png' });
     // The home spot at 1024 by 768 (`mapLayout`: x 125 + 0.63 × 774, y 195 + 0.5 × 463); the pet hops over and the map zooms in.
     await page.mouse.click(613, 420);
-    await page.waitForTimeout(3200);
+    await sceneWait(page, 3200);
     await page.screenshot({ path: 'test-results/offline/place.png' });
     // Four subject cards per page, Little surprises' card first at toddler. Counting Cove is second on page two; Monster Munch
     // is its second game. Subject-local positions survive growth in earlier subjects.
     await page.mouse.click(959, 384);
-    await page.waitForTimeout(700);
+    await sceneWait(page, 700);
     await page.mouse.click(682, 290);
-    await page.waitForTimeout(700);
+    await sceneWait(page, 700);
     await page.screenshot({ path: 'test-results/offline/counting-cove.png' });
     await page.mouse.click(682, 290);
-    await page.waitForTimeout(2000);
+    await sceneWait(page, 2000);
     // Every game opens on its how-to card, and Play starts the round (Monster Munch has no bot, so its card is text only).
     await page.screenshot({ path: 'test-results/offline/monster-munch-howto.png' });
     await page.mouse.click(574, 640);
-    await page.waitForTimeout(1500);
+    await sceneWait(page, 1500);
     await page.screenshot({ path: 'test-results/offline/monster-munch.png' });
     // Counting along: tapping each cookie on the tray feeds it.
     for (let attempt = 0; attempt < 20; attempt++) {
       await page.mouse.click([327, 452, 577, 702, 827][attempt % 5], 678);
-      await page.waitForTimeout(700);
+      await sceneWait(page, 700);
       if ((await readSave())?.stickers?.length) break;
     }
     const save = await waitForSave(
@@ -243,7 +244,7 @@ export async function classicOffline(browser) {
     assert.equal(save.settings.howToCards, true, 'An older save gets the cards on');
     assert.equal(save.settings.placeLayout, 'subjects');
     assert.deepEqual(save.world, { band: 'toddler' });
-    await page.waitForTimeout(1700);
+    await sceneWait(page, 1700);
     await page.screenshot({ path: 'test-results/offline/reward.png' });
     // The seeded save predates island stories: loading it added the Windy and Woodland Picnics and the Missing Melody, untold.
     assert.deepEqual(save.stories, {
@@ -263,7 +264,7 @@ export async function classicOffline(browser) {
     // is in one of six spots (two on each of the tree, the clothesline and the bush); try each until it's found.
     await findBlanketOffline();
     assert.deepEqual((await readSave()).stories.picnic.steps, ['blanket'], 'Found the blanket offline');
-    await page.waitForTimeout(1500);
+    await sceneWait(page, 1500);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.locator('#app canvas').waitFor();
     assert.deepEqual(
