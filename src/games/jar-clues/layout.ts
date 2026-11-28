@@ -35,6 +35,8 @@ export const MIN_CELL = 64;
 const MAX_CELL = 74;
 /** The button row's height. */
 const BUTTON_H = 90;
+/** First clue / Next clue on the wide layout: 104 units fills the gap between the note and Help (44 px on a phone held sideways). */
+const WIDE_NEXT_H = 104;
 
 /**
  * Upright, top to bottom: a strip with the jar on the left (clear of Home) and the clue card and the note to its right; the board, ten across and six down; Help and Next clue beneath it, all above the caption bubble on
@@ -84,9 +86,10 @@ export function layout(view: Pick<View, 'w' | 'h' | 'upright'>): Layout {
     upright: false,
     jar: span(p0 + (pw - 200) / 2, 10, p0 + (pw + 200) / 2, 270),
     clue: span(p0, 278, p1, 384),
-    note: span(p0, 390, p1, 572),
+    note: span(p0, 390, p1, 552),
     board: { x: x0, y: y0, cell },
-    next: box((p0 + p1) / 2, 627, pw, BUTTON_H),
+    // Taller than the other buttons: on a phone held sideways the wide view is scaled to about 0.42, and this is the one pressed every turn.
+    next: box((p0 + p1) / 2, 612, pw, WIDE_NEXT_H),
     help: box((p0 + p1) / 2, Math.min(h - 10 - BUTTON_H / 2, 727), Math.min(pw, 220), Math.min(BUTTON_H, 80)),
     cards: span(x0, y0, x0 + cell * 10, y0 + cell * 6),
   };

@@ -107,7 +107,7 @@ class ClockTower implements Game {
   finished = false;
   readonly face = new Container();
   readonly request = new Container();
-  private readonly requestHeading = label('', 22, ink);
+  private readonly requestHeading = label('', 26, ink);
   private readonly requestTime = label('', 38, ink);
   private readonly durationBadge = new Container();
   private readonly handKey = new Container();
@@ -115,8 +115,8 @@ class ClockTower implements Game {
   private readonly oldClock = new Container();
   private readonly newClock = new Container();
   private readonly exampleHand = new Graphics();
-  private readonly oldTime = label('', 22, ink);
-  private readonly newTime = label('', 22, ink);
+  private readonly oldTime = label('', 26, ink);
+  private readonly newTime = label('', 26, ink);
   private readonly example = { hour: 0, arc: 0, arcStart: 0 };
   private readonly minuteArc = new Graphics();
   /** The interval level (10): fixed start and end clocks, an hours stepper and a half-hour toggle. */
@@ -209,8 +209,8 @@ class ClockTower implements Game {
     this.durationBadge.visible = this.plan.mode === 'half-later';
     this.requestHeading.y = this.plan.mode === 'half-later' ? -36 : -34;
     this.requestTime.position.set(this.plan.mode === 'half-later' ? -50 : 0, 4);
-    const replay = label('Tap to hear again', 18, ink);
-    replay.y = 40;
+    const replay = label('Tap to hear again', 25, ink);
+    replay.y = 42;
     this.request.addChild(replay);
     this.request.hitArea = new Rectangle(-125, -60, 250, 120);
     this.request.visible = this.plan.mode !== 'read';
@@ -231,10 +231,10 @@ class ClockTower implements Game {
       .poly([-10, 44, 0, 34, 10, 44, 0, 54])
       .fill(swatch.red.line);
     this.handKey.addChild(key);
-    const short = label('Short: middle', 20, ink);
-    short.position.set(50, 0);
-    const long = label('Long: edge', 20, ink);
-    long.position.set(65, 44);
+    const short = label('Short: middle', 26, ink);
+    short.position.set(62, 0);
+    const long = label('Long: edge', 26, ink);
+    long.position.set(78, 44);
     this.handKey.addChild(short, long);
     this.appointmentHeading.visible = this.plan.mode === 'read';
     this.appointmentHeading.eventMode = 'none';

@@ -132,6 +132,8 @@ class Round implements Game {
         this.seat(two),
       ).named(two ? 'Two of us' : 'Me and the pet');
       b.name = two ? 'seat-two' : 'seat-pet';
+      // The two choices are alone on the screen: bigger, so their names read on a phone held sideways (about 13 px).
+      b.scale.set(1.25);
       return b;
     });
     const mk = (icon: Container, sw: typeof swatch.blue, name: string, fn: () => void) =>
