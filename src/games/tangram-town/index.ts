@@ -138,7 +138,9 @@ class TangramTown implements Game {
           this.selected.art.rotation = (this.selected.piece.turns * Math.PI) / 2;
         }
       }
-      void ctx.say(this.plan.onePiece ? 'tangram.home-help' : 'tangram.help');
+      void (this.plan.onePiece
+        ? ctx.say('tangram.home-help', { picture: this.plan.picture })
+        : ctx.say('tangram.help'));
       this.drawHint();
     });
     ctx.stage.addChild(this.turn, this.help);
