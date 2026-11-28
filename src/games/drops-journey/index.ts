@@ -609,6 +609,11 @@ class DropsJourney implements Game {
     if (this.leaf.visible && this.saidEnough) ring(this.leaf, LEAF, LEAF);
   }
 
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.replaying) return null;
     const level = this.round.level;

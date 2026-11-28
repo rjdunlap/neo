@@ -810,6 +810,11 @@ class PuzzlePals implements Game {
   }
 
   /** The ghost finger on the how-to card: tap a turned piece to flip it upright, then carry it to its place in the frame. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.plan.oneAtATime) {

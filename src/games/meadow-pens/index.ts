@@ -781,6 +781,11 @@ class MeadowPens implements Game {
   }
 
   /** The ghost finger: paint the pen a square at a time and ring; at level 2, tap the right card. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.task || this.pointer !== null || this.unasked) return null;
     if (this.task.kind === 'field') {

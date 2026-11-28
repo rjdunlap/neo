@@ -122,6 +122,8 @@ export interface Routes {
   dress(id: string, origin?: BookOrigin): void;
   /** A grown-up's friend and its shop (the progression loop, slice 4), from the friend on Today's six; back returns there. */
   friendPage(): void;
+  /** A grown-up's Lantern Lodge, built with shells (the progression loop, slice 7), from Today's six; back returns there. */
+  lodge(): void;
   /**
    * Plays a game at the levels for `band` (her own band if omitted), resolved to a band the game has
    * (`playBand`), or as a step of a story (the Windy or the Woodland Picnic). `origin` is where home goes afterwards; without one, her home spot. `level` plays that level (held inside her band's range) instead of her saved one, as the celebration's "next level" does.

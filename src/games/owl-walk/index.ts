@@ -447,6 +447,11 @@ class OwlWalk implements Game {
   }
 
   /** The ghost finger: flip a card, pick the owl (on the levels that ask), then tap the stone it hops to, or the nest. The pet's turns play themselves. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || this.turn !== 'child') return null;
     if (this.plan.mode === 'free') {

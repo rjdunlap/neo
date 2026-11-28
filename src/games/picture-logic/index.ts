@@ -1227,6 +1227,11 @@ class PictureLogic implements Game {
    * The ghost finger on the how-to card: it picks Fill, then drags along the next run of squares the picture still needs (sliding
    * the picture first when a run is out of view), and takes out a square that does not belong with Fill or Cross lifting it.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     const f = this.frame;
     if (this.busy || this.finished || !this.puzzle || !this.touch || !f) return null;

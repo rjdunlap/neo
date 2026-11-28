@@ -1189,6 +1189,11 @@ class PlaydateWorkshop implements Game {
   }
 
   /** The ghost finger, per the definition: the demonstration order at each level, then Finish. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     if (this.phase === 'plan') {

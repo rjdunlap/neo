@@ -343,6 +343,11 @@ class ChainReaction implements Game {
   update() {}
 
   /** Carry each ramp along a working design, then run the marble through the finished machine. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.machine) return null;
     if (this.plan.predict) {

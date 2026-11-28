@@ -475,6 +475,11 @@ class PatternTrain implements Game {
    * The ghost finger on the how-to card: tap the choice that fits the empty car, then on the bell levels press the green
    * button to confirm it; on the bell levels it first waits for the notes to be played.
    */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.phase === 'find') return { tap: { on: this.cars[this.targets[0]] } };

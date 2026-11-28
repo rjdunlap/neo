@@ -344,6 +344,11 @@ class FruitSlice implements Game {
   }
 
   /** The ghost finger: a right fruit as it hangs (a tap at 1, a swipe through it after), the bowl when it is full, the hint's line on a still board. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.stroke) return null;
     const sign = this.current;

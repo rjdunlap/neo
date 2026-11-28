@@ -1398,6 +1398,11 @@ class PetKitchen implements Game {
     if (this.done) this.meal.rotation = Math.sin(this.clock * 7) * 0.04;
   }
   /** The ghost finger on the how-to card: cut fairly, give each plate a piece in turn, serve; or add fruit until the recipe is doubled, serve. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done) return null;
     if (this.tapDeal) {

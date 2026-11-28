@@ -19,7 +19,7 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { arrowIcon, checkIcon, playIcon, tilesIcon } from '../../ui/icons';
+import { arrowIcon, checkIcon, houseIcon, playIcon, tilesIcon } from '../../ui/icons';
 import { openPlaytestSheet, type PlaytestSheet } from '../../ui/playtest-sheet';
 import { fitArt } from '../../ui/origin-art';
 import { FONT, namePill } from '../../ui/text';
@@ -80,6 +80,8 @@ export class DailyScene extends Scene {
   private notesSheet: PlaytestSheet | null = null;
   /** A grown-up's stamps (the progression loop): a lantern button beside the notes; null for a band that does not earn. */
   readonly stamps: RoundButton | null;
+  /** Lantern Lodge, for a band that earns shells (the progression loop, slice 7). */
+  readonly lodge: RoundButton | null;
   private stampsSheet: StampsSheet | null = null;
   readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () =>
     this.leave(
@@ -127,6 +129,9 @@ export class DailyScene extends Scene {
     this.stamps = earnsShells(store.data.profile.band)
       ? new RoundButton(lanternIcon(), swatch.white, CORNER_RADIUS, () => this.openStamps())
       : null;
+    this.lodge = earnsShells(store.data.profile.band)
+      ? new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.openLodge())
+      : null;
     this.date.text = new Date().toLocaleDateString(undefined, {
       weekday: 'long',
       month: 'long',
@@ -167,6 +172,11 @@ export class DailyScene extends Scene {
 
   private get leaving(): boolean {
     return this.out.leaving;
+  }
+
+  private openLodge() {
+    if (this.stampsSheet || this.notesSheet || this.sheet || this.leaving) return;
+    this.app.go.lodge();
   }
 
   private openFriendPage() {
@@ -221,6 +231,7 @@ export class DailyScene extends Scene {
     );
     if (this.notes) this.ui.addChild(this.notes);
     if (this.stamps) this.ui.addChild(this.stamps);
+    if (this.lodge) this.ui.addChild(this.lodge);
     // A guest (play-first slice 2) has the six and their rounds only: no Arcade until Add me.
     this.all.visible = !store.entry.guest;
     this.buildCards();
@@ -374,8 +385,14 @@ export class DailyScene extends Scene {
     // Stamps sit above the notes in a wide view (the right margin is clear of cards), beside them in a tall one (the strip
     // under the cards is clear).
     const step = CORNER_RADIUS * 2 + 20;
-    if (wide) this.stamps?.position.set(v.w - BACK.x, v.h - BACK.y - step);
-    else this.stamps?.position.set(v.w - BACK.x - step, v.h - BACK.y);
+    // The lodge goes one further along: above the stamps when wide, left of them when tall.
+    if (wide) {
+      this.stamps?.position.set(v.w - BACK.x, v.h - BACK.y - step);
+      this.lodge?.position.set(v.w - BACK.x, v.h - BACK.y - 2 * step);
+    } else {
+      this.stamps?.position.set(v.w - BACK.x - step, v.h - BACK.y);
+      this.lodge?.position.set(v.w - BACK.x - 2 * step, v.h - BACK.y);
+    }
     this.cards.forEach((c, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
