@@ -4,26 +4,26 @@ import { entryId } from '../../content/journal';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
-import type { View } from '../../engine/view';
+import { textBoost, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { letterPicture } from '../../art/letter-pictures';
 import { WORDS } from '../../learning/words/letter-words';
-import { FRAME, FRAME_X, strokesOf } from '../../learning/tracing/lowercase';
+import { FRAME, FRAME_X, frameStrokesOf, isLower, strokesOf } from '../../learning/tracing/lowercase';
 import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../../learning/tracing/strokes';
 import { rangeFor } from '../../progress/difficulty';
 import {
   BIG_LEVEL,
-  fullName,
   guidesFor,
   hintCounts,
   inFrame,
   LEVELS,
-  NAME_LEVEL,
+  nameLevel,
   PLANS,
   roundTally,
   severalLetters,
+  signName,
   stickerLetter,
   trailLevel,
   trailTolerance,
@@ -131,12 +131,24 @@ class LetterTrails implements Game {
   private get letter() {
     return this.word[this.letterIndex];
   }
+  /** The letter's strokes: in the frame from level 10 (a little letter, or level 17's capital standing in it). */
+  private get strokes() {
+    return inFrame(this.ctx.level) ? frameStrokesOf(this.letter) : strokesOf(this.letter);
+  }
+  /** The instruction for the letter she is about to trace: a little letter, level 15's pair, or a capital. */
+  private get startLine() {
+    return trailLevel(this.ctx.level) === BIG_LEVEL
+      ? 'trails.big'
+      : isLower(this.letter)
+        ? 'trails.little'
+        : 'trails.start';
+  }
   /** The capital: what the picture, the journal and the voice use, for a little letter too. */
   private get capital() {
     return this.letter.toUpperCase();
   }
   private prepareStroke() {
-    this.points = sampleStroke(strokesOf(this.letter)[this.stroke]);
+    this.points = sampleStroke(this.strokes[this.stroke]);
     this.progress = 0;
     this.previous = this.points[0];
     this.wrong = 0;
@@ -222,7 +234,7 @@ class LetterTrails implements Game {
     while (this.handle.dragging) await this.ctx.tw.wait(0.05);
     await this.ctx.tw.wait(0.2);
     this.stroke++;
-    if (this.stroke < strokesOf(this.letter).length) {
+    if (this.stroke < this.strokes.length) {
       this.busy = false;
       this.prepareStroke();
       void this.ctx.instruct('trails.stroke');
@@ -275,7 +287,7 @@ class LetterTrails implements Game {
     this.stroke = 0;
     this.busy = false;
     this.prepareStroke();
-    void this.ctx.instruct('trails.start', { letter: this.letter });
+    void this.ctx.instruct(this.startLine, { letter: this.capital });
   }
 
   /** Every miss and hint as it came (the browser suites read these); `ctx.finish` gets `roundTally`'s count. */
@@ -295,7 +307,7 @@ class LetterTrails implements Game {
   }
   /** What she hears: the word in lower case (so device speech says it, not its letters), or her name as it is written. */
   private get spoken() {
-    return trailLevel(this.ctx.level) === NAME_LEVEL
+    return nameLevel(this.ctx.level)
       ? // A name with no Latin letter is traced and signed as PIP (`nameLetters`), so she hears Pip too.
         /[a-z]/i.test(this.ctx.childName.normalize('NFD'))
         ? this.ctx.childName.trim()
@@ -320,7 +332,7 @@ class LetterTrails implements Game {
 
   /** The end of a word or a name: the word's own picture (the dog, the sun), or a sign with her whole name in print. */
   private async closing() {
-    const name = trailLevel(this.ctx.level) === NAME_LEVEL;
+    const name = nameLevel(this.ctx.level);
     const p = name ? this.nameSign() : wordPicture(this.word.toLowerCase() as ShortWord);
     p.position.set(this.size / 2, this.size / 2);
     p.scale.set(0);
@@ -338,10 +350,10 @@ class LetterTrails implements Game {
     await this.ctx.tw.wait(2.8);
   }
 
-  /** A wooden sign as wide as the canvas with her whole name, even past the eight letters she traced. */
+  /** A wooden sign as wide as the canvas with her whole name, even past the eight letters she traced (as she traced it). */
   private nameSign(): Container {
     const c = new Container();
-    const text = fullName(this.ctx.childName);
+    const text = signName(this.ctx.level, this.ctx.childName);
     const w = this.size,
       h = Math.max(120, this.size * 0.36);
     c.addChild(
@@ -418,7 +430,7 @@ class LetterTrails implements Game {
     if (this.picture || this.done) return;
     this.outline.clear();
     this.ink.clear();
-    strokesOf(this.letter).forEach((stroke, i) => {
+    this.strokes.forEach((stroke, i) => {
       const color = i === this.stroke ? swatch.purple.light : swatch.white.line;
       const guide = i === this.stroke ? this.guideNow() : this.guides[this.attempt];
       if (guide === 'solid') this.drawPath(this.outline, stroke, color, 28);
@@ -503,7 +515,10 @@ class LetterTrails implements Game {
       : Math.min(v.h - 260, v.w - 360, 520);
     this.canvas.position.set(v.w / 2 - this.size / 2 + 35, (v.h - this.size) / 2 + 35);
     this.heading.position.set(v.w / 2, 65);
-    this.heading.style.fontSize = Math.min(38, (v.w - 250) / Math.max(8, this.word.length * 1.6));
+    // Enlarged on a phone (where the view is drawn small), as big as fits between the corner buttons: a word's heading
+    // is about three characters a letter ("c  [ a ]  t").
+    const chars = this.word.length > 1 ? this.word.length * 3 + 2 : 4;
+    this.heading.style.fontSize = Math.min(38 * textBoost(v.scale), (v.w - 240) / (chars * 0.6));
     this.drawFrame();
     this.drawGhost(v);
     this.draw();
@@ -512,16 +527,7 @@ class LetterTrails implements Game {
   }
   async start() {
     if (this.several) await this.ctx.say('trails.word', { word: this.spoken });
-    void this.ctx.instruct(
-      trailLevel(this.ctx.level) === BIG_LEVEL
-        ? 'trails.big'
-        : inFrame(this.ctx.level)
-          ? 'trails.little'
-          : 'trails.start',
-      {
-        letter: this.capital,
-      },
-    );
+    void this.ctx.instruct(this.startLine, { letter: this.capital });
   }
   update(dt: number) {
     this.clock += dt;

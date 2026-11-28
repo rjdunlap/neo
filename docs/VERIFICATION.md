@@ -123,6 +123,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `lens` | 2026-11-17 · [Puddle Lens plays upright on a phone](verification/2026-11-17-puddle-lens-plays-upright-on-a-phone.md) | `LENS_LEVELS=upright` |
 | `letters` | 2026-11-24 · [Letter Trails level 13 Down, up and over](verification/2026-11-24-letter-trails-level-13-down-up-and-over.md) | — |
 | `letters10` | 2026-11-27 · [Letter Trails level 15 Big and little](verification/2026-11-27-letter-trails-level-15-big-and-little.md) | Level 15 k and y on a phone viewport; stroke forms unchecked against HWT |
+| `letters16` | 2026-11-28 · [Letter Trails levels 16 and 17](verification/2026-11-28-letter-trails-levels-16-and-17.md) | Level 16 with a wander and level 17 as Zoë-Rose on a phone viewport |
 | `liftit` | 2026-11-20 · [Lift It level 10, One big pull (toddler entry)](verification/2026-11-20-lift-it-level-10-one-big-pull-toddler-entry.md) | `FROM_LEVEL=10` |
 | `littleloom` | 2026-11-24 · [Little Loom levels 4–5 (PR #2146)](verification/2026-11-24-little-loom-levels-4-5.md) | Levels 4–5: wrong row, Undo, hint, float slip, portrait |
 | `livekeys` | 2026-10-15 · [Lands stage C1b group 3, three games switch live](archive/VERIFICATION-2026-10-15.md#2026-10-15--lands-stage-c1b-group-3-three-games-switch-live) | `LIVE_ONLY=bouncy-launch,ferry-jam,penguin-slide` |
