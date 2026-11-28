@@ -54,6 +54,7 @@ export class MixHost {
     private readonly placeIds: readonly string[],
   ) {
     this.mods = mixGames(store.data.profile.band, band, GAMES);
+    mixMemory.discardStale(store.data, store.data.profile.band);
   }
 
   /** The mix is live for her at this home spot. */
@@ -86,12 +87,18 @@ export class MixHost {
     return ids;
   }
 
-  /** The mix spot was tapped: a new session with the held lineup, every stop still to come. */
-  start() {
+  /**
+   * The mix spot was tapped: the unfinished mix this profile saved, carried on from its next stop (D5b), or else a new
+   * session with the held lineup, every stop still to come. Play on the table passes `fresh`: the grown-up's start over.
+   * Nothing is said about coming back: the tap simply plays what is left.
+   */
+  start(fresh = false) {
     if (!this.mods || this.launching) return;
-    mixMemory.start(store.data, this.band, this.lineupIds());
-    // With how-to cards on, the first stop's own card is the preview (D3): it offers the mix and carries the stops and Skip.
-    if (store.data.settings.howToCards) return this.launch(0);
+    const carried = !fresh && mixMemory.hydrate(store.data, this.band, GAMES, store.data.profile.band);
+    if (!carried) mixMemory.start(store.data, this.band, this.lineupIds());
+    // With how-to cards on, the next stop's own card is the preview (D3): it offers the mix and carries the stops and Skip.
+    const first = nextUp(mixMemory.at(store.data, this.band)!) ?? 0;
+    if (store.data.settings.howToCards) return this.launch(first);
     this.open();
     void voice.say('mix.offer').then(() => this.sayNext('mix.stop'));
   }
@@ -270,7 +277,7 @@ export class MixHost {
       reset: () => this.edit(lineup.reset(), 'mix.reset'),
       play: () => {
         this.closeTable();
-        this.start();
+        this.start(true);
       },
       back: () => this.closeTable(),
     });

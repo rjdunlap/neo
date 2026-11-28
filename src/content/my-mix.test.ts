@@ -10,6 +10,8 @@ import { inlineFits } from '../ui/howto-card';
 import { sheetPlaces, sheetTiles } from '../ui/mix';
 import { UPRIGHT_SCREENS } from '../games/upright-check';
 import { MixTable } from '../ui/mix-table';
+// The saved mix (D5b) asks the store for a debounced write: no IndexedDB here.
+vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => {}, del: async () => {} }));
 import {
   lineup,
   MIX_IDS,
@@ -125,7 +127,7 @@ describe('Make my mix: sessions', () => {
     expect(mix.live(owner)!.state.items.length).toBe(2);
     expect(Object.isFrozen(mix.live(owner)!.ids)).toBe(true);
   });
-  it('keeps the held lineup when a session ends; a new save or a forgotten player starts from the default', () => {
+  it('keeps the held lineup when a session ends; a new save starts from the default, a forgotten player keeps their saved one', () => {
     const owner = store.data;
     mix.hold(owner, 'toddler', ['fill-dump']);
     mix.start(owner, 'toddler', ['fill-dump']);
@@ -134,7 +136,9 @@ describe('Make my mix: sessions', () => {
     expect(mix.lineup(owner, 'lap')).toBeUndefined();
     expect(mix.lineup(defaults(), 'toddler')).toBeUndefined();
     mix.forget();
-    expect(mix.lineup(owner, 'toddler')).toBeUndefined();
+    // D5b: the lineup is saved on that player's own save, so coming back to them finds it again.
+    expect(mix.lineup(owner, 'toddler')).toEqual(['fill-dump']);
+    expect(owner.mix.lineups).toEqual({ toddler: ['fill-dump'] });
   });
   it('checks each stop on its own: one unplayable entry leaves the others playable', () => {
     const older = GAMES.map((m) =>

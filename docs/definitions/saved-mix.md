@@ -2,6 +2,8 @@
 
 *Defined 2026-11-27 · docs only · chunk 19, [discovery action D5b](../ROADMAP.md#discovery-actions) · follows [Make my mix](make-my-mix.md) (D5a, built) and [Little surprises](little-surprises.md) (D2a/D2b, built).* The source audit read `src/app/discovery.ts` (`MixMemory`, `HeldLineup`), `src/content/mix.ts` (`lineup`, `repairLineup`, `startMix`, `step`), `GameScene.finishRound` (the `recordRound`, `addSticker`, `mixMemory.finish`, `flush` run at about lines 844–873), `src/progress/save.ts` (`migrate`, `defaults`) and `src/progress/store.ts` (`save`, `flush`, `write`, profile switch, backup, restore, undo).
 
+**Built 2026-11-28** (PR #2314) as one save/navigation slice, following every open decision's lean; see [DESIGN](../DESIGN.md#application-and-scenes) and the [verification entry](../verification/2026-11-28-saved-mix-d5b.md).
+
 This is a shell and save change, not a game. It adds no game, level, how-to card or bot. It makes two things D5a deliberately left in memory survive a reload, a closed tab or a crash: **the chosen lineup** and **a mix she has started and not finished**.
 
 ## What it is

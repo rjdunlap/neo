@@ -8,6 +8,8 @@ import { MixHost } from './mix';
 import { Container } from 'pixi.js';
 import { Tweener } from '../engine/tween';
 vi.mock('../audio/voice', () => ({ voice: { stop: vi.fn(), say: vi.fn(async () => {}) } }));
+// The saved mix (D5b) asks the store for a debounced write: no IndexedDB here.
+vi.mock('idb-keyval', () => ({ get: async () => undefined, set: async () => {}, del: async () => {} }));
 
 // The real result callbacks of a mix round, without a renderer: a scene that has claimed stop `p`'s round.
 function mixResult(p = 0) {
@@ -190,6 +192,7 @@ describe('Make my mix (D5a) on the home spot', () => {
   beforeEach(() => {
     store.data.settings.howToCards = true;
     mixMemory.forget();
+    store.data.mix = { lineups: {}, session: null }; // the outer start saved a session (D5b): these taps start fresh
   });
 
   it('a hold of 0.6 s opens the table with no session, and its lift is consumed; a shorter press is an ordinary tap', () => {
@@ -264,7 +267,7 @@ describe('Make my mix (D5a) on the home spot', () => {
       'peekaboo-barn',
     ]);
   });
-  it('the last stop cannot leave, Reset brings back Little surprises, and a forgotten player starts from it', async () => {
+  it('the last stop cannot leave, Reset brings back Little surprises, the same player coming back finds their saved lineup, a new save starts from the default', async () => {
     const { voice } = await import('../audio/voice');
     const { host } = make();
     host.openTable();
@@ -280,7 +283,12 @@ describe('Make my mix (D5a) on the home spot', () => {
     actions.remove(1);
     actions.back();
     expect([host.table, mixMemory.live(store.data)]).toEqual([null, undefined]);
+    expect(store.data.mix.lineups).toEqual({ lap: ['bubble-pop', 'fill-dump'] });
     mixMemory.forget();
+    make().host.start();
+    expect(mixMemory.live(store.data)!.ids).toEqual(['bubble-pop', 'fill-dump']);
+    mixMemory.forget();
+    store.data = { ...defaults(), profile: { name: '', band: 'lap' } };
     make().host.start();
     expect(mixMemory.live(store.data)!.ids).toEqual(['bubble-pop', 'sing-along-barn', 'fill-dump']);
   });

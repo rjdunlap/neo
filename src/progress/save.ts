@@ -24,6 +24,7 @@ import { isLandId, type LandId } from '../content/lands';
 import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
 import { cleanShells, emptyShells, type ShellsSave } from '../content/shells';
 import { cleanStamps, type Stamp } from '../content/stamps';
+import { cleanMix, emptyMix, type SavedMix } from '../content/saved-mix';
 
 /** The second languages the pet can add a word in (WL2); only European Portuguese so far. */
 export type Language2 = 'none' | 'pt-PT';
@@ -148,6 +149,11 @@ export interface SaveData {
   room: RoomSave;
   /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
   favorites: string[];
+  /**
+   * The saved mix (D5b): the lineup a grown-up arranged per home spot, and one unfinished Little surprises session. Never a
+   * round's own progress: a round that was running is not restored, its stop is simply still to play.
+   */
+  mix: SavedMix;
   /** What she made and kept for the treehouse: one visual work and one tune, each with the one before it. */
   creations: CreationsSave;
   /** Discoveries she has seen for herself (known entries only), and how many she had looked at when she last opened the journal. */
@@ -198,6 +204,7 @@ export function defaults(): SaveData {
     book: { goal: null },
     room: starterRoom(),
     favorites: [],
+    mix: emptyMix(),
     creations: emptyCreations(),
     journal: emptyJournal(),
     explore: { last: null },
@@ -413,6 +420,7 @@ export function migrate(raw: unknown): SaveData {
     book: { goal: isObj(raw.book) && isGoalId(raw.book.goal) ? raw.book.goal : null },
     room: room(raw.room),
     favorites: cleanFavorites(raw.favorites),
+    mix: cleanMix(raw.mix),
     creations: cleanCreations(raw.creations),
     journal: cleanJournal(raw.journal),
     explore: { last: isObj(raw.explore) && isLandId(raw.explore.last) ? raw.explore.last : null },
