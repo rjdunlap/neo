@@ -6,13 +6,24 @@ import type { BandLevels } from '../../progress/difficulty';
  * hand alone, then both hands for o'clock, half past, and quarter past and to. Then read the
  * clock and choose a visible fictional appointment, set an hour later, an hour earlier, five-minute
  * times, and half an hour from now. Last, two fixed clocks show a start and an end, and she chooses how
- * long it was with an hours picker and a half-hour toggle.
+ * long it was with an hours picker and a half-hour toggle. Then a friend is free for a while and a visit takes some time:
+ * she chooses the one start time that fits and sets the big clock to it.
  *
  * Times are in minutes after midnight on a 12-hour face; the hour hand moves with the minutes,
  * as on a real clock, so half past three has it halfway between 3 and 4.
  */
 export type ClockMode =
-  'hour' | 'oclock' | 'half' | 'quarter' | 'read' | 'later' | 'five' | 'earlier' | 'half-later' | 'how-long';
+  | 'hour'
+  | 'oclock'
+  | 'half'
+  | 'quarter'
+  | 'read'
+  | 'later'
+  | 'five'
+  | 'earlier'
+  | 'half-later'
+  | 'how-long'
+  | 'visit';
 
 export interface ClockPlan {
   mode: ClockMode;
@@ -59,6 +70,11 @@ export const PLANS: ClockPlan[] = [
     rounds: 4,
     name: 'How long? Two clocks show a start and an end; choose the hours and half hour between them',
   },
+  {
+    mode: 'visit',
+    rounds: 4,
+    name: 'Fit a visit: a friend is free 2:00 to 3:30 and a visit takes 30 minutes; choose the start that fits, then set it',
+  },
 ];
 
 /** Levels 6 and 8 both change the shown time by whole hours; these are the modes with a comparison panel. */
@@ -83,7 +99,7 @@ export const MAX_HOURS = 3;
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
   // Level 8 (an hour earlier) is easier than 7's five-minute times, so it plays before it; level 9 follows 7.
-  school: { min: 2, max: PLANS.length, order: [2, 3, 4, 5, 6, 8, 7, 9, 10] },
+  school: { min: 2, max: PLANS.length, order: [2, 3, 4, 5, 6, 8, 7, 9, 10, 11] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -109,6 +125,17 @@ export interface ClockTask {
   end?: number;
   /** For 'read': the visible evidence on this task's pretend appointment board. */
   options?: Appointment[];
+  /** For 'visit': the friend's free time and the visit's length, absolute minutes after midnight (`time` is the valid start's face). */
+  visit?: Visit;
+}
+
+/** A friend free from `open` to `close` (inclusive), a visit of `length` minutes, and three start times to choose from. */
+export interface Visit {
+  open: number;
+  close: number;
+  length: number;
+  /** Three distinct quarter-hour starts, earliest first; exactly one fits. */
+  starts: number[];
 }
 
 export type ClockDemoAction =
@@ -195,6 +222,7 @@ export function makeTasks(plan: ClockPlan, rng: Rng): ClockTask[] {
     });
     return out;
   }
+  if (plan.mode === 'visit') return visitTasks(rng);
   if (plan.mode === 'half-later') {
     // Cover all four quarter positions (crossing and noncrossing), including crossing 12.
     const quarterOrder = rng.shuffle([0, 15, 30, 45]);
@@ -285,7 +313,15 @@ export function spoken(time: number): string {
 export const hourOf = (time: number) => Math.floor(time / 60) % 12 || 12;
 
 /** The next real control a demonstration player should use to solve the current task. */
-export function demoAction(mode: ClockMode, hour: number, minute: number, task: ClockTask): ClockDemoAction {
+export function demoAction(
+  mode: ClockMode,
+  hour: number,
+  minute: number,
+  task: ClockTask,
+  /** For 'visit': whether the start has been chosen yet (then the hands are set to it). */
+  chosen = true,
+): ClockDemoAction {
+  if (mode === 'visit' && !chosen) return { kind: 'pick', id: String(fittingStart(task.visit!)) };
   if (mode === 'read') {
     const id = task.options!.find((candidate) => candidate.time === task.time)!.id;
     return { kind: 'pick', id };
@@ -404,5 +440,88 @@ export function requestFor(
             : 'Set the clock to',
     time: digital(time),
     speech: spoken(time),
+  };
+}
+
+/** Why a visit start does or does not fit: inside the free time, starting too early, or finishing too late. */
+export function visitFit(visit: Visit, start: number): 'fits' | 'early' | 'late' {
+  if (start < visit.open) return 'early';
+  if (start + visit.length > visit.close) return 'late';
+  return 'fits';
+}
+
+/** The one start among the three that fits. */
+export const fittingStart = (visit: Visit) => visit.starts.find((s) => visitFit(visit, s) === 'fits')!;
+
+/** The three ways the two wrong starts can sit around the right one, so the fitting card is not always in the middle. */
+const VISIT_SHAPES: ('early' | 'late')[][] = [
+  ['early', 'early'],
+  ['early', 'late'],
+  ['late', 'late'],
+];
+
+/**
+ * Level 11's four visits. The first is the authored example: free 2:00 to 3:30, a 30-minute visit, starts 1:45, 2:30 and
+ * 3:15. The others use 30-, 60- and 90-minute visits in some order, free times opening on the half hour from 9:00 to 3:00,
+ * the fitting card once first, once in the middle and once last, and at least one visit that fits exactly at an edge of the
+ * free time (starting as the friend is free, or ending as their free time ends). Wrong starts are either before the friend
+ * is free or start in the free time and finish after it; every start is a quarter hour.
+ */
+function visitTasks(rng: Rng): ClockTask[] {
+  const first: Visit = {
+    open: 14 * 60,
+    close: 15 * 60 + 30,
+    length: 30,
+    starts: [13 * 60 + 45, 14 * 60 + 30, 15 * 60 + 15],
+  };
+  const visits: Visit[] = [first];
+  const lengths = rng.shuffle([30, 60, 90]);
+  const shapes = rng.shuffle([...VISIT_SHAPES]);
+  const edgeAt = rng.int(0, 2);
+  lengths.forEach((length, i) => {
+    // Every visit's fitting start is a different time on the face, so no two tasks ask to set the same hands.
+    for (;;) {
+      const visit = makeVisit(rng, length, i === edgeAt, shapes[i], visits);
+      if (!visits.some((v) => fittingStart(v) % 720 === fittingStart(visit) % 720)) {
+        visits.push(visit);
+        break;
+      }
+    }
+  });
+  return visits.map((visit) => ({ time: fittingStart(visit) % 720, visit }));
+}
+
+/** One visit of `length` minutes, its fitting start at an edge of the free time when `edge`, wrong starts as `shape` says. */
+function makeVisit(
+  rng: Rng,
+  length: number,
+  edge: boolean,
+  shape: ('early' | 'late')[],
+  visits: Visit[],
+): Visit {
+  const slack = edge ? rng.pick([0, 30, 60]) : rng.pick([30, 45, 60]);
+  const opens = Array.from({ length: 13 }, (_, i) => 9 * 60 + i * 30);
+  const open = rng.pick(opens.filter((o) => !visits.some((v) => v.open === o)));
+  const close = open + length + slack;
+  const fit = edge ? rng.pick([open, close - length]) : open + 15 * rng.int(1, slack / 15 - 1);
+  const early = rng.shuffle([open - 45, open - 30, open - 15]);
+  // Late starts begin after the last start that fits and no later than the end of the free time.
+  const lateFrom = close - length + 15;
+  const late = rng.shuffle(Array.from({ length: (close - lateFrom) / 15 + 1 }, (_, k) => lateFrom + k * 15));
+  const wrong = shape.map((kind) => (kind === 'early' ? early.shift()! : late.shift()!));
+  return { open, close, length, starts: [fit, ...wrong].sort((a, b) => a - b) };
+}
+
+/** The visit's times in words and on signs, all from the same data the answer is judged by. */
+export function visitWords(visit: Visit, start?: number) {
+  return {
+    open: spoken(visit.open % 720),
+    close: spoken(visit.close % 720),
+    openFace: digital(visit.open % 720),
+    closeFace: digital(visit.close % 720),
+    length: visit.length === 30 ? 'thirty minutes' : lengthWords(visit.length),
+    lengthFace: visit.length < 60 ? `${visit.length} minutes` : lengthWords(visit.length),
+    start: start === undefined ? '' : spoken(start % 720),
+    finish: start === undefined ? '' : spoken((start + visit.length) % 720),
   };
 }

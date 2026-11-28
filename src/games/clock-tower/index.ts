@@ -37,11 +37,14 @@ import {
   requestFor,
   spoken,
   timeOf,
+  visitFit,
+  visitWords,
   type Appointment,
   type ClockPlan,
   type ClockTask,
+  type Visit,
 } from './logic';
-import { R, towerLayout } from './layout';
+import { R, START_CARD, STRIP, VISIT_SIGN, towerLayout } from './layout';
 
 /** Little pictures of the day, for reading the clock. */
 function eventArt(id: string): Graphics {
@@ -139,6 +142,15 @@ class ClockTower implements Game {
   readonly bell: RoundButton;
   readonly choices: { id: string; node: Container; replay: Container; card: Container }[] = [];
   private readonly appointmentHeading = label("A friend's pretend plan", 28, ink);
+  /** Level 11: the free-time sign, the time strip and the three start cards; she chooses a start, then sets it. */
+  private readonly visitSign = new Container();
+  private readonly visitTimes = label('', 34, ink);
+  private readonly visitLength = label('', 24, ink);
+  private readonly strip = new Container();
+  private readonly stripArt = new Graphics();
+  readonly starts: { start: number; card: Container; back: Graphics }[] = [];
+  /** The start she chose that fits; until then the hands stay still. */
+  chosen: number | null = null;
 
   private readonly backdrop: Backdrop;
   private readonly tower = new Graphics();
@@ -213,7 +225,7 @@ class ClockTower implements Game {
     replay.y = 40;
     this.request.addChild(replay);
     this.request.hitArea = new Rectangle(-125, -60, 250, 120);
-    this.request.visible = this.plan.mode !== 'read';
+    this.request.visible = this.plan.mode !== 'read' && this.plan.mode !== 'visit';
     onTap(this.request, () => {
       if (!this.busy && !this.finished && !this.askNow()) void this.instruction();
     });
@@ -262,6 +274,7 @@ class ClockTower implements Game {
     this.minusButton = new RoundButton(stepArt(false), swatch.white, 55, () => this.step(-1));
     this.plusButton = new RoundButton(stepArt(true), swatch.white, 55, () => this.step(1));
     this.buildInterval();
+    this.buildVisit();
     ctx.stage.addChild(
       this.backdrop,
       this.tower,
@@ -273,7 +286,136 @@ class ClockTower implements Game {
       this.appointmentHeading,
       this.comparison,
       this.interval,
+      this.visitSign,
+      this.strip,
     );
+  }
+
+  /** Level 11's sign (tap to hear the free time again) and the strip it is drawn on; both stay hidden on other levels. */
+  private buildVisit() {
+    const on = this.plan.mode === 'visit';
+    this.visitSign.visible = on;
+    this.strip.visible = on;
+    if (!on) return;
+    const { w, h } = VISIT_SIGN;
+    const heading = label('Our friend is free', 22, ink);
+    heading.y = -32;
+    this.visitTimes.y = 4;
+    this.visitLength.y = 38;
+    const back = new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 22)
+      .fill(cream)
+      .stroke({ width: 4, color: wood.line });
+    back.eventMode = 'none';
+    this.visitSign.addChild(back, heading, this.visitTimes, this.visitLength);
+    this.visitSign.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
+    onTap(this.visitSign, () => {
+      if (this.busy || this.finished || this.askNow()) return;
+      sfx.tick();
+      void this.instruction();
+    });
+    this.strip.eventMode = 'none';
+    this.strip.addChild(this.stripArt);
+  }
+
+  /**
+   * The time strip: an hour ruler from an hour before the free time to an hour after it, the free time as a green band,
+   * and (once she chooses) the visit as a block above it, green where it fits inside and orange where it hangs outside.
+   */
+  private drawStrip(visit: Visit, start?: number) {
+    for (const n of this.strip.removeChildren()) if (n !== this.stripArt) n.destroy();
+    this.strip.addChild(this.stripArt);
+    const from = Math.floor((visit.open - 45) / 60) * 60;
+    const to = Math.ceil((visit.close + 45) / 60) * 60;
+    const { w, h } = STRIP;
+    const span = w - 40;
+    const x = (t: number) => -span / 2 + ((t - from) / (to - from)) * span;
+    const g = this.stripArt.clear();
+    g.roundRect(-w / 2, -h / 2, w, h, 16)
+      .fill({ color: cream, alpha: 0.92 })
+      .stroke({ width: 3, color: wood.line });
+    // The free time.
+    g.roundRect(x(visit.open), 4, x(visit.close) - x(visit.open), 22, 8)
+      .fill(swatch.green.light)
+      .stroke({ width: 3, color: swatch.green.line });
+    for (let t = from; t <= to; t += 15) {
+      const major = t % 60 === 0;
+      g.moveTo(x(t), major ? 26 : 30)
+        .lineTo(x(t), 38)
+        .stroke({ width: major ? 3 : 2, color: ink, alpha: major ? 0.8 : 0.35 });
+      if (major) {
+        const n = label(String(hourOf(t % 720)), 18, ink);
+        n.position.set(x(t), -24);
+        this.strip.addChild(n);
+      }
+    }
+    if (start === undefined) return;
+    // The visit she chose, above the band.
+    const fits = visitFit(visit, start) === 'fits';
+    const color = fits ? swatch.yellow : swatch.orange;
+    g.roundRect(x(start), -14, x(start + visit.length) - x(start), 16, 6)
+      .fill(fits ? color.fill : color.light)
+      .stroke({ width: 3, color: color.line });
+  }
+
+  /** The three start cards for this visit: a little clock and the digital time; a tap chooses. */
+  private buildStarts(visit: Visit) {
+    for (const c of this.starts.splice(0)) c.card.destroy({ children: true });
+    const { w, h } = START_CARD;
+    for (const start of visit.starts) {
+      const card = new Container();
+      const back = new Graphics();
+      back.eventMode = 'none';
+      const clock = miniClock(hourOf(start % 720), start % 60, 36);
+      clock.x = -62;
+      const time = label(digital(start % 720), 36, ink);
+      time.x = 42;
+      card.addChild(back, clock, time);
+      card.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
+      onTap(card, () => void this.pickStart(start), { cooldown: 300 });
+      this.starts.push({ start, card, back });
+      this.ctx.stage.addChild(card);
+    }
+    this.paintStarts();
+    this.resize(this.view);
+  }
+
+  /** Cards are plain until one is chosen; then it is outlined in yellow and the others fade. */
+  private paintStarts() {
+    const { w, h } = START_CARD;
+    for (const c of this.starts) {
+      const picked = this.chosen === c.start;
+      c.back
+        .clear()
+        .roundRect(-w / 2, -h / 2, w, h, 20)
+        .fill(picked ? swatch.yellow.light : cream)
+        .stroke({ width: picked ? 7 : 4, color: picked ? swatch.yellow.line : wood.line });
+      c.card.alpha = this.chosen === null || picked ? 1 : 0.45;
+    }
+    // The hands and bell wake up once a start is chosen.
+    const setting = this.chosen !== null;
+    this.face.alpha = setting ? 1 : 0.55;
+    this.bell.alpha = setting ? 1 : 0.45;
+  }
+
+  private async pickStart(start: number) {
+    if (this.busy || this.finished || this.chosen !== null) return;
+    this.askNow();
+    const visit = this.task.visit!;
+    const words = visitWords(visit, start);
+    this.drawStrip(visit, start);
+    const fit = visitFit(visit, start);
+    if (fit === 'fits') {
+      this.busy = true;
+      sfx.pop();
+      this.chosen = start;
+      this.paintStarts();
+      await this.ctx.say('clock.visit.fits', words);
+      this.busy = false;
+      void this.instruction();
+      return;
+    }
+    await this.wrong(fit === 'early' ? 'clock.visit.early' : 'clock.visit.late', words);
   }
 
   /** The level-10 picture: both clocks and the picker sit where the face would, inside the tower. */
@@ -441,6 +583,9 @@ class ClockTower implements Game {
     this.comparison.position.set(l.comparison.x, l.comparison.y);
     this.appointmentHeading.position.set(l.heading.x, l.heading.y);
     this.choices.forEach((c, i) => c.card.position.set(l.cards[i].x, l.cards[i].y));
+    this.starts.forEach((c, i) => c.card.position.set(l.cards[i].x, l.cards[i].y));
+    this.visitSign.position.set(l.sign.x, l.sign.y);
+    this.strip.position.set(l.strip.x, l.strip.y);
   }
 
   update(dt: number) {
@@ -490,6 +635,20 @@ class ClockTower implements Game {
         at(this.hours < Math.floor(length / 60) ? this.plusButton : this.minusButton, 130, 130);
       if (this.half !== (length % 60 === 30)) at(this.halfToggle, 350, 110);
     }
+    if (this.hinted && this.plan.mode === 'visit' && this.chosen === null && !this.busy) {
+      const right = this.starts.find((c) => c.start % 720 === this.task.time);
+      if (right)
+        g.roundRect(
+          right.card.x - START_CARD.w / 2 - 9,
+          right.card.y - START_CARD.h / 2 - 9,
+          START_CARD.w + 18,
+          START_CARD.h + 18,
+          26,
+        ).stroke({
+          width: 6 + 2 * Math.sin(this.clock * 6),
+          color: swatch.yellow.fill,
+        });
+    }
     if (this.hinted && this.plan.mode === 'read' && !this.busy) {
       const right = this.choices.find((c) => this.isRight(c.id));
       if (right)
@@ -509,10 +668,15 @@ class ClockTower implements Game {
       interval ? this.hours : this.hour,
       interval ? (this.half ? 30 : 0) : this.minute,
       this.task,
+      this.chosen !== null,
     );
     if (action.kind === 'hours')
       return { tap: { on: this.hours < action.hours ? this.plusButton : this.minusButton }, pause: 0.25 };
     if (action.kind === 'half') return { tap: { on: this.halfToggle }, pause: 0.25 };
+    if (action.kind === 'pick' && this.plan.mode === 'visit') {
+      const card = this.starts.find((c) => String(c.start) === action.id);
+      return card ? { tap: { on: card.card }, pause: 0.2 } : null;
+    }
     if (action.kind === 'pick') {
       const choice = this.choices.find((c) => c.id === action.id);
       return choice ? { tap: { on: choice.node }, pause: 0.12 } : null;
@@ -561,7 +725,12 @@ class ClockTower implements Game {
     hand(this.hourHand, hourAngle, R * 0.52, 18, swatch.blue.line, this.grab?.hand === 'hour');
     hand(this.minuteHand, minuteAngle, R * 0.82, 11, swatch.red.line, this.grab?.hand === 'minute');
     const ghost = this.ghost.clear();
-    if (this.hinted && this.plan.mode !== 'read' && this.task) {
+    if (
+      this.hinted &&
+      this.plan.mode !== 'read' &&
+      this.task &&
+      !(this.plan.mode === 'visit' && this.chosen === null)
+    ) {
       const t = this.task.time;
       const ha = (((hourOf(t) % 12) + (t % 60) / 60) / 12) * Math.PI * 2;
       const ma = ((t % 60) / 60) * Math.PI * 2;
@@ -578,6 +747,7 @@ class ClockTower implements Game {
 
   private canTurn(hand: 'hour' | 'minute') {
     if (this.plan.mode === 'read' || isInterval(this.plan.mode)) return false;
+    if (this.plan.mode === 'visit' && this.chosen === null) return false;
     return hand === 'hour' || this.plan.mode !== 'hour';
   }
 
@@ -654,6 +824,17 @@ class ClockTower implements Game {
       this.startTime.text = digital(t.from!);
       this.endTime.text = digital(t.time);
       this.refreshPicker();
+    } else if (this.plan.mode === 'visit') {
+      const visit = t.visit!;
+      this.chosen = null;
+      const words = visitWords(visit);
+      this.visitTimes.text = `${words.openFace} to ${words.closeFace}`;
+      this.visitLength.text = `A visit takes ${words.lengthFace}`;
+      this.drawStrip(visit);
+      this.buildStarts(visit);
+      // The hands start well away from every start on the cards.
+      this.hour = (hourOf(t.time) + 6) % 12 || 12;
+      this.minute = 0;
     } else if (this.plan.mode === 'read') {
       this.hour = hourOf(t.time);
       this.minute = t.time % 60;
@@ -679,7 +860,7 @@ class ClockTower implements Game {
       return;
     }
     await this.instruction();
-    if (this.index === 0 && this.plan.mode !== 'read')
+    if (this.index === 0 && this.plan.mode !== 'read' && this.plan.mode !== 'visit')
       await this.ctx.say(this.plan.mode === 'hour' ? 'clock.control.hour' : 'clock.controls');
     if (this.index === 0 && this.plan.mode === 'five') await this.ctx.say('clock.five.zero');
   }
@@ -700,6 +881,10 @@ class ClockTower implements Game {
   private instruction() {
     const t = this.task;
     if (this.plan.mode === 'read') return this.ctx.instruct('clock.read');
+    if (this.plan.mode === 'visit') {
+      const words = visitWords(t.visit!, this.chosen ?? undefined);
+      return this.ctx.instruct(this.chosen === null ? 'clock.visit' : 'clock.visit.set', words);
+    }
     if (isInterval(this.plan.mode))
       return this.ctx.instruct('clock.how-long', { from: spoken(t.from!), time: spoken(t.time) });
     if (hasFrom(this.plan.mode))
@@ -773,6 +958,15 @@ class ClockTower implements Game {
   private async check() {
     if (this.busy || this.finished) return;
     this.askNow();
+    if (this.plan.mode === 'visit') {
+      // The bell waits for a chosen start; before that it repeats the question.
+      if (this.chosen === null) return void this.instruction();
+      if (this.shown === this.task.time) return void this.right();
+      return void this.wrong('clock.visit.set.wrong', {
+        now: spoken(this.shown),
+        start: spoken(this.task.time),
+      });
+    }
     if (isInterval(this.plan.mode)) {
       const chosen = lengthOf(this.hours, this.half);
       if (chosen === durationOf(this.task)) return void this.right();
@@ -809,6 +1003,9 @@ class ClockTower implements Game {
       | 'clock.half-later.wrong.cross'
       | 'clock.how-long.wrong'
       | 'clock.how-long.zero'
+      | 'clock.visit.early'
+      | 'clock.visit.late'
+      | 'clock.visit.set.wrong'
       | 'clock.shows',
     vars: Record<string, string>,
   ) {
@@ -840,7 +1037,8 @@ class ClockTower implements Game {
         this.hops.text = worked.strip;
         this.hops.visible = true;
         void this.ctx.say('clock.how-long.help', { count: worked.count });
-      } else void this.ctx.say(this.plan.mode === 'read' ? 'clock.hint.read' : 'clock.hint');
+      } else if (this.plan.mode === 'visit' && this.chosen === null) void this.ctx.say('clock.visit.hint');
+      else void this.ctx.say(this.plan.mode === 'read' ? 'clock.hint.read' : 'clock.hint');
     }
     this.busy = false;
   }
@@ -922,6 +1120,8 @@ class ClockTower implements Game {
     });
     this.ctx.pet.cheer();
     if (event) line = this.ctx.say('clock.itis', { time: spoken(t), event: EVENT_WORDS[event] });
+    else if (this.plan.mode === 'visit')
+      line = this.ctx.say('clock.visit.yay', visitWords(this.task.visit!, this.chosen!));
     else if (!hasFrom(this.plan.mode)) line = this.ctx.say('clock.yay');
     if (this.index + 1 >= this.tasks.length) await line;
     const body = isInterval(this.plan.mode) ? this.interval : this.face;

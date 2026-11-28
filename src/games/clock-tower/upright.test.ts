@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../../engine/view';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
-import { BELL_HIT, CARD, R, REQUEST_BOX, towerLayout } from './layout';
+import { BELL_HIT, CARD, R, REQUEST_BOX, START_CARD, STRIP, VISIT_SIGN, towerLayout } from './layout';
 import { PLANS } from './logic';
 
 /**
@@ -30,6 +30,15 @@ describe.each(Object.entries(views))('Clock Tower upright on %s', (_, v) => {
           t.push({ what: `card ${i + 1} time`, x: c.x + CARD.hear.x, y: c.y, w: CARD.hear.w, h: CARD.h });
         });
         boxes.push({ what: 'heading', x: l.heading.x, y: l.heading.y, w: 320, h: 40 });
+      } else if (plan.mode === 'visit') {
+        t.push({ what: 'free-time sign', x: l.sign.x, y: l.sign.y, ...VISIT_SIGN });
+        expect(l.cards).toHaveLength(3);
+        l.cards.forEach((c, i) => t.push({ what: `start ${i + 1}`, x: c.x, y: c.y, ...START_CARD }));
+        t.push(square('bell', l.bell, BELL_HIT));
+        boxes.push({ what: 'strip', x: l.strip.x, y: l.strip.y, ...STRIP });
+        boxes.push({ what: 'hand key', x: l.handKey.x + 12, y: l.handKey.y + 20, w: 210, h: 100 });
+        // The tower roof stays under the cards.
+        expect(l.cards[0].y + START_CARD.h / 2).toBeLessThan(l.face.y - (R + 150) * l.face.s);
       } else {
         t.push({ what: 'request', x: l.request.x, y: l.request.y, w: REQUEST_BOX.w, h: REQUEST_BOX.h });
         t.push(square('bell', l.bell, BELL_HIT));

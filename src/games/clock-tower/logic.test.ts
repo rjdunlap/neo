@@ -27,6 +27,9 @@ import {
   PLANS,
   spoken,
   timeOf,
+  fittingStart,
+  visitFit,
+  visitWords,
 } from './logic';
 
 describe('Clock Tower', () => {
@@ -231,7 +234,7 @@ describe('Clock Tower', () => {
 
   it('plays level 8 before level 7 for school, and keeps every level reachable', () => {
     const school = rangeFor(LEVELS, 'school');
-    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 8, 7, 9, 10]);
+    expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 8, 7, 9, 10, 11]);
     expect(rangeFor(LEVELS, 'prek').max).toBe(4);
   });
 
@@ -358,7 +361,7 @@ describe('Clock Tower', () => {
 
   it('level 10 asks four distinct same-day intervals the picker can reach, with one answer each', () => {
     expect(PLANS[10 - 1].mode).toBe('how-long');
-    expect(LEVELS.school?.order).toEqual([2, 3, 4, 5, 6, 8, 7, 9, 10]);
+    expect(LEVELS.school?.order).toEqual([2, 3, 4, 5, 6, 8, 7, 9, 10, 11]);
     const plan = PLANS[10 - 1];
     const reachable = new Set(
       [0, 1, 2, 3].flatMap((h) => [false, true].map((half) => lengthOf(h, half))).filter((d) => d > 0),
@@ -402,5 +405,74 @@ describe('Clock Tower', () => {
     expect(requestFor('how-long', task).heading).toBe('How long was it?');
     expect(howToFor(clockTower, 10)!.steps.join(' ')).toContain('half-hour button');
     expect(SCRIPT['clock.how-long'][0]).toContain('{from}');
+  });
+
+  it('level 11 asks four same-day visits, each with exactly one quarter-hour start that fits', () => {
+    const plan = PLANS[11 - 1];
+    expect(plan.mode).toBe('visit');
+    expect(rangeFor(LEVELS, 'school').max).toBe(11);
+    for (let seed = 1; seed <= 400; seed++) {
+      const tasks = makeTasks(plan, new Rng(seed));
+      expect(tasks).toHaveLength(4);
+      expect(tasks[0].visit).toEqual({ open: 840, close: 930, length: 30, starts: [825, 870, 915] });
+      const positions = new Set<number>();
+      let edge = 0;
+      for (const t of tasks) {
+        const v = t.visit!;
+        expect(v.open).toBeGreaterThanOrEqual(8 * 60);
+        expect(v.close).toBeLessThanOrEqual(19 * 60);
+        expect(v.close - v.open).toBeGreaterThanOrEqual(v.length);
+        expect(v.starts).toHaveLength(3);
+        expect(new Set(v.starts).size).toBe(3);
+        expect([...v.starts].sort((a, b) => a - b)).toEqual(v.starts);
+        expect(new Set(v.starts.map((x) => x % 720)).size).toBe(3);
+        for (const x of v.starts) expect(x % 15).toBe(0);
+        const fits = v.starts.filter((x) => visitFit(v, x) === 'fits');
+        expect(fits).toHaveLength(1);
+        expect(t.time).toBe(fits[0] % 720);
+        expect(fittingStart(v)).toBe(fits[0]);
+        // A late start begins inside the free time, so the reason is the finish, not the start.
+        for (const x of v.starts) if (visitFit(v, x) === 'late') expect(x).toBeGreaterThanOrEqual(v.open);
+        positions.add(v.starts.indexOf(fits[0]));
+        if (fits[0] === v.open || fits[0] + v.length === v.close) edge++;
+      }
+      expect(edge).toBeGreaterThanOrEqual(1);
+      expect(positions.size).toBe(3);
+      expect(new Set(tasks.slice(1).map((t) => t.visit!.length))).toEqual(new Set([30, 60, 90]));
+      expect(new Set(tasks.map((t) => t.visit!.open)).size).toBe(4);
+    }
+  });
+
+  it('level 11 accepts visits that fit exactly at either edge, and explains both wrong reasons', () => {
+    const v = { open: 840, close: 930, length: 30, starts: [825, 870, 915] };
+    expect(visitFit(v, 840)).toBe('fits');
+    expect(visitFit(v, 900)).toBe('fits');
+    expect(visitFit(v, 825)).toBe('early');
+    expect(visitFit(v, 915)).toBe('late');
+    const words = visitWords(v, 915);
+    expect(words).toMatchObject({
+      openFace: '2:00',
+      closeFace: '3:30',
+      start: 'quarter past 3',
+      finish: 'quarter to 4',
+    });
+    expect(visitWords({ ...v, length: 90 }).lengthFace).toBe('1 and a half hours');
+    expect(visitWords(v).lengthFace).toBe('30 minutes');
+    const late = SCRIPT['clock.visit.late'][0];
+    expect(late).toContain('{finish}');
+    expect(late).toContain('{close}');
+    expect(SCRIPT['clock.visit.early'][0]).toContain('{open}');
+    expect(howToFor(clockTower, 11)!.steps.join(' ')).toContain('both fit');
+    expect(howToFor(clockTower, 10)!.steps.join(' ')).not.toContain('free time');
+  });
+
+  it('level 11 bot chooses the fitting start, then sets the hands to it', () => {
+    const v = { open: 840, close: 930, length: 30, starts: [825, 870, 915] };
+    const task = { time: 870 % 720, visit: v };
+    expect(demoAction('visit', 8, 0, task, false)).toEqual({ kind: 'pick', id: '870' });
+    expect(demoAction('visit', 8, 0, task, true)).toEqual({ kind: 'minute', minute: 30 });
+    expect(demoAction('visit', 8, 30, task, true)).toEqual({ kind: 'hour', hour: 2 });
+    expect(demoAction('visit', 2, 30, task, true)).toEqual({ kind: 'check' });
+    expect(minuteChoices('visit')).toEqual([0, 15, 30, 45]);
   });
 });

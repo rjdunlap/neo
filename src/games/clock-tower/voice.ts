@@ -35,6 +35,18 @@ export const VOICE = {
   ],
   'clock.how-long.zero': ['That is no time at all. The clock moves from {from} to {time}. Try again.'],
   'clock.how-long.help': ['{count} Choose the same hours and half hour.'],
+  'clock.visit': [
+    'Our friend is free from {open} to {close}. A visit takes {length}. Which start time fits? Tap it.',
+  ],
+  'clock.visit.early': ['{start} is too early. Our friend is not free until {open}. Try another time.'],
+  'clock.visit.late': [
+    "From {start}, a visit of {length} finishes at {finish}. That is after {close}, when our friend's free time ends. Try another time.",
+  ],
+  'clock.visit.hint': ['The glowing time fits: the whole visit is inside the green free time.'],
+  'clock.visit.fits': ['Yes! From {start}, the visit finishes at {finish}. That fits.'],
+  'clock.visit.set': ['Now set the big clock to {start}, then ring the bell!'],
+  'clock.visit.set.wrong': ['The clock says {now}. The visit starts at {start}.'],
+  'clock.visit.yay': ['Ding dong! The visit is from {start} to {finish}, while our friend is free.'],
   'clock.five.zero': [
     'At 12, the digital clock shows zero minutes. A full turn is sixty minutes: the next hour starts at zero.',
   ],
