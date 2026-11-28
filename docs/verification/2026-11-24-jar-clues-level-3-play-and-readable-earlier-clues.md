@@ -5,3 +5,5 @@
 **Ran (cloud container, dev server on http://localhost:5173, Chromium from /opt/pw-browsers):** `npm run typecheck`, `eslint src/games/jar-clues`, Prettier on both changed files, and the Jar Clues and registry unit tests (111 passed). `BROWSER_SUITE=jarclues` passed with levels 1 to 4 at 390 × 625. A forced level-4 board with the longest earlier clues at clue 5 drew "…" and the last two clues at full size. Before the change, levels 3 and 4 were played to the sticker with audio unlocked: every line, including the 13 clips from PR #2061, played its rendered clip, and there was no device-speech fallback.
 
 **Not run:** `fingerdemo`, `npm run build` (no shared files or assets changed), offline, other suites.
+
+**Re-run 2026-11-28 (this Mac, after merging `origin/main`, which had added the thumb lens of PR #2126 to the same file):** `npm run typecheck`, format check, lint, and the Jar Clues, grown-up thumb, barrels and game-docs unit tests (82 passed). `BROWSER_SUITE=jarclues` passed again for levels 1 to 4 at 390 × 625, including the readable earlier clues at level 4's last clue.
