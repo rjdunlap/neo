@@ -572,6 +572,11 @@ class ForecastDetective implements Game {
   }
 
   /** Like a detective: the wind, its postcard, the thermometer only when rain is coming (level 2 opens every clue it has). */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.dead || this.busy) return null;
     const c = this.case;

@@ -195,6 +195,11 @@ class StorySteps implements Game {
     this.glow.alpha = this.hintGlow.alpha = 0.75 + 0.25 * Math.sin(this.clock * 3);
   }
   /** The ghost finger on the how-to card: carry the picture that comes next in the story to the first empty slot. */
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     if (this.done || this.playing || !this.alive) return null;
     const next = nextPicture(

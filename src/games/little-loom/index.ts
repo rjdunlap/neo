@@ -444,6 +444,11 @@ export class LittleLoom implements Game {
     this.companion.position.set(l.companion.x, l.companion.y);
     this.draw();
   }
+  /** Guided first play points at the bot's next move: `autotouch` here only reads the board. */
+  showMove(): TouchIntent | null {
+    return this.autotouch();
+  }
+
   autotouch(): TouchIntent | null {
     const r = this.round;
     if (this.destroyed || this.finished || r.busy) return null;
