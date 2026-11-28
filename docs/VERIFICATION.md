@@ -234,7 +234,7 @@ When a check passes, replace that suite or area's row with the new date, entry l
 | `wardrobe9` | 2026-10-26 · [Weather Wardrobe: wind (slice 7)](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-wind-slice-7) | — |
 | `waterflow` | 2026-10-31 · [Water Road levels 4–5 (ancient-mediterranean AM3)](archive/VERIFICATION-2026-10-31.md#2026-10-31--water-road-levels-45-ancient-mediterranean-am3) | — |
 | `waterroad` | 2026-11-18 · [Younger-band games' questions on ctx.instruct, ninth session](verification/2026-11-18-younger-band-games-questions-on-ctx-instruct-ninth-session.md) | — |
-| `week` | 2026-11-24 · [Day by Day level 7, Month wheel](verification/2026-11-24-day-by-day-level-7-month-wheel.md) | `WEEK_LEVELS=7` and `2`; level 9 last passed 2026-11-23 |
+| `week` | 2026-11-27 · [Day by Day level 8, Daylight records](verification/2026-11-27-day-by-day-level-8-daylight-records.md) | `WEEK_LEVELS=8`; level 7 last passed 2026-11-24, level 9 2026-11-23 |
 | `welcome` | 2026-11-03 · [RW09 slice 1 learning evidence and the Welcome recap](archive/VERIFICATION-2026-11-03.md#2026-11-03--rw09-slice-1-learning-evidence-and-the-welcome-recap-pr-1163) | — |
 | `welcomeways` | 2026-11-06 · [Welcome Ways levels 5–7](archive/VERIFICATION-2026-11-06.md#2026-11-06--welcome-ways-levels-57) | `WELCOME_ONLY=deep` |
 | `whoami` | 2026-11-20 · [Who Am I? level 8, the platypus](verification/2026-11-20-who-am-i-level-8-the-platypus.md) | — |

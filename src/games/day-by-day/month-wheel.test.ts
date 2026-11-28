@@ -41,9 +41,9 @@ describe('month wheel rules', () => {
     expect(dirs).toEqual(new Set([-1, 1]));
   });
 
-  it('is the last school level and only school plays it', () => {
+  it('is a school level (before Daylight records) and only school plays it', () => {
     expect(planFor(MONTH_LEVEL).name).toMatch(/month/i);
-    expect(LEVELS.school?.order?.at(-1)).toBe(MONTH_LEVEL);
+    expect(LEVELS.school?.order?.at(-2)).toBe(MONTH_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect([rangeFor(LEVELS, band).min, rangeFor(LEVELS, band).max]).not.toContain(MONTH_LEVEL);
   });
