@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–4 |
-| school | 3–14 |
+| school | 3–15 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 12 | Over ten, your way: a sum or take-away across 10, with a stop at 10 if she chooses |
 | 13 | Hop by tens: pads 0, 10, 20 … 100, start at 10 to 70 and hop 1 to 4 tens on or back |
 | 14 | Big hops and little hops: tens and ones from one number to another, on a line with no pads |
+| 15 | Where does it go?: guess where a number sits on a line from 0 to 100, then place one on a line marked in tens |
 
 <!-- end generated -->
 
@@ -35,7 +36,7 @@ On upright phones `hopLayout` (pure, in `logic.ts`; guard `view.upright` and hei
 
 **Starts as:** hop to a number on the lily pads
 
-**Grows into:** one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20, then splitting a shown sum or take-away across 10 with spoken support and one hint per question, then fractions as places on one whole (quarter and half hops, then two hop sizes to one lily), then take-away as the distance between two numbers (13 − 9 as the hops from 9 up to 13), then going over ten her own way (stop at 10 or land directly), then hopping by tens along a line of 0 to 100, then a line with no pads where a big lily hops ten and a small lily hops one from a number to a flag, for ages 6–8
+**Grows into:** one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20, then splitting a shown sum or take-away across 10 with spoken support and one hint per question, then fractions as places on one whole (quarter and half hops, then two hop sizes to one lily), then take-away as the distance between two numbers (13 − 9 as the hops from 9 up to 13), then going over ten her own way (stop at 10 or land directly), then hopping by tens along a line of 0 to 100, then a line with no pads where a big lily hops ten and a small lily hops one from a number to a flag, then guessing where a number sits on a bare 0–100 line with no misses and placing a ten on a line marked in tens, for ages 6–8
 
 ## Design notes
 
@@ -50,6 +51,8 @@ On upright phones `hopLayout` (pure, in `logic.ts`; guard `view.upright` and hei
 **Hop by tens (level 13, school only, mode `tens`).** Pads read 0, 10 … 100 and the sign shows `30 + 20`; questions stay in pad-index space and `padValue` multiplies only what is shown or said. Starts 10–70, 1–4 tens on or back (two of five go back; never the same landing twice running); every round slides the line to show 100 at least once. The ask is "Start at 30. Hop 2 tens." (separate "one ten" lines); counted hops say the tens ("forty… fifty") with a tally dot, and the landing line names the value. Wrong side and off by one ten are named misses; two misses demonstrate and glow, as at levels 3–4. Flowers fall on 50 and 100, and the "100" label fits its pad at four views. Device speech of the tens words is unchecked.
 
 **Big hops and little hops (level 14, school only, mode `hops`, [definition](../definitions/frog-hop-big-and-little-hops.md)).** An open line with no pads: only the frog's number and the flag's are written. A big lily (+10), a small lily (+1) and a back lily hop the frog; every hop says its landing, leaves a faint arc (long for ten, short for one, to scale) and is free until the frog lands exactly on the flag. The scene is its own class, `HopsLine` in `hops-scene.ts`, chosen by `create`; `logic.ts` holds `hopsQuestions` (start 12–58 and distance 11–45, neither a multiple of ten, flag at most 100, the first question 47 → 72, four questions), `routeLanding`, `overshoots`, `shortestRoute`, `routeWords`, `openLine` (the window: the ten at or below the start up to a ten past the flag's ten, so a hop past the flag still lands on the line; at most 70 numbers, capped at 110, shrunk to fit the board) and `hopsLayout`. A hop past the flag lands, is one miss (two charged a question) and lights Back; going past the end of the line is a free squeak. A second overshoot or Show a hint plays the fewest-hops route from where she stands (from the start if she is past the flag) and counts one hint; ten little hops on a question pulse the big lily once, free. The closing line names her own route. Not a couch stop. The browser step is in `woods-batch.mjs` (`WOODS_ONLY=hop HOP_LEVELS=14`).
+
+**Where does it go? (level 15, school only, mode `estimate`).** The scene is its own class, `EstimateLine` in `estimate-scene.ts`, chosen by `create`. Four questions a round: three unscored guesses on a bare 0–100 line with only the ends written (37 first, then seeded: never 0, 50, 100 or a multiple of ten, at least 15 apart), then one placement. She taps the line or slides the frog there; then the marks by tens and their numbers appear, the frog says "Right on it!", "Very close!" or "Close!" (closeness within 3, 8 or 18; nothing extra when far) and hops to the real place ("37 is here"). A guess is never a miss and never a hint, so those questions report 0 and 0 (two rounds step her up, as Light Lab 7). The fourth question places a ten (20, 30, 40, 60, 70 or 80) on a line marked in tens with no numbers but the ends; a place snaps to the nearest mark, a wrong mark is one miss with a clue, from the second wrong mark (or Show a hint) the right mark glows (one counted hint per question), and the third wrong mark is a supported finish. The ghost finger taps the line at the true place. Rule tests ("Where does it go? (level 15)" in `logic.test.ts`): question rules, the linear map and reachability, closeness defined and symmetric, layout at four views.
 
 **Scenes (dive slice 6, 2026-11-14).** Each round draws one of four scenes after the questions are made, so a seed's questions are unchanged: the lily pond, stepping stones in a brook, a flower path (white daisies, so the pink landmark blooms on 5, 10, 15 and 20 still stand out) and an evening pond (dusk sky, light ground so numerals read, drifting fireflies). Art only: `hopLayout` places pads, sign and number cards the same in every scene, clear of the guide corner at four views. The sticker and hub icon keep the lily pad.
 
