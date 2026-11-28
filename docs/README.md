@@ -25,6 +25,7 @@ Most of these files keep one paragraph per line, so lines run long: read by sect
 | [IDEAS.md](IDEAS.md) | The idea notebook: proposals, not a mandate |
 | [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md) | Only before work that depends on a call the developer alone can make |
 | [DEVICE-CHECKS.md](DEVICE-CHECKS.md) | The parked device and child checks, and what a phone playtest can answer |
+| [device-checks/](device-checks/ROTATION.md) | The twice-weekly phone and controller check: its rotation of games and one dated report per run |
 
 ## What exists and how it works
 
