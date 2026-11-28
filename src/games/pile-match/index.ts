@@ -673,6 +673,11 @@ class PileMatch implements Game {
   /* Touch                                                                                          */
   /* -------------------------------------------------------------------------------------------- */
 
+  /** For the pad pointer: every piece still on the heap or in the tray (one layer hears every touch), covered ones too. */
+  pointerSpots() {
+    return this.pieces.filter((p) => p.visible && !!p.parent);
+  }
+
   private local(e: FederatedPointerEvent) {
     return this.ctx.stage.toLocal(e.global);
   }
